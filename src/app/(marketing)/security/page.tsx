@@ -22,6 +22,8 @@ const STORED_DATA = [
   "Directory users: display name, UPN, enabled state, user type, creation date, assigned licenses",
   "Last sign-in timestamps (when your tenant has Entra ID P1) and per-workload last-activity dates",
   "The prices you enter in the price book and the findings derived from the above",
+  "If you connect Adobe (optional): Adobe user emails, status and product assignments; the Adobe credential itself is stored encrypted (AES-256-GCM) and used read-only",
+  "A per-workspace activity log of exports and administrative actions, deleted with the workspace",
 ];
 
 const Section = ({

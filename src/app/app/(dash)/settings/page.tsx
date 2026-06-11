@@ -6,8 +6,19 @@ import { Button, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
 import { addMember, removeMember } from "~/server/actions";
+import {
+  AdobeConnectForm,
+  AdobeDisconnectButton,
+} from "~/components/workspace/AdobeConnectForm";
 import { db } from "~/server/db";
-import { memberships, syncRuns } from "~/server/db/schema";
+import {
+  adobeConnections,
+  adobeUsers,
+  auditLog,
+  memberships,
+  syncRuns,
+} from "~/server/db/schema";
+import { sql } from "drizzle-orm";
 
 const Card = ({
   title,
@@ -62,7 +73,7 @@ export default async function SettingsPage() {
   const isAdmin = hasRole(ctx, "admin");
   const isOwner = hasRole(ctx, "owner");
 
-  const [members, runs] = await Promise.all([
+  const [members, runs, activity] = await Promise.all([
     db.query.memberships.findMany({
       where: eq(memberships.tenantId, ctx.tenant.id),
     }),
@@ -71,6 +82,24 @@ export default async function SettingsPage() {
       orderBy: desc(syncRuns.startedAt),
       limit: 8,
     }),
+    isAdmin
+      ? db.query.auditLog.findMany({
+          where: eq(auditLog.tenantId, ctx.tenant.id),
+          orderBy: desc(auditLog.createdAt),
+          limit: 30,
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const [adobeConn, adobeCount] = await Promise.all([
+    db.query.adobeConnections.findFirst({
+      where: eq(adobeConnections.tenantId, ctx.tenant.id),
+    }),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(adobeUsers)
+      .where(eq(adobeUsers.tenantId, ctx.tenant.id))
+      .then((r) => r[0]?.n ?? 0),
   ]);
 
   return (
@@ -253,6 +282,79 @@ export default async function SettingsPage() {
             </form>
           )}
         </Card>
+
+        <Card title="Adobe connector (beta)">
+          {ctx.tenant.isDemo ? (
+            <p className="text-sm text-ink-soft">
+              Connected with demo data — {adobeCount} Adobe seats correlated
+              against the directory. On a real workspace this uses your Adobe
+              Admin Console credentials.
+            </p>
+          ) : adobeConn ? (
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="text-sm">
+                <div className="font-medium">
+                  Connected — {adobeCount} Adobe seats
+                </div>
+                <div className="mt-0.5 text-xs text-ink-soft">
+                  Org {adobeConn.orgId} · last sync{" "}
+                  {fmtDate(adobeConn.lastSyncAt)} (
+                  {adobeConn.lastSyncStatus ?? "pending"})
+                </div>
+              </div>
+              {isAdmin && <AdobeDisconnectButton />}
+            </div>
+          ) : isAdmin ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-ink-soft">
+                Detect Adobe seats still assigned to people who are disabled or
+                gone in Entra ID. Create an OAuth server-to-server project with
+                the User Management API in the Adobe Developer Console
+                (System Admin required), then paste the credentials — they are
+                stored encrypted and used read-only.
+              </p>
+              <AdobeConnectForm />
+            </div>
+          ) : (
+            <p className="text-sm text-ink-soft">
+              Not connected. A workspace admin can connect the Adobe Admin
+              Console here.
+            </p>
+          )}
+        </Card>
+
+        {isAdmin && (
+          <Card title="Activity">
+            {activity.length === 0 ? (
+              <p className="text-sm text-ink-soft">No activity recorded yet.</p>
+            ) : (
+              <ul className="flex flex-col">
+                {activity.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-line py-2 text-sm last:border-b-0"
+                  >
+                    <span className="min-w-0">
+                      <span className="font-medium">
+                        {entry.action.replaceAll("_", " ")}
+                      </span>
+                      <span className="ml-2 truncate text-xs text-ink-faint">
+                        {entry.actorEmail ?? entry.actorOid}
+                      </span>
+                    </span>
+                    <span className="font-mono text-[11px] whitespace-nowrap text-ink-faint">
+                      {fmtDate(entry.createdAt)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-3 text-xs text-ink-faint">
+              Exports, price changes, membership and sync actions — kept with
+              the workspace, deleted with it.
+            </p>
+          </Card>
+        )}
 
         {isOwner && !ctx.tenant.isDemo && (
           <DangerZone tenantName={ctx.tenant.name ?? ctx.tenant.tid} />

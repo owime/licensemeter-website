@@ -42,9 +42,11 @@ export const GET = async (req: NextRequest) => {
 
   // Validate the consent result BEFORE consuming the nonce, so a declined or
   // incomplete dialog does not burn the state and the user can simply retry.
+  // The granted tenant may differ from the initiator's home tenant (MSP /
+  // consultant flow): the customer's Global Admin completing the Microsoft
+  // dialog IS the authorization; the initiator becomes the workspace owner.
   if (error) fail("consent_declined");
   if (adminConsent !== "True" || !grantedTid) fail("consent_incomplete");
-  if (grantedTid !== stateRow!.tid) fail("tenant_mismatch");
 
   await db
     .update(consentStates)

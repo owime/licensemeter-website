@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { apiAccess } from "~/server/access";
+import { audit } from "~/server/audit";
 import { centsToDecimal, csvResponse, toCsv } from "~/server/csv";
 import { db } from "~/server/db";
 import { priceBook, tenantSkus } from "~/server/db/schema";
@@ -42,5 +43,6 @@ export const GET = async () => {
       ];
     }),
   ]);
+  await audit(ctx, "export_licenses_csv", { rows: skus.length });
   return csvResponse("licensemeter-licenses.csv", csv);
 };

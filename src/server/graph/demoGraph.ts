@@ -33,6 +33,13 @@ const LAST = [
   "Schulz", "Vogel", "Wagner", "Weber", "Wolf", "Zimmermann",
 ];
 
+/** Deterministic demo identity formula — shared with the Adobe demo fixture. */
+export const demoUpn = (i: number): string => {
+  const first = FIRST[i % FIRST.length]!;
+  const last = LAST[(i * 7 + 3) % LAST.length]!;
+  return `${first.toLowerCase()}.${last.toLowerCase()}${i}@meridian.example`;
+};
+
 const mulberry32 = (seed: number) => () => {
   seed |= 0;
   seed = (seed + 0x6d2b79f5) | 0;
@@ -170,7 +177,7 @@ const buildUsers = (now: Date): DemoUser[] => {
   ): DemoUser => {
     const first = FIRST[i % FIRST.length]!;
     const last = LAST[(i * 7 + 3) % LAST.length]!;
-    const upn = `${first.toLowerCase()}.${last.toLowerCase()}${i}@meridian.example`;
+    const upn = demoUpn(i);
     const lastActivity =
       cfg.lastActivityDaysAgo === null
         ? null

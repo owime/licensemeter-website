@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { memberships, syncRuns, tenants } from "~/server/db/schema";
+import { memberships, snapshots, syncRuns, tenants } from "~/server/db/schema";
 import { runSync } from "~/server/sync/runSync";
 import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "./constants";
 
@@ -64,5 +64,36 @@ const seedDemoWorkspace = async (): Promise<void> => {
   const anyRun = await db.query.syncRuns.findFirst({
     where: eq(syncRuns.tenantId, tenant.id),
   });
-  if (!anyRun) await runSync(tenant.id);
+  if (!anyRun) {
+    await seedDemoHistory(tenant.id);
+    await runSync(tenant.id);
+  }
+};
+
+/**
+ * 45 days of synthetic snapshot history so the demo shows the trend chart
+ * (a real tenant accumulates these nightly). Waste drifts down — the story
+ * the product sells. Deterministic; today's row is overwritten by the sync.
+ */
+const seedDemoHistory = async (tenantId: string): Promise<void> => {
+  const today = new Date();
+  const rows = Array.from({ length: 45 }, (_, i) => {
+    const day = new Date(today.getTime() - (45 - i) * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const wobble = Math.sin(i * 1.7) * 9_000;
+    return {
+      tenantId,
+      day,
+      totalMonthlySpendCents: 697_990 + Math.round(Math.sin(i * 0.9) * 12_000),
+      totalMonthlyWasteCents: Math.max(
+        Math.round(310_000 - i * 1_500 + wobble),
+        200_000,
+      ),
+      purchasedSeats: 300,
+      assignedSeats: 263,
+      bySku: {},
+    };
+  });
+  await db.insert(snapshots).values(rows).onConflictDoNothing();
 };

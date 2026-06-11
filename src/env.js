@@ -49,6 +49,17 @@ export const env = createEnv({
     DEMO_MODE: z.enum(["true", "false"]).optional(),
 
     /**
+     * Incoming-webhook URL (Teams/Slack compatible) for operational alerts —
+     * failed syncs, cron errors. Optional; alerts log to console without it.
+     */
+    ALERT_WEBHOOK_URL: z.string().url().optional(),
+
+    /** Resend API key for the weekly digest. Optional; digest skips without it. */
+    RESEND_API_KEY: z.string().optional(),
+    /** From address for outgoing mail, e.g. "LicenseMeter <digest@licensemeter.com>". */
+    EMAIL_FROM: z.string().optional(),
+
+    /**
      * Public base URL, used to build the admin-consent redirect URI.
      * Required on Vercel builds: without it the consent flow would send a
      * relative redirect_uri, which Microsoft rejects.
@@ -71,6 +82,9 @@ export const env = createEnv({
     CRON_SECRET: process.env.CRON_SECRET,
     DEMO_MODE: process.env.DEMO_MODE,
     APP_BASE_URL: process.env.APP_BASE_URL,
+    ALERT_WEBHOOK_URL: process.env.ALERT_WEBHOOK_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

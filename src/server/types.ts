@@ -31,6 +31,7 @@ export type SyncStep = {
     | "signInActivity"
     | "usageReports"
     | "copilotUsage"
+    | "adobeUsers"
     | "wasteAnalysis";
   status: "ok" | "warning" | "failed" | "skipped";
   message?: string;
@@ -43,7 +44,31 @@ export type WasteRuleId =
   | "inactive_90d"
   | "shelfware"
   | "copilot_unused"
-  | "licensed_guest";
+  | "licensed_guest"
+  | "adobe_disabled_in_entra"
+  | "adobe_orphaned";
+
+/** One Adobe Admin Console user as returned by the User Management API. */
+export type AdobeUser = {
+  email: string;
+  status: string;
+  /** Product profile / user group names = the entitlements. */
+  products: string[];
+};
+
+export type AuditAction =
+  | "export_findings_csv"
+  | "export_licenses_csv"
+  | "export_remediation"
+  | "price_updated"
+  | "member_added"
+  | "member_removed"
+  | "finding_status_changed"
+  | "sync_triggered"
+  | "currency_changed"
+  | "adobe_connected"
+  | "adobe_disconnected"
+  | "workspace_switched";
 
 /** Aggregate counts captured when user identities are concealed in usage reports. */
 export type AggregateUsage = {

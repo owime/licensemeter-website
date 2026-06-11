@@ -15,6 +15,7 @@ import {
 
 import type {
   AggregateUsage,
+  AuditAction,
   FindingStatus,
   MembershipRole,
   SyncRunStatus,
@@ -211,6 +212,58 @@ export const syncRuns = pgTable(
       .on(t.tenantId)
       .where(sql`${t.status} = 'running'`),
   ],
+);
+
+/** Adobe Admin Console connection (UMAPI OAuth server-to-server credentials). */
+export const adobeConnections = pgTable("adobe_connections", {
+  tenantId: uuid("tenant_id")
+    .primaryKey()
+    .references(() => tenants.id, { onDelete: "cascade" }),
+  orgId: text("org_id").notNull(),
+  clientId: text("client_id").notNull(),
+  /** AES-256-GCM encrypted with a key derived from AUTH_SECRET. */
+  clientSecretEnc: text("client_secret_enc").notNull(),
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastSyncStatus: text("last_sync_status"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Latest Adobe user snapshot per tenant (entitlements only — Adobe has no usage API). */
+export const adobeUsers = pgTable(
+  "adobe_users",
+  {
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    status: text("status").notNull().default("active"),
+    products: jsonb("products").$type<string[]>().notNull().default([]),
+    syncedAt: timestamp("synced_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.email] })],
+);
+
+/** Who did what, per workspace. Cascade-deleted with the tenant (GDPR-clean). */
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    actorOid: text("actor_oid").notNull(),
+    actorEmail: text("actor_email"),
+    action: text("action").$type<AuditAction>().notNull(),
+    detail: jsonb("detail").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("audit_log_tenant_idx").on(t.tenantId, t.createdAt)],
 );
 
 /** Launch-update / security-one-pager requests from the landing page. */

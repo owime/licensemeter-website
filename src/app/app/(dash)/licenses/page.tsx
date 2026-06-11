@@ -3,9 +3,10 @@ import { eq } from "drizzle-orm";
 import { PriceEditor } from "~/components/workspace/PriceRow";
 import { ButtonAnchor, Pill } from "~/components/ui";
 import { fmtMoney, fmtNumber } from "~/lib/format";
+import { adobePriceKey } from "~/server/adobe/analyze";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
-import { priceBook, tenantSkus } from "~/server/db/schema";
+import { adobeUsers, priceBook, tenantSkus } from "~/server/db/schema";
 
 type PriceRow = typeof priceBook.$inferSelect;
 
@@ -25,11 +26,21 @@ export default async function LicensesPage() {
   const isAdmin = hasRole(ctx, "admin");
   const currency = ctx.tenant.currency;
 
-  const [skus, prices] = await Promise.all([
+  const [skus, prices, adobeSeats] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, ctx.tenant.id) }),
     db.query.priceBook.findMany({ where: eq(priceBook.tenantId, ctx.tenant.id) }),
+    db.query.adobeUsers.findMany({ where: eq(adobeUsers.tenantId, ctx.tenant.id) }),
   ]);
   const priceRows = new Map(prices.map((p) => [p.skuId, p]));
+
+  const adobeProducts = [
+    ...adobeSeats
+      .flatMap((u) => u.products)
+      .reduce(
+        (m, product) => m.set(product, (m.get(product) ?? 0) + 1),
+        new Map<string, number>(),
+      ),
+  ].sort((a, b) => a[0].localeCompare(b[0]));
   const sorted = [...skus].sort((a, b) =>
     (a.displayName ?? a.skuPartNumber).localeCompare(
       b.displayName ?? b.skuPartNumber,
@@ -177,6 +188,49 @@ export default async function LicensesPage() {
           </li>
         )}
       </ul>
+
+      {adobeProducts.length > 0 && (
+        <section className="rise rise-3 mb-8">
+          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+            Adobe products (beta)
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+            Seat counts come from the Adobe Admin Console; Adobe publishes no
+            price API, so enter your per-seat price to put a number on the
+            offboarding leaks.
+          </p>
+          <ul className="mt-3 border border-line bg-card">
+            {adobeProducts.map(([product, count]) => {
+              const p = priceRows.get(adobePriceKey(product));
+              const cents = p?.monthlyPriceCents ?? 0;
+              return (
+                <li
+                  key={product}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                >
+                  <div className="min-w-0">
+                    <span className="font-medium">{product}</span>
+                    <span className="tnum ml-3 font-mono text-sm text-ink-soft">
+                      {fmtNumber(count, currency)} seats
+                    </span>
+                  </div>
+                  {isAdmin ? (
+                    <PriceEditor
+                      skuId={adobePriceKey(product)}
+                      initial={(cents / 100).toFixed(2)}
+                      currency={currency}
+                    />
+                  ) : (
+                    <span className="tnum font-mono text-sm">
+                      {fmtMoney(cents, currency)} / seat / mo
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

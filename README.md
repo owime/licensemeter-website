@@ -87,11 +87,14 @@ Customer tenant (Entra ID + Graph)        Adobe Admin Console (planned)
 - Sync runs are step-logged (`sync_runs.steps`); non-critical steps degrade to
   warnings, and a partial unique index guarantees one running sync per tenant.
 
-## Roadmap (deliberately not in v1)
+## Roadmap
 
-- Adobe connector via the User Management API (offboarding-leak detection — no
-  usage data exists in Adobe's APIs)
-- Stripe billing, weekly email digest, Teams alerts
-- Opt-in write remediation as a separate consent step
-- Trend charts from the daily snapshots (already collected)
-- MSP multi-workspace view
+Shipped since v1: Adobe connector (beta, offboarding-leak detection), trend
+charts, MSP multi-workspace, per-workspace activity log, weekly digest
+(activates with a Resend key), ops alerting webhook, health endpoint.
+
+Open:
+
+- Stripe billing and seat-band entitlements
+- Opt-in write remediation as a separate consent step (deliberately excluded
+  while the product promise is strictly read-only)

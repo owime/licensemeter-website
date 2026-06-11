@@ -1,16 +1,30 @@
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth, type Session } from "~/server/auth";
+import { cookieOptions } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { memberships, tenants } from "~/server/db/schema";
 import { ensureDemoWorkspace } from "~/server/demo/seed";
 import type { MembershipRole } from "~/server/types";
 
+export const WORKSPACE_COOKIE = "lm_ws";
+const WORKSPACE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
+
+export type WorkspaceSummary = {
+  id: string;
+  name: string;
+  role: MembershipRole;
+  isDemo: boolean;
+};
+
 export type AccessContext = {
   user: { oid: string; tid: string; upn: string; name: string; isDemo: boolean };
   tenant: typeof tenants.$inferSelect;
   membership: typeof memberships.$inferSelect;
+  /** Every workspace this user can open (MSP/consultant support). */
+  workspaces: WorkspaceSummary[];
 };
 
 const ROLE_RANK: Record<MembershipRole, number> = {
@@ -23,11 +37,18 @@ export const hasRole = (ctx: AccessContext, minRole: MembershipRole) =>
   ROLE_RANK[ctx.membership.role] >= ROLE_RANK[minRole];
 
 /**
- * Resolves the signed-in user's workspace. The workspace is the tenant the
- * user signs in from (1:1 by tid). Membership is invite-based: matched by
- * Entra object id, or by email/UPN for invited users signing in for the first
- * time (their oid is claimed on first match). Same-tenant sign-in alone does
- * NOT grant access.
+ * Resolves every workspace the signed-in user may open, then the active one.
+ *
+ * Membership matching is invite-based and deliberately asymmetric:
+ * - by Entra object id — the user has opened this workspace before;
+ * - unclaimed invites by UPN — valid from ANY tenant, because UPN domains are
+ *   verified by Microsoft (a consultant invited as consultant@msp.example can
+ *   only be the account whose home tenant owns msp.example);
+ * - unclaimed invites by email claim — valid only when signing in FROM the
+ *   workspace tenant itself, because the email attribute is admin/user-mutable
+ *   and must not grant cross-tenant access.
+ *
+ * Same-tenant sign-in alone still grants nothing.
  */
 const resolveAccess = async (
   session: Session | null,
@@ -37,41 +58,62 @@ const resolveAccess = async (
 
   if (isDemo) await ensureDemoWorkspace();
 
-  const tenant = await db.query.tenants.findFirst({
-    where: eq(tenants.tid, tid),
-  });
-  if (!tenant) return null;
-
+  const upnLower = upn.toLowerCase();
   const identifiers = [upn, session.user.email ?? ""]
     .filter(Boolean)
     .map((s) => s.toLowerCase());
 
-  const membership = await db.query.memberships.findFirst({
-    where: and(
-      eq(memberships.tenantId, tenant.id),
+  const rows = await db
+    .select({ membership: memberships, tenant: tenants })
+    .from(memberships)
+    .innerJoin(tenants, eq(memberships.tenantId, tenants.id))
+    .where(
       or(
         eq(memberships.oid, oid),
+        upnLower
+          ? and(
+              isNull(memberships.oid),
+              eq(sql`lower(${memberships.email})`, upnLower),
+            )
+          : sql`false`,
         identifiers.length > 0
-          ? inArray(sql`lower(${memberships.email})`, identifiers)
+          ? and(
+              isNull(memberships.oid),
+              inArray(sql`lower(${memberships.email})`, identifiers),
+              eq(tenants.tid, tid),
+            )
           : sql`false`,
       ),
-    ),
-  });
-  if (!membership) return null;
+    );
+  if (rows.length === 0) return null;
+
+  // Active workspace: cookie choice if still valid, else the home-tenant
+  // workspace, else the first one.
+  const cookieWs = (await cookies()).get(WORKSPACE_COOKIE)?.value;
+  const active =
+    rows.find((r) => r.tenant.id === cookieWs) ??
+    rows.find((r) => r.tenant.tid === tid) ??
+    rows[0]!;
 
   // First sign-in of an invited user: claim the membership row.
-  if (!membership.oid) {
+  if (!active.membership.oid) {
     await db
       .update(memberships)
       .set({ oid, name: session.user.name ?? null })
-      .where(eq(memberships.id, membership.id));
-    membership.oid = oid;
+      .where(eq(memberships.id, active.membership.id));
+    active.membership.oid = oid;
   }
 
   return {
     user: { oid, tid, upn, name: session.user.name ?? "", isDemo },
-    tenant,
-    membership,
+    tenant: active.tenant,
+    membership: active.membership,
+    workspaces: rows.map((r) => ({
+      id: r.tenant.id,
+      name: r.tenant.name ?? r.tenant.tid,
+      role: r.membership.role,
+      isDemo: r.tenant.isDemo,
+    })),
   };
 };
 
@@ -82,7 +124,7 @@ export const requireSession = async (): Promise<Session> => {
   return session;
 };
 
-/** For pages/layouts: null when the tenant is not connected or user not invited. */
+/** For pages/layouts: null when no workspace is accessible. */
 export const getAccessContext = async (): Promise<AccessContext | null> => {
   const session = await requireSession();
   return resolveAccess(session);
@@ -107,3 +149,7 @@ export const apiAccess = async (
   if (!ctx || !hasRole(ctx, minRole)) return null;
   return ctx;
 };
+
+/** Workspace-switch cookie options (validated against memberships per request). */
+export const workspaceCookieOptions = () =>
+  cookieOptions(WORKSPACE_COOKIE_MAX_AGE);

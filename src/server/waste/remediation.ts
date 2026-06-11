@@ -16,6 +16,8 @@ const RULE_HEADERS: Record<string, string> = {
   copilot_unused: "Unused Copilot seats",
   licensed_guest: "Licensed guest accounts",
   shelfware: "Unassigned paid seats",
+  adobe_disabled_in_entra: "Adobe seats held by Entra-disabled users",
+  adobe_orphaned: "Adobe seats without an Entra account",
 };
 
 /**
@@ -55,6 +57,16 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
           `# ${f.title}`,
           `#   Reduce the seat count at the next renewal (Microsoft 365 admin center > Billing > Your products,`,
           `#   or through your CSP). SKU: ${f.skuId ? skuDisplayName(f.skuId, detail.skuPartNumber) : "unknown"}.`,
+          "",
+        );
+        continue;
+      }
+
+      if (f.rule === "adobe_disabled_in_entra" || f.rule === "adobe_orphaned") {
+        lines.push(
+          `# ${f.title}`,
+          `#   Remove the user in the Adobe Admin Console (adminconsole.adobe.com > Users)`,
+          `#   or via your Adobe directory sync. PowerShell cannot manage Adobe seats.`,
           "",
         );
         continue;

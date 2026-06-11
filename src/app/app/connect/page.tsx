@@ -14,8 +14,6 @@ const ERROR_TEXT: Record<string, string> = {
   expired_state: "The consent link expired (15 minutes). Please retry.",
   consent_declined: "Consent was declined in the Microsoft dialog.",
   consent_incomplete: "Microsoft did not confirm the consent. Please retry.",
-  tenant_mismatch:
-    "Consent was granted for a different tenant than the one you signed in from. Sign in with an account from the tenant you want to connect, then retry.",
 };
 
 export default async function ConnectPage({
@@ -101,9 +99,10 @@ export default async function ConnectPage({
 
           {!session.user.isDemo && (
             <p className="mt-6 text-xs text-ink-faint">
-              Not a Global Admin? Forward this page to one — after consent, you
-              become the workspace owner and can invite finance colleagues as
-              viewers.
+              Not a Global Admin? Forward this page to one. Managing a
+              customer&apos;s tenant as a partner works too: you start the
+              flow, their Global Admin completes the Microsoft dialog, and you
+              become the workspace owner.
             </p>
           )}
         </>

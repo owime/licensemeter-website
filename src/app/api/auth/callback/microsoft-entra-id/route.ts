@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { env } from "~/env";
 import {
   getSignInClient,
   SIGNIN_SCOPES,
   signInRedirectUri,
-  type EntraIdTokenClaims,
 } from "~/server/auth/msal";
+import { verifyEntraIdToken, type VerifiedEntraClaims } from "~/server/auth/verifyIdToken";
 import {
   createSessionToken,
   OAUTH_COOKIE,
@@ -42,7 +43,7 @@ export const GET = async (req: NextRequest) => {
     return backToLanding(req, "state mismatch");
   }
 
-  let claims: EntraIdTokenClaims;
+  let claims: VerifiedEntraClaims;
   try {
     const result = await getSignInClient().acquireTokenByCode({
       code,
@@ -50,16 +51,16 @@ export const GET = async (req: NextRequest) => {
       redirectUri: signInRedirectUri(),
       codeVerifier: oauth.verifier,
     });
-    claims = result.idTokenClaims ?? {};
+    // Signature + audience + per-tenant issuer verification (Microsoft JWKS).
+    claims = await verifyEntraIdToken(
+      result.idToken,
+      env.AUTH_MICROSOFT_ENTRA_ID_ID ?? "",
+    );
   } catch (err) {
     return backToLanding(
       req,
       `token redemption failed: ${err instanceof Error ? err.message : String(err)}`,
     );
-  }
-
-  if (!claims.oid || !claims.tid) {
-    return backToLanding(req, "id_token missing oid/tid claims");
   }
 
   const upn = claims.preferred_username ?? claims.email ?? "";

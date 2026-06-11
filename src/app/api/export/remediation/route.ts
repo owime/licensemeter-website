@@ -2,6 +2,7 @@ import { desc, eq, and, inArray } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { apiAccess } from "~/server/access";
+import { audit } from "~/server/audit";
 import { db } from "~/server/db";
 import { findings } from "~/server/db/schema";
 import { generateRemediationScript } from "~/server/waste/remediation";
@@ -33,6 +34,7 @@ export const GET = async (req: NextRequest) => {
     orderBy: desc(findings.monthlyImpactCents),
   });
 
+  await audit(ctx, "export_remediation", { rows: rows.length, rule: rule ?? "all" });
   const script = generateRemediationScript(rows);
   return new Response(script, {
     headers: {

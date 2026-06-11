@@ -3,10 +3,17 @@ import Link from "next/link";
 
 import { RuleBadge } from "~/components/workspace/RuleBadge";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
+import { TrendChart } from "~/components/workspace/TrendChart";
 import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
 import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
-import { findings, priceBook, syncRuns, tenantSkus } from "~/server/db/schema";
+import {
+  findings,
+  priceBook,
+  snapshots,
+  syncRuns,
+  tenantSkus,
+} from "~/server/db/schema";
 
 type SkuRow = typeof tenantSkus.$inferSelect;
 
@@ -47,6 +54,12 @@ export default async function OverviewPage() {
       orderBy: desc(syncRuns.startedAt),
     }),
   ]);
+
+  const history = await db.query.snapshots.findMany({
+    where: eq(snapshots.tenantId, tenantId),
+    orderBy: snapshots.day,
+    limit: 90,
+  });
 
   const priceBySku = new Map(prices.map((p) => [p.skuId, p.monthlyPriceCents]));
   const monthlySpend = skus.reduce(
@@ -126,6 +139,15 @@ export default async function OverviewPage() {
           </div>
         ))}
       </section>
+
+      <TrendChart
+        currency={currency}
+        points={history.map((s) => ({
+          day: s.day,
+          spendCents: s.totalMonthlySpendCents,
+          wasteCents: s.totalMonthlyWasteCents,
+        }))}
+      />
 
       <section className="rise rise-3 mt-10">
         <div className="flex items-baseline justify-between gap-4">

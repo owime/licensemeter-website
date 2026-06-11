@@ -2,17 +2,27 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { apiAccess } from "~/server/access";
+import {
+  apiAccess,
+  WORKSPACE_COOKIE,
+  workspaceCookieOptions,
+} from "~/server/access";
+import { audit } from "~/server/audit";
 import { db } from "~/server/db";
 import {
+  adobeConnections,
+  adobeUsers,
   emailSignups,
   findings,
   memberships,
   priceBook,
   tenants,
 } from "~/server/db/schema";
+import { UmapiClient } from "~/server/adobe/client";
+import { encryptSecret } from "~/server/crypto";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import type { MembershipRole } from "~/server/types";
 
@@ -37,6 +47,7 @@ export const setFindingStatus = async (
     .where(and(eq(findings.id, findingId), eq(findings.tenantId, ctx.tenant.id)))
     .returning({ id: findings.id });
   if (updated.length === 0) return fail("Finding not found");
+  await audit(ctx, "finding_status_changed", { findingId, status });
   revalidateApp();
   return ok();
 };
@@ -62,6 +73,7 @@ export const updatePrice = async (
     .returning({ skuId: priceBook.skuId });
   if (updated.length === 0) return fail("Unknown SKU");
 
+  await audit(ctx, "price_updated", { skuId, monthlyPriceCents: cents });
   await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return ok();
@@ -93,6 +105,7 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
       target: [memberships.tenantId, memberships.email],
       set: { role },
     });
+  await audit(ctx, "member_added", { email, role });
   revalidateApp();
   return ok();
 };
@@ -116,6 +129,7 @@ export const removeMember = async (
   if (target.id === ctx.membership.id) return fail("You cannot remove yourself");
 
   await db.delete(memberships).where(eq(memberships.id, target.id));
+  await audit(ctx, "member_removed", { email: target.email, role: target.role });
   revalidateApp();
   return ok();
 };
@@ -130,6 +144,7 @@ export const setCurrency = async (currency: string): Promise<ActionResult> => {
     .update(tenants)
     .set({ currency })
     .where(eq(tenants.id, ctx.tenant.id));
+  await audit(ctx, "currency_changed", { currency });
   revalidateApp();
   return ok();
 };
@@ -138,9 +153,92 @@ export const setCurrency = async (currency: string): Promise<ActionResult> => {
 export const triggerSync = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
+  await audit(ctx, "sync_triggered", {});
   const result = await runSync(ctx.tenant.id);
   revalidateApp();
   return result.status === "failed" ? fail("Sync failed; see sync history") : ok();
+};
+
+/** Connect the Adobe Admin Console (UMAPI server-to-server credentials). */
+export const connectAdobe = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail("The demo workspace ships with demo Adobe data");
+
+  const read = (name: string) => {
+    const v = formData.get(name);
+    return typeof v === "string" ? v.trim() : "";
+  };
+  const orgId = read("orgId");
+  const clientId = read("clientId");
+  const clientSecret = read("clientSecret");
+  if (!orgId || !clientId || !clientSecret) return fail("All three fields are required");
+  if ([orgId, clientId, clientSecret].some((v) => v.length > 200)) {
+    return fail("Credential value too long");
+  }
+
+  // Validate against Adobe before storing anything.
+  try {
+    await new UmapiClient({ orgId, clientId, clientSecret }).getUsers();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return fail(`Adobe rejected the credentials: ${message.slice(0, 120)}`);
+  }
+
+  await db
+    .insert(adobeConnections)
+    .values({
+      tenantId: ctx.tenant.id,
+      orgId,
+      clientId,
+      clientSecretEnc: encryptSecret(clientSecret),
+    })
+    .onConflictDoUpdate({
+      target: adobeConnections.tenantId,
+      set: {
+        orgId,
+        clientId,
+        clientSecretEnc: encryptSecret(clientSecret),
+        lastSyncStatus: null,
+        lastSyncAt: null,
+      },
+    });
+  await audit(ctx, "adobe_connected", { orgId });
+  await runSync(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+/** Remove the Adobe connection and its data; findings auto-resolve. */
+export const disconnectAdobe = async (): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail("The demo workspace ships with demo Adobe data");
+
+  await db
+    .delete(adobeConnections)
+    .where(eq(adobeConnections.tenantId, ctx.tenant.id));
+  await db.delete(adobeUsers).where(eq(adobeUsers.tenantId, ctx.tenant.id));
+  await audit(ctx, "adobe_disconnected", {});
+  await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+/** Switch the active workspace (MSP/multi-tenant users). */
+export const switchWorkspace = async (
+  tenantId: string,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("viewer");
+  if (!ctx) return fail("Not allowed");
+  const target = ctx.workspaces.find((w) => w.id === tenantId);
+  if (!target) return fail("Unknown workspace");
+  (await cookies()).set(WORKSPACE_COOKIE, tenantId, workspaceCookieOptions());
+  await audit(ctx, "workspace_switched", { to: target.name });
+  revalidateApp();
+  return ok();
 };
 
 /**

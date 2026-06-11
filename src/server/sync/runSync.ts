@@ -2,6 +2,8 @@ import { and, eq, inArray, lt, notInArray, sql } from "drizzle-orm";
 
 import { db } from "~/server/db";
 import {
+  adobeConnections,
+  adobeUsers as adobeUsersTable,
   findings,
   priceBook,
   snapshots,
@@ -10,6 +12,10 @@ import {
   tenants,
   tenantUsers,
 } from "~/server/db/schema";
+import { DemoAdobeClient, UmapiClient } from "~/server/adobe/client";
+import { adobePriceKey, analyzeAdobeWaste } from "~/server/adobe/analyze";
+import { decryptSecret } from "~/server/crypto";
+import type { AdobeUser } from "~/server/types";
 import { DemoGraphClient } from "~/server/graph/demoGraph";
 import { MsGraphClient } from "~/server/graph/msGraph";
 import { skuDefaultPriceCents, skuDisplayName } from "~/server/graph/skuCatalog";
@@ -21,6 +27,7 @@ import {
   type GraphUser,
   type UsageReportRow,
 } from "~/server/graph/types";
+import { notifyOps } from "~/server/ops";
 import { joinSignals } from "~/server/sync/join";
 import type { SyncRunStatus, SyncStep } from "~/server/types";
 import { analyzeWaste, type WasteFinding } from "~/server/waste/engine";
@@ -179,6 +186,42 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       });
     }
 
+    // --- Adobe (beta): entitlements for offboarding-leak detection ---------
+    let adobeRows: AdobeUser[] = [];
+    let adobeActive = false;
+    const adobeConn = await db.query.adobeConnections.findFirst({
+      where: eq(adobeConnections.tenantId, tenantId),
+    });
+    if (tenant.isDemo || adobeConn) {
+      adobeActive = true;
+      try {
+        const adobeClient = tenant.isDemo
+          ? new DemoAdobeClient()
+          : new UmapiClient({
+              orgId: adobeConn!.orgId,
+              clientId: adobeConn!.clientId,
+              clientSecret: decryptSecret(adobeConn!.clientSecretEnc),
+            });
+        adobeRows = await adobeClient.getUsers();
+        steps.push({ step: "adobeUsers", status: "ok", count: adobeRows.length });
+        if (adobeConn) {
+          await db
+            .update(adobeConnections)
+            .set({ lastSyncAt: now, lastSyncStatus: "ok" })
+            .where(eq(adobeConnections.tenantId, tenantId));
+        }
+      } catch (err) {
+        adobeActive = false;
+        steps.push({ step: "adobeUsers", status: "warning", message: errText(err) });
+        if (adobeConn) {
+          await db
+            .update(adobeConnections)
+            .set({ lastSyncAt: now, lastSyncStatus: "failed" })
+            .where(eq(adobeConnections.tenantId, tenantId));
+        }
+      }
+    }
+
     // --- Join + analyze ---------------------------------------------------
     const joined = joinSignals({ graphUsers, usageRows, copilotRows, hasP1 });
 
@@ -276,6 +319,46 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
         );
     }
 
+    // Persist Adobe users (upsert + prune) when the connector is active.
+    if (adobeActive) {
+      if (adobeRows.length > 0) {
+        await db
+          .insert(adobeUsersTable)
+          .values(
+            adobeRows.map((u) => ({
+              tenantId,
+              email: u.email.toLowerCase(),
+              status: u.status,
+              products: u.products,
+              syncedAt: now,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [adobeUsersTable.tenantId, adobeUsersTable.email],
+            set: {
+              status: sql`excluded.status`,
+              products: sql`excluded.products`,
+              syncedAt: sql`excluded.synced_at`,
+            },
+          });
+        await db
+          .delete(adobeUsersTable)
+          .where(
+            and(
+              eq(adobeUsersTable.tenantId, tenantId),
+              notInArray(
+                adobeUsersTable.email,
+                adobeRows.map((u) => u.email.toLowerCase()),
+              ),
+            ),
+          );
+      } else {
+        await db
+          .delete(adobeUsersTable)
+          .where(eq(adobeUsersTable.tenantId, tenantId));
+      }
+    }
+
     // Prefill missing price book rows from the static catalog.
     const existingPrices = await db.query.priceBook.findMany({
       where: eq(priceBook.tenantId, tenantId),
@@ -291,6 +374,32 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
           source: "default" as const,
         })),
       );
+    }
+
+    // Prefill Adobe product prices (demo gets plausible list estimates).
+    const DEMO_ADOBE_PRICES: Record<string, number> = {
+      "Creative Cloud All Apps": 7100,
+      "Acrobat Pro": 2000,
+      Photoshop: 2400,
+    };
+    const adobeProducts = [...new Set(adobeRows.flatMap((u) => u.products))];
+    const missingAdobe = adobeProducts
+      .map(adobePriceKey)
+      .filter((id) => !known.has(id));
+    if (missingAdobe.length > 0) {
+      await db
+        .insert(priceBook)
+        .values(
+          missingAdobe.map((id) => ({
+            tenantId,
+            skuId: id,
+            monthlyPriceCents: tenant.isDemo
+              ? (DEMO_ADOBE_PRICES[id.slice("adobe:".length)] ?? 0)
+              : 0,
+            source: "default" as const,
+          })),
+        )
+        .onConflictDoNothing();
     }
     const prices = Object.fromEntries(
       (
@@ -315,9 +424,19 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       usageAggregate: joined.usageAggregate,
       copilotAggregate: joined.copilotAggregate,
     });
-    steps.push({ step: "wasteAnalysis", status: "ok", count: newFindings.length });
+    const adobeFindings = analyzeAdobeWaste(
+      adobeRows,
+      joined.users.map((u) => ({
+        upn: u.upn,
+        displayName: u.displayName,
+        accountEnabled: u.accountEnabled,
+      })),
+      prices,
+    );
+    const allFindings = newFindings.concat(adobeFindings);
+    steps.push({ step: "wasteAnalysis", status: "ok", count: allFindings.length });
 
-    await diffFindings(tenantId, newFindings, now);
+    await diffFindings(tenantId, allFindings, now);
 
     // --- Snapshot + tenant capabilities ------------------------------------
     const totalMonthlySpendCents = skus.reduce(
@@ -384,15 +503,19 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       .where(eq(syncRuns.id, runId));
     return { runId, status, steps };
   } catch (err) {
+    const message = errText(err);
     await db
       .update(syncRuns)
       .set({
         status: "failed",
         steps,
-        error: errText(err),
+        error: message,
         finishedAt: new Date(),
       })
       .where(eq(syncRuns.id, runId));
+    void notifyOps(
+      `sync FAILED for tenant ${tenant.name ?? tenant.tid}: ${message}`,
+    );
     return { runId, status: "failed", steps };
   }
 };
@@ -408,10 +531,13 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
   });
   if (!tenant) throw new Error(`Unknown tenant ${tenantId}`);
 
-  const [skuRows, userRows, priceRows] = await Promise.all([
+  const [skuRows, userRows, priceRows, adobeRows] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
     db.query.tenantUsers.findMany({ where: eq(tenantUsers.tenantId, tenantId) }),
     db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
+    db.query.adobeUsers.findMany({
+      where: eq(adobeUsersTable.tenantId, tenantId),
+    }),
   ]);
   if (skuRows.length === 0 && userRows.length === 0) return;
 
@@ -454,7 +580,21 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     copilotAggregate: tenant.copilotAggregate ?? undefined,
   });
 
-  await diffFindings(tenantId, newFindings, now);
+  const adobeFindings = analyzeAdobeWaste(
+    adobeRows.map((r) => ({
+      email: r.email,
+      status: r.status,
+      products: r.products,
+    })),
+    userRows.map((r) => ({
+      upn: r.upn,
+      displayName: r.displayName,
+      accountEnabled: r.accountEnabled,
+    })),
+    prices,
+  );
+
+  await diffFindings(tenantId, newFindings.concat(adobeFindings), now);
 
   const totalMonthlySpendCents = skuRows.reduce(
     (sum, s) => sum + s.consumedUnits * (prices[s.skuId] ?? 0),

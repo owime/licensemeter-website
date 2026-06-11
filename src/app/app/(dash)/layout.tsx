@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { MobileNav } from "~/components/workspace/MobileNav";
 import { NavLinks } from "~/components/workspace/NavLinks";
+import { WorkspaceSwitcher } from "~/components/workspace/WorkspaceSwitcher";
 import { requireAccess } from "~/server/access";
 import { clearSessionCookie } from "~/server/auth";
 
@@ -30,9 +31,16 @@ export default async function WorkspaceLayout({
         </Link>
 
         <div className="border-y border-sidebar-line px-5 py-3">
-          <div className="truncate text-sm font-medium text-paper">
-            {tenantName}
-          </div>
+          {ctx.workspaces.length > 1 ? (
+            <WorkspaceSwitcher
+              workspaces={ctx.workspaces}
+              activeId={ctx.tenant.id}
+            />
+          ) : (
+            <div className="truncate text-sm font-medium text-paper">
+              {tenantName}
+            </div>
+          )}
           <div className="mt-0.5 text-[11px] tracking-wider text-sidebar-soft uppercase">
             {ctx.tenant.isDemo ? "Demo workspace" : "Connected tenant"}
           </div>

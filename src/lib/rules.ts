@@ -34,6 +34,16 @@ export const RULE_META: Record<
     short: "Guest",
     badgeClass: "bg-teal-soft text-teal-ink",
   },
+  adobe_disabled_in_entra: {
+    label: "Adobe seat, user disabled in Entra",
+    short: "Adobe leak",
+    badgeClass: "bg-rust-soft text-rust-deep",
+  },
+  adobe_orphaned: {
+    label: "Adobe seat without Entra account",
+    short: "Adobe orphan",
+    badgeClass: "bg-plum-soft text-plum",
+  },
 };
 
 export const ALL_RULES = Object.keys(RULE_META) as WasteRuleId[];
