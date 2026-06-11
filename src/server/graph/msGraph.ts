@@ -17,6 +17,14 @@ const GRAPH = "https://graph.microsoft.com/v1.0";
 /** One confidential client per customer tenant; MSAL caches tokens internally. */
 const msalApps = new Map<string, ConfidentialClientApplication>();
 
+/**
+ * Right after admin consent, the freshly created service principal can take a
+ * minute to propagate to the token service — first syncs would always fail
+ * without a retry on this class of error.
+ */
+const CONSENT_PROPAGATION_PATTERNS =
+  /could not be established|AADSTS700016|AADSTS7000229|was not found in the directory/i;
+
 const getAppToken = async (tid: string): Promise<string> => {
   if (!env.CONNECTOR_CLIENT_ID || !env.CONNECTOR_CLIENT_SECRET) {
     throw new Error(
@@ -34,13 +42,24 @@ const getAppToken = async (tid: string): Promise<string> => {
     });
     msalApps.set(tid, app);
   }
-  const result = await app.acquireTokenByClientCredential({
-    scopes: ["https://graph.microsoft.com/.default"],
-  });
-  if (!result?.accessToken) {
-    throw new Error(`Failed to acquire app-only token for tenant ${tid}`);
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const result = await app.acquireTokenByClientCredential({
+        scopes: ["https://graph.microsoft.com/.default"],
+      });
+      if (!result?.accessToken) {
+        throw new Error(`Failed to acquire app-only token for tenant ${tid}`);
+      }
+      return result.accessToken;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (attempt < 3 && CONSENT_PROPAGATION_PATTERNS.test(message)) {
+        await sleep(15_000);
+        continue;
+      }
+      throw err;
+    }
   }
-  return result.accessToken;
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

@@ -59,6 +59,32 @@ export type WasteFinding = {
 const key = (rule: WasteRuleId, userId?: string | null, skuId?: string | null) =>
   `${rule}|${userId ?? "-"}|${skuId ?? "-"}`;
 
+/**
+ * Free, viral and capacity-style SKUs whose "unassigned seats" carry no cost:
+ * every real tenant has e.g. WINDOWS_STORE with a million prepaid units.
+ * Observed on the first live tenant sync; without this every customer sees
+ * meaningless shelfware findings on day one.
+ */
+const SHELFWARE_EXEMPT_PART_NUMBERS = new Set([
+  "WINDOWS_STORE",
+  "FLOW_FREE",
+  "POWERAPPS_VIRAL",
+  "POWER_VIRTUAL_AGENTS_VIRAL",
+  "TEAMS_EXPLORATORY",
+  "TEAMS_COMMERCIAL_TRIAL",
+  "POWER_BI_STANDARD",
+  "CCIBOTS_PRIVPREV_VIRAL",
+  "RIGHTSMANAGEMENT_ADHOC",
+  "POWERAPPS_DEV",
+]);
+
+/** Capacity-style allotments (10k+ "seats") are licensing plumbing, not purchases. */
+const SHELFWARE_CAPACITY_THRESHOLD = 5000;
+
+const isShelfwareExempt = (sku: WasteSku): boolean =>
+  SHELFWARE_EXEMPT_PART_NUMBERS.has(sku.skuPartNumber) ||
+  sku.prepaidEnabled >= SHELFWARE_CAPACITY_THRESHOLD;
+
 const daysBetween = (from: Date, to: Date): number =>
   Math.floor((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000));
 
@@ -180,6 +206,7 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
 
   // Rule 4: shelfware — paid seats nobody is assigned to.
   for (const sku of skus) {
+    if (isShelfwareExempt(sku)) continue;
     const unassigned = sku.prepaidEnabled - sku.consumedUnits;
     if (unassigned > 0) {
       findings.push({

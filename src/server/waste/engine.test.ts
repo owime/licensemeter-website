@@ -216,6 +216,32 @@ describe("shelfware", () => {
     expect(findings[0]!.monthlyImpactCents).toBe(10 * 3670);
   });
 
+  it("ignores free, viral and capacity-style SKUs", () => {
+    const findings = run({
+      skus: [
+        {
+          skuId: "win-store",
+          skuPartNumber: "WINDOWS_STORE",
+          prepaidEnabled: 1_000_000,
+          consumedUnits: 0,
+        },
+        {
+          skuId: "flow-free",
+          skuPartNumber: "FLOW_FREE",
+          prepaidEnabled: 10_000,
+          consumedUnits: 1,
+        },
+        {
+          skuId: "capacity-sku",
+          skuPartNumber: "SOME_FUTURE_VIRAL_SKU",
+          prepaidEnabled: 50_000,
+          consumedUnits: 3,
+        },
+      ],
+    });
+    expect(findings).toHaveLength(0);
+  });
+
   it("is silent when every seat is assigned", () => {
     expect(
       run({
