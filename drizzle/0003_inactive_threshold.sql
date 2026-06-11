@@ -1,0 +1,1 @@
+ALTER TABLE "tenants" ADD COLUMN "inactive_days" integer DEFAULT 90 NOT NULL;

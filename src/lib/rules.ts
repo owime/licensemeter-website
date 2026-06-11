@@ -44,6 +44,16 @@ export const RULE_META: Record<
     short: "Adobe orphan",
     badgeClass: "bg-plum-soft text-plum",
   },
+  overlapping_licenses: {
+    label: "Suite + standalone double-pay",
+    short: "Overlap",
+    badgeClass: "bg-gold-soft text-gold",
+  },
+  service_plans_disabled: {
+    label: "Service plans disabled on paid suite",
+    short: "Plans off",
+    badgeClass: "bg-slate-soft text-slate-ink",
+  },
 };
 
 export const ALL_RULES = Object.keys(RULE_META) as WasteRuleId[];

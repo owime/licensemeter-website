@@ -9,6 +9,15 @@ type LicenseDetail = {
   assignedByGroup?: string | null;
 };
 
+type RemediationDetail = {
+  upn?: string;
+  licenses?: LicenseDetail[];
+  aggregate?: boolean;
+  unassigned?: number;
+  skuPartNumber?: string;
+  redundantSkuIds?: string[];
+};
+
 const RULE_HEADERS: Record<string, string> = {
   disabled_account_with_license: "Disabled accounts still holding licenses",
   never_active: "Licensed users who never became active",
@@ -18,6 +27,8 @@ const RULE_HEADERS: Record<string, string> = {
   shelfware: "Unassigned paid seats",
   adobe_disabled_in_entra: "Adobe seats held by Entra-disabled users",
   adobe_orphaned: "Adobe seats without an Entra account",
+  overlapping_licenses: "Suite + standalone double-pay",
+  service_plans_disabled: "Paid suites with disabled service plans",
 };
 
 /**
@@ -44,13 +55,7 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
   for (const [rule, items] of byRule) {
     lines.push(`# ===== ${RULE_HEADERS[rule] ?? rule} =====`);
     for (const f of items) {
-      const detail = f.detail as {
-        upn?: string;
-        licenses?: LicenseDetail[];
-        aggregate?: boolean;
-        unassigned?: number;
-        skuPartNumber?: string;
-      };
+      const detail = f.detail as RemediationDetail;
 
       if (rule === "shelfware") {
         lines.push(
@@ -69,6 +74,23 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
           `#   or via your Adobe directory sync. PowerShell cannot manage Adobe seats.`,
           "",
         );
+        continue;
+      }
+
+      if (f.rule === "overlapping_licenses" && detail.upn) {
+        const upn = detail.upn.replace(/[\r\n]+/g, " ").replaceAll("'", "''");
+        const redundant = (detail.redundantSkuIds ?? []).filter((id) =>
+          /^[0-9a-f-]+$/i.test(id),
+        );
+        lines.push(`# ${f.title}`);
+        if (redundant.length > 0) {
+          lines.push(
+            `Set-MgUserLicense -UserId '${upn}' -RemoveLicenses @(${redundant
+              .map((id) => `'${id}'`)
+              .join(", ")}) -AddLicenses @()`,
+          );
+        }
+        lines.push("");
         continue;
       }
 

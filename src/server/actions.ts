@@ -1,8 +1,8 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -24,6 +24,8 @@ import {
 import { UmapiClient } from "~/server/adobe/client";
 import { encryptSecret } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
+import { notifyOps } from "~/server/ops";
+import { clientIp, rateLimit } from "~/server/rateLimit";
 import { siteUrl } from "~/env";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import type { MembershipRole } from "~/server/types";
@@ -50,6 +52,30 @@ export const setFindingStatus = async (
     .returning({ id: findings.id });
   if (updated.length === 0) return fail("Finding not found");
   await audit(ctx, "finding_status_changed", { findingId, status });
+  revalidateApp();
+  return ok();
+};
+
+/** Bulk acknowledge/reopen from the findings table checkboxes. */
+export const bulkSetFindingStatus = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+
+  const status = formData.get("status") === "open" ? "open" : "acknowledged";
+  const ids = formData
+    .getAll("id")
+    .filter((v): v is string => typeof v === "string")
+    .slice(0, 500);
+  if (ids.length === 0) return fail("Nothing selected");
+
+  const updated = await db
+    .update(findings)
+    .set({ status })
+    .where(and(inArray(findings.id, ids), eq(findings.tenantId, ctx.tenant.id)))
+    .returning({ id: findings.id });
+  await audit(ctx, "findings_bulk_updated", { count: updated.length, status });
   revalidateApp();
   return ok();
 };
@@ -132,6 +158,51 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
   return ok();
 };
 
+/** Resend a pending invite: resets the 14-day expiry and re-sends the email. */
+export const resendInvite = async (
+  membershipId: string,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+
+  const target = await db.query.memberships.findFirst({
+    where: and(
+      eq(memberships.id, membershipId),
+      eq(memberships.tenantId, ctx.tenant.id),
+    ),
+  });
+  if (!target) return fail("Invite not found");
+  if (target.oid) return fail("This member has already signed in");
+  if (!rateLimit(`resend:${ctx.tenant.id}`, 10, 60 * 60 * 1000)) {
+    return fail("Too many resends this hour");
+  }
+
+  await db
+    .update(memberships)
+    .set({ createdAt: new Date() })
+    .where(eq(memberships.id, target.id));
+  await audit(ctx, "invite_resent", { email: target.email });
+
+  if (!ctx.tenant.isDemo && emailEnabled()) {
+    try {
+      await sendEmail({
+        to: [target.email],
+        subject: `${ctx.user.name || ctx.membership.email} invited you to LicenseMeter (${ctx.tenant.name ?? "workspace"})`,
+        html: inviteHtml({
+          inviterName: ctx.user.name || ctx.membership.email,
+          tenantName: ctx.tenant.name ?? ctx.tenant.tid,
+          role: target.role,
+          appUrl: siteUrl(),
+        }),
+      });
+    } catch (err) {
+      console.error("[invite] resend email failed", err);
+    }
+  }
+  revalidateApp();
+  return ok();
+};
+
 export const removeMember = async (
   membershipId: string,
 ): Promise<ActionResult> => {
@@ -152,6 +223,27 @@ export const removeMember = async (
 
   await db.delete(memberships).where(eq(memberships.id, target.id));
   await audit(ctx, "member_removed", { email: target.email, role: target.role });
+  revalidateApp();
+  return ok();
+};
+
+/** Per-workspace inactivity threshold (days) for the inactive-users rule. */
+export const setInactiveDays = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  const raw = formData.get("days");
+  const days = typeof raw === "string" ? Number.parseInt(raw, 10) : NaN;
+  if (!Number.isInteger(days) || days < 7 || days > 365) {
+    return fail("Threshold must be between 7 and 365 days");
+  }
+  await db
+    .update(tenants)
+    .set({ inactiveDays: days })
+    .where(eq(tenants.id, ctx.tenant.id));
+  await audit(ctx, "threshold_changed", { inactiveDays: days });
+  await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return ok();
 };
@@ -271,15 +363,23 @@ export const captureEmail = async (
   formData: FormData,
 ): Promise<ActionResult> => {
   if (formData.get("website")) return ok(); // honeypot: pretend success to bots
+  const ip = clientIp(await headers());
+  if (!rateLimit(`capture:${ip}`, 5, 60 * 60 * 1000)) {
+    return fail("Too many attempts — please try again later");
+  }
   const raw = formData.get("email");
   const email = typeof raw === "string" ? raw.trim().toLowerCase() : "";
   if (email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return fail("Please enter a valid email address");
   }
-  await db
+  const inserted = await db
     .insert(emailSignups)
     .values({ email, source: "landing" })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning({ id: emailSignups.id });
+  if (inserted.length > 0) {
+    void notifyOps(`new email signup from the landing page: ${email}`);
+  }
   return ok();
 };
 

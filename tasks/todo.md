@@ -178,3 +178,31 @@ code-review fixes.
   attribution on the ledger card (numbers would not match the live demo),
   extra hero credibility line. Impressum/Datenschutz legal [placeholders]
   remain - they need real legal data only the founder can supply.
+
+---
+
+# Brand mark + favicon set (2026-06-11, same session)
+
+Missing entirely: no favicon.ico (metadata referenced a non-existent file,
+tabs show default globe), no logo mark anywhere.
+
+## Plan
+
+- [ ] Design mark in the locked ledger language (paper/ink/rust, geometric,
+      legible at 16px); compare 2 candidates at real sizes before choosing
+- [ ] BrandMark React component; integrate marketing header + footer
+- [ ] src/app/icon.svg (SVG favicon, paper tile), src/app/favicon.ico
+      (16+32 PNG-in-ICO via sharp + scripts/make-icons.mjs),
+      src/app/apple-icon.png (180x180)
+- [ ] Remove manual metadata.icons from root layout (file conventions win)
+- [ ] Add mark to opengraph-image.tsx wordmark
+- [ ] Do NOT touch the dash layout (concurrent session is editing it)
+
+## Acceptance criteria
+
+1. /icon.svg, /favicon.ico, /apple-icon.png all return 200 with correct
+   content types; head contains the link tags
+2. Mark is recognizable at 16px on light and dark tab strips
+3. Header/footer render the mark without layout shift; axe-clean (aria-hidden
+   on decorative svg)
+4. npm run check passes; code-reviewer pass on the diff

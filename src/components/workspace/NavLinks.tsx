@@ -10,11 +10,22 @@ const ITEMS = [
   { href: "/app/settings", label: "Settings" },
 ];
 
-export const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => {
+const PORTFOLIO_ITEM = { href: "/app/portfolio", label: "Portfolio" };
+
+export const NavLinks = ({
+  onNavigate,
+  showPortfolio = false,
+}: {
+  onNavigate?: () => void;
+  showPortfolio?: boolean;
+}) => {
   const pathname = usePathname();
+  const items = showPortfolio
+    ? [...ITEMS.slice(0, 1), PORTFOLIO_ITEM, ...ITEMS.slice(1)]
+    : ITEMS;
   return (
     <nav aria-label="Workspace" className="flex flex-col gap-0.5">
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const active =
           item.href === "/app"
             ? pathname === "/app"

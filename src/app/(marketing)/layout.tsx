@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandMark } from "~/components/BrandMark";
 import { ButtonLink } from "~/components/ui";
 import { auth } from "~/server/auth";
 
@@ -46,8 +47,14 @@ export default async function MarketingLayout({
   return (
     <div className="min-h-screen bg-paper">
       <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-6">
-        <Link href="/" className="font-display text-xl tracking-tight">
-          License<span className="text-rust-text">Meter</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 font-display text-xl tracking-tight"
+        >
+          <BrandMark size={22} />
+          <span>
+            License<span className="text-rust-text">Meter</span>
+          </span>
         </Link>
         <nav aria-label="Main" className="flex items-center gap-5">
           {NAV.map((item) => (
@@ -83,8 +90,11 @@ export default async function MarketingLayout({
       <footer className="border-t border-line bg-card">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="font-display text-lg tracking-tight">
-              License<span className="text-rust-text">Meter</span>
+            <div className="flex items-center gap-2 font-display text-lg tracking-tight">
+              <BrandMark size={18} />
+              <span>
+                License<span className="text-rust-text">Meter</span>
+              </span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
               License waste analytics for Microsoft 365, with an Adobe

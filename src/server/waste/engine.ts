@@ -8,6 +8,69 @@ export const COPILOT_INACTIVE_DAYS = 60;
 
 export const COPILOT_SKU_ID = "639dec6b-bb19-468b-871c-c5c441c4b0cb";
 
+/**
+ * Suites whose included services make a separately assigned standalone SKU
+ * redundant (classic double-pay). Curated from Microsoft's licensing
+ * reference; impact is priced as the redundant standalone.
+ */
+const OVERLAP_MAP: Record<string, string[]> = {
+  // Microsoft 365 E3
+  "05e9a617-0261-4cee-bb44-138d3ef5d965": [
+    "4b9405b0-7788-4568-add1-99614e613b69", // Exchange Online P1
+    "19ec0d23-8335-4cbd-94ac-6050e30712fa", // Exchange Online P2
+    "078d2b04-f1bd-4111-bbd4-b4b1b354cef4", // Entra ID P1
+    "efccb6f7-5641-4e0e-bd10-b4976e1bf68e", // EMS E3
+    "061f9ace-7d42-4136-88ac-31dc755f143f", // Intune Plan 1
+    "18181a46-0d4e-45cd-891e-60aabd171b4e", // Office 365 E1
+    "6fd2c87f-b296-42f0-b197-1e91e994b900", // Office 365 E3
+  ],
+  // Microsoft 365 E5
+  "06ebc4ee-1bb5-47dd-8120-11324bc54e06": [
+    "4b9405b0-7788-4568-add1-99614e613b69",
+    "19ec0d23-8335-4cbd-94ac-6050e30712fa",
+    "078d2b04-f1bd-4111-bbd4-b4b1b354cef4",
+    "84a661c4-e949-4bd2-a560-ed7766fcaf2b", // Entra ID P2
+    "efccb6f7-5641-4e0e-bd10-b4976e1bf68e",
+    "b05e124f-c7cc-45a0-a6aa-8cf78c946968", // EMS E5
+    "061f9ace-7d42-4136-88ac-31dc755f143f",
+    "e43b5b99-8dfb-405f-9987-dc307f34bcbd", // Teams Phone
+    "0c266dff-15dd-4b49-8397-2bb16070ed52", // Audio Conferencing
+    "f8a1db68-be16-40ed-86d5-cb42ce701560", // Power BI Pro
+    "4ef96642-f096-40de-a3e9-d83fb2f90211", // Defender for O365 P1
+    "3dd6cf57-d688-4eed-ba52-9e40b5468c3e", // Defender for O365 P2
+    "18181a46-0d4e-45cd-891e-60aabd171b4e",
+    "6fd2c87f-b296-42f0-b197-1e91e994b900",
+    "c7df2760-2c81-4ef7-b578-5b5392b571df", // Office 365 E5
+    "05e9a617-0261-4cee-bb44-138d3ef5d965", // Microsoft 365 E3
+  ],
+  // Office 365 E3
+  "6fd2c87f-b296-42f0-b197-1e91e994b900": [
+    "4b9405b0-7788-4568-add1-99614e613b69",
+    "19ec0d23-8335-4cbd-94ac-6050e30712fa",
+    "18181a46-0d4e-45cd-891e-60aabd171b4e",
+  ],
+  // Office 365 E5
+  "c7df2760-2c81-4ef7-b578-5b5392b571df": [
+    "4b9405b0-7788-4568-add1-99614e613b69",
+    "19ec0d23-8335-4cbd-94ac-6050e30712fa",
+    "e43b5b99-8dfb-405f-9987-dc307f34bcbd",
+    "0c266dff-15dd-4b49-8397-2bb16070ed52",
+    "f8a1db68-be16-40ed-86d5-cb42ce701560",
+    "4ef96642-f096-40de-a3e9-d83fb2f90211",
+    "3dd6cf57-d688-4eed-ba52-9e40b5468c3e",
+    "18181a46-0d4e-45cd-891e-60aabd171b4e",
+  ],
+  // Microsoft 365 Business Premium
+  "cbdc14ab-d96c-4c30-b9f4-6ada7cdc1d46": [
+    "4b9405b0-7788-4568-add1-99614e613b69",
+    "078d2b04-f1bd-4111-bbd4-b4b1b354cef4",
+    "061f9ace-7d42-4136-88ac-31dc755f143f",
+    "4ef96642-f096-40de-a3e9-d83fb2f90211",
+    "3b555118-da6a-4418-894f-7df1e2096870", // Business Basic
+    "f245ecc8-75af-4f8e-b61f-27d8114de5f3", // Business Standard
+  ],
+};
+
 export type WasteUser = {
   graphId: string;
   upn: string;
@@ -44,6 +107,8 @@ export type WasteInput = {
   copilotSignal: "per-user" | "aggregate" | "none";
   usageAggregate?: AggregateUsage;
   copilotAggregate?: AggregateUsage;
+  /** Per-workspace inactivity threshold in days; defaults to INACTIVE_DAYS. */
+  inactiveDays?: number;
 };
 
 export type WasteFinding = {
@@ -109,7 +174,10 @@ const userDetail = (u: WasteUser, prices: Record<string, number>) => ({
 /** Pure rule evaluation over a tenant snapshot. Persistence and diffing live in the sync layer. */
 export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
   const { users, skus, prices, now } = input;
+  const inactiveThreshold = input.inactiveDays ?? INACTIVE_DAYS;
   const findings: WasteFinding[] = [];
+  /** SKU -> enabled users carrying it with disabled service plans. */
+  const planDisables = new Map<string, number>();
 
   for (const u of users) {
     if (u.licenses.length === 0) continue;
@@ -160,10 +228,10 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
         continue;
       }
 
-      // Rule 3: no activity for INACTIVE_DAYS.
+      // Rule 3: no activity for the workspace's inactivity threshold.
       if (u.lastActivity !== null) {
         const inactiveDays = daysBetween(u.lastActivity, now);
-        if (inactiveDays > INACTIVE_DAYS) {
+        if (inactiveDays > inactiveThreshold) {
           findings.push({
             dedupeKey: key("inactive_90d", u.graphId),
             rule: "inactive_90d",
@@ -175,6 +243,49 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
           });
           continue;
         }
+      }
+    }
+
+    // Rule 7: suite + standalone double-pay (active users only — inactivity
+    // rules above already price the full license set for flagged users).
+    const heldSkus = new Set(u.licenses.map((l) => l.skuId));
+    const redundantIds = new Set<string>();
+    const pairs: { suite: string; redundant: string }[] = [];
+    for (const suiteId of heldSkus) {
+      for (const dup of OVERLAP_MAP[suiteId] ?? []) {
+        if (heldSkus.has(dup) && !redundantIds.has(dup)) {
+          redundantIds.add(dup);
+          pairs.push({
+            suite: skuDisplayName(suiteId),
+            redundant: skuDisplayName(dup),
+          });
+        }
+      }
+    }
+    if (redundantIds.size > 0) {
+      findings.push({
+        dedupeKey: key("overlapping_licenses", u.graphId),
+        rule: "overlapping_licenses",
+        graphUserId: u.graphId,
+        skuId: null,
+        title: `Overlapping licenses: ${u.displayName ?? u.upn}`,
+        detail: {
+          upn: u.upn,
+          displayName: u.displayName,
+          pairs,
+          redundantSkuIds: [...redundantIds],
+        },
+        monthlyImpactCents: [...redundantIds].reduce(
+          (sum, id) => sum + (prices[id] ?? 0),
+          0,
+        ),
+      });
+    }
+
+    // Tally for rule 8 (service plans disabled on paid suites).
+    for (const l of u.licenses) {
+      if (l.disabledPlans.length > 0 && OVERLAP_MAP[l.skuId]) {
+        planDisables.set(l.skuId, (planDisables.get(l.skuId) ?? 0) + 1);
       }
     }
 
@@ -225,6 +336,20 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
         monthlyImpactCents: unassigned * (prices[sku.skuId] ?? 0),
       });
     }
+  }
+
+  // Rule 8: paid suites where users have service plans switched off —
+  // informational (plan fractions cannot be priced), hints at downgrades.
+  for (const [skuId, count] of planDisables) {
+    findings.push({
+      dedupeKey: key("service_plans_disabled", "aggregate", skuId),
+      rule: "service_plans_disabled",
+      graphUserId: null,
+      skuId,
+      title: `${count} users have service plans disabled on ${skuDisplayName(skuId)}`,
+      detail: { aggregate: true, skuId, usersWithDisabledPlans: count },
+      monthlyImpactCents: 0,
+    });
   }
 
   // Aggregate fallbacks when identities are concealed / no per-user signal exists.

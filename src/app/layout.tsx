@@ -33,7 +33,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: TITLE,
   description: DESCRIPTION,
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
   openGraph: {
     type: "website",
     siteName: "LicenseMeter",

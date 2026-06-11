@@ -7,7 +7,7 @@ import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
 import { ALL_RULES, isWasteRule, RULE_META } from "~/lib/rules";
 import { hasRole, requireAccess } from "~/server/access";
-import { setFindingStatus } from "~/server/actions";
+import { bulkSetFindingStatus, setFindingStatus } from "~/server/actions";
 import { db } from "~/server/db";
 import { findings } from "~/server/db/schema";
 import type { FindingStatus } from "~/server/types";
@@ -22,21 +22,34 @@ const StatusPill = ({ status }: { status: FindingStatus }) => (
   </Pill>
 );
 
-const AckButton = ({ finding }: { finding: FindingRow }) => (
-  <form
-    action={async () => {
-      "use server";
-      await setFindingStatus(
-        finding.id,
-        finding.status === "open" ? "acknowledged" : "open",
-      );
-    }}
-  >
-    <button className={buttonClass("micro")}>
+/**
+ * Desktop rows live inside the bulk form, so the per-row action uses
+ * formAction (nested forms are invalid HTML); mobile cards get their own form.
+ */
+const AckButton = ({
+  finding,
+  standalone = false,
+}: {
+  finding: FindingRow;
+  standalone?: boolean;
+}) => {
+  const toggle = async () => {
+    "use server";
+    await setFindingStatus(
+      finding.id,
+      finding.status === "open" ? "acknowledged" : "open",
+    );
+  };
+  const button = (
+    <button
+      {...(standalone ? {} : { formAction: toggle })}
+      className={buttonClass("micro")}
+    >
       {finding.status === "open" ? "Acknowledge" : "Reopen"}
     </button>
-  </form>
-);
+  );
+  return standalone ? <form action={toggle}>{button}</form> : button;
+};
 
 export default async function FindingsPage({
   searchParams,
@@ -150,11 +163,29 @@ export default async function FindingsPage({
         </Link>
       </nav>
 
-      {/* Desktop table */}
-      <div className="rise rise-3 mt-5 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
+      {/* Desktop table (one form: row checkboxes + bulk action) */}
+      <form
+        action={async (formData) => {
+          "use server";
+          await bulkSetFindingStatus(formData);
+        }}
+        className="rise rise-3 mt-5 mb-8 hidden md:block"
+      >
+        {isAdmin && !showResolved && rows.length > 0 && (
+          <div className="mb-2 flex items-center justify-end gap-2">
+            <input type="hidden" name="status" value="acknowledged" />
+            <button className={buttonClass("micro")}>
+              Acknowledge selected
+            </button>
+          </div>
+        )}
+        <div className="overflow-x-auto border border-line bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
+              {isAdmin && !showResolved && (
+                <th className="w-8 px-3 py-3" aria-label="Select" />
+              )}
               <th className="px-4 py-3 font-medium">Rule</th>
               <th className="px-4 py-3 font-medium">Finding</th>
               <th className="px-4 py-3 text-right font-medium">Impact / mo</th>
@@ -173,11 +204,32 @@ export default async function FindingsPage({
                   key={f.id}
                   className="border-b border-line align-top last:border-b-0 hover:bg-paper"
                 >
+                  {isAdmin && !showResolved && (
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        name="id"
+                        value={f.id}
+                        aria-label={`Select ${f.title}`}
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <RuleBadge rule={f.rule} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium">{f.title}</div>
+                    <div className="font-medium">
+                      {f.graphUserId ? (
+                        <Link
+                          href={`/app/users/${f.graphUserId}`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {f.title}
+                        </Link>
+                      ) : (
+                        f.title
+                      )}
+                    </div>
                     {detail.upn && (
                       <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
                         {detail.upn}
@@ -206,7 +258,7 @@ export default async function FindingsPage({
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={isAdmin && !showResolved ? 6 : 5}
+                  colSpan={isAdmin && !showResolved ? 7 : 5}
                   className="px-4 py-10 text-center text-ink-soft"
                 >
                   {emptyMessage}
@@ -215,7 +267,8 @@ export default async function FindingsPage({
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      </form>
 
       {/* Mobile stacked cards */}
       <ul className="rise rise-3 mt-5 mb-8 flex flex-col gap-3 md:hidden">
@@ -245,7 +298,7 @@ export default async function FindingsPage({
               </div>
               {isAdmin && !showResolved && (
                 <div className="mt-3 border-t border-line pt-3">
-                  <AckButton finding={f} />
+                  <AckButton finding={f} standalone />
                 </div>
               )}
             </li>

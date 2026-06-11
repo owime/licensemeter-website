@@ -21,6 +21,7 @@ export default async function WorkspaceLayout({
         isDemo={ctx.tenant.isDemo}
         userName={ctx.user.name}
         role={ctx.membership.role}
+        showPortfolio={ctx.workspaces.length > 1}
       />
 
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar lg:flex">
@@ -47,7 +48,7 @@ export default async function WorkspaceLayout({
         </div>
 
         <div className="mt-4 flex-1">
-          <NavLinks />
+          <NavLinks showPortfolio={ctx.workspaces.length > 1} />
         </div>
 
         <div className="border-t border-sidebar-line px-5 py-4">

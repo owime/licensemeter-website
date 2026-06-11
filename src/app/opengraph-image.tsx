@@ -5,6 +5,11 @@ export const contentType = "image/png";
 export const alt =
   "LicenseMeter — find the Microsoft 365 licenses you pay for but nobody uses";
 
+/* Brand mark (see src/components/BrandMark.tsx) as a data URI — satori
+ * renders raster/SVG images more reliably than inline SVG elements. */
+const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g fill="#1c1a16"><rect x="6" y="6.5" width="4.5" height="19"/><rect x="13.75" y="6.5" width="4.5" height="19"/><rect x="21.5" y="6.5" width="4.5" height="19"/></g><line x1="3.5" y1="22.5" x2="28.5" y2="9.5" stroke="#bc3e12" stroke-width="4.5"/></svg>`;
+const MARK_SRC = `data:image/svg+xml,${encodeURIComponent(MARK_SVG)}`;
+
 export default function OpenGraphImage() {
   return new ImageResponse(
     (
@@ -20,9 +25,21 @@ export default function OpenGraphImage() {
           fontFamily: "Georgia, serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 44, color: "#1c1a16" }}>
-          License
-          <span style={{ color: "#a8330d" }}>Meter</span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 18,
+            fontSize: 44,
+            color: "#1c1a16",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={MARK_SRC} width={46} height={46} alt="" />
+          <div style={{ display: "flex" }}>
+            License
+            <span style={{ color: "#a8330d" }}>Meter</span>
+          </div>
         </div>
         <div
           style={{

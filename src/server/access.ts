@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -11,6 +11,12 @@ import type { MembershipRole } from "~/server/types";
 
 export const WORKSPACE_COOKIE = "lm_ws";
 const WORKSPACE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
+
+/** Unclaimed invites stop matching after this many days; resending resets the clock. */
+export const INVITE_TTL_DAYS = 14;
+
+export const inviteExpiry = (createdAt: Date): Date =>
+  new Date(createdAt.getTime() + INVITE_TTL_DAYS * 86_400_000);
 
 export type WorkspaceSummary = {
   id: string;
@@ -62,6 +68,7 @@ const resolveAccess = async (
   const identifiers = [upn, session.user.email ?? ""]
     .filter(Boolean)
     .map((s) => s.toLowerCase());
+  const inviteCutoff = new Date(Date.now() - INVITE_TTL_DAYS * 86_400_000);
 
   const rows = await db
     .select({ membership: memberships, tenant: tenants })
@@ -73,12 +80,14 @@ const resolveAccess = async (
         upnLower
           ? and(
               isNull(memberships.oid),
+              gt(memberships.createdAt, inviteCutoff),
               eq(sql`lower(${memberships.email})`, upnLower),
             )
           : sql`false`,
         identifiers.length > 0
           ? and(
               isNull(memberships.oid),
+              gt(memberships.createdAt, inviteCutoff),
               inArray(sql`lower(${memberships.email})`, identifiers),
               eq(tenants.tid, tid),
             )

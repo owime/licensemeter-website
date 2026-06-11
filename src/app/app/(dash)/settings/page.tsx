@@ -4,8 +4,13 @@ import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
 import { Button, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
-import { hasRole, requireAccess } from "~/server/access";
-import { addMember, removeMember } from "~/server/actions";
+import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
+import {
+  addMember,
+  removeMember,
+  resendInvite,
+  setInactiveDays,
+} from "~/server/actions";
 import {
   AdobeConnectForm,
   AdobeDisconnectButton,
@@ -137,6 +142,38 @@ export default async function SettingsPage() {
                 )}
               </dd>
             </div>
+            <div>
+              <dt className="text-ink-faint">Inactivity threshold</dt>
+              <dd className="mt-0.5">
+                {isAdmin ? (
+                  <form
+                    action={async (formData) => {
+                      "use server";
+                      await setInactiveDays(formData);
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <select
+                      name="days"
+                      defaultValue={String(ctx.tenant.inactiveDays)}
+                      aria-label="Inactivity threshold in days"
+                      className="border border-line bg-card px-2 py-1.5 text-sm focus:border-ink"
+                    >
+                      {[30, 60, 90, 120, 180].map((d) => (
+                        <option key={d} value={d}>
+                          {d} days
+                        </option>
+                      ))}
+                    </select>
+                    <Button variant="micro" className="py-1.5">
+                      Save
+                    </Button>
+                  </form>
+                ) : (
+                  `${ctx.tenant.inactiveDays} days`
+                )}
+              </dd>
+            </div>
           </dl>
         </Card>
 
@@ -226,11 +263,26 @@ export default async function SettingsPage() {
                   </div>
                   <div className="truncate text-xs text-ink-faint">
                     {m.email}
-                    {!m.oid && " · invited, not yet signed in"}
+                    {!m.oid &&
+                      (inviteExpiry(m.createdAt) < new Date()
+                        ? " · invite expired"
+                        : ` · invited, expires ${fmtDate(inviteExpiry(m.createdAt))}`)}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <Pill tone="slate">{m.role}</Pill>
+                  {isAdmin && !m.oid && (
+                    <form
+                      action={async () => {
+                        "use server";
+                        await resendInvite(m.id);
+                      }}
+                    >
+                      <button className="text-xs text-ink-faint underline-offset-4 hover:text-ink hover:underline">
+                        Resend
+                      </button>
+                    </form>
+                  )}
                   {isAdmin && m.id !== ctx.membership.id && (
                     <form
                       action={async () => {

@@ -423,6 +423,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       copilotSignal: joined.copilotSignal,
       usageAggregate: joined.usageAggregate,
       copilotAggregate: joined.copilotAggregate,
+      inactiveDays: tenant.inactiveDays,
     });
     const adobeFindings = analyzeAdobeWaste(
       adobeRows,
@@ -578,6 +579,7 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     copilotSignal: tenant.copilotSignal ?? "none",
     usageAggregate: tenant.usageAggregate ?? undefined,
     copilotAggregate: tenant.copilotAggregate ?? undefined,
+    inactiveDays: tenant.inactiveDays,
   });
 
   const adobeFindings = analyzeAdobeWaste(

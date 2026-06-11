@@ -46,7 +46,9 @@ export type WasteRuleId =
   | "copilot_unused"
   | "licensed_guest"
   | "adobe_disabled_in_entra"
-  | "adobe_orphaned";
+  | "adobe_orphaned"
+  | "overlapping_licenses"
+  | "service_plans_disabled";
 
 /** One Adobe Admin Console user as returned by the User Management API. */
 export type AdobeUser = {
@@ -68,7 +70,11 @@ export type AuditAction =
   | "currency_changed"
   | "adobe_connected"
   | "adobe_disconnected"
-  | "workspace_switched";
+  | "workspace_switched"
+  | "invite_resent"
+  | "export_report"
+  | "threshold_changed"
+  | "findings_bulk_updated";
 
 /** Aggregate counts captured when user identities are concealed in usage reports. */
 export type AggregateUsage = {

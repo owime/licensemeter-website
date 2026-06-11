@@ -1,0 +1,61 @@
+/**
+ * Generates src/app/favicon.ico (16+32 PNG-in-ICO) and src/app/apple-icon.png
+ * (180x180) from src/app/icon.svg. Run after changing the brand mark:
+ *
+ *   node scripts/make-icons.mjs
+ */
+import { readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import sharp from "sharp";
+
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const svg = await readFile(path.join(root, "src/app/icon.svg"));
+
+/* ICO container with PNG-encoded entries (supported by all current browsers). */
+const icoFromPngs = (pngs) => {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // type: icon
+  header.writeUInt16LE(pngs.length, 4);
+
+  const entries = [];
+  let offset = 6 + 16 * pngs.length;
+  for (const { size, data } of pngs) {
+    const e = Buffer.alloc(16);
+    e.writeUInt8(size === 256 ? 0 : size, 0); // width
+    e.writeUInt8(size === 256 ? 0 : size, 1); // height
+    e.writeUInt8(0, 2); // palette colors
+    e.writeUInt8(0, 3); // reserved
+    e.writeUInt16LE(1, 4); // color planes
+    e.writeUInt16LE(32, 6); // bits per pixel
+    e.writeUInt32LE(data.length, 8);
+    e.writeUInt32LE(offset, 12);
+    entries.push(e);
+    offset += data.length;
+  }
+  return Buffer.concat([header, ...entries, ...pngs.map((p) => p.data)]);
+};
+
+const pngAt = (size) => sharp(svg).resize(size, size).png().toBuffer();
+
+const [png16, png32] = await Promise.all([pngAt(16), pngAt(32)]);
+await writeFile(
+  path.join(root, "src/app/favicon.ico"),
+  icoFromPngs([
+    { size: 16, data: png16 },
+    { size: 32, data: png32 },
+  ]),
+);
+
+/* Apple touch icon: opaque paper tile, mark at ~78% so iOS corner rounding
+ * does not clip the strike. */
+const appleMark = await sharp(svg).resize(140, 140).png().toBuffer();
+await sharp({
+  create: { width: 180, height: 180, channels: 4, background: "#faf8f3" },
+})
+  .composite([{ input: appleMark, left: 20, top: 20 }])
+  .png()
+  .toFile(path.join(root, "src/app/apple-icon.png"));
+
+console.log("wrote src/app/favicon.ico and src/app/apple-icon.png");

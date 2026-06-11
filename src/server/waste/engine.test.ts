@@ -199,6 +199,82 @@ describe("copilot_unused", () => {
   });
 });
 
+describe("overlapping_licenses", () => {
+  const EXO_P1 = "4b9405b0-7788-4568-add1-99614e613b69";
+  const E5 = "06ebc4ee-1bb5-47dd-8120-11324bc54e06";
+  const PBI = "f8a1db68-be16-40ed-86d5-cb42ce701560";
+
+  it("prices the redundant standalone next to a suite", () => {
+    const findings = run({
+      prices: { ...PRICES, [EXO_P1]: 370 },
+      users: [user({ licenses: [lic(E3), lic(EXO_P1)] })],
+    });
+    expect(findings.map((f) => f.rule)).toEqual(["overlapping_licenses"]);
+    expect(findings[0]!.monthlyImpactCents).toBe(370);
+  });
+
+  it("collects multiple redundant SKUs under one finding", () => {
+    const findings = run({
+      prices: { [E5]: 5750, [EXO_P1]: 370, [PBI]: 1310 },
+      users: [user({ licenses: [lic(E5), lic(EXO_P1), lic(PBI)] })],
+    });
+    const overlap = findings.find((f) => f.rule === "overlapping_licenses")!;
+    expect(overlap.monthlyImpactCents).toBe(370 + 1310);
+  });
+
+  it("does not fire without an overlap", () => {
+    const findings = run({ users: [user({ licenses: [lic(E3)] })] });
+    expect(findings.filter((f) => f.rule === "overlapping_licenses")).toHaveLength(0);
+  });
+
+  it("skips users already flagged by inactivity rules", () => {
+    const EXO = "4b9405b0-7788-4568-add1-99614e613b69";
+    const findings = run({
+      users: [
+        user({ licenses: [lic(E3), lic(EXO)], lastActivity: daysAgo(200) }),
+      ],
+    });
+    expect(findings.map((f) => f.rule)).toEqual(["inactive_90d"]);
+  });
+});
+
+describe("service_plans_disabled", () => {
+  it("aggregates suites with disabled plans, impact zero", () => {
+    const findings = run({
+      users: [
+        user({
+          licenses: [
+            { skuId: E3, assignedByGroup: null, disabledPlans: ["a", "b"], state: "Active" },
+          ],
+        }),
+        user({
+          graphId: "u-2",
+          licenses: [
+            { skuId: E3, assignedByGroup: null, disabledPlans: ["a"], state: "Active" },
+          ],
+        }),
+      ],
+    });
+    const agg = findings.filter((f) => f.rule === "service_plans_disabled");
+    expect(agg).toHaveLength(1);
+    expect(agg[0]!.detail.usersWithDisabledPlans).toBe(2);
+    expect(agg[0]!.monthlyImpactCents).toBe(0);
+  });
+});
+
+describe("configurable inactivity threshold", () => {
+  it("uses the workspace threshold instead of the default", () => {
+    const at40 = run({
+      inactiveDays: 30,
+      users: [user({ lastActivity: daysAgo(40) })],
+    });
+    expect(at40.map((f) => f.rule)).toEqual(["inactive_90d"]);
+
+    const default40 = run({ users: [user({ lastActivity: daysAgo(40) })] });
+    expect(default40).toHaveLength(0);
+  });
+});
+
 describe("shelfware", () => {
   it("prices unassigned seats per SKU", () => {
     const findings = run({

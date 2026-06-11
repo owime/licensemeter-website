@@ -91,7 +91,15 @@ export default async function OverviewPage() {
             )}
           </p>
         </div>
-        {hasRole(ctx, "admin") && <SyncNowButton />}
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/api/export/report"
+            className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
+          >
+            PDF report
+          </a>
+          {hasRole(ctx, "admin") && <SyncNowButton />}
+        </div>
       </header>
 
       <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">

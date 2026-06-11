@@ -11,11 +11,13 @@ export const MobileNav = ({
   isDemo,
   userName,
   role,
+  showPortfolio = false,
 }: {
   tenantName: string;
   isDemo: boolean;
   userName: string;
   role: string;
+  showPortfolio?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -61,7 +63,10 @@ export const MobileNav = ({
               {isDemo ? "Demo workspace" : "Connected tenant"}
             </div>
           </div>
-          <NavLinks onNavigate={() => setOpen(false)} />
+          <NavLinks
+            onNavigate={() => setOpen(false)}
+            showPortfolio={showPortfolio}
+          />
           <div className="mt-3 flex items-center justify-between border-t border-sidebar-line px-4 pt-3">
             <div className="min-w-0">
               <div className="truncate text-sm text-paper">{userName}</div>
