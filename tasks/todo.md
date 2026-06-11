@@ -206,3 +206,25 @@ tabs show default globe), no logo mark anywhere.
 3. Header/footer render the mark without layout shift; axe-clean (aria-hidden
    on decorative svg)
 4. npm run check passes; code-reviewer pass on the diff
+
+## Review (brand mark + favicon, end of pass)
+
+All items done; shipped inside d24e4c5 (swept into the concurrent session's
+feature-sprint commit) and pushed to production.
+
+- Mark: "struck tally" - three ink bars, rust diagonal strike; chosen over a
+  gauge after rendering both at 16/24/32/64 px (tally wins on distinctiveness,
+  refined 3-bar variant wins legibility at 16px; candidates in /tmp/lm-mark).
+- Assets: src/app/icon.svg (paper tile), favicon.ico (16+32 PNG-in-ICO via
+  scripts/make-icons.mjs), apple-icon.png (180, padded for iOS rounding);
+  manual metadata.icons removed in favor of file conventions.
+- Stock T3 scaffold public/favicon.ico deleted - it conflicted with the app-
+  dir favicon (Next 500 "conflicting public file and page file").
+- Verified live on dev: all three endpoints 200 with correct content types,
+  three link tags in head, header/footer/OG render the mark.
+- Code review (separate agent): one P1 - sharp was only a transitive dep of
+  Next; now pinned as devDependency ^0.34.5. ICO writer, a11y (aria-hidden +
+  focusable=false), data-URI OG approach, and geometry consistency all passed.
+- Lesson (mine): zsh aborts the whole command line on a failed glob - an
+  early `ls public/ src/app/*.ico` silently never ran, which hid the existing
+  scaffold favicon until Next's conflict error surfaced it.
