@@ -15,17 +15,14 @@ export const onRequestError = async (
   const message = err instanceof Error ? err.message : String(err);
   console.error(`[onRequestError] ${request.method} ${request.path}:`, err);
 
-  const webhook = process.env.ALERT_WEBHOOK_URL;
-  if (!webhook) return;
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
   try {
-    await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: `LicenseMeter: unhandled error on ${request.method} ${request.path}: ${message.slice(0, 300)}`,
-      }),
-      signal: AbortSignal.timeout(5000),
-    });
+    // Dynamic import: keeps instrumentation startup free of env/db loading.
+    const { notifyOps } = await import("~/server/ops");
+    await notifyOps(
+      `unhandled error on ${request.method} ${request.path}: ${message.slice(0, 300)}`,
+      { key: `crash:${request.method}:${request.path}`, cooldownMs: 30 * 60 * 1000 },
+    );
   } catch {
     // alerting must never cascade
   }

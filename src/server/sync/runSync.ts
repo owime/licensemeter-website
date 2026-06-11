@@ -516,6 +516,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       .where(eq(syncRuns.id, runId));
     void notifyOps(
       `sync FAILED for tenant ${tenant.name ?? tenant.tid}: ${message}`,
+      { key: `sync:${tenantId}`, cooldownMs: 30 * 60 * 1000 },
     );
     return { runId, status: "failed", steps };
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isDemoMode } from "~/env";
 import { isSameOrigin } from "~/server/auth/origin";
+import { notifyOps } from "~/server/ops";
 import { rateLimit } from "~/server/rateLimit";
 import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "~/server/demo/constants";
 import {
@@ -25,6 +26,13 @@ export const POST = async (req: Request) => {
   if (!rateLimit(`demo:${ip}`, 20, 60 * 60 * 1000)) {
     return NextResponse.json({ error: "rate limited" }, { status: 429 });
   }
+  // Lead signal for the founder; hourly cooldown so curious clicking
+  // doesn't flood the channel.
+  void notifyOps("someone opened the demo workspace", {
+    key: "demo-session",
+    cooldownMs: 60 * 60 * 1000,
+  });
+
   const token = await createSessionToken({
     oid: DEMO_OID,
     tid: DEMO_TID,

@@ -34,7 +34,6 @@ export default function OpenGraphImage() {
             color: "#1c1a16",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={MARK_SRC} width={46} height={46} alt="" />
           <div style={{ display: "flex" }}>
             License

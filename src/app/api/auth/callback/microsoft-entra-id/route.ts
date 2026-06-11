@@ -14,6 +14,10 @@ import {
   SESSION_COOKIE,
   sessionCookieOptions,
 } from "~/server/auth/session";
+import { db } from "~/server/db";
+import { seenSignins } from "~/server/db/schema";
+import { notifyOps } from "~/server/ops";
+import { sql } from "drizzle-orm";
 
 const backToLanding = (req: NextRequest, reason: string) => {
   console.error(`[auth] sign-in failed: ${reason}`);
@@ -64,6 +68,28 @@ export const GET = async (req: NextRequest) => {
   }
 
   const upn = claims.preferred_username ?? claims.email ?? "";
+
+  // First-time identities are a founder signal; returning ones just update stats.
+  try {
+    const inserted = await db
+      .insert(seenSignins)
+      .values({ oid: claims.oid, tid: claims.tid, upn })
+      .onConflictDoUpdate({
+        target: seenSignins.oid,
+        set: {
+          lastSeenAt: new Date(),
+          upn,
+          signinCount: sql`${seenSignins.signinCount} + 1`,
+        },
+      })
+      .returning({ count: seenSignins.signinCount });
+    if (inserted[0]?.count === 1) {
+      void notifyOps(`first sign-in: ${upn} (tenant ${claims.tid})`);
+    }
+  } catch (err) {
+    console.error("[auth] sign-in tracking failed", err);
+  }
+
   const token = await createSessionToken({
     oid: claims.oid,
     tid: claims.tid,

@@ -54,6 +54,9 @@ export const env = createEnv({
      */
     ALERT_WEBHOOK_URL: z.string().url().optional(),
 
+    /** Ops alerts by email (requires RESEND_API_KEY + EMAIL_FROM). */
+    ALERT_EMAIL: z.string().email().optional(),
+
     /** Resend API key for the weekly digest. Optional; digest skips without it. */
     RESEND_API_KEY: z.string().optional(),
     /** From address for outgoing mail, e.g. "LicenseMeter <digest@licensemeter.com>". */
@@ -83,6 +86,7 @@ export const env = createEnv({
     DEMO_MODE: process.env.DEMO_MODE,
     APP_BASE_URL: process.env.APP_BASE_URL,
     ALERT_WEBHOOK_URL: process.env.ALERT_WEBHOOK_URL,
+    ALERT_EMAIL: process.env.ALERT_EMAIL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
   },

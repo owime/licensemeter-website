@@ -4,6 +4,7 @@ import { after, type NextRequest } from "next/server";
 
 import { db } from "~/server/db";
 import { consentStates, memberships, tenants } from "~/server/db/schema";
+import { notifyOps } from "~/server/ops";
 import { runSync } from "~/server/sync/runSync";
 
 const STATE_TTL_MS = 15 * 60 * 1000;
@@ -85,6 +86,11 @@ export const GET = async (req: NextRequest) => {
       target: [memberships.tenantId, memberships.email],
       set: { oid: stateRow!.oid, role: "owner" },
     });
+
+  // The single most important founder signal there is.
+  void notifyOps(
+    `tenant connected: ${grantedTid} by ${stateRow!.email} — first sync starting`,
+  );
 
   // First sync runs after the redirect is sent; the connect page polls status.
   after(async () => {

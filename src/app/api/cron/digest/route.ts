@@ -80,6 +80,7 @@ export const GET = async (req: NextRequest) => {
     } catch (err) {
       void notifyOps(
         `digest failed for tenant ${tenant.name ?? tenant.tid}: ${err instanceof Error ? err.message : String(err)}`,
+        { key: `digest:${tenant.id}`, cooldownMs: 60 * 60 * 1000 },
       );
     }
   }

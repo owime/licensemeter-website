@@ -268,6 +268,27 @@ export const auditLog = pgTable(
   (t) => [index("audit_log_tenant_idx").on(t.tenantId, t.createdAt)],
 );
 
+/** Alert dedup: one row per alert key, cooldown window + suppression counter. */
+export const opsAlerts = pgTable("ops_alerts", {
+  key: text("key").primaryKey(),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true }).notNull(),
+  suppressedCount: integer("suppressed_count").notNull().default(0),
+});
+
+/** Every Microsoft identity that ever signed in — powers first-sign-in alerts. */
+export const seenSignins = pgTable("seen_signins", {
+  oid: text("oid").primaryKey(),
+  tid: text("tid").notNull(),
+  upn: text("upn"),
+  firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  signinCount: integer("signin_count").notNull().default(1),
+});
+
 /** Launch-update / security-one-pager requests from the landing page. */
 export const emailSignups = pgTable(
   "email_signups",
