@@ -11,44 +11,79 @@ const SAMPLE_LINES = [
   { label: "Inactive for 90+ days", value: "440,40" },
 ] as const;
 
+const TRUST_ITEMS = [
+  "Read-only Graph permissions",
+  "No mailbox or file content",
+  "EU data residency",
+  "Disconnect deletes everything",
+] as const;
+
+const STEPS = [
+  {
+    n: "01",
+    title: "Consent once",
+    body: "A Global Admin grants read-only application permissions. No agent, no write access, five minutes.",
+  },
+  {
+    n: "02",
+    title: "Synced nightly",
+    body: "Directory, license assignments, sign-in activity and usage reports — joined into one waste analysis.",
+  },
+  {
+    n: "03",
+    title: "Reclaim with proof",
+    body: "Every finding carries its monthly cost, a CSV for finance and a generated PowerShell script for IT.",
+  },
+] as const;
+
+// Mirrors the tiers on /pricing — keep both in sync.
+const PRICING_TEASER = [
+  { name: "Starter", price: "79", seats: "up to 250 seats" },
+  { name: "Growth", price: "199", seats: "up to 1,000 seats" },
+  { name: "Scale", price: "499", seats: "up to 2,500 seats" },
+] as const;
+
+/* Trailing separator so a wrapped line never starts with a stray slash. */
+const trustItemClass =
+  "after:mx-6 after:text-line-strong after:content-['/'] last:after:content-none";
+
 export default function LandingPage() {
   const entraConfigured = Boolean(env.AUTH_MICROSOFT_ENTRA_ID_ID);
+  const demoEnabled = isDemoMode();
+  const month = new Date().toLocaleString("en-US", { month: "long" });
 
   return (
     <main>
       <section
         id="get-started"
-        className="mx-auto grid max-w-6xl gap-14 px-6 pt-12 pb-24 lg:grid-cols-[1.2fr_1fr] lg:gap-10"
+        className="mx-auto grid max-w-6xl gap-14 px-6 pt-12 pb-24 lg:grid-cols-[1.35fr_1fr] lg:gap-12"
       >
         <div className="rise rise-1">
           <p className="mb-6 text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
             For IT and finance teams on Microsoft 365
           </p>
-          <h1 className="font-display text-5xl leading-[1.05] tracking-tight text-balance md:text-6xl">
+          <h1 className="font-display text-5xl leading-[1.05] tracking-tight text-balance md:text-6xl lg:text-5xl xl:text-6xl">
             Find the licenses you pay for but nobody uses.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-            LicenseMeter runs a read-only waste scan on your tenant and puts a
-            monthly price on every wasted seat: disabled accounts that still
-            hold licenses, Copilot nobody opened, shelfware you renew out of
-            habit.
+            Run a free, read-only waste scan on your Microsoft 365 tenant and
+            see the monthly price of every wasted seat: disabled accounts that
+            still hold licenses, Copilot nobody opened, shelfware you renew out
+            of habit.
           </p>
           <div className="mt-10">
             <SignInButtons
               entraConfigured={entraConfigured}
-              demoEnabled={isDemoMode()}
+              demoEnabled={demoEnabled}
             />
           </div>
-          <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink-soft">
-            <li>Read-only Graph permissions</li>
-            <li aria-hidden="true" className="text-line-strong">/</li>
-            <li>No mailbox or file content</li>
-            <li aria-hidden="true" className="text-line-strong">/</li>
-            <li>EU data residency</li>
-            <li aria-hidden="true" className="text-line-strong">/</li>
-            <li>Disconnect deletes everything</li>
-            <li aria-hidden="true" className="text-line-strong">/</li>
-            <li>
+          <ul className="mt-10 flex flex-wrap gap-y-2 text-[13px] text-ink-soft">
+            {TRUST_ITEMS.map((item) => (
+              <li key={item} className={trustItemClass}>
+                {item}
+              </li>
+            ))}
+            <li className={trustItemClass}>
               <Link
                 href="/security"
                 className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
@@ -59,10 +94,10 @@ export default function LandingPage() {
           </ul>
         </div>
 
-        <div className="rise rise-3 self-start border border-line bg-card shadow-[0_1px_0_var(--color-line)]">
+        <div className="rise rise-3 self-center border border-line bg-card shadow-[0_1px_0_var(--color-line)]">
           <div className="flex items-baseline justify-between gap-3 border-b border-line px-6 py-4">
             <span className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-              Waste ledger — June
+              Waste ledger — {month}
             </span>
             <span className="font-mono text-xs whitespace-nowrap text-ink-faint">
               Illustrative · D90
@@ -94,34 +129,70 @@ export default function LandingPage() {
       </section>
 
       <section className="border-t border-line bg-card">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-3">
-          {[
-            {
-              n: "01",
-              title: "Consent once",
-              body: "A Global Admin grants read-only application permissions. No agent, no write access, five minutes.",
-            },
-            {
-              n: "02",
-              title: "Synced nightly",
-              body: "Directory, license assignments, sign-in activity and usage reports - joined into one waste analysis.",
-            },
-            {
-              n: "03",
-              title: "Reclaim with proof",
-              body: "Every finding carries its monthly cost, a CSV for finance and a generated PowerShell script for IT.",
-            },
-          ].map((step) => (
-            <div key={step.n}>
-              <div className="font-mono text-xs text-rust-text">{step.n}</div>
-              <h2 className="mt-3 font-display text-2xl tracking-tight">
-                {step.title}
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <p className="text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
+            How it works
+          </p>
+          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight">
+            Six waste rules, every finding priced in euros.
+          </h2>
+          <div className="mt-10 grid gap-10 md:grid-cols-3">
+            {STEPS.map((step) => (
+              <div key={step.n}>
+                <div className="font-mono text-xs text-rust-text">{step.n}</div>
+                <h3 className="mt-3 font-display text-2xl tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                  {step.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pt-16">
+        <div className="border border-line bg-card">
+          <div className="flex flex-col gap-4 px-6 pt-6 sm:flex-row sm:items-baseline sm:justify-between">
+            <div className="max-w-md">
+              <h2 className="font-display text-2xl tracking-tight">
+                Flat pricing, published.
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                {step.body}
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                Sized by seats, not by how much waste we find. See your number
+                free, then decide.
               </p>
             </div>
-          ))}
+            <Link
+              href="/pricing"
+              className="shrink-0 text-sm font-medium text-ink underline underline-offset-4 hover:text-rust-text"
+            >
+              See full pricing →
+            </Link>
+          </div>
+          <div className="mt-6 grid border-t border-line sm:grid-cols-3">
+            {PRICING_TEASER.map((tier, i) => (
+              <div
+                key={tier.name}
+                className={`px-6 py-4 ${
+                  i > 0 ? "border-t border-line sm:border-t-0 sm:border-l" : ""
+                }`}
+              >
+                <div className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+                  {tier.name}
+                </div>
+                <div className="mt-1 font-display text-2xl tracking-tight">
+                  €{tier.price}
+                  <span className="font-sans text-xs text-ink-soft">
+                    {" "}
+                    / month
+                  </span>
+                </div>
+                <div className="mt-0.5 text-xs text-ink-soft">{tier.seats}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -145,18 +216,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-6 pt-16">
         <div className="flex flex-col gap-6 border border-line bg-card px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-2xl">
             <h2 className="font-display text-2xl tracking-tight">
               Built by Ugur Koc
             </h2>
-            {/* TODO before launch: replace with the real one-line bio and add a photo. */}
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              [One line about your Microsoft 365 community work — MVP status,
-              talks, open-source projects.] LicenseMeter asks for read-only
-              access to your tenant, so you should know exactly who is behind
-              it.
+              I am a Microsoft MVP for Intune and Security Copilot, and I build{" "}
+              <a
+                href="https://github.com/ugurkocde"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
+              >
+                open-source tools for Microsoft 365 admins
+              </a>{" "}
+              — IntuneAssignmentChecker, IntuneBrew, DeviceOffboardingManager.
+              LicenseMeter asks for read-only access to your tenant, so you
+              should know exactly who is behind it. I answer support myself.
             </p>
           </div>
           <Link
@@ -165,6 +243,24 @@ export default function LandingPage() {
           >
             Security overview →
           </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pt-16 pb-24">
+        <h2 className="font-display text-3xl tracking-tight">
+          See your waste number in two minutes.
+        </h2>
+        <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
+          {demoEnabled
+            ? "Start on the live demo tenant, no account needed. When you are ready, run the same read-only scan on your own."
+            : "Connect read-only and see the monthly cost of every wasted seat — before you decide anything."}
+        </p>
+        <div className="mt-8">
+          <SignInButtons
+            entraConfigured={entraConfigured}
+            demoEnabled={demoEnabled}
+            showNote={false}
+          />
         </div>
       </section>
     </main>

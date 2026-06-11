@@ -6,9 +6,9 @@ import Link from "next/link";
  */
 const BUTTON_VARIANTS = {
   primary:
-    "inline-flex items-center justify-center gap-2.5 bg-ink px-5 py-3 text-sm font-medium text-paper transition hover:bg-rust-deep disabled:cursor-not-allowed disabled:opacity-40",
+    "inline-flex min-h-11 items-center justify-center gap-2.5 bg-ink px-5 py-3 text-sm font-medium text-paper transition hover:bg-rust-deep disabled:cursor-not-allowed disabled:opacity-40",
   secondary:
-    "inline-flex items-center justify-center gap-2 border border-line-strong bg-card px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink disabled:opacity-50",
+    "inline-flex min-h-11 items-center justify-center gap-2 border border-line-strong bg-card px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink disabled:opacity-50",
   micro:
     "inline-flex items-center border border-line px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase transition hover:border-ink disabled:opacity-30",
 } as const;

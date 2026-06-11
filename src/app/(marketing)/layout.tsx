@@ -3,11 +3,7 @@ import Link from "next/link";
 import { ButtonLink } from "~/components/ui";
 import { auth } from "~/server/auth";
 
-/*
- * TODO before launch: replace the placeholder contact address below and in
- * the legal pages with your real support address.
- */
-const SUPPORT_EMAIL = "support@your-domain.example";
+const SUPPORT_EMAIL = "support@licensemeter.com";
 
 const NAV = [
   { href: "/pricing", label: "Pricing" },
@@ -58,7 +54,7 @@ export default async function MarketingLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+              className="-my-3 py-3 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
             >
               {item.label}
             </Link>
@@ -68,13 +64,16 @@ export default async function MarketingLayout({
               Open dashboard
             </ButtonLink>
           ) : (
-            <ButtonLink
-              href="/#get-started"
-              variant="secondary"
-              className="ml-1 hidden sm:inline-flex"
-            >
-              Free waste scan
-            </ButtonLink>
+            /*
+             * Wrapper span carries the responsive visibility: buttonClass
+             * hardcodes inline-flex, which outranks `hidden` in the compiled
+             * stylesheet when both sit on the same element.
+             */
+            <span className="ml-1 hidden sm:inline-flex">
+              <ButtonLink href="/#get-started" variant="secondary">
+                Free waste scan
+              </ButtonLink>
+            </span>
           )}
         </nav>
       </header>
@@ -88,8 +87,9 @@ export default async function MarketingLayout({
               License<span className="text-rust-text">Meter</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
-              License waste analytics for Microsoft 365. Read-only, EU-hosted,
-              built for IT and finance.
+              License waste analytics for Microsoft 365, with an Adobe
+              connector in beta. Read-only, EU-hosted, built for IT and
+              finance.
             </p>
           </div>
           {FOOTER_COLUMNS.map((col) => (
@@ -102,7 +102,7 @@ export default async function MarketingLayout({
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                      className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
                     >
                       {link.label}
                     </a>

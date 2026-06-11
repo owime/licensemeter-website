@@ -93,7 +93,7 @@ export default function PricingPage() {
       <p className="mt-4 text-sm text-ink-soft">
         More than 2,500 seats or managing multiple tenants as an MSP?{" "}
         <a
-          href="mailto:support@your-domain.example"
+          href="mailto:support@licensemeter.com"
           className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
         >
           Talk to us.

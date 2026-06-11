@@ -39,7 +39,7 @@ export default function DatenschutzPage() {
           <br />
           [Straße und Hausnummer], [PLZ Ort], Deutschland
           <br />
-          E-Mail: support@your-domain.example
+          E-Mail: support@licensemeter.com
         </p>
       </Section>
 
@@ -140,7 +140,7 @@ export default function DatenschutzPage() {
 
       <Section title="8. Kontakt">
         <p>
-          Fragen zum Datenschutz: support@your-domain.example
+          Fragen zum Datenschutz: support@licensemeter.com
         </p>
       </Section>
     </main>

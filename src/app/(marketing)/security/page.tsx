@@ -177,10 +177,10 @@ export default function SecurityPage() {
         <p>
           Security review, pentest coordination or vendor questionnaires:{" "}
           <a
-            href="mailto:support@your-domain.example"
+            href="mailto:support@licensemeter.com"
             className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
           >
-            support@your-domain.example
+            support@licensemeter.com
           </a>
           . See also the{" "}
           <Link

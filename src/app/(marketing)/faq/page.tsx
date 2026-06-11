@@ -73,7 +73,7 @@ export default function FaqPage() {
       <p className="mt-8 text-sm text-ink-soft">
         Anything missing?{" "}
         <a
-          href="mailto:support@your-domain.example"
+          href="mailto:support@licensemeter.com"
           className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
         >
           Ask directly

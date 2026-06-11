@@ -31,7 +31,7 @@ export default function ImpressumPage() {
         <section>
           <h2 className="font-medium text-ink">Kontakt</h2>
           <p className="mt-2">
-            E-Mail: support@your-domain.example
+            E-Mail: support@licensemeter.com
             <br />
             [Telefonnummer — optional]
           </p>

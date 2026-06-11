@@ -110,3 +110,51 @@ Design review (ui-design-expert + saas-ceo-reviewer agents + axe scan) led to:
 Still manual before launch: publisher verification, real legal/contact
 details in the [placeholder] spots (impressum, datenschutz, founder bio,
 support email), DPA document, production deploy.
+
+---
+
+# Landing page review + improvements (2026-06-11, post-launch pass)
+
+Inputs: saas-ceo-reviewer + ui-design-expert agent reviews of the live site
+(www.licensemeter.com) and source. Prior constraint honored: ledger aesthetic
+locked, tighten only. Bio facts verified against ugurkoc.de + GitHub API.
+
+## Plan
+
+- [ ] P0-1 Founder bio: replace bracketed placeholder with verified facts
+      (Microsoft MVP for Intune and Security Copilot, per ugurkoc.de; open-source
+      tools IntuneAssignmentChecker / IntuneBrew / DeviceOffboardingManager)
+- [ ] P0-2 Replace support@your-domain.example with support@licensemeter.com
+      sitewide (layout + pricing + security + faq + datenschutz + impressum)
+- [ ] P0-3 Add final CTA band before footer (reuse SignInButtons)
+- [ ] P0-4 Fix dead `hidden sm:inline-flex` on header CTA (cascade collision
+      with buttonClass inline-flex) via wrapper span
+- [ ] P1-1 Pricing teaser strip on landing (79/199/499, link to /pricing)
+- [ ] P1-2 Subhead rewrite leading with the free read-only scan
+- [ ] P1-3 Hero balance: self-center card, 1.35fr column ratio, lg:gap-12
+- [ ] P1-4 Headline step-down at lg (text-5xl) back up at xl (text-6xl)
+- [ ] P1-5 Nav/footer link tap targets (py-3 -my-3 nav, py-1 -my-1 footer)
+- [ ] P1-6 "Six waste rules" section header on How it works (h2; steps to h3)
+- [ ] P2-1 Mobile CTA stack full-width (SignInButtons w-full sm:w-auto)
+- [ ] P2-2 Buttons min-h-11 (44px tap target, equal hero button heights)
+- [ ] P2-3 Section rhythm: even pt-16 cadence, final section pb-24
+- [ ] P2-4 Trust-row separators as li after:content so no line starts with /
+- [ ] P2-5 Em dash in step 02; dynamic month in ledger card header
+- [ ] P2-6 Footer blurb mentions Adobe connector beta (consistency w/ /security)
+
+Deliberately skipped: "recoverable"->"identified" (would diverge from /pricing
+copy); attributing ledger card to demo tenant (card shows EUR 1.833,90/mo, live
+demo shows EUR 2.407,90/mo - would be a false specific); extra hero credibility
+line (founder card + CTA band carry it without hero clutter).
+
+## Acceptance criteria
+
+1. grep finds no "your-domain.example" and no "[One line" in src/
+2. Bio contains only facts verifiable on ugurkoc.de / github.com/ugurkocde
+3. Header "Free waste scan" CTA computed display:none below 640px, visible above
+4. Landing shows pricing teaser matching /pricing numbers and a closing CTA band
+5. npm run check passes; all vitest tests pass
+6. Playwright at 1440/1024/390/320: no horizontal overflow, hero card vertically
+   centered against text column, CTAs full-width at 390, no separator at a line
+   start in the trust row
+7. Independent code-reviewer agent reports no P0/P1 findings
