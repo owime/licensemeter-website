@@ -3,14 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ITEMS = [
+type NavChild = { href: string; label: string };
+type NavItem = {
+  href: string;
+  label: string;
+  /** Extra routes that belong to this section, e.g. drill-downs. */
+  also?: string[];
+  /** Sub-pages shown while the section is active — one per connector. */
+  children?: NavChild[];
+};
+
+const ITEMS: NavItem[] = [
   { href: "/app", label: "Overview" },
-  { href: "/app/findings", label: "Findings" },
+  { href: "/app/findings", label: "Findings", also: ["/app/users"] },
   { href: "/app/licenses", label: "Licenses & prices" },
-  { href: "/app/settings", label: "Settings" },
+  {
+    href: "/app/settings",
+    label: "Settings",
+    children: [{ href: "/app/settings/adobe", label: "Adobe connector" }],
+  },
 ];
 
-const PORTFOLIO_ITEM = { href: "/app/portfolio", label: "Portfolio" };
+const PORTFOLIO_ITEM: NavItem = { href: "/app/portfolio", label: "Portfolio" };
+
+/** True for the route itself and its children, never for sibling prefixes. */
+const inSection = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(href + "/");
 
 export const NavLinks = ({
   onNavigate,
@@ -26,28 +44,52 @@ export const NavLinks = ({
   return (
     <nav aria-label="Workspace" className="flex flex-col gap-0.5">
       {items.map((item) => {
-        const active =
+        const sectionActive =
           item.href === "/app"
             ? pathname === "/app"
-            : item.href === "/app/findings"
-              ? // The per-user drill-down is reached from findings.
-                pathname.startsWith("/app/findings") ||
-                pathname.startsWith("/app/users")
-              : pathname.startsWith(item.href);
+            : inSection(pathname, item.href) ||
+              (item.also ?? []).some((href) => inSection(pathname, href));
+        // The parent is the current page only when no child is.
+        const childCurrent = (item.children ?? []).find((c) =>
+          inSection(pathname, c.href),
+        );
+        const parentCurrent = sectionActive && !childCurrent;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={`border-l-2 px-[18px] py-2.5 text-sm transition ${
-              active
-                ? "border-rust bg-sidebar-line/70 font-medium text-paper"
-                : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-paper"
-            }`}
-          >
-            {item.label}
-          </Link>
+          <div key={item.href} className="flex flex-col gap-0.5">
+            <Link
+              href={item.href}
+              onClick={onNavigate}
+              aria-current={parentCurrent ? "page" : undefined}
+              className={`border-l-2 px-[18px] py-2.5 text-sm transition ${
+                parentCurrent
+                  ? "border-rust bg-sidebar-line/70 font-medium text-paper"
+                  : sectionActive
+                    ? "border-transparent text-paper"
+                    : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-paper"
+              }`}
+            >
+              {item.label}
+            </Link>
+            {sectionActive &&
+              item.children?.map((child) => {
+                const current = inSection(pathname, child.href);
+                return (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    onClick={onNavigate}
+                    aria-current={current ? "page" : undefined}
+                    className={`border-l-2 py-2 pr-4 pl-[34px] text-[13px] transition ${
+                      current
+                        ? "border-rust bg-sidebar-line/70 font-medium text-paper"
+                        : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-paper"
+                    }`}
+                  >
+                    {child.label}
+                  </Link>
+                );
+              })}
+          </div>
         );
       })}
     </nav>

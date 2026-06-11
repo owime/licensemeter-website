@@ -1,8 +1,9 @@
 import { desc, eq } from "drizzle-orm";
+import Link from "next/link";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
-import { Button, Pill } from "~/components/ui";
+import { Button, Card, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
 import {
@@ -11,37 +12,14 @@ import {
   resendInvite,
   setInactiveDays,
 } from "~/server/actions";
-import {
-  AdobeConnectForm,
-  AdobeDisconnectButton,
-} from "~/components/workspace/AdobeConnectForm";
 import { db } from "~/server/db";
 import {
   adobeConnections,
-  adobeUsers,
   auditLog,
   memberships,
   syncRuns,
 } from "~/server/db/schema";
-import { sql } from "drizzle-orm";
 import { emailEnabled } from "~/server/email";
-
-const Card = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <section className="border border-line bg-card">
-    <div className="border-b border-line px-5 py-3">
-      <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-        {title}
-      </h2>
-    </div>
-    <div className="px-5 py-4">{children}</div>
-  </section>
-);
 
 const Capability = ({
   ok,
@@ -80,7 +58,7 @@ export default async function SettingsPage() {
   const isOwner = hasRole(ctx, "owner");
   const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
-  const [members, runs, activity] = await Promise.all([
+  const [members, runs, activity, adobeConn] = await Promise.all([
     db.query.memberships.findMany({
       where: eq(memberships.tenantId, ctx.tenant.id),
     }),
@@ -96,18 +74,16 @@ export default async function SettingsPage() {
           limit: 30,
         })
       : Promise.resolve([]),
-  ]);
-
-  const [adobeConn, adobeCount] = await Promise.all([
     db.query.adobeConnections.findFirst({
       where: eq(adobeConnections.tenantId, ctx.tenant.id),
     }),
-    db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(adobeUsers)
-      .where(eq(adobeUsers.tenantId, ctx.tenant.id))
-      .then((r) => r[0]?.n ?? 0),
   ]);
+
+  const adobeStatus = ctx.tenant.isDemo
+    ? "Connected with demo data"
+    : adobeConn
+      ? "Connected"
+      : "Not connected";
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
@@ -338,44 +314,30 @@ export default async function SettingsPage() {
           )}
         </Card>
 
-        <Card title="Adobe connector (beta)">
-          {ctx.tenant.isDemo ? (
-            <p className="text-sm text-ink-soft">
-              Connected with demo data — {adobeCount} Adobe seats correlated
-              against the directory. On a real workspace this uses your Adobe
-              Admin Console credentials.
-            </p>
-          ) : adobeConn ? (
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="text-sm">
-                <div className="font-medium">
-                  Connected — {adobeCount} Adobe seats
-                </div>
-                <div className="mt-0.5 text-xs text-ink-soft">
-                  Org {adobeConn.orgId} · last sync{" "}
-                  {fmtDate(adobeConn.lastSyncAt)} (
-                  {adobeConn.lastSyncStatus ?? "pending"})
-                </div>
+        <Card title="Connectors">
+          <ul className="flex flex-col">
+            <li className="flex flex-wrap items-center justify-between gap-3 text-sm">
+              <div className="flex items-center gap-3">
+                <span className="font-medium">Adobe</span>
+                <Pill tone="gold">Beta</Pill>
+                <span className="text-ink-soft">{adobeStatus}</span>
               </div>
-              {isAdmin && <AdobeDisconnectButton />}
-            </div>
-          ) : isAdmin ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-ink-soft">
-                Detect Adobe seats still assigned to people who are disabled or
-                gone in Entra ID. Create an OAuth server-to-server project with
-                the User Management API in the Adobe Developer Console
-                (System Admin required), then paste the credentials — they are
-                stored encrypted and used read-only.
-              </p>
-              <AdobeConnectForm />
-            </div>
-          ) : (
-            <p className="text-sm text-ink-soft">
-              Not connected. A workspace admin can connect the Adobe Admin
-              Console here.
-            </p>
-          )}
+              <Link
+                href="/app/settings/adobe"
+                className="text-xs font-medium text-ink underline-offset-4 hover:text-rust-text hover:underline"
+              >
+                {!isAdmin
+                  ? "View →"
+                  : adobeConn || ctx.tenant.isDemo
+                    ? "Manage →"
+                    : "Configure →"}
+              </Link>
+            </li>
+          </ul>
+          <p className="mt-3 text-xs text-ink-faint">
+            Each connector has its own page under Settings. More connectors
+            are on the way.
+          </p>
         </Card>
 
         {isAdmin && (

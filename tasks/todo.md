@@ -121,26 +121,26 @@ locked, tighten only. Bio facts verified against ugurkoc.de + GitHub API.
 
 ## Plan
 
-- [ ] P0-1 Founder bio: replace bracketed placeholder with verified facts
+- [x] P0-1 Founder bio: replace bracketed placeholder with verified facts
       (Microsoft MVP for Intune and Security Copilot, per ugurkoc.de; open-source
       tools IntuneAssignmentChecker / IntuneBrew / DeviceOffboardingManager)
-- [ ] P0-2 Replace support@your-domain.example with support@licensemeter.com
+- [x] P0-2 Replace support@your-domain.example with support@licensemeter.com
       sitewide (layout + pricing + security + faq + datenschutz + impressum)
-- [ ] P0-3 Add final CTA band before footer (reuse SignInButtons)
-- [ ] P0-4 Fix dead `hidden sm:inline-flex` on header CTA (cascade collision
+- [x] P0-3 Add final CTA band before footer (reuse SignInButtons)
+- [x] P0-4 Fix dead `hidden sm:inline-flex` on header CTA (cascade collision
       with buttonClass inline-flex) via wrapper span
-- [ ] P1-1 Pricing teaser strip on landing (79/199/499, link to /pricing)
-- [ ] P1-2 Subhead rewrite leading with the free read-only scan
-- [ ] P1-3 Hero balance: self-center card, 1.35fr column ratio, lg:gap-12
-- [ ] P1-4 Headline step-down at lg (text-5xl) back up at xl (text-6xl)
-- [ ] P1-5 Nav/footer link tap targets (py-3 -my-3 nav, py-1 -my-1 footer)
-- [ ] P1-6 "Six waste rules" section header on How it works (h2; steps to h3)
-- [ ] P2-1 Mobile CTA stack full-width (SignInButtons w-full sm:w-auto)
-- [ ] P2-2 Buttons min-h-11 (44px tap target, equal hero button heights)
-- [ ] P2-3 Section rhythm: even pt-16 cadence, final section pb-24
-- [ ] P2-4 Trust-row separators as li after:content so no line starts with /
-- [ ] P2-5 Em dash in step 02; dynamic month in ledger card header
-- [ ] P2-6 Footer blurb mentions Adobe connector beta (consistency w/ /security)
+- [x] P1-1 Pricing teaser strip on landing (79/199/499, link to /pricing)
+- [x] P1-2 Subhead rewrite leading with the free read-only scan
+- [x] P1-3 Hero balance: self-center card, 1.35fr column ratio, lg:gap-12
+- [x] P1-4 Headline step-down at lg (text-5xl) back up at xl (text-6xl)
+- [x] P1-5 Nav/footer link tap targets (py-3 -my-3 nav, py-1 -my-1 footer)
+- [x] P1-6 "Six waste rules" section header on How it works (h2; steps to h3)
+- [x] P2-1 Mobile CTA stack full-width (SignInButtons w-full sm:w-auto)
+- [x] P2-2 Buttons min-h-11 (44px tap target, equal hero button heights)
+- [x] P2-3 Section rhythm: even pt-16 cadence, final section pb-24
+- [x] P2-4 Trust-row separators as li after:content so no line starts with /
+- [x] P2-5 Em dash in step 02; dynamic month in ledger card header
+- [x] P2-6 Footer blurb mentions Adobe connector beta (consistency w/ /security)
 
 Deliberately skipped: "recoverable"->"identified" (would diverge from /pricing
 copy); attributing ledger card to demo tenant (card shows EUR 1.833,90/mo, live
@@ -188,15 +188,15 @@ tabs show default globe), no logo mark anywhere.
 
 ## Plan
 
-- [ ] Design mark in the locked ledger language (paper/ink/rust, geometric,
+- [x] Design mark in the locked ledger language (paper/ink/rust, geometric,
       legible at 16px); compare 2 candidates at real sizes before choosing
-- [ ] BrandMark React component; integrate marketing header + footer
-- [ ] src/app/icon.svg (SVG favicon, paper tile), src/app/favicon.ico
+- [x] BrandMark React component; integrate marketing header + footer
+- [x] src/app/icon.svg (SVG favicon, paper tile), src/app/favicon.ico
       (16+32 PNG-in-ICO via sharp + scripts/make-icons.mjs),
       src/app/apple-icon.png (180x180)
-- [ ] Remove manual metadata.icons from root layout (file conventions win)
-- [ ] Add mark to opengraph-image.tsx wordmark
-- [ ] Do NOT touch the dash layout (concurrent session is editing it)
+- [x] Remove manual metadata.icons from root layout (file conventions win)
+- [x] Add mark to opengraph-image.tsx wordmark
+- [x] Do NOT touch the dash layout (concurrent session is editing it)
 
 ## Acceptance criteria
 
@@ -237,17 +237,17 @@ ui-design-expert review of live demo at 1440/1280/390 + short viewports.
 
 ## Plan
 
-- [ ] P0-1 aside overflow-y-auto (Sign out clipped at short heights, no scroll)
-- [ ] P0-2 globals.css focus override: include select (rust ring 3.33:1 on
+- [x] P0-1 aside overflow-y-auto (Sign out clipped at short heights, no scroll)
+- [x] P0-2 globals.css focus override: include select (rust ring 3.33:1 on
       sidebar vs paper 17.18:1)
-- [ ] P1-1 /app/users/* keeps Findings nav item active
-- [ ] P1-2 aria-current="page" on active nav link
-- [ ] P1-3 drawer: Escape closes, aria-controls + id wiring
-- [ ] P1-4 sign-out tap targets min-h-11 (was 16px tall), + transition (P2-3)
-- [ ] P2-1 nav px-[18px] aligns text at 20px rail rhythm
-- [ ] P2-2 WorkspaceSwitcher select px-2 py-1 rounded-none
-- [ ] P2-4 active bg tint /40 -> /70
-- [ ] P2-5 BrandMark tone="dark" (paper bars + rust-bright strike, 5.46:1)
+- [x] P1-1 /app/users/* keeps Findings nav item active
+- [x] P1-2 aria-current="page" on active nav link
+- [x] P1-3 drawer: Escape closes, aria-controls + id wiring
+- [x] P1-4 sign-out tap targets min-h-11 (was 16px tall), + transition (P2-3)
+- [x] P2-1 nav px-[18px] aligns text at 20px rail rhythm
+- [x] P2-2 WorkspaceSwitcher select px-2 py-1 rounded-none
+- [x] P2-4 active bg tint /40 -> /70
+- [x] P2-5 BrandMark tone="dark" (paper bars + rust-bright strike, 5.46:1)
       in desktop sidebar + mobile top bar; burger hit area to 44px
 
 ## Acceptance criteria
@@ -272,3 +272,54 @@ nav text aligned at the 20px rail rhythm, active tint /70. Code review
 scoped Escape) - both fixed and re-verified. 42/42 tests, lint + tsc clean.
 Latent note, no action: startsWith matching could double-match if sibling
 routes ever share a prefix (e.g. /app/licenses-beta).
+
+---
+
+# Settings subpages: connectors as own pages (2026-06-12)
+
+User request: move Adobe config off the settings page to /app/settings/adobe;
+sidebar shows connector sub-items under Settings while inside the section -
+one subpage per connector going forward. Also fix the remaining nav issue
+(prefix matching) since it becomes load-bearing with subpages.
+
+## Plan
+
+- [ ] Boundary-safe nav matching (=== or startsWith(href + "/")) - closes the
+      latent /app/licenses-beta double-match for good
+- [ ] NavLinks: children support; sub-items render while in the section,
+      indented, aria-current on the exact page only (parent OR child)
+- [ ] Card extracted from settings page to ~/components/ui.tsx
+- [ ] New /app/settings/adobe page: Adobe card content + queries moved there,
+      h1 + Beta pill, same role gating (viewer sees status, admin configures)
+- [ ] Settings page: Adobe card/queries/imports removed; slim "Connectors"
+      directory card (Adobe row: status + Configure link)
+- [ ] Mobile drawer inherits sub-items; child click closes drawer
+
+## Acceptance criteria
+
+1. /app/settings shows Connectors card; Adobe config lives ONLY on
+   /app/settings/adobe (works for demo, connected, admin, viewer states)
+2. Sidebar: "Adobe connector" child visible iff pathname is under
+   /app/settings; child has aria-current on the subpage; Settings parent has
+   aria-current only on /app/settings exactly
+3. No nav item double-matches any existing route; /app/users/* still keeps
+   Findings active
+4. lint + tsc + 42 tests pass; Playwright verifies sidebar states on
+   desktop + mobile drawer; code-reviewer pass
+
+## Review (settings subpages, end)
+
+All items done, verified live via Playwright demo session: Connectors card on
+/app/settings (Adobe + Beta pill + status + role-aware link: View/Manage/
+Configure); /app/settings/adobe carries the full connector config (demo state
+rendered with 8 seats; admin form/disconnect; viewer status-only), breadcrumb
++ Beta pill + "what it detects" card; sidebar child "Adobe connector" appears
+only inside /app/settings/*, aria-current on exactly one link everywhere
+(child on subpage, parent on /app/settings, Findings on /app/users/*);
+mobile drawer shows the child and closes on navigate. Boundary-safe
+inSection() matching replaces raw startsWith (the last remaining flagged
+issue); /app/users belongs to Findings via the `also` mechanism. Card
+extracted to ui.tsx. Code review (separate agent): revalidation safe
+(revalidatePath "/app" layout-level), no redirect staleness, no cycles; its
+2 findings fixed: role-aware link label, adobeConn folded into Promise.all.
+42/42 tests, lint + tsc clean.

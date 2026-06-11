@@ -44,6 +44,24 @@ export const ButtonAnchor = ({
   <a className={buttonClass(variant, className)} {...props} />
 );
 
+/** Bordered card with the uppercase ledger header, used on dashboard pages. */
+export const Card = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <section className="border border-line bg-card">
+    <div className="border-b border-line px-5 py-3">
+      <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        {title}
+      </h2>
+    </div>
+    <div className="px-5 py-4">{children}</div>
+  </section>
+);
+
 /** Category/status pill tones. Soft fill + dark text from the same ramp. */
 const PILL_TONES = {
   rust: "bg-rust-soft text-rust-deep",
