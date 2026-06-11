@@ -95,7 +95,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: env.AUTH_SECRET,
   session: { strategy: "jwt" },
   pages: { signIn: "/" },
-  providers: [entraMultiTenant(), demoProvider],
+  // The demo provider is registered only when demo mode is on, so the
+  // /api/auth/*/demo endpoints do not exist at all in normal deployments.
+  providers: isDemoMode()
+    ? [entraMultiTenant(), demoProvider]
+    : [entraMultiTenant()],
   callbacks: {
     jwt({ token, account, profile }) {
       if (account?.provider === "demo") {

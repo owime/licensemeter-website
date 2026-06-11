@@ -32,10 +32,6 @@ export const GET = async (req: NextRequest) => {
   if (Date.now() - stateRow!.createdAt.getTime() > STATE_TTL_MS) {
     fail("expired_state");
   }
-  await db
-    .update(consentStates)
-    .set({ usedAt: new Date() })
-    .where(eq(consentStates.state, state!));
 
   // Opportunistic cleanup of stale nonces.
   after(async () => {
@@ -44,9 +40,16 @@ export const GET = async (req: NextRequest) => {
       .where(lt(consentStates.createdAt, new Date(Date.now() - 24 * 60 * 60 * 1000)));
   });
 
+  // Validate the consent result BEFORE consuming the nonce, so a declined or
+  // incomplete dialog does not burn the state and the user can simply retry.
   if (error) fail("consent_declined");
   if (adminConsent !== "True" || !grantedTid) fail("consent_incomplete");
   if (grantedTid !== stateRow!.tid) fail("tenant_mismatch");
+
+  await db
+    .update(consentStates)
+    .set({ usedAt: new Date() })
+    .where(eq(consentStates.state, state!));
 
   // Upsert the tenant and bind the initiator as owner.
   const existing = await db.query.tenants.findFirst({

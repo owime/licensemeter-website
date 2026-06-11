@@ -36,7 +36,8 @@ export const tenants = pgTable(
     /** Capabilities discovered during sync; null until first sync. */
     concealedNames: boolean("concealed_names"),
     hasP1: boolean("has_p1"),
-    /** Copilot signal quality from the last sync; lets price edits re-run analysis offline. */
+    /** Signal quality from the last sync; lets price edits re-run analysis offline. */
+    activitySignal: text("activity_signal").$type<"full" | "none">(),
     copilotSignal: text("copilot_signal").$type<"per-user" | "aggregate" | "none">(),
     usageAggregate: jsonb("usage_aggregate").$type<AggregateUsage>(),
     copilotAggregate: jsonb("copilot_aggregate").$type<AggregateUsage>(),

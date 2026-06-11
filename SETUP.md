@@ -49,8 +49,12 @@ Set these locally in `.env` and in Vercel (Production + Preview):
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_MICROSOFT_ENTRA_ID_ID` / `_SECRET` | from the setup script |
 | `CONNECTOR_CLIENT_ID` / `_SECRET` | from the setup script |
-| `CRON_SECRET` | random string; Vercel Cron sends it as a Bearer token |
+| `CRON_SECRET` | random string (16+ chars); Vercel Cron sends it as a Bearer token |
 | `APP_BASE_URL` | public URL, e.g. `https://app.licensemeter.example` |
+
+`CRON_SECRET` and `APP_BASE_URL` are validated at build time on Vercel — a
+deploy without them fails instead of shipping a broken consent flow or an
+unprotected cron route.
 | `DEMO_MODE` | `"true"` to keep the public demo workspace, else `"false"` |
 
 ## 4. Database schema

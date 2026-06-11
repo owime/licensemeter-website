@@ -80,8 +80,9 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
 
       if (direct.length > 0) {
         const skuList = direct.map((l) => `'${l.skuId}'`).join(", ");
+        const upn = detail.upn.replaceAll("'", "''");
         lines.push(
-          `Set-MgUserLicense -UserId '${detail.upn}' -RemoveLicenses @(${skuList}) -AddLicenses @()`,
+          `Set-MgUserLicense -UserId '${upn}' -RemoveLicenses @(${skuList}) -AddLicenses @()`,
         );
       }
       for (const l of viaGroup) {

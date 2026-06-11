@@ -1,7 +1,12 @@
-/** CSV writer for exports (RFC 4180 quoting). */
+/** CSV writer for exports (RFC 4180 quoting + spreadsheet formula guarding). */
 
-const escapeCell = (value: string): string =>
-  /[",\n\r]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+const escapeCell = (value: string): string => {
+  // Neutralize formula injection when the CSV is opened in Excel/LibreOffice.
+  const guarded = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return /[",\n\r]/.test(guarded)
+    ? `"${guarded.replaceAll('"', '""')}"`
+    : guarded;
+};
 
 export const toCsv = (rows: (string | number | null | undefined)[][]): string =>
   rows

@@ -35,14 +35,27 @@ export const env = createEnv({
     CONNECTOR_CLIENT_ID: z.string().optional(),
     CONNECTOR_CLIENT_SECRET: z.string().optional(),
 
-    /** Shared secret protecting /api/cron/* routes (Vercel Cron sends it as a Bearer token). */
-    CRON_SECRET: z.string().optional(),
+    /**
+     * Shared secret protecting /api/cron/* routes (Vercel Cron sends it as a
+     * Bearer token). Required on Vercel builds so a deploy cannot silently
+     * ship an unscheduled (or unprotected) cron; the route also fails closed
+     * (401) when unset.
+     */
+    CRON_SECRET: process.env.VERCEL
+      ? z.string().min(16)
+      : z.string().min(16).optional(),
 
     /** "true" enables the demo workspace (fixture tenant, credentials-free entry). */
     DEMO_MODE: z.enum(["true", "false"]).optional(),
 
-    /** Public base URL, used to build the admin-consent redirect URI. */
-    APP_BASE_URL: z.string().url().optional(),
+    /**
+     * Public base URL, used to build the admin-consent redirect URI.
+     * Required on Vercel builds: without it the consent flow would send a
+     * relative redirect_uri, which Microsoft rejects.
+     */
+    APP_BASE_URL: process.env.VERCEL
+      ? z.string().url()
+      : z.string().url().optional(),
   },
 
   client: {},
@@ -66,6 +79,10 @@ export const env = createEnv({
 
 export const isDemoMode = () => env.DEMO_MODE === "true";
 
-export const appBaseUrl = () =>
-  env.APP_BASE_URL ??
-  (env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+export const appBaseUrl = () => {
+  if (env.APP_BASE_URL) return env.APP_BASE_URL;
+  if (env.NODE_ENV === "production") {
+    throw new Error("APP_BASE_URL must be set in production");
+  }
+  return "http://localhost:3000";
+};

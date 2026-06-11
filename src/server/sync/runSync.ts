@@ -202,16 +202,18 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
           },
         });
     }
-    await db
-      .delete(tenantSkus)
-      .where(
-        and(
-          eq(tenantSkus.tenantId, tenantId),
-          skus.length > 0
-            ? notInArray(tenantSkus.skuId, skus.map((s) => s.skuId))
-            : undefined,
-        ),
-      );
+    // Prune only when Graph returned data; an empty result keeps the last
+    // known inventory instead of wiping it (defensive against odd responses).
+    if (skus.length > 0) {
+      await db
+        .delete(tenantSkus)
+        .where(
+          and(
+            eq(tenantSkus.tenantId, tenantId),
+            notInArray(tenantSkus.skuId, skus.map((s) => s.skuId)),
+          ),
+        );
+    }
 
     for (const batch of chunk(joined.users, 250)) {
       await db
@@ -250,19 +252,19 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
           },
         });
     }
-    await db
-      .delete(tenantUsers)
-      .where(
-        and(
-          eq(tenantUsers.tenantId, tenantId),
-          joined.users.length > 0
-            ? notInArray(
-                tenantUsers.graphId,
-                joined.users.map((u) => u.graphId),
-              )
-            : undefined,
-        ),
-      );
+    if (joined.users.length > 0) {
+      await db
+        .delete(tenantUsers)
+        .where(
+          and(
+            eq(tenantUsers.tenantId, tenantId),
+            notInArray(
+              tenantUsers.graphId,
+              joined.users.map((u) => u.graphId),
+            ),
+          ),
+        );
+    }
 
     // Prefill missing price book rows from the static catalog.
     const existingPrices = await db.query.priceBook.findMany({
@@ -355,6 +357,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       .set({
         hasP1,
         concealedNames: concealmentSetting ?? joined.concealed,
+        activitySignal: joined.activitySignal,
         copilotSignal: joined.copilotSignal,
         usageAggregate: joined.usageAggregate ?? null,
         copilotAggregate: joined.copilotAggregate ?? null,
@@ -429,7 +432,11 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     })),
     prices,
     now,
-    activitySignal: tenant.hasP1 || !tenant.concealedNames ? "full" : "none",
+    // Prefer the signal recorded by the last sync; the boolean derivation is
+    // only a fallback for tenants synced before the column existed.
+    activitySignal:
+      tenant.activitySignal ??
+      (tenant.hasP1 || !tenant.concealedNames ? "full" : "none"),
     copilotSignal: tenant.copilotSignal ?? "none",
     usageAggregate: tenant.usageAggregate ?? undefined,
     copilotAggregate: tenant.copilotAggregate ?? undefined,

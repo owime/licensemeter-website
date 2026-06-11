@@ -16,17 +16,17 @@ demo mode for verification without a live tenant.
 
 ## Plan
 
-- [ ] 1. Plan + baseline commit (this file, git init)
-- [ ] 2. DB schema + env config; Drizzle with PGlite (dev) / postgres-js (prod)
-- [ ] 3. SKU catalog, GraphClient interface, MSAL app-only client, demo client, CSV parser
-- [ ] 4. Waste rules engine (6 rules) + remediation generator + vitest unit tests
-- [ ] 5. Auth.js multi-tenant Entra sign-in, demo provider, RBAC, admin-consent flow,
+- [x] 1. Plan + baseline commit (this file, git init)
+- [x] 2. DB schema + env config; Drizzle with PGlite (dev) / postgres-js (prod)
+- [x] 3. SKU catalog, GraphClient interface, MSAL app-only client, demo client, CSV parser
+- [x] 4. Waste rules engine (6 rules) + remediation generator + vitest unit tests
+- [x] 5. Auth.js multi-tenant Entra sign-in, demo provider, RBAC, admin-consent flow,
        sync pipeline, cron route
-- [ ] 6. Dashboard UI on App Router: landing, overview, findings, licenses, settings, connect
-- [ ] 7. Quality gates: lint + typecheck, unit tests, Playwright demo walkthrough
-- [ ] 8. Docs: README, SETUP.md, scripts/setup-entra.ps1, .env.example, vercel.json
-- [ ] 9. Independent code review (separate agent) against acceptance criteria; fix findings
-- [ ] 10. Final commit, review section below, handoff summary
+- [x] 6. Dashboard UI on App Router: landing, overview, findings, licenses, settings, connect
+- [x] 7. Quality gates: lint + typecheck, unit tests, Playwright demo walkthrough
+- [x] 8. Docs: README, SETUP.md, scripts/setup-entra.ps1, .env.example, vercel.json
+- [x] 9. Independent code review (separate agent) against acceptance criteria; fix findings
+- [x] 10. Final commit, review section below, handoff summary
 
 ## Acceptance criteria
 
@@ -55,4 +55,33 @@ demo mode for verification without a live tenant.
 
 ## Review
 
-(filled in at the end)
+All acceptance criteria pass (2026-06-11).
+
+Automated gates: eslint clean, tsc clean, 31/31 vitest tests, production build
+succeeds. Playwright walkthrough of the demo verified: landing, demo sign-in,
+overview (6,979.90 EUR spend / 2,407.90 EUR waste / 48 findings), per-rule
+counts (8/6/12/5/14/3), acknowledge + reopen, rule filters, price edit
+recalculation (Copilot 28.10 -> 30.00 moved the rule total from 393.40 to
+420 EUR/mo), findings + licenses CSV exports, generated PowerShell remediation
+script, cron route 401 without secret, settings capabilities/members/history.
+
+Bug found during E2E and fixed: concurrent layout+page rendering raced two
+demo syncs (duplicate-key failure). Fixed with a partial unique index
+(one running sync per tenant), upsert+prune persistence instead of
+delete+insert, and a per-process seed mutex.
+
+Independent code review (separate agent): no auth bypass or cross-tenant leak
+found. Confirmed findings fixed:
+- CRON_SECRET and APP_BASE_URL now build-time-required on Vercel deploys
+- Consent callback consumes the state nonce only after validation passes
+- Demo provider is registered only when DEMO_MODE=true
+- CSV exports guard against spreadsheet formula injection
+- Empty Graph responses no longer prune the stored inventory
+- activitySignal persisted on the tenant so price-edit re-analysis matches sync
+- PowerShell remediation escapes single quotes in UPNs
+
+Known limitations (documented in README roadmap): no billing, no email digest,
+Adobe connector not built, id_token accepted via TLS-direct token endpoint
+without local JWKS verification (standard confidential-client pattern; JWKS
+verification is a hardening follow-up), findings diff is row-at-a-time (fine
+at MVP scale).
