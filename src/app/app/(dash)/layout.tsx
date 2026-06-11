@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { redirect } from "next/navigation";
 
+import { BrandMark } from "~/components/BrandMark";
 import { MobileNav } from "~/components/workspace/MobileNav";
 import { NavLinks } from "~/components/workspace/NavLinks";
 import { WorkspaceSwitcher } from "~/components/workspace/WorkspaceSwitcher";
@@ -24,8 +25,9 @@ export default async function WorkspaceLayout({
         showPortfolio={ctx.workspaces.length > 1}
       />
 
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar lg:flex">
-        <Link href="/app" className="px-5 pt-6 pb-7">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto bg-sidebar lg:flex">
+        <Link href="/app" className="flex items-center gap-2 px-5 pt-6 pb-7">
+          <BrandMark size={20} tone="dark" />
           <span className="font-display text-lg tracking-tight text-paper">
             License<span className="text-rust-bright">Meter</span>
           </span>
@@ -63,7 +65,7 @@ export default async function WorkspaceLayout({
               redirect("/");
             }}
           >
-            <button className="mt-3 text-xs text-sidebar-soft underline-offset-4 hover:text-paper hover:underline">
+            <button className="mt-1 inline-flex min-h-11 items-center text-xs text-sidebar-soft underline-offset-4 transition hover:text-paper hover:underline">
               Sign out
             </button>
           </form>

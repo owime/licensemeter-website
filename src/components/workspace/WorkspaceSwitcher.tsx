@@ -28,7 +28,7 @@ export const WorkspaceSwitcher = ({
           router.refresh();
         })
       }
-      className="w-full border border-sidebar-line bg-sidebar text-sm font-medium text-paper focus:border-sidebar-soft"
+      className="w-full rounded-none border border-sidebar-line bg-sidebar px-2 py-1 text-sm font-medium text-paper focus:border-sidebar-soft"
     >
       {workspaces.map((w) => (
         <option key={w.id} value={w.id}>

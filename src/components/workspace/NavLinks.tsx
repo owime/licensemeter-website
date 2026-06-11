@@ -29,15 +29,20 @@ export const NavLinks = ({
         const active =
           item.href === "/app"
             ? pathname === "/app"
-            : pathname.startsWith(item.href);
+            : item.href === "/app/findings"
+              ? // The per-user drill-down is reached from findings.
+                pathname.startsWith("/app/findings") ||
+                pathname.startsWith("/app/users")
+              : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`border-l-2 px-4 py-2.5 text-sm transition ${
+            aria-current={active ? "page" : undefined}
+            className={`border-l-2 px-[18px] py-2.5 text-sm transition ${
               active
-                ? "border-rust bg-sidebar-line/40 font-medium text-paper"
+                ? "border-rust bg-sidebar-line/70 font-medium text-paper"
                 : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-paper"
             }`}
           >

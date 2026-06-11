@@ -41,7 +41,7 @@
   outline: 2px solid var(--color-rust);
   outline-offset: 2px;
 }
-.bg-sidebar :where(a, button):focus-visible {
+.bg-sidebar :where(a, button, select):focus-visible {
   outline-color: var(--color-paper);
 }
 

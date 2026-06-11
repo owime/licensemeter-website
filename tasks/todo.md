@@ -228,3 +228,47 @@ feature-sprint commit) and pushed to production.
 - Lesson (mine): zsh aborts the whole command line on a failed glob - an
   early `ls public/ src/app/*.ico` silently never ran, which hid the existing
   scaffold favicon until Next's conflict error surfaced it.
+
+---
+
+# Dashboard sidebar review + fixes (2026-06-11, same session)
+
+ui-design-expert review of live demo at 1440/1280/390 + short viewports.
+
+## Plan
+
+- [ ] P0-1 aside overflow-y-auto (Sign out clipped at short heights, no scroll)
+- [ ] P0-2 globals.css focus override: include select (rust ring 3.33:1 on
+      sidebar vs paper 17.18:1)
+- [ ] P1-1 /app/users/* keeps Findings nav item active
+- [ ] P1-2 aria-current="page" on active nav link
+- [ ] P1-3 drawer: Escape closes, aria-controls + id wiring
+- [ ] P1-4 sign-out tap targets min-h-11 (was 16px tall), + transition (P2-3)
+- [ ] P2-1 nav px-[18px] aligns text at 20px rail rhythm
+- [ ] P2-2 WorkspaceSwitcher select px-2 py-1 rounded-none
+- [ ] P2-4 active bg tint /40 -> /70
+- [ ] P2-5 BrandMark tone="dark" (paper bars + rust-bright strike, 5.46:1)
+      in desktop sidebar + mobile top bar; burger hit area to 44px
+
+## Acceptance criteria
+
+1. Sign out reachable at 1280x480 with Portfolio item present
+2. select focus ring is paper on sidebar; aria-current present; Escape closes
+   drawer; sign-out hit boxes >= 44px tall
+3. Mark visible on dark rail at 1440 and 390; geometry identical to light mark
+4. npm run check + tests pass; code-reviewer pass on the diff
+
+## Review (sidebar pass, end)
+
+All plan items implemented and verified live (demo session, Playwright):
+mark on both dark surfaces, aria-current (Findings stays active on
+/app/users/*), aside scrolls at short heights with Sign out reachable,
+burger 44x44 + aria-controls resolving in BOTH drawer states (drawer now
+stays mounted with hidden={!open} - Tailwind preflight [hidden] wins over
+.flex), Escape closes via document-level listener regardless of focus,
+sign-out hit boxes 44px, select included in the paper focus-ring override,
+nav text aligned at the 20px rail rhythm, active tint /70. Code review
+(separate agent): 2 P1s found (aria-controls vs conditional render; header-
+scoped Escape) - both fixed and re-verified. 42/42 tests, lint + tsc clean.
+Latent note, no action: startsWith matching could double-match if sibling
+routes ever share a prefix (e.g. /app/licenses-beta).
