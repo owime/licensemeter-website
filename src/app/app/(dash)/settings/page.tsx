@@ -19,6 +19,7 @@ import {
   syncRuns,
 } from "~/server/db/schema";
 import { sql } from "drizzle-orm";
+import { emailEnabled } from "~/server/email";
 
 const Card = ({
   title,
@@ -72,6 +73,7 @@ export default async function SettingsPage() {
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
   const isOwner = hasRole(ctx, "owner");
+  const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
   const [members, runs, activity] = await Promise.all([
     db.query.memberships.findMany({
@@ -275,9 +277,10 @@ export default async function SettingsPage() {
                 Invite
               </Button>
               <p className="w-full text-xs text-ink-faint">
-                Invited people get access when they first sign in with
-                Microsoft using this email. Same-tenant sign-in alone never
-                grants access.
+                {inviteEmailsActive
+                  ? "Invited people get an email with a sign-in link and gain access on their first Microsoft sign-in."
+                  : "Invited people get access when they first sign in with Microsoft using this email."}{" "}
+                Same-tenant sign-in alone never grants access.
               </p>
             </form>
           )}

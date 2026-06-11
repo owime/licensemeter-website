@@ -23,6 +23,8 @@ import {
 } from "~/server/db/schema";
 import { UmapiClient } from "~/server/adobe/client";
 import { encryptSecret } from "~/server/crypto";
+import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
+import { siteUrl } from "~/env";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import type { MembershipRole } from "~/server/types";
 
@@ -106,6 +108,26 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
       set: { role },
     });
   await audit(ctx, "member_added", { email, role });
+
+  // Invite email — never from the public demo workspace (open-relay risk),
+  // and never a reason for the invite itself to fail.
+  if (!ctx.tenant.isDemo && emailEnabled()) {
+    try {
+      await sendEmail({
+        to: [email],
+        subject: `${ctx.user.name || ctx.membership.email} invited you to LicenseMeter (${ctx.tenant.name ?? "workspace"})`,
+        html: inviteHtml({
+          inviterName: ctx.user.name || ctx.membership.email,
+          tenantName: ctx.tenant.name ?? ctx.tenant.tid,
+          role,
+          appUrl: siteUrl(),
+        }),
+      });
+    } catch (err) {
+      console.error("[invite] email failed", err);
+    }
+  }
+
   revalidateApp();
   return ok();
 };

@@ -40,6 +40,37 @@ const escapeHtml = (s: string): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+/** Workspace invitation: who invited you, where, as what — one click to sign in. */
+export const inviteHtml = (args: {
+  inviterName: string;
+  tenantName: string;
+  role: string;
+  appUrl: string;
+}): string => `
+<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  <h1 style="font-size:22px;font-weight:normal">
+    ${escapeHtml(args.inviterName)} invited you to LicenseMeter
+  </h1>
+  <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d;line-height:1.5">
+    You have been added to the workspace
+    <strong style="color:#1c1a16">${escapeHtml(args.tenantName)}</strong>
+    as <strong style="color:#1c1a16">${escapeHtml(args.role)}</strong>.
+    LicenseMeter shows which Microsoft 365 licenses the organization pays for
+    but nobody uses — with read-only access to license metadata, never content.
+  </p>
+  <p style="margin:24px 0">
+    <a href="${args.appUrl}/api/auth/signin"
+       style="font-family:Arial,sans-serif;font-size:14px;background:#1c1a16;color:#faf8f3;padding:12px 20px;text-decoration:none">
+      Sign in with Microsoft
+    </a>
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:12px;color:#a39d8f;line-height:1.5">
+    Use the Microsoft account for this email address. If you did not expect
+    this invitation, you can ignore this email — nothing is shared without
+    signing in.
+  </p>
+</div>`;
+
 /** Minimal, inline-styled digest that survives Outlook. */
 export const digestHtml = (args: {
   tenantName: string;
