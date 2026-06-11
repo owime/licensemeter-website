@@ -3,38 +3,69 @@ import { z } from "zod";
 
 export const env = createEnv({
   /**
-   * Specify your server-side environment variables schema here. This way you can ensure the app
-   * isn't built with invalid env vars.
+   * Server-side environment variables schema. The app fails the build on invalid env.
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
+
+    /**
+     * Postgres connection string for production (Neon/Supabase EU etc.).
+     * When unset, the app falls back to an embedded PGlite database under
+     * .pglite/ — development and demo only.
+     */
+    DATABASE_URL: z.string().url().optional(),
+
+    /** Auth.js session encryption secret. Generate with `openssl rand -base64 32`. */
+    AUTH_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string().min(32)
+        : z.string().min(10),
+
+    /**
+     * Sign-in app registration (delegated, multi-tenant, openid/profile/email only).
+     * Optional so the demo mode works without any Entra setup.
+     */
+    AUTH_MICROSOFT_ENTRA_ID_ID: z.string().optional(),
+    AUTH_MICROSOFT_ENTRA_ID_SECRET: z.string().optional(),
+
+    /**
+     * Connector app registration (application permissions, granted per customer
+     * tenant via the admin-consent flow). Read-only Graph scopes only.
+     */
+    CONNECTOR_CLIENT_ID: z.string().optional(),
+    CONNECTOR_CLIENT_SECRET: z.string().optional(),
+
+    /** Shared secret protecting /api/cron/* routes (Vercel Cron sends it as a Bearer token). */
+    CRON_SECRET: z.string().optional(),
+
+    /** "true" enables the demo workspace (fixture tenant, credentials-free entry). */
+    DEMO_MODE: z.enum(["true", "false"]).optional(),
+
+    /** Public base URL, used to build the admin-consent redirect URI. */
+    APP_BASE_URL: z.string().url().optional(),
   },
 
-  /**
-   * Specify your client-side environment variables schema here. This way you can ensure the app
-   * isn't built with invalid env vars. To expose them to the client, prefix them with
-   * `NEXT_PUBLIC_`.
-   */
-  client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
-  },
+  client: {},
 
-  /**
-   * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.
-   * middlewares) or client-side so we need to destruct manually.
-   */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+    DATABASE_URL: process.env.DATABASE_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_MICROSOFT_ENTRA_ID_ID: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,
+    AUTH_MICROSOFT_ENTRA_ID_SECRET: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET,
+    CONNECTOR_CLIENT_ID: process.env.CONNECTOR_CLIENT_ID,
+    CONNECTOR_CLIENT_SECRET: process.env.CONNECTOR_CLIENT_SECRET,
+    CRON_SECRET: process.env.CRON_SECRET,
+    DEMO_MODE: process.env.DEMO_MODE,
+    APP_BASE_URL: process.env.APP_BASE_URL,
   },
-  /**
-   * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
-   * useful for Docker builds.
-   */
+
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  /**
-   * Makes it so that empty strings are treated as undefined. `SOME_VAR: z.string()` and
-   * `SOME_VAR=''` will throw an error.
-   */
   emptyStringAsUndefined: true,
 });
+
+export const isDemoMode = () => env.DEMO_MODE === "true";
+
+export const appBaseUrl = () =>
+  env.APP_BASE_URL ??
+  (env.NODE_ENV === "development" ? "http://localhost:3000" : "");

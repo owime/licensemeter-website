@@ -44,3 +44,9 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# local embedded database (dev/demo)
+.pglite/
+
+# playwright artifacts
+.playwright-mcp/
