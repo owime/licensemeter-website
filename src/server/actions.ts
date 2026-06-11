@@ -19,9 +19,14 @@ import {
   findings,
   memberships,
   priceBook,
+  saasConnections,
+  saasSeats,
   tenants,
 } from "~/server/db/schema";
 import { UmapiClient } from "~/server/adobe/client";
+import { buildSaasClient, isSaasProvider } from "~/server/saas/registry";
+import { validSalesforceUrl } from "~/server/saas/salesforce";
+import { connectorSpec } from "~/lib/connectors";
 import { encryptSecret } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
 import { notifyOps } from "~/server/ops";
@@ -336,6 +341,118 @@ export const disconnectAdobe = async (): Promise<ActionResult> => {
     .where(eq(adobeConnections.tenantId, ctx.tenant.id));
   await db.delete(adobeUsers).where(eq(adobeUsers.tenantId, ctx.tenant.id));
   await audit(ctx, "adobe_disconnected", {});
+  await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+/** Connect a SaaS connector (Zoom / Atlassian / Salesforce). */
+export const connectSaasConnector = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace ships with demo connector data");
+
+  const read = (name: string) => {
+    const v = formData.get(name);
+    return typeof v === "string" ? v.trim() : "";
+  };
+  const providerRaw = read("provider");
+  if (!isSaasProvider(providerRaw)) return fail("Unknown connector");
+  const provider = providerRaw;
+  const spec = connectorSpec(provider);
+
+  const values: Record<string, string> = {};
+  for (const field of spec.fields) {
+    const v = read(field.name);
+    if (!v) return fail(`${field.label} is required`);
+    if (v.length > 1000) return fail(`${field.label} is too long`);
+    values[field.name] = v;
+  }
+  let orgRef = values.orgRef!;
+  if (provider === "salesforce") {
+    const url = validSalesforceUrl(orgRef);
+    if (!url)
+      return fail(
+        "The instance URL must be your https://<domain>.my.salesforce.com My Domain",
+      );
+    orgRef = url.origin;
+  }
+  const clientId = values.clientId ?? null;
+  const secret = values.secret!;
+
+  // Validate against the provider before storing anything. Full error goes
+  // to the server log only — provider error bodies can echo submitted
+  // credentials, so the browser gets a generic message.
+  try {
+    const client = await buildSaasClient(provider, {
+      orgRef,
+      clientId,
+      secret,
+    });
+    await client.getSeats();
+  } catch (err) {
+    console.error(`[saas connect] ${provider}:`, err);
+    return fail(
+      `${spec.label} rejected the credentials — check the values and try again`,
+    );
+  }
+
+  await db
+    .insert(saasConnections)
+    .values({
+      tenantId: ctx.tenant.id,
+      provider,
+      orgRef,
+      clientId,
+      secretEnc: encryptSecret(secret),
+    })
+    .onConflictDoUpdate({
+      target: [saasConnections.tenantId, saasConnections.provider],
+      set: {
+        orgRef,
+        clientId,
+        secretEnc: encryptSecret(secret),
+        lastSyncStatus: null,
+        lastSyncAt: null,
+      },
+    });
+  await audit(ctx, "connector_connected", { provider, orgRef });
+  await runSync(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+/** Remove a SaaS connection and its seats; findings auto-resolve. */
+export const disconnectSaasConnector = async (
+  providerRaw: string,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace ships with demo connector data");
+  if (!isSaasProvider(providerRaw)) return fail("Unknown connector");
+  const provider = providerRaw;
+
+  await db
+    .delete(saasConnections)
+    .where(
+      and(
+        eq(saasConnections.tenantId, ctx.tenant.id),
+        eq(saasConnections.provider, provider),
+      ),
+    );
+  await db
+    .delete(saasSeats)
+    .where(
+      and(
+        eq(saasSeats.tenantId, ctx.tenant.id),
+        eq(saasSeats.provider, provider),
+      ),
+    );
+  await audit(ctx, "connector_disconnected", { provider });
   await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return ok();

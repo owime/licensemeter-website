@@ -44,6 +44,21 @@ export const RULE_META: Record<
     short: "Adobe orphan",
     badgeClass: "bg-plum-soft text-plum",
   },
+  saas_disabled_in_entra: {
+    label: "Connected app seat, user disabled in Entra",
+    short: "App leak",
+    badgeClass: "bg-rust-soft text-rust-deep",
+  },
+  saas_orphaned: {
+    label: "Connected app seat without Entra account",
+    short: "App orphan",
+    badgeClass: "bg-plum-soft text-plum",
+  },
+  saas_inactive: {
+    label: "Connected app seat inactive",
+    short: "App idle",
+    badgeClass: "bg-gold-soft text-gold",
+  },
   overlapping_licenses: {
     label: "Suite + standalone double-pay",
     short: "Overlap",

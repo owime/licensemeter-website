@@ -6,6 +6,8 @@ import {
   adobeUsers as adobeUsersTable,
   findings,
   priceBook,
+  saasConnections,
+  saasSeats as saasSeatsTable,
   snapshots,
   syncRuns,
   tenantSkus,
@@ -14,8 +16,15 @@ import {
 } from "~/server/db/schema";
 import { DemoAdobeClient, UmapiClient } from "~/server/adobe/client";
 import { adobePriceKey, analyzeAdobeWaste } from "~/server/adobe/analyze";
+import { analyzeSaasWaste, saasPriceKey } from "~/server/saas/analyze";
+import {
+  buildSaasClient,
+  DEMO_SAAS_PRICES,
+  demoSaasClient,
+  SAAS_PROVIDERS,
+} from "~/server/saas/registry";
 import { decryptSecret } from "~/server/crypto";
-import type { AdobeUser } from "~/server/types";
+import type { AdobeUser, SaasProvider, SaasSeat } from "~/server/types";
 import { DemoGraphClient } from "~/server/graph/demoGraph";
 import { MsGraphClient } from "~/server/graph/msGraph";
 import { skuDefaultPriceCents, skuDisplayName } from "~/server/graph/skuCatalog";
@@ -222,6 +231,85 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       }
     }
 
+    // --- SaaS connectors (beta): Zoom, Atlassian, Salesforce ---------------
+    // Seats per provider that produced data this run. On a transient fetch
+    // failure the stored snapshot is analyzed instead, so findings survive a
+    // flaky provider API rather than auto-resolving and reopening.
+    const saasRows = new Map<SaasProvider, SaasSeat[]>();
+    const saasPersist = new Set<SaasProvider>();
+    const saasConns = tenant.isDemo
+      ? []
+      : await db.query.saasConnections.findMany({
+          where: eq(saasConnections.tenantId, tenantId),
+        });
+    const activeSaas: SaasProvider[] = tenant.isDemo
+      ? [...SAAS_PROVIDERS]
+      : saasConns.map((c) => c.provider);
+    for (const provider of activeSaas) {
+      const conn = saasConns.find((c) => c.provider === provider);
+      try {
+        const saasClient = tenant.isDemo
+          ? demoSaasClient(provider)
+          : await buildSaasClient(provider, {
+              orgRef: conn!.orgRef,
+              clientId: conn!.clientId,
+              secret: decryptSecret(conn!.secretEnc),
+            });
+        const seats = await saasClient.getSeats();
+        saasRows.set(provider, seats);
+        saasPersist.add(provider);
+        steps.push({
+          step: `${provider}Seats`,
+          status: "ok",
+          count: seats.length,
+        });
+        if (conn) {
+          await db
+            .update(saasConnections)
+            .set({ lastSyncAt: now, lastSyncStatus: "ok" })
+            .where(
+              and(
+                eq(saasConnections.tenantId, tenantId),
+                eq(saasConnections.provider, provider),
+              ),
+            );
+        }
+      } catch (err) {
+        steps.push({
+          step: `${provider}Seats`,
+          status: "warning",
+          message: errText(err),
+        });
+        const stored = await db.query.saasSeats.findMany({
+          where: and(
+            eq(saasSeatsTable.tenantId, tenantId),
+            eq(saasSeatsTable.provider, provider),
+          ),
+        });
+        saasRows.set(
+          provider,
+          stored.map((r) => ({
+            email: r.email,
+            displayName: r.displayName,
+            status: r.status,
+            products: r.products,
+            lastActiveAt: r.lastActiveAt,
+          })),
+        );
+        if (conn) {
+          await db
+            .update(saasConnections)
+            .set({ lastSyncAt: now, lastSyncStatus: "failed" })
+            .where(
+              and(
+                eq(saasConnections.tenantId, tenantId),
+                eq(saasConnections.provider, provider),
+              ),
+            );
+        }
+      }
+    }
+
     // --- Join + analyze ---------------------------------------------------
     const joined = joinSignals({ graphUsers, usageRows, copilotRows, hasP1 });
 
@@ -359,6 +447,62 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       }
     }
 
+    // Persist SaaS seats (upsert + prune) for providers that fetched cleanly.
+    for (const provider of saasPersist) {
+      const seats = saasRows.get(provider) ?? [];
+      if (seats.length > 0) {
+        await db
+          .insert(saasSeatsTable)
+          .values(
+            seats.map((s) => ({
+              tenantId,
+              provider,
+              email: s.email.toLowerCase(),
+              displayName: s.displayName,
+              status: s.status,
+              products: s.products,
+              lastActiveAt: s.lastActiveAt,
+              syncedAt: now,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [
+              saasSeatsTable.tenantId,
+              saasSeatsTable.provider,
+              saasSeatsTable.email,
+            ],
+            set: {
+              displayName: sql`excluded.display_name`,
+              status: sql`excluded.status`,
+              products: sql`excluded.products`,
+              lastActiveAt: sql`excluded.last_active_at`,
+              syncedAt: sql`excluded.synced_at`,
+            },
+          });
+        await db
+          .delete(saasSeatsTable)
+          .where(
+            and(
+              eq(saasSeatsTable.tenantId, tenantId),
+              eq(saasSeatsTable.provider, provider),
+              notInArray(
+                saasSeatsTable.email,
+                seats.map((s) => s.email.toLowerCase()),
+              ),
+            ),
+          );
+      } else {
+        await db
+          .delete(saasSeatsTable)
+          .where(
+            and(
+              eq(saasSeatsTable.tenantId, tenantId),
+              eq(saasSeatsTable.provider, provider),
+            ),
+          );
+      }
+    }
+
     // Prefill missing price book rows from the static catalog.
     const existingPrices = await db.query.priceBook.findMany({
       where: eq(priceBook.tenantId, tenantId),
@@ -401,6 +545,30 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
         )
         .onConflictDoNothing();
     }
+
+    // Prefill SaaS connector prices (demo gets plausible list estimates).
+    const missingSaas = [...saasRows.entries()]
+      .flatMap(([provider, seats]) =>
+        [...new Set(seats.flatMap((s) => s.products))].map((p) =>
+          saasPriceKey(provider, p),
+        ),
+      )
+      .filter((id) => !known.has(id));
+    if (missingSaas.length > 0) {
+      await db
+        .insert(priceBook)
+        .values(
+          missingSaas.map((id) => ({
+            tenantId,
+            skuId: id,
+            monthlyPriceCents: tenant.isDemo
+              ? (DEMO_SAAS_PRICES[id] ?? 0)
+              : 0,
+            source: "default" as const,
+          })),
+        )
+        .onConflictDoNothing();
+    }
     const prices = Object.fromEntries(
       (
         await db.query.priceBook.findMany({
@@ -425,16 +593,20 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       copilotAggregate: joined.copilotAggregate,
       inactiveDays: tenant.inactiveDays,
     });
-    const adobeFindings = analyzeAdobeWaste(
-      adobeRows,
-      joined.users.map((u) => ({
-        upn: u.upn,
-        displayName: u.displayName,
-        accountEnabled: u.accountEnabled,
-      })),
-      prices,
+    const entraIdentities = joined.users.map((u) => ({
+      upn: u.upn,
+      displayName: u.displayName,
+      accountEnabled: u.accountEnabled,
+    }));
+    const adobeFindings = analyzeAdobeWaste(adobeRows, entraIdentities, prices);
+    const saasFindings = [...saasRows.entries()].flatMap(
+      ([provider, seats]) =>
+        analyzeSaasWaste(provider, seats, entraIdentities, prices, {
+          inactiveDays: tenant.inactiveDays,
+          now,
+        }),
     );
-    const allFindings = newFindings.concat(adobeFindings);
+    const allFindings = newFindings.concat(adobeFindings, saasFindings);
     steps.push({ step: "wasteAnalysis", status: "ok", count: allFindings.length });
 
     await diffFindings(tenantId, allFindings, now);
@@ -533,14 +705,18 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
   });
   if (!tenant) throw new Error(`Unknown tenant ${tenantId}`);
 
-  const [skuRows, userRows, priceRows, adobeRows] = await Promise.all([
-    db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
-    db.query.tenantUsers.findMany({ where: eq(tenantUsers.tenantId, tenantId) }),
-    db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
-    db.query.adobeUsers.findMany({
-      where: eq(adobeUsersTable.tenantId, tenantId),
-    }),
-  ]);
+  const [skuRows, userRows, priceRows, adobeRows, saasSeatRows] =
+    await Promise.all([
+      db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
+      db.query.tenantUsers.findMany({ where: eq(tenantUsers.tenantId, tenantId) }),
+      db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
+      db.query.adobeUsers.findMany({
+        where: eq(adobeUsersTable.tenantId, tenantId),
+      }),
+      db.query.saasSeats.findMany({
+        where: eq(saasSeatsTable.tenantId, tenantId),
+      }),
+    ]);
   if (skuRows.length === 0 && userRows.length === 0) return;
 
   const now = new Date();
@@ -583,21 +759,45 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     inactiveDays: tenant.inactiveDays,
   });
 
+  const entraIdentities = userRows.map((r) => ({
+    upn: r.upn,
+    displayName: r.displayName,
+    accountEnabled: r.accountEnabled,
+  }));
   const adobeFindings = analyzeAdobeWaste(
     adobeRows.map((r) => ({
       email: r.email,
       status: r.status,
       products: r.products,
     })),
-    userRows.map((r) => ({
-      upn: r.upn,
-      displayName: r.displayName,
-      accountEnabled: r.accountEnabled,
-    })),
+    entraIdentities,
     prices,
   );
+  const seatsByProvider = new Map<SaasProvider, SaasSeat[]>();
+  for (const r of saasSeatRows) {
+    const list = seatsByProvider.get(r.provider) ?? [];
+    list.push({
+      email: r.email,
+      displayName: r.displayName,
+      status: r.status,
+      products: r.products,
+      lastActiveAt: r.lastActiveAt,
+    });
+    seatsByProvider.set(r.provider, list);
+  }
+  const saasFindings = [...seatsByProvider.entries()].flatMap(
+    ([provider, seats]) =>
+      analyzeSaasWaste(provider, seats, entraIdentities, prices, {
+        inactiveDays: tenant.inactiveDays,
+        now,
+      }),
+  );
 
-  await diffFindings(tenantId, newFindings.concat(adobeFindings), now);
+  await diffFindings(
+    tenantId,
+    newFindings.concat(adobeFindings, saasFindings),
+    now,
+  );
 
   const totalMonthlySpendCents = skuRows.reduce(
     (sum, s) => sum + s.consumedUnits * (prices[s.skuId] ?? 0),

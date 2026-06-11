@@ -97,9 +97,9 @@ export default async function MarketingLayout({
               </span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
-              License waste analytics for Microsoft 365, with an Adobe
-              connector in beta. Read-only, EU-hosted, built for IT and
-              finance.
+              License waste analytics for Microsoft 365, with Adobe, Zoom,
+              Atlassian and Salesforce connectors in beta. Read-only,
+              EU-hosted, built for IT and finance.
             </p>
           </div>
           {FOOTER_COLUMNS.map((col) => (
@@ -124,7 +124,11 @@ export default async function MarketingLayout({
         </div>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 border-t border-line px-6 py-6 text-xs text-ink-faint">
           <span>LicenseMeter — built by Ugur Koc</span>
-          <span>Independent tool. Not affiliated with Microsoft.</span>
+          <span>
+            Independent tool, not affiliated with Microsoft, Adobe, Zoom,
+            Atlassian or Salesforce. All product names are trademarks of their
+            respective owners.
+          </span>
         </div>
       </footer>
     </div>

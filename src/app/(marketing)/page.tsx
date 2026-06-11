@@ -140,6 +140,10 @@ export default function LandingPage() {
           <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight">
             Six waste rules, every finding priced in euros.
           </h2>
+          <p className="mt-3 text-sm text-ink-soft">
+            Microsoft 365 today — Adobe, Zoom, Atlassian and Salesforce
+            connectors in beta.
+          </p>
           <div className="mt-10 grid gap-10 md:grid-cols-3">
             {STEPS.map((step) => (
               <div key={step.n}>

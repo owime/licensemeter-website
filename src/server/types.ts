@@ -32,6 +32,9 @@ export type SyncStep = {
     | "usageReports"
     | "copilotUsage"
     | "adobeUsers"
+    | "zoomSeats"
+    | "atlassianSeats"
+    | "salesforceSeats"
     | "wasteAnalysis";
   status: "ok" | "warning" | "failed" | "skipped";
   message?: string;
@@ -47,8 +50,26 @@ export type WasteRuleId =
   | "licensed_guest"
   | "adobe_disabled_in_entra"
   | "adobe_orphaned"
+  | "saas_disabled_in_entra"
+  | "saas_orphaned"
+  | "saas_inactive"
   | "overlapping_licenses"
   | "service_plans_disabled";
+
+/** Connectors built on the generic SaaS framework (Adobe predates it). */
+export type SaasProvider = "zoom" | "atlassian" | "salesforce";
+
+/** One seat in a connected SaaS product, normalized across providers. */
+export type SaasSeat = {
+  email: string;
+  displayName: string | null;
+  /** "active" or a provider-specific non-active state. */
+  status: string;
+  /** Paid products/plans held by this seat, priced via <provider>:<product>. */
+  products: string[];
+  /** Last sign-in/activity, null when the provider exposes no signal. */
+  lastActiveAt: Date | null;
+};
 
 /** One Adobe Admin Console user as returned by the User Management API. */
 export type AdobeUser = {
@@ -70,6 +91,8 @@ export type AuditAction =
   | "currency_changed"
   | "adobe_connected"
   | "adobe_disconnected"
+  | "connector_connected"
+  | "connector_disconnected"
   | "workspace_switched"
   | "invite_resent"
   | "export_report"

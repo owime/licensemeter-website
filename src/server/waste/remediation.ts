@@ -16,6 +16,7 @@ type RemediationDetail = {
   unassigned?: number;
   skuPartNumber?: string;
   redundantSkuIds?: string[];
+  provider?: string;
 };
 
 const RULE_HEADERS: Record<string, string> = {
@@ -27,6 +28,9 @@ const RULE_HEADERS: Record<string, string> = {
   shelfware: "Unassigned paid seats",
   adobe_disabled_in_entra: "Adobe seats held by Entra-disabled users",
   adobe_orphaned: "Adobe seats without an Entra account",
+  saas_disabled_in_entra: "Connected app seats held by Entra-disabled users",
+  saas_orphaned: "Connected app seats without an Entra account",
+  saas_inactive: "Connected app seats inactive past the threshold",
   overlapping_licenses: "Suite + standalone double-pay",
   service_plans_disabled: "Paid suites with disabled service plans",
 };
@@ -72,6 +76,25 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
           `# ${f.title}`,
           `#   Remove the user in the Adobe Admin Console (adminconsole.adobe.com > Users)`,
           `#   or via your Adobe directory sync. PowerShell cannot manage Adobe seats.`,
+          "",
+        );
+        continue;
+      }
+
+      if (f.rule.startsWith("saas_")) {
+        const consoles: Record<string, string> = {
+          zoom: "Zoom web portal (admin.zoom.us > User Management) — downgrade to Basic or remove",
+          atlassian:
+            "Atlassian admin (admin.atlassian.com > Directory) — remove product access",
+          salesforce:
+            "Salesforce Setup > Users — deactivate or reassign the license",
+        };
+        const provider =
+          typeof detail.provider === "string" ? detail.provider : "";
+        lines.push(
+          `# ${f.title}`,
+          `#   ${consoles[provider] ?? "Remove the seat in the provider's admin console."}`,
+          `#   PowerShell cannot manage ${provider || "third-party"} seats.`,
           "",
         );
         continue;

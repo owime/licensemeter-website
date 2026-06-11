@@ -18,6 +18,7 @@ import type {
   AuditAction,
   FindingStatus,
   MembershipRole,
+  SaasProvider,
   SyncRunStatus,
   SyncStep,
   UserLicense,
@@ -247,6 +248,51 @@ export const adobeUsers = pgTable(
       .defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.tenantId, t.email] })],
+);
+
+/**
+ * One row per connected SaaS provider (zoom/atlassian/salesforce). orgRef is
+ * the provider-side account reference (Zoom account ID, Atlassian org ID,
+ * Salesforce My Domain URL); clientId is null where the provider uses a
+ * bare API key. The secret is AES-256-GCM encrypted like the Adobe one.
+ */
+export const saasConnections = pgTable(
+  "saas_connections",
+  {
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    provider: text("provider").$type<SaasProvider>().notNull(),
+    orgRef: text("org_ref").notNull(),
+    clientId: text("client_id"),
+    secretEnc: text("secret_enc").notNull(),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    lastSyncStatus: text("last_sync_status"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.provider] })],
+);
+
+/** Latest seat snapshot per tenant and provider, normalized across providers. */
+export const saasSeats = pgTable(
+  "saas_seats",
+  {
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    provider: text("provider").$type<SaasProvider>().notNull(),
+    email: text("email").notNull(),
+    displayName: text("display_name"),
+    status: text("status").notNull().default("active"),
+    products: jsonb("products").$type<string[]>().notNull().default([]),
+    lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
+    syncedAt: timestamp("synced_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.provider, t.email] })],
 );
 
 /** Who did what, per workspace. Cascade-deleted with the tenant (GDPR-clean). */

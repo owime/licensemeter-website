@@ -1,0 +1,101 @@
+import type { SaasProvider } from "~/server/types";
+
+/**
+ * Client-safe connector descriptions: labels, credential field specs and
+ * page copy. No server imports — this file is shared by client components,
+ * server pages and the sidebar nav. The server-side counterpart (clients,
+ * demo fixtures) lives in src/server/saas/registry.ts.
+ */
+
+export const CONNECTOR_LABELS: Record<SaasProvider, string> = {
+  zoom: "Zoom",
+  atlassian: "Atlassian",
+  salesforce: "Salesforce",
+};
+
+export type ConnectorField = {
+  name: "orgRef" | "clientId" | "secret";
+  label: string;
+  placeholder: string;
+  secret?: boolean;
+};
+
+export type ConnectorSpec = {
+  provider: SaasProvider;
+  label: string;
+  /** What the seats are called in product copy. */
+  seatNoun: string;
+  fields: ConnectorField[];
+  /** How the admin obtains the credentials, shown above the form. */
+  setupHint: string;
+  /** What the connector detects, shown on the subpage. */
+  detects: string[];
+  /** Whether the provider exposes a last-activity signal. */
+  hasActivity: boolean;
+  connectCta: string;
+};
+
+export const CONNECTORS: ConnectorSpec[] = [
+  {
+    provider: "zoom",
+    label: "Zoom",
+    seatNoun: "Licensed Zoom seats",
+    fields: [
+      { name: "orgRef", label: "Account ID", placeholder: "from the Server-to-Server OAuth app" },
+      { name: "clientId", label: "Client ID", placeholder: "from the same app" },
+      { name: "secret", label: "Client secret", placeholder: "Server-to-Server OAuth", secret: true },
+    ],
+    setupHint:
+      "A Zoom admin creates a Server-to-Server OAuth app in the Zoom App Marketplace (Develop > Build App) with the user:read:admin scope, then pastes the three values here. Stored encrypted, used read-only.",
+    detects: [
+      "Licensed Zoom seats held by accounts that are disabled in Entra ID.",
+      "Licensed seats with no matching directory account at all.",
+      "Licensed seats nobody has signed into for your inactivity threshold — common where Teams took over.",
+    ],
+    hasActivity: true,
+    connectCta: "Connect Zoom",
+  },
+  {
+    provider: "atlassian",
+    label: "Atlassian",
+    seatNoun: "Jira and Confluence seats",
+    fields: [
+      { name: "orgRef", label: "Organization ID", placeholder: "from admin.atlassian.com" },
+      { name: "secret", label: "API key", placeholder: "Settings > API keys", secret: true },
+    ],
+    setupHint:
+      "An organization admin creates an API key under admin.atlassian.com > Settings > API keys and pastes the organization ID plus the key here. Stored encrypted, used read-only — managed users and product access only, nothing from inside Jira or Confluence.",
+    detects: [
+      "Jira and Confluence seats held by accounts that are disabled in Entra ID.",
+      "Seats with no matching directory account at all.",
+      "Seats with no product activity for your inactivity threshold, where Atlassian reports it.",
+    ],
+    hasActivity: true,
+    connectCta: "Connect Atlassian",
+  },
+  {
+    provider: "salesforce",
+    label: "Salesforce",
+    seatNoun: "Salesforce user licenses",
+    fields: [
+      { name: "orgRef", label: "My Domain URL", placeholder: "https://yourorg.my.salesforce.com" },
+      { name: "clientId", label: "Consumer key", placeholder: "from the Connected App" },
+      { name: "secret", label: "Consumer secret", placeholder: "Connected App", secret: true },
+    ],
+    setupHint:
+      "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and a read-only integration user as the run-as user, then pastes the My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",
+    detects: [
+      "Salesforce licenses held by accounts that are disabled in Entra ID — at Salesforce prices, usually the single most expensive leak.",
+      "Licenses with no matching directory account at all.",
+      "Licenses nobody has logged into for your inactivity threshold.",
+    ],
+    hasActivity: true,
+    connectCta: "Connect Salesforce",
+  },
+];
+
+export const connectorSpec = (provider: SaasProvider): ConnectorSpec => {
+  const spec = CONNECTORS.find((c) => c.provider === provider);
+  if (!spec) throw new Error(`Unknown connector ${provider}`);
+  return spec;
+};

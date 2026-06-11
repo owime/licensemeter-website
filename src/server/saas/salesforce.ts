@@ -1,0 +1,111 @@
+import type { SaasSeat } from "~/server/types";
+import type { SaasClient } from "~/server/saas/registry";
+
+const API_VERSION = "v59.0";
+
+type SalesforceUserRecord = {
+  Email?: string;
+  Name?: string;
+  LastLoginDate?: string | null;
+  Profile?: { UserLicense?: { Name?: string } | null } | null;
+};
+
+export const mapSalesforceRecords = (
+  records: SalesforceUserRecord[],
+): SaasSeat[] =>
+  records
+    .filter((r) => r.Email)
+    .map((r) => ({
+      email: r.Email!,
+      displayName: r.Name ?? null,
+      status: "active",
+      products: [r.Profile?.UserLicense?.Name ?? "Salesforce"],
+      lastActiveAt: r.LastLoginDate ? new Date(r.LastLoginDate) : null,
+    }));
+
+/**
+ * The customer admin's My Domain URL is user input that we fetch
+ * server-side, so it is pinned to Salesforce-owned hosts (SSRF guard).
+ */
+export const validSalesforceUrl = (raw: string): URL | null => {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  if (url.pathname !== "/" || url.search || url.hash || url.port) return null;
+  return url.hostname.endsWith(".my.salesforce.com") ? url : null;
+};
+
+/**
+ * Salesforce OAuth 2.0 Client Credentials Flow against a Connected App with
+ * a read-only run-as integration user. One SOQL query covers everything:
+ * active standard users, their license type, and LastLoginDate.
+ */
+export class SalesforceClient implements SaasClient {
+  constructor(
+    private readonly cfg: {
+      instanceUrl: string;
+      clientId: string;
+      clientSecret: string;
+    },
+  ) {}
+
+  private base(): string {
+    const url = validSalesforceUrl(this.cfg.instanceUrl);
+    if (!url) {
+      throw new Error(
+        "Instance URL must be your https://<domain>.my.salesforce.com My Domain",
+      );
+    }
+    return url.origin;
+  }
+
+  private async getToken(): Promise<string> {
+    const res = await fetch(`${this.base()}/services/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: this.cfg.clientId,
+        client_secret: this.cfg.clientSecret,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!res.ok)
+      throw new Error(`Salesforce token request failed (${res.status})`);
+    const body = (await res.json()) as { access_token?: string };
+    if (!body.access_token)
+      throw new Error("Salesforce token response missing access_token");
+    return body.access_token;
+  }
+
+  async getSeats(): Promise<SaasSeat[]> {
+    const token = await this.getToken();
+    const soql =
+      "SELECT Email, Name, LastLoginDate, Profile.UserLicense.Name " +
+      "FROM User WHERE IsActive = true AND UserType = 'Standard'";
+    const seats: SaasSeat[] = [];
+    let url = `${this.base()}/services/data/${API_VERSION}/query?q=${encodeURIComponent(soql)}`;
+    for (let page = 0; page < 200; page++) {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!res.ok)
+        throw new Error(`Salesforce query failed (${res.status})`);
+      const body = (await res.json()) as {
+        records?: SalesforceUserRecord[];
+        done?: boolean;
+        nextRecordsUrl?: string;
+      };
+      seats.push(...mapSalesforceRecords(body.records ?? []));
+      if (body.done !== false || !body.nextRecordsUrl) break;
+      // nextRecordsUrl is a path; keep it on the validated instance origin.
+      url = `${this.base()}${body.nextRecordsUrl}`;
+    }
+    return seats;
+  }
+}

@@ -17,9 +17,11 @@ import {
   adobeConnections,
   auditLog,
   memberships,
+  saasConnections,
   syncRuns,
 } from "~/server/db/schema";
 import { emailEnabled } from "~/server/email";
+import { CONNECTORS } from "~/lib/connectors";
 
 const Capability = ({
   ok,
@@ -58,7 +60,7 @@ export default async function SettingsPage() {
   const isOwner = hasRole(ctx, "owner");
   const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
-  const [members, runs, activity, adobeConn] = await Promise.all([
+  const [members, runs, activity, adobeConn, saasConns] = await Promise.all([
     db.query.memberships.findMany({
       where: eq(memberships.tenantId, ctx.tenant.id),
     }),
@@ -77,13 +79,34 @@ export default async function SettingsPage() {
     db.query.adobeConnections.findFirst({
       where: eq(adobeConnections.tenantId, ctx.tenant.id),
     }),
+    db.query.saasConnections.findMany({
+      where: eq(saasConnections.tenantId, ctx.tenant.id),
+    }),
   ]);
 
-  const adobeStatus = ctx.tenant.isDemo
-    ? "Connected with demo data"
-    : adobeConn
-      ? "Connected"
-      : "Not connected";
+  const statusOf = (connected: boolean) =>
+    ctx.tenant.isDemo
+      ? "Connected with demo data"
+      : connected
+        ? "Connected"
+        : "Not connected";
+  const connectorRows = [
+    {
+      label: "Adobe",
+      href: "/app/settings/adobe",
+      connected: Boolean(adobeConn),
+      status: statusOf(Boolean(adobeConn)),
+    },
+    ...CONNECTORS.map((c) => {
+      const connected = saasConns.some((s) => s.provider === c.provider);
+      return {
+        label: c.label,
+        href: `/app/settings/${c.provider}`,
+        connected,
+        status: statusOf(connected),
+      };
+    }),
+  ];
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
@@ -315,28 +338,33 @@ export default async function SettingsPage() {
         </Card>
 
         <Card title="Connectors">
-          <ul className="flex flex-col">
-            <li className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="font-medium">Adobe</span>
-                <Pill tone="gold">Beta</Pill>
-                <span className="text-ink-soft">{adobeStatus}</span>
-              </div>
-              <Link
-                href="/app/settings/adobe"
-                className="text-xs font-medium text-ink underline-offset-4 hover:text-rust-text hover:underline"
+          <ul className="flex flex-col gap-2.5">
+            {connectorRows.map((row) => (
+              <li
+                key={row.href}
+                className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-2.5 text-sm last:border-b-0 last:pb-0"
               >
-                {!isAdmin
-                  ? "View →"
-                  : adobeConn || ctx.tenant.isDemo
-                    ? "Manage →"
-                    : "Configure →"}
-              </Link>
-            </li>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium">{row.label}</span>
+                  <Pill tone="gold">Beta</Pill>
+                  <span className="text-ink-soft">{row.status}</span>
+                </div>
+                <Link
+                  href={row.href}
+                  className="text-xs font-medium text-ink underline-offset-4 hover:text-rust-text hover:underline"
+                >
+                  {!isAdmin
+                    ? "View →"
+                    : row.connected || ctx.tenant.isDemo
+                      ? "Manage →"
+                      : "Configure →"}
+                </Link>
+              </li>
+            ))}
           </ul>
           <p className="mt-3 text-xs text-ink-faint">
-            Each connector has its own page under Settings. More connectors
-            are on the way.
+            Each connector has its own page under Settings. Seat assignments
+            only, never content.
           </p>
         </Card>
 

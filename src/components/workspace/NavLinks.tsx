@@ -20,7 +20,12 @@ const ITEMS: NavItem[] = [
   {
     href: "/app/settings",
     label: "Settings",
-    children: [{ href: "/app/settings/adobe", label: "Adobe connector" }],
+    children: [
+      { href: "/app/settings/adobe", label: "Adobe" },
+      { href: "/app/settings/zoom", label: "Zoom" },
+      { href: "/app/settings/atlassian", label: "Atlassian" },
+      { href: "/app/settings/salesforce", label: "Salesforce" },
+    ],
   },
 ];
 

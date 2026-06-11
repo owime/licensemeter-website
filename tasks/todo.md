@@ -323,3 +323,63 @@ extracted to ui.tsx. Code review (separate agent): revalidation safe
 (revalidatePath "/app" layout-level), no redirect staleness, no cycles; its
 2 findings fixed: role-aware link label, adobeConn folded into Promise.all.
 42/42 tests, lint + tsc clean.
+
+---
+
+# Zoom + Atlassian + Salesforce connectors (2026-06-12)
+
+User: "lets add all 3" + logo question (answered: text names yes, official
+logos need permission - implement text treatment + trademark disclaimer).
+
+## Plan
+
+- [ ] Generic framework: saas_connections + saas_seats tables (provider
+      column), SaasProvider/SaasSeat types, rules saas_disabled_in_entra /
+      saas_orphaned / saas_inactive
+- [ ] Drizzle migration 0005 (dev push + prod apply via Supabase MCP with
+      RLS + licensemeter_app grants matching adobe tables)
+- [ ] Clients: zoom (S2S OAuth, /users, type=Licensed, last_login_time),
+      atlassian (org API key, admin /users, product_access + last_active),
+      salesforce (client-credentials, SOQL User + Profile.UserLicense.Name,
+      LastLoginDate; instanceUrl restricted to *.my.salesforce.com - SSRF)
+- [ ] Pure mappers exported per client + vitest coverage; generic analyze
+      with null-activity conservatism (no finding without a signal)
+- [ ] runSync + runAnalysis wiring (per-provider steps, upsert+prune,
+      price prefill <provider>:<product>, demo price defaults)
+- [ ] Actions connectSaas/disconnectSaas (admin, validate-before-store,
+      encrypted secret, audit connector_connected/_disconnected)
+- [ ] Demo fixtures: distinct disabled leavers per provider (140 zoom,
+      141 atlassian, 142 salesforce), inactive zoom/atlassian seats, orphans
+- [ ] UI: lib/connectors spec (client-safe), SaasConnectForm, shared
+      connector page + 3 subpages, NavLinks children x3, Connectors card
+      rows x3
+- [ ] Landing: "Microsoft 365 today. Adobe, Zoom, Atlassian and Salesforce
+      in beta." line; footer trademark disclaimer; security stored-data line
+
+## Acceptance criteria
+
+1. Demo workspace (fresh seed) shows findings from all 3 new providers with
+   priced impact; subpages render all states; nav shows 4 children
+2. Rules appear in findings UI badges/filters without extra wiring
+3. No SSRF: salesforce instanceUrl validated; all other hosts fixed
+4. tsc + lint + vitest green (new tests for mappers + analyze)
+5. Prod migration applied (additive) with RLS before any push
+6. Code-reviewer pass; logos answered with safe treatment implemented
+
+## Review (3 connectors, end)
+
+All plan items shipped and verified live on the demo workspace: sync steps
+zoomSeats:6 / atlassianSeats:5 / salesforceSeats:3, findings 51 -> 59 (the
+exact 8 expected: 3 disabled-in-Entra leaks incl. the EUR 165 Salesforce
+seat, 3 inactive, 2 orphans), badges App leak / App orphan / App idle render,
+Connectors card 4 rows, sidebar children x4, subpages render demo state,
+landing + footer + security copy updated with text-only names and the
+trademark disclaimer. 54/54 tests (12 new), tsc + lint clean. Prod migration
+saas_connectors applied via Supabase with RLS + app_all policies + grants
+mirroring the adobe tables (additive; live code unaffected until deploy).
+Framework improvement over the Adobe pattern: transient provider-API failure
+analyzes stored seats instead of auto-resolving findings. Code review
+(separate agent): no P0; P1 fixed (connect-time provider errors no longer
+echoed to the browser - server log only); P2 addressed (failed-sync hint on
+the connector page). Known follow-up: Adobe still auto-resolves findings on
+transient API failure - port the stored-seat fallback to it.
