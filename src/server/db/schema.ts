@@ -213,6 +213,20 @@ export const syncRuns = pgTable(
   ],
 );
 
+/** Launch-update / security-one-pager requests from the landing page. */
+export const emailSignups = pgTable(
+  "email_signups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    source: text("source").notNull().default("landing"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("email_signups_email_idx").on(t.email)],
+);
+
 /** One row per tenant per day for trend lines. */
 export const snapshots = pgTable(
   "snapshots",

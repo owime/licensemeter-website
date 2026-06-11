@@ -6,7 +6,13 @@ import { redirect } from "next/navigation";
 
 import { apiAccess } from "~/server/access";
 import { db } from "~/server/db";
-import { findings, memberships, priceBook, tenants } from "~/server/db/schema";
+import {
+  emailSignups,
+  findings,
+  memberships,
+  priceBook,
+  tenants,
+} from "~/server/db/schema";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import type { MembershipRole } from "~/server/types";
 
@@ -137,10 +143,31 @@ export const triggerSync = async (): Promise<ActionResult> => {
   return result.status === "failed" ? fail("Sync failed; see sync history") : ok();
 };
 
+/**
+ * Public email capture from the landing page (no auth — visitors).
+ * Honeypot field + format check + unique constraint keep junk out.
+ */
+export const captureEmail = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  if (formData.get("website")) return ok(); // honeypot: pretend success to bots
+  const raw = formData.get("email");
+  const email = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  if (email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return fail("Please enter a valid email address");
+  }
+  await db
+    .insert(emailSignups)
+    .values({ email, source: "landing" })
+    .onConflictDoNothing();
+  return ok();
+};
+
 /** Deletes the workspace and all synced data (cascade). Owner only. */
 export const disconnectTenant = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("owner");
   if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail("The demo workspace cannot be disconnected");
   await db.delete(tenants).where(eq(tenants.id, ctx.tenant.id));
   revalidatePath("/", "layout");
   redirect("/");

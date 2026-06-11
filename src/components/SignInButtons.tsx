@@ -9,6 +9,11 @@ const MicrosoftMark = () => (
   </svg>
 );
 
+/**
+ * Demo-first CTA hierarchy: the zero-friction demo is the primary action,
+ * connecting a real tenant is the considered second step. When demo mode is
+ * off, the Microsoft sign-in takes the primary slot.
+ */
 export const SignInButtons = ({
   entraConfigured,
   demoEnabled,
@@ -18,32 +23,39 @@ export const SignInButtons = ({
 }) => (
   <div>
     <div className="flex flex-wrap items-center gap-3">
+      {demoEnabled && (
+        <form action="/api/auth/demo" method="post">
+          <button className={buttonClass("primary")}>
+            See it on a live demo tenant
+          </button>
+        </form>
+      )}
       {entraConfigured ? (
-        <a href="/api/auth/signin" className={buttonClass("primary")}>
+        <a
+          href="/api/auth/signin"
+          className={buttonClass(demoEnabled ? "secondary" : "primary")}
+        >
           <MicrosoftMark />
-          Run a free waste scan
+          Run a free scan on your tenant
         </a>
       ) : (
         <span
           aria-disabled="true"
           title="Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
-          className={buttonClass("primary", "cursor-not-allowed opacity-40")}
+          className={buttonClass(
+            demoEnabled ? "secondary" : "primary",
+            "cursor-not-allowed opacity-40",
+          )}
         >
           <MicrosoftMark />
-          Run a free waste scan
+          Run a free scan on your tenant
         </span>
-      )}
-      {demoEnabled && (
-        <form action="/api/auth/demo" method="post">
-          <button className={buttonClass("secondary")}>
-            Explore the demo workspace
-          </button>
-        </form>
       )}
     </div>
     <p className="mt-3 text-xs text-ink-faint">
-      Signs you in with Microsoft. The read-only consent for your tenant is a
-      separate, clearly explained step.
+      The demo needs no account. Scanning your own tenant signs you in with
+      Microsoft first — the read-only consent is a separate, clearly explained
+      step.
     </p>
   </div>
 );

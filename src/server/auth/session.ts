@@ -8,8 +8,13 @@ import { env } from "~/env";
  * user's own identity claims (nothing confidential to its holder).
  */
 
-export const SESSION_COOKIE = "lm_session";
-export const OAUTH_COOKIE = "lm_oauth";
+/**
+ * __Host- prefix in production locks the cookie to this exact host over HTTPS
+ * (no subdomain override). Plain names in dev where http://localhost is used.
+ */
+const isProd = env.NODE_ENV === "production";
+export const SESSION_COOKIE = isProd ? "__Host-lm_session" : "lm_session";
+export const OAUTH_COOKIE = isProd ? "__Host-lm_oauth" : "lm_oauth";
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
 const OAUTH_MAX_AGE = 10 * 60; // state+verifier live only for the redirect leg
@@ -62,7 +67,8 @@ export const createOAuthToken = async (payload: {
 const verifyToken = async <T>(token: string | undefined): Promise<T | null> => {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, key);
+    // Pin to the exact algorithm used at issuance.
+    const { payload } = await jwtVerify(token, key, { algorithms: ["HS256"] });
     return payload as T;
   } catch {
     return null;

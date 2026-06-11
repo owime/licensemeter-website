@@ -160,12 +160,14 @@ export default function SecurityPage() {
 
       <Section title="Publisher verification">
         <p>
-          The LicenseMeter app registrations are operated by a verified
-          Microsoft partner publisher.
-          {/* TODO before launch: set the real status once publisher verification completes. */}{" "}
-          Microsoft shows the verified-publisher checkmark directly in the
-          consent dialog, so your admin can confirm it independently of this
-          page.
+          Microsoft publisher verification for the LicenseMeter app
+          registrations is in progress.
+          {/* TODO: update this wording the day verification completes. */}{" "}
+          Until it completes, the consent dialog shows the apps as unverified —
+          and tenants with strict consent policies may block them. Microsoft
+          displays the verification status directly in the consent dialog, so
+          your admin can always confirm the current state independently of
+          this page.
         </p>
       </Section>
 

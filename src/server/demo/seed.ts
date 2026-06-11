@@ -14,8 +14,11 @@ import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "./constants";
 let seeding: Promise<void> | null = null;
 
 export const ensureDemoWorkspace = (): Promise<void> => {
-  seeding ??= seedDemoWorkspace().finally(() => {
+  // Successful seeds stay latched for the process lifetime (idempotent checks
+  // are cheap but pointless to repeat); failures reset so the next request retries.
+  seeding ??= seedDemoWorkspace().catch((err) => {
     seeding = null;
+    throw err;
   });
   return seeding;
 };

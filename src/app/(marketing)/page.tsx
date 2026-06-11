@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { env, isDemoMode } from "~/env";
+import { EmailCapture } from "~/components/EmailCapture";
 import { SignInButtons } from "~/components/SignInButtons";
 
 const SAMPLE_LINES = [
@@ -121,6 +122,26 @@ export default function LandingPage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pt-16">
+        <div className="border border-line bg-card px-6 py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-md">
+              <h2 className="font-display text-2xl tracking-tight">
+                Not ready to connect a tenant yet?
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                Leave your email and you get the security one-pager for your
+                IT team plus one note at general availability. A personal
+                email, not a list.
+              </p>
+            </div>
+            <div className="w-full sm:max-w-sm">
+              <EmailCapture />
+            </div>
+          </div>
         </div>
       </section>
 

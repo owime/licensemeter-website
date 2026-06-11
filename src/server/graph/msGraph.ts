@@ -104,7 +104,12 @@ const getAllPages = async <T>(token: string, firstUrl: string): Promise<T[]> => 
     const res = await graphFetch(token, url);
     const body = (await res.json()) as { value: T[]; "@odata.nextLink"?: string };
     items.push(...body.value);
-    url = body["@odata.nextLink"];
+    const next = body["@odata.nextLink"];
+    // Defense in depth: never follow pagination off graph.microsoft.com.
+    if (next && !next.startsWith("https://graph.microsoft.com/")) {
+      throw new GraphHttpError(502, "bad_next_link", "Unexpected nextLink host");
+    }
+    url = next;
   }
   return items;
 };

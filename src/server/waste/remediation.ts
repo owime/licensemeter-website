@@ -73,6 +73,10 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
       if (!detail.upn) continue;
       lines.push(`# ${f.title}`);
 
+      // Escape once, use everywhere; strip line breaks so nothing can leave a
+      // comment line or split a statement.
+      const upn = detail.upn.replace(/[\r\n]+/g, " ").replaceAll("'", "''");
+
       const licenses: LicenseDetail[] =
         detail.licenses ?? (f.skuId ? [{ skuId: f.skuId }] : []);
       const direct = licenses.filter((l) => !l.assignedByGroup);
@@ -80,7 +84,6 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
 
       if (direct.length > 0) {
         const skuList = direct.map((l) => `'${l.skuId}'`).join(", ");
-        const upn = detail.upn.replaceAll("'", "''");
         lines.push(
           `Set-MgUserLicense -UserId '${upn}' -RemoveLicenses @(${skuList}) -AddLicenses @()`,
         );
@@ -88,7 +91,7 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
       for (const l of viaGroup) {
         lines.push(
           `# ${skuDisplayName(l.skuId, l.name)} is inherited from group ${l.assignedByGroup} -`,
-          `#   remove '${detail.upn}' from that group instead of unassigning directly.`,
+          `#   remove '${upn}' from that group instead of unassigning directly.`,
         );
       }
       lines.push("");

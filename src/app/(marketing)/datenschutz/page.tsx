@@ -56,7 +56,14 @@ export default function DatenschutzPage() {
         <p>
           Diese Website verwendet ausschließlich technisch notwendige
           Session-Cookies für die Anmeldung. Es werden keine Tracking- oder
-          Marketing-Cookies gesetzt und keine Analyse-Dienste eingebunden.
+          Marketing-Cookies gesetzt.
+        </p>
+        <p>
+          Zur Reichweitenmessung setzen wir Vercel Web Analytics ein — ein
+          cookiefreies Verfahren, das ausschließlich aggregierte, anonymisierte
+          Seitenaufrufe erfasst (Art. 6 Abs. 1 lit. f DSGVO). Es werden keine
+          geräteübergreifenden Profile gebildet und keine IP-Adressen
+          gespeichert.
         </p>
       </Section>
 
@@ -86,6 +93,17 @@ export default function DatenschutzPage() {
           Frankfurt) gespeichert und beim Trennen des Workspace unverzüglich
           und vollständig gelöscht. Ein Auftragsverarbeitungsvertrag (AVV)
           wird jeder Organisation vor Produktivnutzung bereitgestellt.
+        </p>
+      </Section>
+
+      <Section title="4a. E-Mail-Benachrichtigung (Landing-Page)">
+        <p>
+          Wenn Sie auf der Startseite Ihre E-Mail-Adresse hinterlassen,
+          speichern wir diese, um Ihnen die angeforderten Unterlagen
+          (Security-Überblick) und eine einmalige Mitteilung zur allgemeinen
+          Verfügbarkeit zuzusenden (Art. 6 Abs. 1 lit. b DSGVO). Es erfolgt
+          kein automatisierter Newsletter-Versand. Die Adresse wird auf
+          Anfrage jederzeit gelöscht.
         </p>
       </Section>
 

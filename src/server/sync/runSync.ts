@@ -31,6 +31,16 @@ const chunk = <T>(arr: T[], size: number): T[][] => {
   return out;
 };
 
+/**
+ * Error text persisted to sync_runs (and therefore visible to workspace
+ * members): length-bounded, no stack traces. Full errors go to server logs.
+ */
+const errText = (err: unknown): string => {
+  console.error("[sync]", err);
+  const message = err instanceof Error ? err.message : String(err);
+  return message.slice(0, 300);
+};
+
 export type SyncResult = {
   runId: string;
   status: SyncRunStatus;
@@ -95,7 +105,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       steps.push({
         step: "subscribedSkus",
         status: "failed",
-        message: err instanceof Error ? err.message : String(err),
+        message: errText(err),
       });
       throw err; // critical: nothing useful without SKUs
     }
@@ -140,7 +150,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       steps.push({
         step: "users",
         status: "failed",
-        message: err instanceof Error ? err.message : String(err),
+        message: errText(err),
       });
       throw err; // critical
     }
@@ -153,7 +163,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       steps.push({
         step: "usageReports",
         status: "warning",
-        message: err instanceof Error ? err.message : String(err),
+        message: errText(err),
       });
     }
 
@@ -165,7 +175,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       steps.push({
         step: "copilotUsage",
         status: "warning",
-        message: err instanceof Error ? err.message : String(err),
+        message: errText(err),
       });
     }
 
@@ -379,7 +389,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       .set({
         status: "failed",
         steps,
-        error: err instanceof Error ? err.message : String(err),
+        error: errText(err),
         finishedAt: new Date(),
       })
       .where(eq(syncRuns.id, runId));
@@ -433,10 +443,12 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     prices,
     now,
     // Prefer the signal recorded by the last sync; the boolean derivation is
-    // only a fallback for tenants synced before the column existed.
+    // only a fallback for tenants synced before the column existed. Unknown
+    // concealment (null) is treated as concealed — conservative, no false
+    // per-user inactivity findings.
     activitySignal:
       tenant.activitySignal ??
-      (tenant.hasP1 || !tenant.concealedNames ? "full" : "none"),
+      (tenant.hasP1 || tenant.concealedNames === false ? "full" : "none"),
     copilotSignal: tenant.copilotSignal ?? "none",
     usageAggregate: tenant.usageAggregate ?? undefined,
     copilotAggregate: tenant.copilotAggregate ?? undefined,

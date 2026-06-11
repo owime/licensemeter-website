@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { isDemoMode } from "~/env";
+import { isSameOrigin } from "~/server/auth/origin";
 import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "~/server/demo/constants";
 import {
   createSessionToken,
@@ -12,6 +13,9 @@ import {
 export const POST = async (req: Request) => {
   if (!isDemoMode()) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const token = await createSessionToken({
     oid: DEMO_OID,
