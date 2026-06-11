@@ -3,12 +3,40 @@ import Link from "next/link";
 
 import { CopyScriptButton } from "~/components/workspace/CopyScriptButton";
 import { RuleBadge } from "~/components/workspace/RuleBadge";
+import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
 import { ALL_RULES, isWasteRule, RULE_META } from "~/lib/rules";
 import { hasRole, requireAccess } from "~/server/access";
 import { setFindingStatus } from "~/server/actions";
 import { db } from "~/server/db";
 import { findings } from "~/server/db/schema";
+import type { FindingStatus } from "~/server/types";
+
+type FindingRow = typeof findings.$inferSelect;
+
+const StatusPill = ({ status }: { status: FindingStatus }) => (
+  <Pill
+    tone={status === "open" ? "rust" : status === "acknowledged" ? "outline" : "moss"}
+  >
+    {status}
+  </Pill>
+);
+
+const AckButton = ({ finding }: { finding: FindingRow }) => (
+  <form
+    action={async () => {
+      "use server";
+      await setFindingStatus(
+        finding.id,
+        finding.status === "open" ? "acknowledged" : "open",
+      );
+    }}
+  >
+    <button className={buttonClass("micro")}>
+      {finding.status === "open" ? "Acknowledge" : "Reopen"}
+    </button>
+  </form>
+);
 
 export default async function FindingsPage({
   searchParams,
@@ -20,6 +48,7 @@ export default async function FindingsPage({
   const ruleParam = typeof sp.rule === "string" && isWasteRule(sp.rule) ? sp.rule : null;
   const showResolved = sp.show === "resolved";
   const isAdmin = hasRole(ctx, "admin");
+  const currency = ctx.tenant.currency;
 
   const allRows = await db.query.findings.findMany({
     where: eq(findings.tenantId, ctx.tenant.id),
@@ -48,6 +77,12 @@ export default async function FindingsPage({
     return `/app/findings${qs ? `?${qs}` : ""}`;
   };
 
+  const emptyMessage = showResolved
+    ? "No resolved findings yet."
+    : ruleParam
+      ? "No findings match this filter."
+      : "No open findings — nothing to reclaim right now.";
+
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
@@ -56,7 +91,7 @@ export default async function FindingsPage({
           <p className="mt-1 text-sm text-ink-soft">
             {showResolved
               ? `${rows.length} resolved findings`
-              : `${rows.length} findings worth ${fmtMoney(shownImpact, ctx.tenant.currency)}/mo`}
+              : `${rows.length} findings worth ${fmtMoney(shownImpact, currency)}/mo`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -65,24 +100,18 @@ export default async function FindingsPage({
               <CopyScriptButton
                 url={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
               />
-              <a
+              <ButtonAnchor
                 href={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
-                className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
               >
                 Download .ps1
-              </a>
+              </ButtonAnchor>
             </>
           )}
-          <a
-            href="/api/export/findings"
-            className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
-          >
-            Export CSV
-          </a>
+          <ButtonAnchor href="/api/export/findings">Export CSV</ButtonAnchor>
         </div>
       </header>
 
-      <nav className="rise rise-2 mt-6 flex flex-wrap gap-2">
+      <nav aria-label="Finding filters" className="rise rise-2 mt-8 flex flex-wrap gap-2">
         <Link
           href={filterHref(null)}
           className={`px-3 py-1.5 text-xs font-medium ${
@@ -121,7 +150,8 @@ export default async function FindingsPage({
         </Link>
       </nav>
 
-      <div className="rise rise-3 mt-5 mb-8 overflow-x-auto border border-line bg-card">
+      {/* Desktop table */}
+      <div className="rise rise-3 mt-5 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
@@ -154,42 +184,20 @@ export default async function FindingsPage({
                       </div>
                     )}
                   </td>
-                  <td className="tnum px-4 py-3 text-right font-mono font-medium text-rust">
+                  <td className="tnum px-4 py-3 text-right font-mono font-medium text-rust-text">
                     {f.monthlyImpactCents > 0
-                      ? fmtMoney(f.monthlyImpactCents, ctx.tenant.currency)
+                      ? fmtMoney(f.monthlyImpactCents, currency)
                       : "—"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-ink-soft">
                     {fmtDate(f.firstSeenAt)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-medium tracking-wide uppercase ${
-                        f.status === "open"
-                          ? "text-rust"
-                          : f.status === "acknowledged"
-                            ? "text-gold"
-                            : "text-moss"
-                      }`}
-                    >
-                      {f.status}
-                    </span>
+                    <StatusPill status={f.status} />
                   </td>
                   {isAdmin && !showResolved && (
                     <td className="px-4 py-3 text-right">
-                      <form
-                        action={async () => {
-                          "use server";
-                          await setFindingStatus(
-                            f.id,
-                            f.status === "open" ? "acknowledged" : "open",
-                          );
-                        }}
-                      >
-                        <button className="border border-line px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase hover:border-ink">
-                          {f.status === "open" ? "Acknowledge" : "Reopen"}
-                        </button>
-                      </form>
+                      <AckButton finding={f} />
                     </td>
                   )}
                 </tr>
@@ -201,13 +209,54 @@ export default async function FindingsPage({
                   colSpan={isAdmin && !showResolved ? 6 : 5}
                   className="px-4 py-10 text-center text-ink-soft"
                 >
-                  Nothing here.
+                  {emptyMessage}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Mobile stacked cards */}
+      <ul className="rise rise-3 mt-5 mb-8 flex flex-col gap-3 md:hidden">
+        {rows.map((f) => {
+          const detail = f.detail as { upn?: string };
+          return (
+            <li key={f.id} className="border border-line bg-card p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <RuleBadge rule={f.rule} />
+                <StatusPill status={f.status} />
+              </div>
+              <div className="mt-2 text-sm font-medium">{f.title}</div>
+              {detail.upn && (
+                <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
+                  {detail.upn}
+                </div>
+              )}
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-xs text-ink-soft">
+                  First seen {fmtDate(f.firstSeenAt)}
+                </span>
+                <span className="tnum font-mono text-sm font-medium text-rust-text">
+                  {f.monthlyImpactCents > 0
+                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                    : "—"}
+                </span>
+              </div>
+              {isAdmin && !showResolved && (
+                <div className="mt-3 border-t border-line pt-3">
+                  <AckButton finding={f} />
+                </div>
+              )}
+            </li>
+          );
+        })}
+        {rows.length === 0 && (
+          <li className="border border-line bg-card px-4 py-10 text-center text-sm text-ink-soft">
+            {emptyMessage}
+          </li>
+        )}
+      </ul>
     </div>
   );
 }

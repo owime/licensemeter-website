@@ -1,10 +1,24 @@
 import { eq } from "drizzle-orm";
 
 import { PriceEditor } from "~/components/workspace/PriceRow";
+import { ButtonAnchor, Pill } from "~/components/ui";
 import { fmtMoney, fmtNumber } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { priceBook, tenantSkus } from "~/server/db/schema";
+
+type PriceRow = typeof priceBook.$inferSelect;
+
+const PriceSourcePill = ({ price }: { price: PriceRow | undefined }) => {
+  if (!price || price.monthlyPriceCents === 0) {
+    return <Pill tone="gold">Set a price</Pill>;
+  }
+  return price.source === "custom" ? (
+    <Pill tone="moss">Your price</Pill>
+  ) : (
+    <Pill tone="slate">List estimate</Pill>
+  );
+};
 
 export default async function LicensesPage() {
   const ctx = await requireAccess("viewer");
@@ -35,15 +49,11 @@ export default async function LicensesPage() {
             numbers. There is no Microsoft API for tenant pricing.
           </p>
         </div>
-        <a
-          href="/api/export/licenses"
-          className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
-        >
-          Export CSV
-        </a>
+        <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
       </header>
 
-      <div className="rise rise-2 mt-6 mb-8 overflow-x-auto border border-line bg-card">
+      {/* Desktop table */}
+      <div className="rise rise-2 mt-8 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
@@ -75,30 +85,16 @@ export default async function LicensesPage() {
                     </div>
                   </td>
                   <td className="tnum px-4 py-3 text-right font-mono">
-                    {fmtNumber(s.prepaidEnabled)}
+                    {fmtNumber(s.prepaidEnabled, currency)}
                   </td>
                   <td className="tnum px-4 py-3 text-right font-mono">
-                    {fmtNumber(s.consumedUnits)}
+                    {fmtNumber(s.consumedUnits, currency)}
                   </td>
                   <td className="tnum px-4 py-3 text-right font-mono">
                     {fmtMoney(s.consumedUnits * cents, currency)}
                   </td>
                   <td className="px-4 py-3">
-                    {cents === 0 ? (
-                      <span className="bg-rust-soft px-2 py-0.5 text-[11px] font-medium tracking-wide text-rust-deep uppercase">
-                        Set a price
-                      </span>
-                    ) : (
-                      <span
-                        className={`px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase ${
-                          p?.source === "custom"
-                            ? "bg-moss-soft text-moss"
-                            : "bg-slate-soft text-slate-ink"
-                        }`}
-                      >
-                        {p?.source === "custom" ? "Your price" : "List estimate"}
-                      </span>
-                    )}
+                    <PriceSourcePill price={p} />
                   </td>
                   <td className="px-4 py-3">
                     {isAdmin ? (
@@ -126,6 +122,61 @@ export default async function LicensesPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile stacked cards */}
+      <ul className="rise rise-2 mt-8 mb-8 flex flex-col gap-3 md:hidden">
+        {sorted.map((s) => {
+          const p = priceRows.get(s.skuId);
+          const cents = p?.monthlyPriceCents ?? 0;
+          return (
+            <li key={s.skuId} className="border border-line bg-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div className="font-medium">
+                    {s.displayName ?? s.skuPartNumber}
+                  </div>
+                  <div className="font-mono text-[11px] text-ink-faint">
+                    {s.skuPartNumber}
+                  </div>
+                </div>
+                <PriceSourcePill price={p} />
+              </div>
+              <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Purchased</dt>
+                  <dd>{fmtNumber(s.prepaidEnabled, currency)}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Assigned</dt>
+                  <dd>{fmtNumber(s.consumedUnits, currency)}</dd>
+                </div>
+                <div className="col-span-2 flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                  <dd>{fmtMoney(s.consumedUnits * cents, currency)}</dd>
+                </div>
+              </dl>
+              <div className="mt-3 border-t border-line pt-3">
+                {isAdmin ? (
+                  <PriceEditor
+                    skuId={s.skuId}
+                    initial={(cents / 100).toFixed(2)}
+                    currency={currency}
+                  />
+                ) : (
+                  <div className="tnum text-right font-mono text-sm">
+                    {fmtMoney(cents, currency)} / seat / mo
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+        {sorted.length === 0 && (
+          <li className="border border-line bg-card px-4 py-10 text-center text-sm text-ink-soft">
+            No license data yet — run a sync.
+          </li>
+        )}
+      </ul>
     </div>
   );
 }

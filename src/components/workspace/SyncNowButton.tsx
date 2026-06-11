@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { Button } from "~/components/ui";
 import { triggerSync } from "~/server/actions";
 
 export const SyncNowButton = () => {
@@ -12,8 +13,9 @@ export const SyncNowButton = () => {
 
   return (
     <div className="flex items-center gap-3">
-      {error && <span className="text-xs text-rust">{error}</span>}
-      <button
+      {error && <span className="text-xs text-rust-text">{error}</span>}
+      <Button
+        variant="secondary"
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
@@ -23,10 +25,9 @@ export const SyncNowButton = () => {
             router.refresh();
           })
         }
-        className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink disabled:opacity-50"
       >
         {pending ? "Syncing…" : "Sync now"}
-      </button>
+      </Button>
     </div>
   );
 };

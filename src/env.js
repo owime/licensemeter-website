@@ -79,6 +79,12 @@ export const env = createEnv({
 
 export const isDemoMode = () => env.DEMO_MODE === "true";
 
+/**
+ * Like appBaseUrl but never throws — for sitemap/OG metadata where a localhost
+ * fallback during local production builds is harmless.
+ */
+export const siteUrl = () => env.APP_BASE_URL ?? "http://localhost:3000";
+
 export const appBaseUrl = () => {
   if (env.APP_BASE_URL) return env.APP_BASE_URL;
   if (env.NODE_ENV === "production") {

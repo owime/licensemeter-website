@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
+import { Button, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
 import { addMember, removeMember } from "~/server/actions";
@@ -198,9 +199,7 @@ export default async function SettingsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <span className="bg-slate-soft px-2 py-0.5 text-[11px] font-medium tracking-wide text-slate-ink uppercase">
-                    {m.role}
-                  </span>
+                  <Pill tone="slate">{m.role}</Pill>
                   {isAdmin && m.id !== ctx.membership.id && (
                     <form
                       action={async () => {
@@ -208,7 +207,7 @@ export default async function SettingsPage() {
                         await removeMember(m.id);
                       }}
                     >
-                      <button className="text-xs text-ink-faint underline-offset-4 hover:text-rust hover:underline">
+                      <button className="text-xs text-ink-faint underline-offset-4 hover:text-rust-text hover:underline">
                         Remove
                       </button>
                     </form>
@@ -231,20 +230,21 @@ export default async function SettingsPage() {
                 type="email"
                 required
                 placeholder="colleague@yourcompany.com"
-                className="min-w-56 flex-1 border border-line bg-card px-3 py-2 text-sm focus:border-ink focus:outline-none"
+                className="min-w-56 flex-1 border border-line bg-card px-3 py-2 text-sm focus:border-ink"
               />
               <select
                 name="role"
                 defaultValue="viewer"
-                className="border border-line bg-card px-2 py-2 text-sm focus:border-ink focus:outline-none"
+                aria-label="Role for the invited member"
+                className="border border-line bg-card px-2 py-2 text-sm focus:border-ink"
               >
                 <option value="viewer">Viewer (finance)</option>
                 <option value="admin">Admin</option>
                 {isOwner && <option value="owner">Owner</option>}
               </select>
-              <button className="bg-ink px-4 py-2 text-xs font-medium tracking-wide text-paper uppercase hover:bg-rust-deep">
+              <Button variant="primary" className="px-4 py-2">
                 Invite
-              </button>
+              </Button>
               <p className="w-full text-xs text-ink-faint">
                 Invited people get access when they first sign in with
                 Microsoft using this email. Same-tenant sign-in alone never

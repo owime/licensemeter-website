@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 
+import { buttonClass } from "~/components/ui";
+
 const MicrosoftMark = () => (
   <svg width="15" height="15" viewBox="0 0 21 21" aria-hidden="true">
     <rect x="0" y="0" width="10" height="10" fill="#F25022" />
@@ -22,35 +24,41 @@ export const SignInButtons = ({
   const [busy, setBusy] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <button
-        onClick={() => {
-          setBusy("entra");
-          void signIn("microsoft-entra-id", { redirectTo: "/app" });
-        }}
-        disabled={!entraConfigured || busy !== null}
-        title={
-          entraConfigured
-            ? undefined
-            : "Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
-        }
-        className="inline-flex items-center gap-2.5 bg-ink px-5 py-3 text-sm font-medium text-paper transition hover:bg-rust-deep disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <MicrosoftMark />
-        {busy === "entra" ? "Redirecting…" : "Sign in with Microsoft"}
-      </button>
-      {demoEnabled && (
+    <div>
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={() => {
-            setBusy("demo");
-            void signIn("demo", { redirectTo: "/app" });
+            setBusy("entra");
+            void signIn("microsoft-entra-id", { redirectTo: "/app" });
           }}
-          disabled={busy !== null}
-          className="inline-flex items-center gap-2 border border-line-strong bg-card px-5 py-3 text-sm font-medium text-ink transition hover:border-ink disabled:opacity-50"
+          disabled={!entraConfigured || busy !== null}
+          title={
+            entraConfigured
+              ? undefined
+              : "Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
+          }
+          className={buttonClass("primary")}
         >
-          {busy === "demo" ? "Preparing demo…" : "Explore the demo workspace"}
+          <MicrosoftMark />
+          {busy === "entra" ? "Redirecting…" : "Run a free waste scan"}
         </button>
-      )}
+        {demoEnabled && (
+          <button
+            onClick={() => {
+              setBusy("demo");
+              void signIn("demo", { redirectTo: "/app" });
+            }}
+            disabled={busy !== null}
+            className={buttonClass("secondary")}
+          >
+            {busy === "demo" ? "Preparing demo…" : "Explore the demo workspace"}
+          </button>
+        )}
+      </div>
+      <p className="mt-3 text-xs text-ink-faint">
+        Signs you in with Microsoft. The read-only consent for your tenant is a
+        separate, clearly explained step.
+      </p>
     </div>
   );
 };

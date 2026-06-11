@@ -40,7 +40,7 @@ export const DangerZone = ({ tenantName }: { tenantName: string }) => {
         ) : (
           <button
             onClick={() => setArmed(true)}
-            className="border border-rust px-4 py-2 text-xs font-medium tracking-wide text-rust uppercase hover:bg-rust-soft"
+            className="border border-rust px-4 py-2 text-xs font-medium tracking-wide text-rust-text uppercase hover:bg-rust-soft"
           >
             Disconnect workspace
           </button>

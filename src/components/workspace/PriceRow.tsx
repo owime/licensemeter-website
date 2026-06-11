@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { buttonClass } from "~/components/ui";
 import { updatePrice } from "~/server/actions";
 
 export const PriceEditor = ({
@@ -41,17 +42,17 @@ export const PriceEditor = ({
         }}
         inputMode="decimal"
         aria-label={`Monthly price for ${skuId}`}
-        className="tnum w-24 border border-line bg-card px-2 py-1.5 text-right font-mono text-sm focus:border-ink focus:outline-none"
+        className="tnum w-24 border border-line bg-card px-2 py-1.5 text-right font-mono text-sm focus:border-ink"
       />
       <button
         disabled={!dirty || pending}
-        className="border border-line-strong px-2.5 py-1.5 text-[11px] font-medium tracking-wide uppercase transition hover:border-ink disabled:opacity-30"
+        className={buttonClass("micro", "py-1.5")}
       >
         {pending ? "…" : "Save"}
       </button>
       <span
         aria-live="polite"
-        className={`w-10 text-[11px] ${state === "error" ? "text-rust" : "text-moss"}`}
+        className={`w-10 text-[11px] ${state === "error" ? "text-rust-text" : "text-moss"}`}
       >
         {state === "saved" ? "Saved" : state === "error" ? "Invalid" : ""}
       </span>

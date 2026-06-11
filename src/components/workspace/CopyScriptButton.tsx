@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 
+import { Button } from "~/components/ui";
+
 /** Fetches the generated remediation script and copies it to the clipboard. */
 export const CopyScriptButton = ({ url }: { url: string }) => {
   const [state, setState] = useState<"idle" | "copied" | "error">("idle");
 
   return (
-    <button
+    <Button
+      variant="secondary"
       onClick={async () => {
         try {
           const res = await fetch(url);
@@ -19,13 +22,12 @@ export const CopyScriptButton = ({ url }: { url: string }) => {
         }
         setTimeout(() => setState("idle"), 2000);
       }}
-      className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
     >
       {state === "copied"
         ? "Copied"
         : state === "error"
           ? "Copy failed"
           : "Copy PowerShell"}
-    </button>
+    </Button>
   );
 };

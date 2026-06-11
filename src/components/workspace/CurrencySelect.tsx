@@ -19,7 +19,7 @@ export const CurrencySelect = ({ value }: { value: string }) => {
           router.refresh();
         })
       }
-      className="border border-line bg-card px-2 py-1.5 text-sm focus:border-ink focus:outline-none"
+      className="border border-line bg-card px-2 py-1.5 text-sm focus:border-ink"
       aria-label="Workspace currency"
     >
       {["EUR", "USD", "GBP", "CHF"].map((c) => (

@@ -3,6 +3,8 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
+import { siteUrl } from "~/env";
+
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -21,11 +23,27 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
 });
 
+const TITLE =
+  "LicenseMeter — find the Microsoft 365 licenses you pay for but do not use";
+const DESCRIPTION =
+  "LicenseMeter connects read-only to your Microsoft 365 tenant and shows the monthly cost of unused, misassigned and forgotten licenses.";
+
 export const metadata: Metadata = {
-  title: "LicenseMeter — find the Microsoft 365 licenses you pay for but do not use",
-  description:
-    "LicenseMeter connects read-only to your Microsoft 365 tenant and shows the monthly cost of unused, misassigned and forgotten licenses.",
+  metadataBase: new URL(siteUrl()),
+  title: TITLE,
+  description: DESCRIPTION,
   icons: [{ rel: "icon", url: "/favicon.ico" }],
+  openGraph: {
+    type: "website",
+    siteName: "LicenseMeter",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

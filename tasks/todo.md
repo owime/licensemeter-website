@@ -85,3 +85,28 @@ Adobe connector not built, id_token accepted via TLS-direct token endpoint
 without local JWKS verification (standard confidential-client pattern; JWKS
 verification is a hardening follow-up), findings diff is row-at-a-time (fine
 at MVP scale).
+
+## Enterprise-readiness pass (2026-06-11, after design review)
+
+Design review (ui-design-expert + saas-ceo-reviewer agents + axe scan) led to:
+- Marketing shell with shared header/footer; new public pages: /security
+  (CISO-targeted, scopes/subprocessors/retention/DPA), /pricing (flat tiers
+  79/199/499 with ROI anchor), /faq (consent objections + FAQPage JSON-LD),
+  /impressum and /datenschutz (German legal scaffolds with [placeholders]).
+- Funnel reframed: primary CTA "Run a free waste scan", demo secondary,
+  security overview linked from trust strip, connect page, and footer.
+- Accessibility: 94 serious axe violations -> 0 across all 13 page/viewport
+  combinations (rust-text/gold/ink-faint/sidebar-soft token fixes, global
+  focus-visible ring, landmark and select-name fixes).
+- Design system: shared Button/Pill components (3 button tiers, 2 pill tiers),
+  status pills in findings, consistent spacing rhythm, locale-consistent
+  number grouping, neutral utilization bars (rust reserved for money),
+  voice-consistent empty states, "Set a price" moved from rust to gold.
+- Responsive: ink top bar + drawer below lg, stacked ledger-card variants of
+  all three data tables below md, landing ledger card wraps cleanly at 390px.
+- SEO: metadataBase + OpenGraph/Twitter tags, generated OG image, robots.txt,
+  sitemap.xml.
+
+Still manual before launch: publisher verification, real legal/contact
+details in the [placeholder] spots (impressum, datenschutz, founder bio,
+support email), DPA document, production deploy.

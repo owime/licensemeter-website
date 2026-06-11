@@ -14,8 +14,9 @@ export const fmtMoney = (cents: number, currency: string): string =>
     maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
   }).format(cents / 100);
 
-export const fmtNumber = (n: number): string =>
-  new Intl.NumberFormat("en-GB").format(n);
+/** Grouping follows the workspace currency so separators match the money columns. */
+export const fmtNumber = (n: number, currency = "EUR"): string =>
+  new Intl.NumberFormat(CURRENCY_LOCALE[currency] ?? "en-US").format(n);
 
 export const fmtDate = (d: Date | string | null): string => {
   if (!d) return "—";

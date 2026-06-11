@@ -8,6 +8,25 @@ import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
 import { findings, priceBook, syncRuns, tenantSkus } from "~/server/db/schema";
 
+type SkuRow = typeof tenantSkus.$inferSelect;
+
+const UtilizationBar = ({ sku }: { sku: SkuRow }) => {
+  const util =
+    sku.prepaidEnabled > 0
+      ? Math.min((sku.consumedUnits / sku.prepaidEnabled) * 100, 100)
+      : 0;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-1.5 w-24 bg-line">
+        <div className="h-1.5 bg-ink-soft" style={{ width: `${util}%` }} />
+      </div>
+      <span className="tnum font-mono text-xs text-ink-soft">
+        {util.toFixed(0)}%
+      </span>
+    </div>
+  );
+};
+
 export default async function OverviewPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
@@ -55,7 +74,7 @@ export default async function OverviewPage() {
               ? "Sync running…"
               : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
-              <span className="ml-2 text-rust">— last sync failed</span>
+              <span className="ml-2 text-rust-text">— last sync failed</span>
             )}
           </p>
         </div>
@@ -67,7 +86,10 @@ export default async function OverviewPage() {
           {
             label: "Monthly license spend",
             value: fmtMoney(monthlySpend, currency),
-            sub: `${fmtNumber(skus.reduce((s, x) => s + x.consumedUnits, 0))} assigned seats`,
+            sub: `${fmtNumber(
+              skus.reduce((s, x) => s + x.consumedUnits, 0),
+              currency,
+            )} assigned seats`,
             tone: "ink",
           },
           {
@@ -84,18 +106,18 @@ export default async function OverviewPage() {
           },
           {
             label: "Open findings",
-            value: fmtNumber(openFindings.length),
+            value: fmtNumber(openFindings.length, currency),
             sub: "across 6 rules",
             tone: "ink",
           },
         ].map((card) => (
-          <div key={card.label} className="bg-card px-5 py-5">
+          <div key={card.label} className="bg-card p-5">
             <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
               {card.label}
             </div>
             <div
               className={`mt-2 font-display text-3xl tracking-tight ${
-                card.tone === "rust" ? "text-rust" : "text-ink"
+                card.tone === "rust" ? "text-rust-text" : "text-ink"
               }`}
             >
               {card.value}
@@ -106,7 +128,7 @@ export default async function OverviewPage() {
       </section>
 
       <section className="rise rise-3 mt-10">
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
             License inventory
           </h2>
@@ -117,7 +139,9 @@ export default async function OverviewPage() {
             Export CSV
           </a>
         </div>
-        <div className="mt-3 overflow-x-auto border border-line bg-card">
+
+        {/* Desktop table */}
+        <div className="mt-3 hidden overflow-x-auto border border-line bg-card md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
@@ -133,10 +157,6 @@ export default async function OverviewPage() {
               {sortedSkus.map((s) => {
                 const price = priceBySku.get(s.skuId) ?? 0;
                 const free = s.prepaidEnabled - s.consumedUnits;
-                const util =
-                  s.prepaidEnabled > 0
-                    ? Math.min((s.consumedUnits / s.prepaidEnabled) * 100, 100)
-                    : 0;
                 return (
                   <tr
                     key={s.skuId}
@@ -151,30 +171,20 @@ export default async function OverviewPage() {
                       </div>
                     </td>
                     <td className="tnum px-4 py-3 text-right font-mono">
-                      {fmtNumber(s.prepaidEnabled)}
+                      {fmtNumber(s.prepaidEnabled, currency)}
                     </td>
                     <td className="tnum px-4 py-3 text-right font-mono">
-                      {fmtNumber(s.consumedUnits)}
+                      {fmtNumber(s.consumedUnits, currency)}
                     </td>
                     <td
                       className={`tnum px-4 py-3 text-right font-mono ${
-                        free > 0 ? "font-medium text-rust" : "text-ink-faint"
+                        free > 0 ? "font-medium text-rust-text" : "text-ink-faint"
                       }`}
                     >
-                      {fmtNumber(free)}
+                      {fmtNumber(free, currency)}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1 w-24 bg-line">
-                          <div
-                            className={`h-1 ${util < 80 ? "bg-rust" : "bg-moss"}`}
-                            style={{ width: `${util}%` }}
-                          />
-                        </div>
-                        <span className="tnum font-mono text-xs text-ink-soft">
-                          {util.toFixed(0)}%
-                        </span>
-                      </div>
+                      <UtilizationBar sku={s} />
                     </td>
                     <td className="tnum px-4 py-3 text-right font-mono">
                       {fmtMoney(s.consumedUnits * price, currency)}
@@ -192,10 +202,56 @@ export default async function OverviewPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile stacked cards */}
+        <ul className="mt-3 flex flex-col gap-3 md:hidden">
+          {sortedSkus.map((s) => {
+            const price = priceBySku.get(s.skuId) ?? 0;
+            const free = s.prepaidEnabled - s.consumedUnits;
+            return (
+              <li key={s.skuId} className="border border-line bg-card p-4">
+                <div className="font-medium">
+                  {s.displayName ?? s.skuPartNumber}
+                </div>
+                <div className="font-mono text-[11px] text-ink-faint">
+                  {s.skuPartNumber}
+                </div>
+                <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+                  <div className="flex justify-between gap-2">
+                    <dt className="font-sans text-xs text-ink-faint">Purchased</dt>
+                    <dd>{fmtNumber(s.prepaidEnabled, currency)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="font-sans text-xs text-ink-faint">Assigned</dt>
+                    <dd>{fmtNumber(s.consumedUnits, currency)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="font-sans text-xs text-ink-faint">Unassigned</dt>
+                    <dd className={free > 0 ? "font-medium text-rust-text" : ""}>
+                      {fmtNumber(free, currency)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                    <dd>{fmtMoney(s.consumedUnits * price, currency)}</dd>
+                  </div>
+                </dl>
+                <div className="mt-3">
+                  <UtilizationBar sku={s} />
+                </div>
+              </li>
+            );
+          })}
+          {sortedSkus.length === 0 && (
+            <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
+              No license data yet — run a sync.
+            </li>
+          )}
+        </ul>
       </section>
 
       <section className="rise rise-4 mt-10 mb-8">
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
             Largest open findings
           </h2>
@@ -210,13 +266,13 @@ export default async function OverviewPage() {
           {openFindings.slice(0, 6).map((f) => (
             <li
               key={f.id}
-              className="flex items-center justify-between gap-4 border-b border-line px-4 py-3 last:border-b-0"
+              className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 last:border-b-0"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <RuleBadge rule={f.rule} />
                 <span className="truncate text-sm">{f.title}</span>
               </div>
-              <span className="tnum shrink-0 font-mono text-sm font-medium text-rust">
+              <span className="tnum shrink-0 font-mono text-sm font-medium text-rust-text">
                 {f.monthlyImpactCents > 0
                   ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
                   : "—"}

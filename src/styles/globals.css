@@ -12,15 +12,18 @@
   --color-card: #ffffff;
   --color-ink: #1c1a16;
   --color-ink-soft: #6b665d;
-  --color-ink-faint: #a39d8f;
+  --color-ink-faint: #75705f;
   --color-line: #e7e2d6;
   --color-line-strong: #d2ccbb;
+  /* rust = fills, bars, badges; rust-text = AA text on light; rust-bright = AA text on ink */
   --color-rust: #bc3e12;
+  --color-rust-text: #a8330d;
+  --color-rust-bright: #e2683f;
   --color-rust-deep: #8f2f0c;
   --color-rust-soft: #f9e9e1;
   --color-moss: #3f6b3f;
   --color-moss-soft: #e9f0e4;
-  --color-gold: #92660d;
+  --color-gold: #7a5300;
   --color-gold-soft: #f7edd4;
   --color-slate-ink: #45506b;
   --color-slate-soft: #e8eaef;
@@ -30,7 +33,16 @@
   --color-teal-soft: #e0efed;
   --color-sidebar: #171511;
   --color-sidebar-line: #2e2a21;
-  --color-sidebar-soft: #9c958a;
+  --color-sidebar-soft: #a8a296;
+}
+
+/* Visible keyboard focus everywhere; rust ring on light, paper ring on ink. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-rust);
+  outline-offset: 2px;
+}
+.bg-sidebar :where(a, button):focus-visible {
+  outline-color: var(--color-paper);
 }
 
 body {

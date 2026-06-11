@@ -10,10 +10,10 @@ const ITEMS = [
   { href: "/app/settings", label: "Settings" },
 ];
 
-export const NavLinks = () => {
+export const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-0.5">
+    <nav aria-label="Workspace" className="flex flex-col gap-0.5">
       {ITEMS.map((item) => {
         const active =
           item.href === "/app"
@@ -23,6 +23,7 @@ export const NavLinks = () => {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             className={`border-l-2 px-4 py-2.5 text-sm transition ${
               active
                 ? "border-rust bg-sidebar-line/40 font-medium text-paper"
