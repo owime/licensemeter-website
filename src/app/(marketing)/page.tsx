@@ -47,6 +47,10 @@ const PRICING_TEASER = [
 const trustItemClass =
   "after:mx-6 after:text-line-strong after:content-['/'] last:after:content-none";
 
+/* The ledger card shows the current month — keep rendering per-request even
+ * if the marketing layout ever stops touching cookies. */
+export const dynamic = "force-dynamic";
+
 export default function LandingPage() {
   const entraConfigured = Boolean(env.AUTH_MICROSOFT_ENTRA_ID_ID);
   const demoEnabled = isDemoMode();

@@ -94,9 +94,9 @@ export default async function MarketingLayout({
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
-              <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+              <h3 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
                 {col.title}
-              </h2>
+              </h3>
               <ul className="mt-3 flex flex-col gap-2">
                 {col.links.map((link) => (
                   <li key={link.label}>

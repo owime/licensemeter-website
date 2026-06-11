@@ -158,3 +158,23 @@ line (founder card + CTA band carry it without hero clutter).
    centered against text column, CTAs full-width at 390, no separator at a line
    start in the trust row
 7. Independent code-reviewer agent reports no P0/P1 findings
+
+## Review (2026-06-11, end of pass)
+
+All plan items implemented; shipped in commit d2b4248 (committed by the
+concurrent session working in this repo) plus a follow-up commit with two
+code-review fixes.
+
+- Acceptance criteria 1-6: verified (grep clean; bio facts checked against
+  ugurkoc.de and the GitHub API; Playwright at 320/390/700/1024/1440 confirmed
+  CTA visibility toggle at sm, 44px tap targets, full-width mobile CTAs,
+  centered hero card, no horizontal overflow; npm run check + 36/36 vitest).
+- Acceptance criterion 7: independent code review (feature-dev:code-reviewer)
+  passed the commit with two P1s, both fixed in the follow-up commit:
+  explicit `export const dynamic = "force-dynamic"` on the landing page (the
+  current-month render depended implicitly on auth() in the layout) and
+  footer column headings h2 -> h3 (document outline).
+- Deliberately not done: "recoverable" -> "identified" wording, demo-tenant
+  attribution on the ledger card (numbers would not match the live demo),
+  extra hero credibility line. Impressum/Datenschutz legal [placeholders]
+  remain - they need real legal data only the founder can supply.
