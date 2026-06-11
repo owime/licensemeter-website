@@ -53,12 +53,16 @@ export const GET = async (req: NextRequest) => {
       const to = admins.map((m) => m.email).filter(Boolean);
       if (to.length === 0 || open.length === 0) continue;
 
+      const wasteCents = latest?.totalMonthlyWasteCents ?? 0;
+      const tenantLabel = tenant.name ?? "your tenant";
       await sendEmail({
         to,
-        subject: `LicenseMeter: ${fmtMoney(
-          latest?.totalMonthlyWasteCents ?? 0,
-          tenant.currency,
-        )}/mo wasted in ${tenant.name ?? "your tenant"}`,
+        // With unpriced SKUs the waste is 0 — lead with the findings count
+        // instead of an underwhelming zero.
+        subject:
+          wasteCents > 0
+            ? `LicenseMeter: ${fmtMoney(wasteCents, tenant.currency)}/mo wasted in ${tenantLabel}`
+            : `LicenseMeter: ${open.length} open findings in ${tenantLabel}`,
         html: digestHtml({
           tenantName: tenant.name ?? tenant.tid,
           currency: tenant.currency,
