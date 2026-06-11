@@ -1,8 +1,3 @@
-"use client";
-
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-
 import { buttonClass } from "~/components/ui";
 
 const MicrosoftMark = () => (
@@ -20,45 +15,35 @@ export const SignInButtons = ({
 }: {
   entraConfigured: boolean;
   demoEnabled: boolean;
-}) => {
-  const [busy, setBusy] = useState<string | null>(null);
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => {
-            setBusy("entra");
-            void signIn("microsoft-entra-id", { redirectTo: "/app" });
-          }}
-          disabled={!entraConfigured || busy !== null}
-          title={
-            entraConfigured
-              ? undefined
-              : "Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
-          }
-          className={buttonClass("primary")}
+}) => (
+  <div>
+    <div className="flex flex-wrap items-center gap-3">
+      {entraConfigured ? (
+        <a href="/api/auth/signin" className={buttonClass("primary")}>
+          <MicrosoftMark />
+          Run a free waste scan
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          title="Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
+          className={buttonClass("primary", "cursor-not-allowed opacity-40")}
         >
           <MicrosoftMark />
-          {busy === "entra" ? "Redirecting…" : "Run a free waste scan"}
-        </button>
-        {demoEnabled && (
-          <button
-            onClick={() => {
-              setBusy("demo");
-              void signIn("demo", { redirectTo: "/app" });
-            }}
-            disabled={busy !== null}
-            className={buttonClass("secondary")}
-          >
-            {busy === "demo" ? "Preparing demo…" : "Explore the demo workspace"}
+          Run a free waste scan
+        </span>
+      )}
+      {demoEnabled && (
+        <form action="/api/auth/demo" method="post">
+          <button className={buttonClass("secondary")}>
+            Explore the demo workspace
           </button>
-        )}
-      </div>
-      <p className="mt-3 text-xs text-ink-faint">
-        Signs you in with Microsoft. The read-only consent for your tenant is a
-        separate, clearly explained step.
-      </p>
+        </form>
+      )}
     </div>
-  );
-};
+    <p className="mt-3 text-xs text-ink-faint">
+      Signs you in with Microsoft. The read-only consent for your tenant is a
+      separate, clearly explained step.
+    </p>
+  </div>
+);

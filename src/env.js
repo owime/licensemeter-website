@@ -15,7 +15,7 @@ export const env = createEnv({
      */
     DATABASE_URL: z.string().url().optional(),
 
-    /** Auth.js session encryption secret. Generate with `openssl rand -base64 32`. */
+    /** Session cookie signing secret. Generate with `openssl rand -base64 32`. */
     AUTH_SECRET:
       process.env.NODE_ENV === "production"
         ? z.string().min(32)

@@ -8,6 +8,8 @@ import "./src/env.js";
 const config = {
   reactStrictMode: true,
   serverExternalPackages: ["@electric-sql/pglite"],
+  // The floating dev badge sits exactly over the sidebar's sign-out button.
+  devIndicators: false,
 };
 
 export default config;

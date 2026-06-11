@@ -1,9 +1,11 @@
 import Link from "next/link";
 
+import { redirect } from "next/navigation";
+
 import { MobileNav } from "~/components/workspace/MobileNav";
 import { NavLinks } from "~/components/workspace/NavLinks";
 import { requireAccess } from "~/server/access";
-import { signOut } from "~/server/auth";
+import { clearSessionCookie } from "~/server/auth";
 
 export default async function WorkspaceLayout({
   children,
@@ -48,7 +50,8 @@ export default async function WorkspaceLayout({
           <form
             action={async () => {
               "use server";
-              await signOut({ redirectTo: "/" });
+              await clearSessionCookie();
+              redirect("/");
             }}
           >
             <button className="mt-3 text-xs text-sidebar-soft underline-offset-4 hover:text-paper hover:underline">

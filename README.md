@@ -37,7 +37,8 @@ Detection adapts to what the customer tenant allows:
 ## Stack
 
 - Next.js 15 (App Router) + Tailwind CSS 4, deployable on Vercel
-- Auth.js v5 with a multi-tenant Entra ID OAuth provider (`/organizations`)
+- MSAL auth-code flow with PKCE for multi-tenant Entra sign-in
+  (`/organizations`), jose-signed session cookies
 - Drizzle ORM — Postgres in production, embedded PGlite for local dev/demo
 - MSAL (client credentials) for app-only Graph access per customer tenant
 - Vitest unit tests for the waste engine, signal joining, and CSV parsing

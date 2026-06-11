@@ -1,0 +1,102 @@
+import { SignJWT, jwtVerify } from "jose";
+import { cookies } from "next/headers";
+
+import { env } from "~/env";
+
+/**
+ * Cookie-based sessions, MSAL-friendly: a compact HS256 JWT holding only the
+ * user's own identity claims (nothing confidential to its holder).
+ */
+
+export const SESSION_COOKIE = "lm_session";
+export const OAUTH_COOKIE = "lm_oauth";
+
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
+const OAUTH_MAX_AGE = 10 * 60; // state+verifier live only for the redirect leg
+
+const key = new TextEncoder().encode(env.AUTH_SECRET);
+
+export type SessionUser = {
+  /** Entra object id (or the demo constant). */
+  oid: string;
+  /** Entra tenant id (or the demo constant). */
+  tid: string;
+  /** UPN / preferred_username. */
+  upn: string;
+  name: string;
+  email: string | null;
+  isDemo: boolean;
+};
+
+export type Session = { user: SessionUser };
+
+export const cookieOptions = (maxAge: number) => ({
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: env.NODE_ENV === "production",
+  path: "/",
+  maxAge,
+});
+
+export const sessionCookieOptions = () => cookieOptions(SESSION_MAX_AGE);
+export const oauthCookieOptions = () => cookieOptions(OAUTH_MAX_AGE);
+
+export const createSessionToken = async (user: SessionUser): Promise<string> =>
+  new SignJWT({ ...user })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${SESSION_MAX_AGE}s`)
+    .sign(key);
+
+/** State + PKCE verifier for the in-flight OAuth redirect, integrity-protected. */
+export const createOAuthToken = async (payload: {
+  state: string;
+  verifier: string;
+}): Promise<string> =>
+  new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${OAUTH_MAX_AGE}s`)
+    .sign(key);
+
+const verifyToken = async <T>(token: string | undefined): Promise<T | null> => {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, key);
+    return payload as T;
+  } catch {
+    return null;
+  }
+};
+
+/** Current session from the request cookies; null when absent or invalid. */
+export const auth = async (): Promise<Session | null> => {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const payload = await verifyToken<SessionUser>(token);
+  if (!payload?.oid || !payload?.tid) return null;
+  return {
+    user: {
+      oid: payload.oid,
+      tid: payload.tid,
+      upn: payload.upn ?? "",
+      name: payload.name ?? "",
+      email: payload.email ?? null,
+      isDemo: payload.isDemo ?? false,
+    },
+  };
+};
+
+export const readOAuthCookie = async (): Promise<{
+  state: string;
+  verifier: string;
+} | null> => {
+  const token = (await cookies()).get(OAUTH_COOKIE)?.value;
+  const payload = await verifyToken<{ state?: string; verifier?: string }>(token);
+  if (!payload?.state || !payload?.verifier) return null;
+  return { state: payload.state, verifier: payload.verifier };
+};
+
+/** For server actions (sign out from the sidebar). */
+export const clearSessionCookie = async (): Promise<void> => {
+  (await cookies()).delete(SESSION_COOKIE);
+};

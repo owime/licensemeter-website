@@ -1,8 +1,7 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
 
-import { auth } from "~/server/auth";
+import { auth, type Session } from "~/server/auth";
 import { db } from "~/server/db";
 import { memberships, tenants } from "~/server/db/schema";
 import { ensureDemoWorkspace } from "~/server/demo/seed";

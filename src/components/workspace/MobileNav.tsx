@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { signOut } from "next-auth/react";
 
 import { NavLinks } from "./NavLinks";
 
@@ -70,12 +69,11 @@ export const MobileNav = ({
                 {role}
               </div>
             </div>
-            <button
-              onClick={() => void signOut({ callbackUrl: "/" })}
-              className="text-xs text-sidebar-soft underline-offset-4 hover:text-paper hover:underline"
-            >
-              Sign out
-            </button>
+            <form action="/api/auth/signout" method="post">
+              <button className="text-xs text-sidebar-soft underline-offset-4 hover:text-paper hover:underline">
+                Sign out
+              </button>
+            </form>
           </div>
         </div>
       )}
