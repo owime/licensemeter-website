@@ -220,8 +220,20 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
             .where(eq(adobeConnections.tenantId, tenantId));
         }
       } catch (err) {
+        // adobeActive=false skips persistence/pruning; the stored snapshot is
+        // analyzed instead so findings survive a transient UMAPI failure
+        // rather than auto-resolving and reopening (same pattern as the
+        // generic SaaS connectors below).
         adobeActive = false;
         steps.push({ step: "adobeUsers", status: "warning", message: errText(err) });
+        const stored = await db.query.adobeUsers.findMany({
+          where: eq(adobeUsersTable.tenantId, tenantId),
+        });
+        adobeRows = stored.map((r) => ({
+          email: r.email,
+          status: r.status,
+          products: r.products,
+        }));
         if (adobeConn) {
           await db
             .update(adobeConnections)
