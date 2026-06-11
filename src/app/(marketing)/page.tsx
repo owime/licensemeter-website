@@ -3,6 +3,43 @@ import Link from "next/link";
 import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
 import { SignInButtons } from "~/components/SignInButtons";
+import { Pill } from "~/components/ui";
+
+/* Plain-text names by design: referencing compatibility is nominative use;
+ * official logos would need each vendor's permission (see footer notice). */
+const CONNECTOR_STRIP = [
+  {
+    name: "Microsoft 365",
+    tag: "Core",
+    tone: "moss" as const,
+    blurb:
+      "The full six-rule scan: licenses, sign-in activity and usage reports.",
+  },
+  {
+    name: "Adobe",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Creative Cloud seats held by people who are disabled or gone.",
+  },
+  {
+    name: "Zoom",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Licensed seats nobody has opened since Teams took over.",
+  },
+  {
+    name: "Atlassian",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Jira and Confluence seats that outlived their users.",
+  },
+  {
+    name: "Salesforce",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "CRM licenses — the most expensive seats to forget.",
+  },
+];
 
 const SAMPLE_LINES = [
   { label: "Disabled accounts still licensed", value: "412,90" },
@@ -140,10 +177,6 @@ export default function LandingPage() {
           <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight">
             Six waste rules, every finding priced in euros.
           </h2>
-          <p className="mt-3 text-sm text-ink-soft">
-            Microsoft 365 today — Adobe, Zoom, Atlassian and Salesforce
-            connectors in beta.
-          </p>
           <div className="mt-10 grid gap-10 md:grid-cols-3">
             {STEPS.map((step) => (
               <div key={step.n}>
@@ -156,6 +189,25 @@ export default function LandingPage() {
                 </p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-12 border-t border-line pt-8">
+            <h3 className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase">
+              Connects to
+            </h3>
+            <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-5">
+              {CONNECTOR_STRIP.map((c) => (
+                <div key={c.name}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{c.name}</span>
+                    <Pill tone={c.tone}>{c.tag}</Pill>
+                  </div>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+                    {c.blurb}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
