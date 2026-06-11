@@ -109,9 +109,11 @@ export default function DatenschutzPage() {
 
       <Section title="5. Subunternehmer (Auftragsverarbeiter)">
         <p>
-          Vercel Inc. (Hosting, EU-Funktionsregion), [Neon Inc. / Supabase
-          Inc. — Datenbank, EU Frankfurt], Microsoft (Identitätsplattform und
-          Graph API). Die jeweils aktuelle Liste ist Bestandteil des AVV.
+          Vercel Inc. (Hosting, EU-Funktionsregion), Supabase Inc. (Datenbank,
+          AWS eu-central-1 Frankfurt), Microsoft (Identitätsplattform und
+          Graph API), Resend Inc. (E-Mail-Versand, EU-Region eu-west-1 — nur
+          Workspace-Benachrichtigungen an Administratoren). Die jeweils
+          aktuelle Liste ist Bestandteil des AVV.
         </p>
       </Section>
 
