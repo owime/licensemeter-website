@@ -97,7 +97,11 @@ export type AuditAction =
   | "invite_resent"
   | "export_report"
   | "threshold_changed"
-  | "findings_bulk_updated";
+  | "findings_bulk_updated"
+  | "export_pricebook_csv"
+  | "prices_imported"
+  | "renewal_date_changed"
+  | "leak_alerts_changed";
 
 /** Aggregate counts captured when user identities are concealed in usage reports. */
 export type AggregateUsage = {

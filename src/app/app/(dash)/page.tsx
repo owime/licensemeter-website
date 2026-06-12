@@ -2,7 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ButtonAnchor } from "~/components/ui";
+import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
@@ -10,6 +10,7 @@ import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
 import { ALL_RULES } from "~/lib/rules";
 import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
+import { daysUntilDate } from "~/server/digestDelta";
 import {
   findings,
   priceBook,
@@ -82,6 +83,15 @@ export default async function OverviewPage() {
       a.consumedUnits * (priceBySku.get(a.skuId) ?? 0),
   );
 
+  // The price book is already loaded for the spend figures, so list-price
+  // detection costs no extra query. Hidden pre-sync (no rows = no figures).
+  const listPricesOnly =
+    prices.length > 0 && !prices.some((p) => p.source === "custom");
+
+  // Days until the Microsoft agreement renewal; null when no date is set.
+  const renewalDays = daysUntilDate(ctx.tenant.renewalDate, new Date());
+  const openCount = openFindings.length;
+
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
@@ -102,6 +112,43 @@ export default async function OverviewPage() {
         </div>
       </header>
 
+      {renewalDays !== null && renewalDays < 0 && (
+        <p className="rise rise-2 mt-8 text-sm text-ink-faint">
+          Renewal date passed —{" "}
+          <Link
+            href="/app/settings"
+            className="underline underline-offset-4 hover:text-ink"
+          >
+            update it in Settings
+          </Link>
+          .
+        </p>
+      )}
+      {renewalDays !== null && renewalDays >= 0 && renewalDays <= 90 && (
+        <section className="rise rise-2 mt-8">
+          <Card title="Renewal window">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="font-display text-2xl tracking-tight">
+                  {renewalDays === 0
+                    ? "Renewal today"
+                    : `Renewal in ${renewalDays} ${renewalDays === 1 ? "day" : "days"}`}
+                </div>
+                <p className="mt-1 text-sm text-ink-soft">
+                  {fmtNumber(openCount, currency)} open{" "}
+                  {openCount === 1 ? "finding" : "findings"} worth{" "}
+                  <span className="font-medium text-rust-text">
+                    {fmtMoney(monthlyWaste, currency)}/mo
+                  </span>
+                  . Reclaim these seats before you re-commit.
+                </p>
+              </div>
+              <ButtonLink href="/app/findings">Review findings</ButtonLink>
+            </div>
+          </Card>
+        </section>
+      )}
+
       <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
@@ -112,24 +159,38 @@ export default async function OverviewPage() {
               currency,
             )} assigned seats`,
             tone: "ink",
+            note: null,
           },
           {
             label: "Monthly waste",
             value: fmtMoney(monthlyWaste, currency),
             sub: `${wasteShare.toFixed(1)}% of spend`,
             tone: "rust",
+            note: listPricesOnly ? (
+              <>
+                Estimated at list prices.{" "}
+                <Link
+                  href="/app/licenses"
+                  className="underline underline-offset-4 hover:text-ink"
+                >
+                  Set your actual prices
+                </Link>
+              </>
+            ) : null,
           },
           {
             label: "Annualized waste",
             value: fmtMoney(monthlyWaste * 12, currency),
             sub: "if nothing changes",
             tone: "rust",
+            note: null,
           },
           {
             label: "Open findings",
             value: fmtNumber(openFindings.length, currency),
             sub: `across ${ALL_RULES.length} rules`,
             tone: "ink",
+            note: null,
           },
         ].map((card) => (
           <div key={card.label} className="bg-card p-5">
@@ -144,9 +205,26 @@ export default async function OverviewPage() {
               {card.value}
             </div>
             <div className="mt-1 text-xs text-ink-soft">{card.sub}</div>
+            {card.note && (
+              <div className="mt-1 text-xs text-ink-faint">{card.note}</div>
+            )}
           </div>
         ))}
       </section>
+
+      {listPricesOnly && (
+        <section className="rise rise-2 mt-6">
+          <Card title="Price accuracy">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="max-w-2xl text-sm text-ink-soft">
+                Your waste figures use Microsoft list prices. Enter what you
+                actually pay for accurate numbers.
+              </p>
+              <ButtonLink href="/app/licenses">Set your prices</ButtonLink>
+            </div>
+          </Card>
+        </section>
+      )}
 
       <TrendChart
         currency={currency}

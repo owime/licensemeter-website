@@ -4,6 +4,11 @@ import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
 import { SignInButtons } from "~/components/SignInButtons";
 import { Pill } from "~/components/ui";
+import {
+  DEMO_ANNUAL_WASTE_ROUNDED,
+  DEMO_FIGURES,
+  demoEuros,
+} from "~/lib/demoFigures";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 
@@ -43,11 +48,15 @@ const CONNECTOR_STRIP = [
   },
 ];
 
-const SAMPLE_LINES = [
-  { label: "Disabled accounts still licensed", value: "412,90" },
-  { label: "Copilot seats never opened", value: "393,40" },
-  { label: "Unassigned paid seats", value: "587,20" },
-  { label: "Inactive for 90+ days", value: "440,40" },
+/* Ledger lines render from the tested demo figures and sum exactly to the
+ * headline — the card is a preview of the live demo tenant, not a mockup. */
+const LEDGER_LINES = [
+  { label: "Left the company, still licensed", cents: DEMO_FIGURES.byCategory.leavers },
+  { label: "App seats with no directory account", cents: DEMO_FIGURES.byCategory.orphaned },
+  { label: "Inactive 90+ days or never used", cents: DEMO_FIGURES.byCategory.idle },
+  { label: "Copilot seats never opened", cents: DEMO_FIGURES.byCategory.copilotUnused },
+  { label: "Unassigned paid seats", cents: DEMO_FIGURES.byCategory.shelfware },
+  { label: "Licensed guest accounts", cents: DEMO_FIGURES.byCategory.guests },
 ] as const;
 
 const TRUST_ITEMS = [
@@ -66,7 +75,7 @@ const STEPS = [
   {
     n: "02",
     title: "Synced nightly",
-    body: "Directory, license assignments, sign-in activity and usage reports — joined into one waste analysis.",
+    body: "Directory, license assignments, sign-in activity and usage reports, joined into one waste analysis — and every connected app's seat list checked against who still works there.",
   },
   {
     n: "03",
@@ -108,13 +117,14 @@ export default function LandingPage() {
             For IT and finance teams on Microsoft 365
           </p>
           <h1 className="font-display text-5xl leading-[1.05] tracking-tight text-balance md:text-6xl lg:text-5xl xl:text-6xl">
-            Find the licenses you pay for but nobody uses.
+            They left the company. Their licenses didn&rsquo;t.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
             {/* Definition-shaped first sentence: what answer engines cite. */}
-            {SITE_DEFINITION} Run a free, read-only waste scan and see your
-            number: disabled accounts that still hold licenses, Copilot nobody
-            opened, shelfware you renew out of habit.
+            {SITE_DEFINITION} Run a free, read-only scan and see your number:
+            the account disabled in March that still holds a paid Salesforce
+            seat, the Copilot nobody opened, the shelfware you renew out of
+            habit.
           </p>
           <div className="mt-10">
             <SignInButtons
@@ -145,31 +155,39 @@ export default function LandingPage() {
               Waste ledger — {month}
             </span>
             <span className="font-mono text-xs whitespace-nowrap text-ink-faint">
-              Illustrative · 90-day window
+              Demo tenant · {DEMO_FIGURES.users} users
             </span>
           </div>
           <div className="px-6 py-5">
             <div className="font-display text-5xl tracking-tight text-rust-text">
-              € 1.833,90
+              € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}
             </div>
             <div className="mt-1 text-sm text-ink-soft">
-              recoverable every month · € 22.006 a year
+              recoverable every month · about € {DEMO_ANNUAL_WASTE_ROUNDED} a
+              year
             </div>
           </div>
           <ul className="border-t border-line">
-            {SAMPLE_LINES.map((line) => (
+            {LEDGER_LINES.map((line) => (
               <li
                 key={line.label}
                 className="flex flex-col gap-0.5 border-b border-line px-6 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
               >
                 <span className="text-sm text-ink-soft">{line.label}</span>
                 <span className="tnum font-mono text-sm whitespace-nowrap text-ink">
-                  € {line.value}
+                  € {demoEuros(line.cents)}
                   <span className="text-ink-faint">/mo</span>
                 </span>
               </li>
             ))}
           </ul>
+          {demoEnabled && (
+            <form action="/api/auth/demo" method="post" className="border-t border-line">
+              <button className="block w-full cursor-pointer px-6 py-3.5 text-left text-sm font-medium text-ink underline-offset-4 transition hover:text-rust-text hover:underline">
+                Open this tenant in the live demo →
+              </button>
+            </form>
+          )}
         </div>
       </section>
 

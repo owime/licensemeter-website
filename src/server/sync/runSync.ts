@@ -1,10 +1,13 @@
-import { and, eq, inArray, lt, notInArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lt, notInArray, sql } from "drizzle-orm";
 
+import { siteUrl } from "~/env";
+import { fmtMoney } from "~/lib/format";
 import { db } from "~/server/db";
 import {
   adobeConnections,
   adobeUsers as adobeUsersTable,
   findings,
+  memberships,
   priceBook,
   saasConnections,
   saasSeats as saasSeatsTable,
@@ -36,9 +39,11 @@ import {
   type GraphUser,
   type UsageReportRow,
 } from "~/server/graph/types";
+import { emailEnabled, leakAlertHtml, sendEmail } from "~/server/email";
+import { pickLeakFindings } from "~/server/leakAlerts";
 import { notifyOps } from "~/server/ops";
 import { joinSignals } from "~/server/sync/join";
-import type { SyncRunStatus, SyncStep } from "~/server/types";
+import type { SyncRunStatus, SyncStep, WasteRuleId } from "~/server/types";
 import { analyzeWaste, type WasteFinding } from "~/server/waste/engine";
 
 const chunk = <T>(arr: T[], size: number): T[][] => {
@@ -622,7 +627,8 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
     const allFindings = newFindings.concat(adobeFindings, saasFindings);
     steps.push({ step: "wasteAnalysis", status: "ok", count: allFindings.length });
 
-    await diffFindings(tenantId, allFindings, now);
+    const inserted = await diffFindings(tenantId, allFindings, now);
+    await sendLeakAlert(tenant, inserted);
 
     // --- Snapshot + tenant capabilities ------------------------------------
     const totalMonthlySpendCents = skus.reduce(
@@ -850,16 +856,26 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     });
 };
 
+/** A finding row genuinely inserted by diffFindings (first appearance, not a reopen/update). */
+export type InsertedFinding = {
+  id: string;
+  rule: WasteRuleId;
+  title: string;
+  monthlyImpactCents: number;
+};
+
 /**
  * Reconciles the new analysis with stored findings:
  * new keys are inserted as open, reappearing resolved findings reopen,
  * acknowledged findings stay acknowledged, vanished findings auto-resolve.
+ * Returns the rows it inserted — first appearances only, which gives leak
+ * alerts natural dedup across syncs (later syncs merely bump lastSeenAt).
  */
 const diffFindings = async (
   tenantId: string,
   newFindings: WasteFinding[],
   now: Date,
-) => {
+): Promise<InsertedFinding[]> => {
   const existing = await db.query.findings.findMany({
     where: eq(findings.tenantId, tenantId),
   });
@@ -867,22 +883,31 @@ const diffFindings = async (
   const newByKey = new Map(newFindings.map((f) => [f.dedupeKey, f]));
 
   const toInsert = newFindings.filter((f) => !existingByKey.has(f.dedupeKey));
+  let inserted: InsertedFinding[] = [];
   if (toInsert.length > 0) {
-    await db.insert(findings).values(
-      toInsert.map((f) => ({
-        tenantId,
-        dedupeKey: f.dedupeKey,
-        rule: f.rule,
-        graphUserId: f.graphUserId,
-        skuId: f.skuId,
-        title: f.title,
-        detail: f.detail,
-        monthlyImpactCents: f.monthlyImpactCents,
-        status: "open" as const,
-        firstSeenAt: now,
-        lastSeenAt: now,
-      })),
-    );
+    inserted = await db
+      .insert(findings)
+      .values(
+        toInsert.map((f) => ({
+          tenantId,
+          dedupeKey: f.dedupeKey,
+          rule: f.rule,
+          graphUserId: f.graphUserId,
+          skuId: f.skuId,
+          title: f.title,
+          detail: f.detail,
+          monthlyImpactCents: f.monthlyImpactCents,
+          status: "open" as const,
+          firstSeenAt: now,
+          lastSeenAt: now,
+        })),
+      )
+      .returning({
+        id: findings.id,
+        rule: findings.rule,
+        title: findings.title,
+        monthlyImpactCents: findings.monthlyImpactCents,
+      });
   }
 
   for (const f of existing) {
@@ -907,5 +932,54 @@ const diffFindings = async (
         .set({ status: "resolved", resolvedAt: now })
         .where(eq(findings.id, f.id));
     }
+  }
+
+  return inserted;
+};
+
+/**
+ * Immediate email when a sync inserts new offboarding-leak findings — the
+ * finding class that recurs forever, so it should not wait for the digest.
+ * Fully isolated: any failure goes to ops and never affects the sync result.
+ */
+const sendLeakAlert = async (
+  tenant: typeof tenants.$inferSelect,
+  inserted: InsertedFinding[],
+): Promise<void> => {
+  try {
+    if (!tenant.leakAlerts || tenant.isDemo || !emailEnabled()) return;
+    const leaks = pickLeakFindings(inserted);
+    if (leaks.length === 0) return;
+
+    const admins = await db.query.memberships.findMany({
+      where: and(
+        eq(memberships.tenantId, tenant.id),
+        inArray(memberships.role, ["owner", "admin"]),
+        isNotNull(memberships.oid),
+      ),
+    });
+    const to = admins.map((m) => m.email).filter(Boolean);
+    if (to.length === 0) return;
+
+    const totalCents = leaks.reduce((s, f) => s + f.monthlyImpactCents, 0);
+    await sendEmail({
+      to,
+      subject: `LicenseMeter: ${leaks.length} new offboarding leak${leaks.length === 1 ? "" : "s"} in ${tenant.name ?? "your tenant"} (+${fmtMoney(totalCents, tenant.currency)}/mo)`,
+      html: leakAlertHtml({
+        tenantName: tenant.name ?? tenant.tid,
+        leakCount: leaks.length,
+        totalImpact: fmtMoney(totalCents, tenant.currency),
+        items: leaks.slice(0, 10).map((f) => ({
+          title: f.title,
+          impact: fmtMoney(f.monthlyImpactCents, tenant.currency),
+        })),
+        appUrl: siteUrl(),
+      }),
+    });
+  } catch (err) {
+    void notifyOps(
+      `leak alert failed for tenant ${tenant.name ?? tenant.tid}: ${err instanceof Error ? err.message : String(err)}`,
+      { key: `leakAlert:${tenant.id}`, cooldownMs: 60 * 60 * 1000 },
+    );
   }
 };

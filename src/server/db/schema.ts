@@ -40,6 +40,10 @@ export const tenants = pgTable(
     hasP1: boolean("has_p1"),
     /** Per-workspace inactivity threshold for the inactive-users rule. */
     inactiveDays: integer("inactive_days").notNull().default(90),
+    /** Next Microsoft agreement renewal; powers the renewal-window card and digest line. */
+    renewalDate: date("renewal_date"),
+    /** Immediate email when a sync inserts new offboarding-leak findings. */
+    leakAlerts: boolean("leak_alerts").notNull().default(true),
     /** Signal quality from the last sync; lets price edits re-run analysis offline. */
     activitySignal: text("activity_signal").$type<"full" | "none">(),
     copilotSignal: text("copilot_signal").$type<"per-user" | "aggregate" | "none">(),

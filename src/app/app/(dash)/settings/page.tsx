@@ -4,7 +4,9 @@ import Link from "next/link";
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
 import { InviteForm } from "~/components/workspace/InviteForm";
+import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
+import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
 import { Button, Card, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
@@ -169,6 +171,30 @@ export default async function SettingsPage() {
                   </form>
                 ) : (
                   `${ctx.tenant.inactiveDays} days`
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink-faint">
+                Microsoft agreement renewal date
+              </dt>
+              <dd className="mt-0.5">
+                {isAdmin ? (
+                  <RenewalDateForm initial={ctx.tenant.renewalDate} />
+                ) : (
+                  fmtDate(ctx.tenant.renewalDate)
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink-faint">Leak alert emails</dt>
+              <dd className="mt-0.5">
+                {isAdmin ? (
+                  <LeakAlertsToggle initial={ctx.tenant.leakAlerts} />
+                ) : ctx.tenant.leakAlerts ? (
+                  "On"
+                ) : (
+                  "Off"
                 )}
               </dd>
             </div>

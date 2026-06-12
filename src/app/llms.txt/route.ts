@@ -24,6 +24,7 @@ Built by Ugur Koc, Microsoft MVP for Intune and Security Copilot. Key facts:
 
 - [Home](${base}/): product overview, live demo entry and the free waste scan
 - [Pricing](${base}/pricing): flat per-tenant tiers and what every plan includes
+- [For MSPs](${base}/msp): portfolio view across client tenants, consultant consent flow, per-client price books and QBR-ready reports
 - [Security](${base}/security): granted scopes, stored data, residency, subprocessors, DPA
 - [FAQ](${base}/faq): the questions IT and security teams ask before granting admin consent
 `;

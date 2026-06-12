@@ -8,6 +8,7 @@ const SUPPORT_EMAIL = "support@licensemeter.com";
 
 const NAV = [
   { href: "/pricing", label: "Pricing" },
+  { href: "/msp", label: "MSP" },
   { href: "/security", label: "Security" },
   { href: "/faq", label: "FAQ" },
 ];
@@ -18,6 +19,7 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/#get-started", label: "Free waste scan" },
       { href: "/pricing", label: "Pricing" },
+      { href: "/msp", label: "For MSPs" },
       { href: "/security", label: "Security" },
       { href: "/faq", label: "FAQ" },
     ],

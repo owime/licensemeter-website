@@ -1,9 +1,11 @@
 import { ImageResponse } from "next/og";
 
+import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
+
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt =
-  "LicenseMeter — find the Microsoft 365 licenses you pay for but nobody uses";
+  "LicenseMeter — they left the company, their licenses didn't";
 
 /* Brand mark (see src/components/BrandMark.tsx) as a data URI — satori
  * renders raster/SVG images more reliably than inline SVG elements. */
@@ -56,7 +58,7 @@ export default function OpenGraphImage() {
               maxWidth: 980,
             }}
           >
-            Find the licenses you pay for but nobody uses.
+            They left the company. Their licenses didn&apos;t.
           </div>
           <div
             style={{
@@ -66,7 +68,8 @@ export default function OpenGraphImage() {
               fontFamily: "sans-serif",
             }}
           >
-            Microsoft 365 license waste, priced monthly. Read-only. EU-hosted.
+            Microsoft 365, Adobe, Zoom, Atlassian and Salesforce seats, priced
+            monthly. Read-only. EU-hosted.
           </div>
         </div>
         <div
@@ -81,7 +84,10 @@ export default function OpenGraphImage() {
             color: "#a8330d",
           }}
         >
-          <span>Waste ledger — € 1.833,90 / month recoverable</span>
+          <span>
+            Waste ledger — € {demoEuros(DEMO_FIGURES.monthlyWasteCents)} / month
+            recoverable
+          </span>
           <span style={{ color: "#75705f" }}>licensemeter</span>
         </div>
       </div>

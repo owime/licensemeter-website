@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 
+import { ImportPricesForm } from "./ImportPricesForm";
 import { PriceEditor } from "~/components/workspace/PriceRow";
 import { ButtonAnchor, Pill } from "~/components/ui";
 import { CONNECTORS } from "~/lib/connectors";
@@ -302,6 +303,30 @@ export default async function LicensesPage() {
           </ul>
         </section>
       ))}
+
+      {isAdmin && (
+        <section className="rise rise-3 mb-8">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+              Bulk price import
+            </h2>
+            <a
+              href="/api/export/pricebook"
+              className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+            >
+              Export price book CSV
+            </a>
+          </div>
+          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+            Maintaining prices for many products or workspaces? Export the
+            price book, fill in what you pay in a spreadsheet, and paste the
+            result back here.
+          </p>
+          <div className="mt-3 border border-line bg-card p-4">
+            <ImportPricesForm />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -3,6 +3,11 @@ import Link from "next/link";
 
 import { siteUrl } from "~/env";
 import { ButtonLink } from "~/components/ui";
+import {
+  DEMO_ANNUAL_WASTE_ROUNDED,
+  DEMO_FIGURES,
+  demoEuros,
+} from "~/lib/demoFigures";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 
@@ -144,7 +149,15 @@ export default function PricingPage() {
           className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
         >
           Talk to us.
-        </a>
+        </a>{" "}
+        The portfolio view, per-client price books and QBR reports are on the{" "}
+        <Link
+          href="/msp"
+          className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
+        >
+          MSP page
+        </Link>
+        .
       </p>
 
       <section className="mt-14 grid gap-10 md:grid-cols-2">
@@ -170,10 +183,16 @@ export default function PricingPage() {
             <span className="tnum font-mono">€ 440</span> a year, a Copilot
             seat about <span className="tnum font-mono">€ 340</span>. The
             Growth plan costs <span className="tnum font-mono">€ 2.388</span>{" "}
-            a year — six reclaimed E3 seats cover it. Our demo tenant of 155
-            people shows about{" "}
-            <span className="tnum font-mono text-rust-text">€ 34.000</span> a
-            year recoverable.
+            a year — six reclaimed E3 seats cover it. The live demo tenant of{" "}
+            {DEMO_FIGURES.users} people shows{" "}
+            <span className="tnum font-mono text-rust-text">
+              € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}
+            </span>{" "}
+            a month recoverable, about{" "}
+            <span className="tnum font-mono text-rust-text">
+              € {DEMO_ANNUAL_WASTE_ROUNDED}
+            </span>{" "}
+            a year.
           </p>
           <p className="mt-3 text-xs text-ink-faint">
             Early access: billing starts with general availability — connected

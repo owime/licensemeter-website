@@ -50,6 +50,10 @@ const FAQS = [
     q: "What exactly do you charge for?",
     a: "The first scan is free — you see your waste number before paying anything. The subscription covers continuous monitoring: nightly syncs, new findings as people join and leave, exports and remediation scripts.",
   },
+  {
+    q: "We are an MSP — can we manage several client tenants?",
+    a: "Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you — no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. See the MSP page for details.",
+  },
 ] as const;
 
 const BASE = siteUrl();

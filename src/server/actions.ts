@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -22,7 +22,9 @@ import {
   saasConnections,
   saasSeats,
   tenants,
+  tenantSkus,
 } from "~/server/db/schema";
+import { parsePrices } from "~/app/app/(dash)/licenses/parsePrices";
 import { UmapiClient } from "~/server/adobe/client";
 import { buildSaasClient, isSaasProvider } from "~/server/saas/registry";
 import { normalizeSalesforceOrgRef } from "~/server/saas/salesforce";
@@ -110,6 +112,113 @@ export const updatePrice = async (
   await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return ok();
+};
+
+export type ImportPricesResult = ActionResult & {
+  /** Price book rows written. */
+  applied: number;
+  /** Keys that matched nothing in this workspace (deduplicated, in order). */
+  skipped: string[];
+  /** Lines that could not be parsed at all. */
+  invalid: number;
+};
+
+/**
+ * Bulk price import from pasted CSV lines (key,monthly price). Keys may be an
+ * M365 skuId or skuPartNumber, or a connector key like adobe:<product> /
+ * zoom:<product>; unknown keys are skipped, never an error. Matching rows are
+ * upserted as source "custom" and the analysis re-runs once.
+ */
+export const importPrices = async (
+  formData: FormData,
+): Promise<ImportPricesResult> => {
+  const none = (r: ActionResult): ImportPricesResult => ({
+    ...r,
+    applied: 0,
+    skipped: [],
+    invalid: 0,
+  });
+  const ctx = await apiAccess("admin");
+  if (!ctx) return none(fail("Not allowed"));
+
+  const raw = formData.get("csv");
+  const text = typeof raw === "string" ? raw : "";
+  if (text.trim() === "") return none(fail("Paste at least one line"));
+  if (text.length > 200_000) return none(fail("Paste is too large"));
+
+  const { rows, invalid } = parsePrices(text);
+
+  // Resolve keys case-insensitively to the canonical price book skuId:
+  // existing price book keys (GUIDs and provider:product) plus the tenant's
+  // SKU part numbers. Two reads, one write — no per-row queries.
+  const [bookRows, skuRows] = await Promise.all([
+    db.query.priceBook.findMany({
+      where: eq(priceBook.tenantId, ctx.tenant.id),
+      columns: { skuId: true },
+    }),
+    db.query.tenantSkus.findMany({
+      where: eq(tenantSkus.tenantId, ctx.tenant.id),
+      columns: { skuId: true, skuPartNumber: true },
+    }),
+  ]);
+  const canonical = new Map<string, string>();
+  for (const r of bookRows) canonical.set(r.skuId.toLowerCase(), r.skuId);
+  for (const s of skuRows) {
+    canonical.set(s.skuId.toLowerCase(), s.skuId);
+    canonical.set(s.skuPartNumber.toLowerCase(), s.skuId);
+  }
+
+  const skipped: string[] = [];
+  const seenSkipped = new Set<string>();
+  const bySku = new Map<string, number>(); // dedupe: last line per key wins
+  for (const row of rows) {
+    const skuId = canonical.get(row.key.toLowerCase());
+    if (!skuId) {
+      if (!seenSkipped.has(row.key)) {
+        seenSkipped.add(row.key);
+        skipped.push(row.key);
+      }
+      continue;
+    }
+    bySku.set(skuId, row.cents);
+  }
+
+  if (bySku.size === 0) {
+    return {
+      ...fail("No lines matched a product in this workspace"),
+      applied: 0,
+      skipped,
+      invalid: invalid.length,
+    };
+  }
+
+  await db
+    .insert(priceBook)
+    .values(
+      [...bySku.entries()].map(([skuId, cents]) => ({
+        tenantId: ctx.tenant.id,
+        skuId,
+        monthlyPriceCents: cents,
+        source: "custom" as const,
+        updatedAt: new Date(),
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [priceBook.tenantId, priceBook.skuId],
+      set: {
+        monthlyPriceCents: sql`excluded.monthly_price_cents`,
+        source: sql`excluded.source`,
+        updatedAt: sql`excluded.updated_at`,
+      },
+    });
+  await audit(ctx, "prices_imported", {
+    applied: bySku.size,
+    skipped: skipped.length,
+    invalid: invalid.length,
+  });
+  await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return { ok: true, applied: bySku.size, skipped, invalid: invalid.length };
 };
 
 /** Invite a member by email/UPN; they get access on their first sign-in. */
@@ -249,6 +358,52 @@ export const setInactiveDays = async (
     .where(eq(tenants.id, ctx.tenant.id));
   await audit(ctx, "threshold_changed", { inactiveDays: days });
   await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+/** Microsoft agreement renewal date; an empty submit clears it. */
+export const setRenewalDate = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  const raw = formData.get("date");
+  const value = typeof raw === "string" ? raw.trim() : "";
+  if (value !== "") {
+    // Date.parse rejects impossible components in ISO date strings.
+    const year = Number(value.slice(0, 4));
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+      Number.isNaN(Date.parse(value)) ||
+      year < 2000 ||
+      year > 2100
+    ) {
+      return fail("Invalid date");
+    }
+  }
+  await db
+    .update(tenants)
+    .set({ renewalDate: value === "" ? null : value })
+    .where(eq(tenants.id, ctx.tenant.id));
+  await audit(ctx, "renewal_date_changed", {
+    renewalDate: value === "" ? null : value,
+  });
+  revalidateApp();
+  return ok();
+};
+
+/** Email alerts when a sync finds new offboarding leaks. */
+export const setLeakAlerts = async (
+  enabled: boolean,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  await db
+    .update(tenants)
+    .set({ leakAlerts: enabled === true })
+    .where(eq(tenants.id, ctx.tenant.id));
+  await audit(ctx, "leak_alerts_changed", { enabled: enabled === true });
   revalidateApp();
   return ok();
 };
