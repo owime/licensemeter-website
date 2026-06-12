@@ -19,6 +19,7 @@ const CONNECTOR_STRIP = [
     name: "Microsoft 365",
     tag: "Core",
     tone: "moss" as const,
+    href: "/security",
     blurb:
       "The full scan: licenses, sign-in activity and usage reports.",
   },
@@ -26,48 +27,56 @@ const CONNECTOR_STRIP = [
     name: "Adobe",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/adobe",
     blurb: "Creative Cloud seats held by people who are disabled or gone.",
   },
   {
     name: "Zoom",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/zoom",
     blurb: "Licensed seats nobody has opened since Teams took over.",
   },
   {
     name: "Atlassian",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/atlassian",
     blurb: "Jira and Confluence seats that outlived their users.",
   },
   {
     name: "Salesforce",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/salesforce",
     blurb: "CRM licenses — the most expensive seats to forget.",
   },
   {
     name: "OpenAI",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/openai",
     blurb: "API spend by day, plus departed people still on the console.",
   },
   {
     name: "Anthropic",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/anthropic",
     blurb: "Claude API costs tracked daily, console access cross-checked.",
   },
   {
     name: "ChatGPT",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/chatgpt",
     blurb: "Enterprise seats matched against your directory via CSV import.",
   },
   {
     name: "Claude",
     tag: "Beta",
     tone: "gold" as const,
+    href: "/connectors/claude",
     blurb: "Team and Enterprise seats that outlived their users.",
   },
 ];
@@ -244,15 +253,17 @@ export default function LandingPage() {
             </h3>
             <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-5">
               {CONNECTOR_STRIP.map((c) => (
-                <div key={c.name}>
+                <Link key={c.name} href={c.href} className="group">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{c.name}</span>
+                    <span className="text-sm font-medium underline-offset-4 group-hover:underline">
+                      {c.name}
+                    </span>
                     <Pill tone={c.tone}>{c.tag}</Pill>
                   </div>
                   <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
                     {c.blurb}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

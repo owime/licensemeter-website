@@ -20,6 +20,7 @@ const FOOTER_COLUMNS = [
       { href: "/#get-started", label: "Free waste scan" },
       { href: "/pricing", label: "Pricing" },
       { href: "/msp", label: "For MSPs" },
+      { href: "/connectors", label: "Connectors" },
       { href: "/security", label: "Security" },
       { href: "/faq", label: "FAQ" },
     ],

@@ -188,6 +188,16 @@ export const SaasConnectorPage = async ({
               price book.
             </p>
           )}
+          <p className="mt-2 text-xs text-ink-faint">
+            The{" "}
+            <Link
+              href={`/connectors/${provider}`}
+              className="underline underline-offset-4 hover:text-ink"
+            >
+              step-by-step setup guide
+            </Link>{" "}
+            links the official {spec.label} documentation for every step.
+          </p>
         </Card>
       </div>
     </div>

@@ -119,6 +119,16 @@ export default async function AdobeConnectorPage() {
             Entitlements only — no Adobe documents or content are read. Prices
             come from the adobe:&lt;product&gt; keys in your price book.
           </p>
+          <p className="mt-2 text-xs text-ink-faint">
+            The{" "}
+            <Link
+              href="/connectors/adobe"
+              className="underline underline-offset-4 hover:text-ink"
+            >
+              step-by-step setup guide
+            </Link>{" "}
+            links the official Adobe documentation for every step.
+          </p>
         </Card>
       </div>
     </div>
