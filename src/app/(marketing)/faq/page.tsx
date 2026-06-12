@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FAQ — LicenseMeter",
+  title: "FAQ",
   description:
     "The questions IT and security teams ask before granting LicenseMeter admin consent: write access, mailbox content, data residency, retention, Entra P1, DPA.",
 };
@@ -19,6 +19,10 @@ const FAQS = [
   {
     q: "Where is our data stored, and for how long?",
     a: "In Postgres in the EU (Frankfurt). Data is kept only while your tenant is connected: disconnecting the workspace deletes everything immediately, and you can additionally revoke the enterprise application in Entra ID at any time.",
+  },
+  {
+    q: "How are the Adobe, Zoom, Atlassian and Salesforce credentials stored?",
+    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments — never content. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
   },
   {
     q: "Who in our company can see the data?",
@@ -46,21 +50,30 @@ const FAQS = [
   },
 ] as const;
 
+/** Stable anchor per question so answers can be deep-linked. */
+const slugify = (s: string): string =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 export default function FaqPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <p className="text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
         FAQ
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight">
+      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
         The questions that come before consent.
       </h1>
 
+      <h2 className="sr-only">Questions</h2>
       <dl className="mt-10 border border-line bg-card">
         {FAQS.map((item) => (
           <div
             key={item.q}
-            className="border-b border-line px-6 py-5 last:border-b-0"
+            id={slugify(item.q)}
+            className="scroll-mt-24 border-b border-line px-6 py-5 last:border-b-0"
           >
             <dt className="font-medium text-ink">{item.q}</dt>
             <dd className="mt-2 text-sm leading-relaxed text-ink-soft">

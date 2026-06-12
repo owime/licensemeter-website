@@ -16,6 +16,8 @@ const ERROR_TEXT: Record<string, string> = {
   consent_incomplete: "Microsoft did not confirm the consent. Please retry.",
 };
 
+export const metadata = { title: "Connect a tenant" };
+
 export default async function ConnectPage({
   searchParams,
 }: {

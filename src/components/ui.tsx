@@ -2,15 +2,17 @@ import Link from "next/link";
 
 /**
  * The three button tiers of the design system. Primary and secondary are
- * sentence case; micro is the uppercase 11px tier for table-row actions.
+ * sentence case; micro is the uppercase 11px tier for table-row actions —
+ * visually ~26px tall, with an invisible ::after overlay stretching the hit
+ * area to 44px for touch without disturbing table-row layouts.
  */
 const BUTTON_VARIANTS = {
   primary:
-    "inline-flex min-h-11 items-center justify-center gap-2.5 bg-ink px-5 py-3 text-sm font-medium text-paper transition hover:bg-rust-deep disabled:cursor-not-allowed disabled:opacity-40",
+    "inline-flex min-h-11 cursor-pointer touch-manipulation items-center justify-center gap-2.5 bg-ink px-5 py-3 text-sm font-medium text-paper transition hover:bg-rust-deep disabled:cursor-not-allowed disabled:opacity-40",
   secondary:
-    "inline-flex min-h-11 items-center justify-center gap-2 border border-line-strong bg-card px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink disabled:opacity-50",
+    "inline-flex min-h-11 cursor-pointer touch-manipulation items-center justify-center gap-2 border border-line-strong bg-card px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink disabled:opacity-50",
   micro:
-    "inline-flex items-center border border-line px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase transition hover:border-ink disabled:opacity-30",
+    "relative inline-flex cursor-pointer touch-manipulation items-center border border-line px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase transition after:absolute after:inset-x-0 after:-inset-y-[9px] after:content-[''] hover:border-ink disabled:opacity-30",
 } as const;
 
 export type ButtonVariant = keyof typeof BUTTON_VARIANTS;

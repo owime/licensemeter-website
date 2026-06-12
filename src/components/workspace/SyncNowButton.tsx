@@ -13,7 +13,14 @@ export const SyncNowButton = () => {
 
   return (
     <div className="flex items-center gap-3">
-      {error && <span className="text-xs text-rust-text">{error}</span>}
+      {/* Persistent live region; sr-only while empty so the button stays put. */}
+      <span
+        role="status"
+        aria-live="polite"
+        className={error ? "text-xs text-rust-text" : "sr-only"}
+      >
+        {error}
+      </span>
       <Button
         variant="secondary"
         disabled={pending}

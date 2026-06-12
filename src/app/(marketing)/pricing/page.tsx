@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ButtonLink } from "~/components/ui";
 
 export const metadata: Metadata = {
-  title: "Pricing — LicenseMeter",
+  title: "Pricing",
   description:
     "Flat monthly pricing per tenant, sized by seat count. Every plan starts with a free waste scan.",
 };
@@ -19,13 +19,13 @@ const TIERS = [
   {
     name: "Growth",
     price: "199",
-    seats: "up to 1,000 seats",
+    seats: "up to 1.000 seats",
     featured: true,
   },
   {
     name: "Scale",
     price: "499",
-    seats: "up to 2,500 seats",
+    seats: "up to 2.500 seats",
     featured: false,
   },
 ] as const;
@@ -45,7 +45,7 @@ export default function PricingPage() {
       <p className="text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
         Pricing
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight">
+      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
         Flat per tenant. Sized by seats, not by your waste.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
@@ -73,7 +73,7 @@ export default function PricingPage() {
               )}
             </div>
             <div className="mt-4 font-display text-4xl tracking-tight">
-              €{tier.price}
+              € {tier.price}
               <span className="font-sans text-sm text-ink-soft"> / month</span>
             </div>
             <div className="mt-1 text-sm text-ink-soft">{tier.seats}</div>
@@ -91,7 +91,7 @@ export default function PricingPage() {
       </div>
 
       <p className="mt-4 text-sm text-ink-soft">
-        More than 2,500 seats or managing multiple tenants as an MSP?{" "}
+        More than 2.500 seats or managing multiple tenants as an MSP?{" "}
         <a
           href="mailto:support@licensemeter.com"
           className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
@@ -120,11 +120,12 @@ export default function PricingPage() {
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
             A single Microsoft 365 E3 seat is roughly{" "}
-            <span className="tnum font-mono">€440</span> a year, a Copilot seat
-            about <span className="tnum font-mono">€340</span>. The Growth plan
-            costs <span className="tnum font-mono">€2,388</span> a year — six
-            reclaimed E3 seats cover it. Our demo tenant of 155 people shows{" "}
-            <span className="tnum font-mono text-rust-text">€22,000</span> a
+            <span className="tnum font-mono">€ 440</span> a year, a Copilot
+            seat about <span className="tnum font-mono">€ 340</span>. The
+            Growth plan costs <span className="tnum font-mono">€ 2.388</span>{" "}
+            a year — six reclaimed E3 seats cover it. Our demo tenant of 155
+            people shows about{" "}
+            <span className="tnum font-mono text-rust-text">€ 34.000</span> a
             year recoverable.
           </p>
           <p className="mt-3 text-xs text-ink-faint">

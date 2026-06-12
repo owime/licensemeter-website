@@ -11,9 +11,9 @@ export const DangerZone = ({ tenantName }: { tenantName: string }) => {
   return (
     <div className="border border-rust-soft bg-card">
       <div className="border-b border-rust-soft px-5 py-3">
-        <h3 className="text-xs font-medium tracking-[0.18em] text-rust-deep uppercase">
+        <h2 className="text-xs font-medium tracking-[0.18em] text-rust-deep uppercase">
           Danger zone
-        </h3>
+        </h2>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <p className="max-w-md text-sm text-ink-soft">

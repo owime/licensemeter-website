@@ -53,19 +53,26 @@ export const ConnectPoller = () => {
       .catch(() => undefined);
   }, [tick]);
 
-  if (run?.status === "failed") {
-    return (
-      <div className="border border-rust-soft bg-rust-soft/50 p-4 text-sm text-rust-deep">
-        <p className="font-medium">The first sync failed.</p>
-        <p className="mt-1">{run.error ?? "Check the sync history in settings."}</p>
-      </div>
-    );
-  }
-
+  /* One persistent live region from first render; its content swaps between
+     the running line and the failure box so the change is announced. */
   return (
-    <div className="flex items-center gap-3 text-sm text-ink-soft">
-      <span className="inline-block size-2 animate-pulse rounded-full bg-rust" />
-      Running the first sync — pulling licenses, users and usage reports…
+    <div role="status" aria-live="polite">
+      {run?.status === "failed" ? (
+        <div className="border border-rust-soft bg-rust-soft/50 p-4 text-sm text-rust-deep">
+          <p className="font-medium">The first sync failed.</p>
+          <p className="mt-1">
+            {run.error ?? "Check the sync history in settings."}
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 text-sm text-ink-soft">
+          <span
+            aria-hidden="true"
+            className="inline-block size-2 rounded-full bg-rust motion-safe:animate-pulse"
+          />
+          Running the first sync — pulling licenses, users and usage reports…
+        </div>
+      )}
     </div>
   );
 };

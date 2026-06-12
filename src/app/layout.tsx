@@ -1,6 +1,6 @@
 import "~/styles/globals.css";
 
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -31,7 +31,7 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: TITLE,
+  title: { default: TITLE, template: "%s — LicenseMeter" },
   description: DESCRIPTION,
   openGraph: {
     type: "website",
@@ -45,6 +45,8 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
   },
 };
+
+export const viewport: Viewport = { themeColor: "#faf8f3" };
 
 export default function RootLayout({
   children,

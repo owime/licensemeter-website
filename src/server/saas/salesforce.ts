@@ -40,6 +40,27 @@ export const validSalesforceUrl = (raw: string): URL | null => {
 };
 
 /**
+ * Admins paste whatever the address bar holds: a scheme-less host, http, or
+ * a deep link into Setup. Normalize that to the bare https origin before the
+ * strict host check — http is upgraded rather than rejected because the host
+ * stays pinned to *.my.salesforce.com and only https is ever stored.
+ */
+export const normalizeSalesforceOrgRef = (raw: string): string | null => {
+  let input = raw.trim();
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(input)) input = `https://${input}`;
+  let url: URL;
+  try {
+    url = new URL(input);
+  } catch {
+    return null;
+  }
+  if (url.protocol === "http:") url.protocol = "https:";
+  // url.origin drops the pasted path/query/hash and lowercases the host;
+  // validSalesforceUrl still rejects non-https schemes and explicit ports.
+  return validSalesforceUrl(url.origin)?.origin ?? null;
+};
+
+/**
  * Salesforce OAuth 2.0 Client Credentials Flow against a Connected App with
  * a read-only run-as integration user. One SOQL query covers everything:
  * active standard users, their license type, and LastLoginDate.

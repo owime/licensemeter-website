@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 export const metadata: Metadata = {
-  title: "Security — LicenseMeter",
+  title: "Security",
   description:
     "How LicenseMeter accesses Microsoft 365 tenants: read-only application permissions, EU data residency, deletion on disconnect, named subprocessors.",
 };
@@ -47,7 +47,7 @@ export default function SecurityPage() {
       <p className="text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
         Security overview
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight">
+      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
         Written for the person who has to say yes.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
@@ -59,8 +59,8 @@ export default function SecurityPage() {
       <Section title="How access works">
         <p>
           A Global Administrator of your tenant grants consent once, through
-          Microsoft&apos;s standard admin-consent dialog. That authorizes the
-          &quot;LicenseMeter Connector&quot; application for{" "}
+          Microsoft&rsquo;s standard admin-consent dialog. That authorizes the
+          &ldquo;LicenseMeter Connector&rdquo; application for{" "}
           <strong className="text-ink">
             application permissions that are read-only without exception
           </strong>
@@ -80,7 +80,7 @@ export default function SecurityPage() {
           ))}
         </ul>
         <p className="mt-3 text-xs text-ink-faint">
-          The consent is recorded in your tenant&apos;s audit log. Sign-in to
+          The consent is recorded in your tenant&rsquo;s audit log. Sign-in to
           the dashboard itself uses a separate app registration with only
           openid, profile and email.
         </p>
@@ -133,8 +133,12 @@ export default function SecurityPage() {
         <ul className="mt-2 border border-line bg-card">
           {[
             ["Vercel Inc.", "Application hosting (EU function region)"],
-            ["Neon / Supabase", "Postgres database, EU (Frankfurt)"],
+            ["Supabase Inc.", "Postgres database, EU (Frankfurt)"],
             ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
+            [
+              "Resend Inc.",
+              "Email delivery — workspace notifications and weekly digest, EU region",
+            ],
           ].map(([name, role]) => (
             <li
               key={name}
@@ -146,7 +150,6 @@ export default function SecurityPage() {
           ))}
         </ul>
         <p className="mt-3 text-xs text-ink-faint">
-          {/* TODO before launch: pick the actual database provider and remove the other. */}
           The definitive subprocessor list is part of the DPA.
         </p>
       </Section>

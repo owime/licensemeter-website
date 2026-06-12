@@ -1,21 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "~/components/ui";
 import { connectAdobe, disconnectAdobe } from "~/server/actions";
 
 const FIELDS = [
   { name: "orgId", label: "Organization ID", placeholder: "1234ABCD…@AdobeOrg" },
-  { name: "clientId", label: "Client ID (API key)", placeholder: "from the Developer Console project" },
-  { name: "clientSecret", label: "Client secret", placeholder: "OAuth server-to-server" },
+  { name: "clientId", label: "Client ID (API key)", placeholder: "a1b2c3d4e5f6…" },
+  { name: "clientSecret", label: "Client secret", placeholder: "p8e-AbCdEf…" },
 ] as const;
 
 export const AdobeConnectForm = () => {
-  const [error, setError] = useState<string | null>(null);
+  /* Object identity changes per failure so repeated identical errors re-focus. */
+  const [error, setError] = useState<{ message: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const errorRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
+
+  /* Move focus to the failure message so keyboard and SR users land on it. */
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   return (
     <form
@@ -26,7 +33,9 @@ export const AdobeConnectForm = () => {
         startTransition(async () => {
           setError(null);
           const result = await connectAdobe(data);
-          if (!result.ok) setError(result.error ?? "Connection failed");
+          if (!result.ok) {
+            setError({ message: result.error ?? "Connection failed" });
+          }
           router.refresh();
         });
       }}
@@ -39,7 +48,10 @@ export const AdobeConnectForm = () => {
             required
             type={f.name === "clientSecret" ? "password" : "text"}
             placeholder={f.placeholder}
-            autoComplete="off"
+            autoComplete={f.name === "clientSecret" ? "new-password" : "off"}
+            spellCheck={false}
+            autoCapitalize="none"
+            autoCorrect="off"
             className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
           />
         </label>
@@ -48,7 +60,15 @@ export const AdobeConnectForm = () => {
         <Button variant="primary" disabled={pending} className="px-4 py-2">
           {pending ? "Validating with Adobe…" : "Connect Adobe"}
         </Button>
-        {error && <span className="text-xs text-rust-text">{error}</span>}
+        <span
+          ref={errorRef}
+          tabIndex={-1}
+          role="status"
+          aria-live="polite"
+          className="text-xs text-rust-text focus:outline-none"
+        >
+          {error?.message}
+        </span>
       </div>
     </form>
   );

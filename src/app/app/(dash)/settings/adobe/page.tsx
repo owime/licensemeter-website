@@ -12,6 +12,8 @@ import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { adobeConnections, adobeUsers } from "~/server/db/schema";
 
+export const metadata = { title: "Adobe connector" };
+
 export default async function AdobeConnectorPage() {
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
@@ -30,15 +32,24 @@ export default async function AdobeConnectorPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
       <header className="rise rise-1">
-        <p className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase">
+        <nav
+          aria-label="Breadcrumb"
+          className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+        >
           <Link
             href="/app/settings"
             className="underline-offset-4 hover:text-ink hover:underline"
           >
             Settings
           </Link>{" "}
-          / Connectors
-        </p>
+          /{" "}
+          <Link
+            href="/app/settings#connectors"
+            className="underline-offset-4 hover:text-ink hover:underline"
+          >
+            Connectors
+          </Link>
+        </nav>
         <div className="mt-2 flex items-center gap-3">
           <h1 className="font-display text-3xl tracking-tight">
             Adobe connector

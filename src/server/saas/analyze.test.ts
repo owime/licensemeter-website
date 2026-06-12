@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { analyzeSaasWaste, saasPriceKey } from "~/server/saas/analyze";
 import { mapAtlassianUsers } from "~/server/saas/atlassian";
-import { mapSalesforceRecords, validSalesforceUrl } from "~/server/saas/salesforce";
+import {
+  mapSalesforceRecords,
+  normalizeSalesforceOrgRef,
+  validSalesforceUrl,
+} from "~/server/saas/salesforce";
 import { mapZoomUsers } from "~/server/saas/zoom";
 import type { SaasSeat } from "~/server/types";
 
@@ -20,8 +24,18 @@ const seat = (overrides: Partial<SaasSeat>): SaasSeat => ({
 });
 
 const ENTRA = [
-  { upn: "active@example.com", displayName: "Active A", accountEnabled: true },
-  { upn: "gone@example.com", displayName: "Gone G", accountEnabled: false },
+  {
+    graphId: "graph-active",
+    upn: "active@example.com",
+    displayName: "Active A",
+    accountEnabled: true,
+  },
+  {
+    graphId: "graph-gone",
+    upn: "gone@example.com",
+    displayName: "Gone G",
+    accountEnabled: false,
+  },
 ];
 
 const PRICES = {
@@ -44,6 +58,9 @@ describe("analyzeSaasWaste", () => {
     expect(findings[0]!.rule).toBe("saas_disabled_in_entra");
     expect(findings[0]!.monthlyImpactCents).toBe(1400);
     expect(findings[0]!.title).toContain("Atlassian");
+    // Drill-down linkage: the finding carries the matched directory user's
+    // graph id so /app/users/[id] can surface it.
+    expect(findings[0]!.graphUserId).toBe("graph-gone");
   });
 
   it("flags orphans with no directory account", () => {
@@ -57,6 +74,8 @@ describe("analyzeSaasWaste", () => {
     expect(findings).toHaveLength(1);
     expect(findings[0]!.rule).toBe("saas_orphaned");
     expect(findings[0]!.dedupeKey).toBe("saas_orphaned|zoom:nobody@example.com|-");
+    // Orphans have no directory user to link to.
+    expect(findings[0]!.graphUserId).toBeNull();
   });
 
   it("flags inactive seats only past the threshold", () => {
@@ -70,6 +89,9 @@ describe("analyzeSaasWaste", () => {
       );
     expect(make(daysAgo(150))).toHaveLength(1);
     expect(make(daysAgo(150))[0]!.rule).toBe("saas_inactive");
+    // Inactivity findings only exist for matched directory users, so they
+    // always link to the drill-down page.
+    expect(make(daysAgo(150))[0]!.graphUserId).toBe("graph-active");
     expect(make(daysAgo(30))).toHaveLength(0);
   });
 
@@ -183,6 +205,35 @@ describe("provider mappers", () => {
     expect(validSalesforceUrl("https://acme.my.salesforce.com:8080")).toBeNull();
     expect(validSalesforceUrl("https://acme.my.salesforce.com/path")).toBeNull();
     expect(validSalesforceUrl("not a url")).toBeNull();
+  });
+
+  it("salesforce orgRef normalization accepts address-bar copy shapes", () => {
+    const ORIGIN = "https://acme.my.salesforce.com";
+    expect(normalizeSalesforceOrgRef("acme.my.salesforce.com")).toBe(ORIGIN);
+    expect(normalizeSalesforceOrgRef("  acme.my.salesforce.com  ")).toBe(ORIGIN);
+    expect(
+      normalizeSalesforceOrgRef("https://acme.my.salesforce.com/lightning/setup"),
+    ).toBe(ORIGIN);
+    expect(
+      normalizeSalesforceOrgRef("https://acme.my.salesforce.com/?foo=1#bar"),
+    ).toBe(ORIGIN);
+    expect(normalizeSalesforceOrgRef("ACME.My.Salesforce.com")).toBe(ORIGIN);
+    // Deliberate choice: a pasted http URL is upgraded to https rather than
+    // rejected — the host is still pinned to *.my.salesforce.com and the
+    // stored origin (the only thing we ever fetch) is always https.
+    expect(normalizeSalesforceOrgRef("http://acme.my.salesforce.com")).toBe(
+      ORIGIN,
+    );
+  });
+
+  it("salesforce orgRef normalization still rejects non-Salesforce hosts", () => {
+    expect(normalizeSalesforceOrgRef("acme.salesforce.com.evil.com")).toBeNull();
+    expect(normalizeSalesforceOrgRef("https://evil.example.com")).toBeNull();
+    expect(
+      normalizeSalesforceOrgRef("https://acme.my.salesforce.com:8080"),
+    ).toBeNull();
+    expect(normalizeSalesforceOrgRef("not a url")).toBeNull();
+    expect(normalizeSalesforceOrgRef("")).toBeNull();
   });
 });
 

@@ -1,8 +1,13 @@
 import { desc, eq } from "drizzle-orm";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CopyScriptButton } from "~/components/workspace/CopyScriptButton";
-import { RuleBadge } from "~/components/workspace/RuleBadge";
+import { FindingChip } from "~/components/workspace/FindingChip";
+import {
+  FindingsBulkForm,
+  SelectAllFindings,
+} from "~/components/workspace/FindingsSelectionBar";
 import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
 import { ALL_RULES, isWasteRule, RULE_META } from "~/lib/rules";
@@ -11,6 +16,10 @@ import { bulkSetFindingStatus, setFindingStatus } from "~/server/actions";
 import { db } from "~/server/db";
 import { findings } from "~/server/db/schema";
 import type { FindingStatus } from "~/server/types";
+
+export const metadata: Metadata = { title: "Findings" };
+
+const PAGE_SIZE = 50;
 
 type FindingRow = typeof findings.$inferSelect;
 
@@ -82,13 +91,29 @@ export default async function FindingsPage({
   }
   const shownImpact = rows.reduce((s, f) => s + f.monthlyImpactCents, 0);
 
-  const filterHref = (rule: string | null, resolved = false) => {
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pageRaw = typeof sp.page === "string" ? parseInt(sp.page, 10) : 1;
+  const page = Math.min(
+    Math.max(Number.isFinite(pageRaw) ? pageRaw : 1, 1),
+    totalPages,
+  );
+  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const filterHref = (rule: string | null, resolved = false, pageNo = 1) => {
     const params = new URLSearchParams();
     if (rule) params.set("rule", rule);
     if (resolved) params.set("show", "resolved");
+    if (pageNo > 1) params.set("page", String(pageNo));
     const qs = params.toString();
     return `/app/findings${qs ? `?${qs}` : ""}`;
   };
+  const pageHref = (pageNo: number) =>
+    filterHref(ruleParam, showResolved, pageNo);
+
+  /** Hide zero-count rule chips, but keep an active zero-count filter escapable. */
+  const visibleRules = ALL_RULES.filter(
+    (rule) => (totalByRule.get(rule)?.count ?? 0) > 0 || rule === ruleParam,
+  );
 
   const emptyMessage = showResolved
     ? "No resolved findings yet."
@@ -127,6 +152,7 @@ export default async function FindingsPage({
       <nav aria-label="Finding filters" className="rise rise-2 mt-8 flex flex-wrap gap-2">
         <Link
           href={filterHref(null)}
+          aria-current={!ruleParam && !showResolved ? "true" : undefined}
           className={`px-3 py-1.5 text-xs font-medium ${
             !ruleParam && !showResolved
               ? "bg-ink text-paper"
@@ -135,12 +161,15 @@ export default async function FindingsPage({
         >
           All open ({activeRows.length})
         </Link>
-        {ALL_RULES.map((rule) => {
+        {visibleRules.map((rule) => {
           const agg = totalByRule.get(rule);
           return (
             <Link
               key={rule}
               href={filterHref(rule)}
+              aria-current={
+                ruleParam === rule && !showResolved ? "true" : undefined
+              }
               className={`px-3 py-1.5 text-xs font-medium ${
                 ruleParam === rule && !showResolved
                   ? "bg-ink text-paper"
@@ -153,6 +182,7 @@ export default async function FindingsPage({
         })}
         <Link
           href={filterHref(null, true)}
+          aria-current={showResolved ? "true" : undefined}
           className={`px-3 py-1.5 text-xs font-medium ${
             showResolved
               ? "bg-ink text-paper"
@@ -164,27 +194,18 @@ export default async function FindingsPage({
       </nav>
 
       {/* Desktop table (one form: row checkboxes + bulk action) */}
-      <form
-        action={async (formData) => {
-          "use server";
-          await bulkSetFindingStatus(formData);
-        }}
-        className="rise rise-3 mt-5 mb-8 hidden md:block"
+      <FindingsBulkForm
+        action={bulkSetFindingStatus}
+        showBar={isAdmin && !showResolved && rows.length > 0}
       >
-        {isAdmin && !showResolved && rows.length > 0 && (
-          <div className="mb-2 flex items-center justify-end gap-2">
-            <input type="hidden" name="status" value="acknowledged" />
-            <button className={buttonClass("micro")}>
-              Acknowledge selected
-            </button>
-          </div>
-        )}
         <div className="overflow-x-auto border border-line bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
               {isAdmin && !showResolved && (
-                <th className="w-8 px-3 py-3" aria-label="Select" />
+                <th className="w-8 px-3 py-3">
+                  <SelectAllFindings />
+                </th>
               )}
               <th className="px-4 py-3 font-medium">Rule</th>
               <th className="px-4 py-3 font-medium">Finding</th>
@@ -197,7 +218,7 @@ export default async function FindingsPage({
             </tr>
           </thead>
           <tbody>
-            {rows.map((f) => {
+            {pageRows.map((f) => {
               const detail = f.detail as { upn?: string };
               return (
                 <tr
@@ -215,7 +236,7 @@ export default async function FindingsPage({
                     </td>
                   )}
                   <td className="px-4 py-3">
-                    <RuleBadge rule={f.rule} />
+                    <FindingChip rule={f.rule} detail={f.detail} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-medium">
@@ -268,16 +289,16 @@ export default async function FindingsPage({
           </tbody>
         </table>
         </div>
-      </form>
+      </FindingsBulkForm>
 
       {/* Mobile stacked cards */}
       <ul className="rise rise-3 mt-5 mb-8 flex flex-col gap-3 md:hidden">
-        {rows.map((f) => {
+        {pageRows.map((f) => {
           const detail = f.detail as { upn?: string };
           return (
             <li key={f.id} className="border border-line bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <RuleBadge rule={f.rule} />
+                <FindingChip rule={f.rule} detail={f.detail} />
                 <StatusPill status={f.status} />
               </div>
               <div className="mt-2 text-sm font-medium">{f.title}</div>
@@ -310,6 +331,30 @@ export default async function FindingsPage({
           </li>
         )}
       </ul>
+
+      {rows.length > PAGE_SIZE && (
+        <nav
+          aria-label="Findings pages"
+          className="-mt-4 mb-8 flex flex-wrap items-center justify-between gap-3"
+        >
+          <span className="tnum text-xs text-ink-soft">
+            Showing {(page - 1) * PAGE_SIZE + 1}–
+            {Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
+          </span>
+          <div className="flex items-center gap-2">
+            {page > 1 && (
+              <Link href={pageHref(page - 1)} className={buttonClass("micro")}>
+                ← Previous
+              </Link>
+            )}
+            {page < totalPages && (
+              <Link href={pageHref(page + 1)} className={buttonClass("micro")}>
+                Next →
+              </Link>
+            )}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

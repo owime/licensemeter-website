@@ -44,7 +44,7 @@ export const analyzeSaasWaste = (
       findings.push({
         dedupeKey: `saas_disabled_in_entra|${provider}:${email}|-`,
         rule: "saas_disabled_in_entra",
-        graphUserId: null,
+        graphUserId: entra.graphId,
         skuId: null,
         title: `${label} seat, user disabled in Entra: ${entra.displayName ?? seat.email}`,
         detail,
@@ -69,7 +69,7 @@ export const analyzeSaasWaste = (
         findings.push({
           dedupeKey: `saas_inactive|${provider}:${email}|-`,
           rule: "saas_inactive",
-          graphUserId: null,
+          graphUserId: entra.graphId,
           skuId: null,
           title: `${label} seat unused for ${idleDays} days: ${entra.displayName ?? seat.email}`,
           detail: { ...detail, idleDays },

@@ -8,6 +8,7 @@ const PRICES = {
 };
 
 const entra = (upn: string, accountEnabled: boolean) => ({
+  graphId: `graph-${upn.toLowerCase()}`,
   upn,
   displayName: upn.split("@")[0]!,
   accountEnabled,
@@ -29,6 +30,9 @@ describe("analyzeAdobeWaste", () => {
     expect(findings).toHaveLength(1);
     expect(findings[0]!.rule).toBe("adobe_disabled_in_entra");
     expect(findings[0]!.monthlyImpactCents).toBe(9100);
+    // Drill-down linkage: the finding carries the matched directory user's
+    // graph id so /app/users/[id] can surface it.
+    expect(findings[0]!.graphUserId).toBe("graph-gone.user@corp.example");
   });
 
   it("flags Adobe seats with no Entra account at all", () => {
@@ -45,6 +49,8 @@ describe("analyzeAdobeWaste", () => {
     );
     expect(findings.map((f) => f.rule)).toEqual(["adobe_orphaned"]);
     expect(findings[0]!.monthlyImpactCents).toBe(2000);
+    // Orphans have no directory user to link to.
+    expect(findings[0]!.graphUserId).toBeNull();
   });
 
   it("ignores healthy seats and non-active Adobe users", () => {

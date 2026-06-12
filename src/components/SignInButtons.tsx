@@ -45,8 +45,9 @@ export const SignInButtons = ({
           Run a free scan on your tenant
         </a>
       ) : (
-        <span
-          aria-disabled="true"
+        <button
+          type="button"
+          disabled
           title="Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in"
           className={buttonClass(
             demoEnabled ? "secondary" : "primary",
@@ -55,7 +56,10 @@ export const SignInButtons = ({
         >
           <MicrosoftMark />
           Run a free scan on your tenant
-        </span>
+          <span className="sr-only">
+            (Configure AUTH_MICROSOFT_ENTRA_ID_ID to enable Microsoft sign-in)
+          </span>
+        </button>
       )}
     </div>
     {showNote && (

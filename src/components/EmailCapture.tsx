@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
 import { buttonClass } from "~/components/ui";
 import { captureEmail } from "~/server/actions";
@@ -9,14 +9,8 @@ export const EmailCapture = () => {
   const [state, setState] = useState<"idle" | "done" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  if (state === "done") {
-    return (
-      <p className="text-sm text-moss" role="status">
-        Thanks — you will hear from us personally, nothing automated.
-      </p>
-    );
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
+  const statusRef = useRef<HTMLParagraphElement>(null);
 
   return (
     <form
@@ -28,9 +22,18 @@ export const EmailCapture = () => {
           const result = await captureEmail(data);
           if (result.ok) {
             setState("done");
+            setMessage(
+              "Thanks — you will hear from us personally, nothing automated.",
+            );
+            // The fields hide on success — park focus on the confirmation
+            // before the commit so it is never dropped to <body>.
+            statusRef.current?.focus();
           } else {
             setState("error");
-            setMessage(result.error ?? "Something went wrong");
+            setMessage(
+              result.error ?? "Something went wrong — please try again.",
+            );
+            inputRef.current?.focus();
           }
         });
       }}
@@ -45,21 +48,41 @@ export const EmailCapture = () => {
         className="hidden"
       />
       <input
+        ref={inputRef}
         type="email"
         name="email"
         required
         placeholder="you@yourcompany.com"
         aria-label="Email address"
-        className="min-w-56 flex-1 border border-line bg-card px-3 py-2.5 text-sm focus:border-ink"
+        aria-invalid={state === "error" || undefined}
+        autoComplete="email"
+        spellCheck={false}
+        className={`min-h-11 min-w-56 flex-1 border border-line bg-card px-3 py-2.5 text-sm focus:border-ink ${
+          state === "done" ? "hidden" : ""
+        }`}
       />
-      <button disabled={pending} className={buttonClass("secondary")}>
+      <button
+        disabled={pending}
+        className={buttonClass("secondary", state === "done" ? "hidden" : "")}
+      >
         {pending ? "Sending…" : "Keep me posted"}
       </button>
-      {state === "error" && (
-        <span className="w-full text-xs text-rust-text" role="alert">
-          {message}
-        </span>
-      )}
+      {/* Live region mounted from first render so announcements are reliable. */}
+      <p
+        ref={statusRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className={
+          state === "done"
+            ? "text-sm text-moss"
+            : state === "error"
+              ? "w-full text-xs text-rust-text"
+              : "sr-only"
+        }
+      >
+        {message}
+      </p>
     </form>
   );
 };

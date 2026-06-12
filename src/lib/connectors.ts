@@ -16,8 +16,11 @@ export const CONNECTOR_LABELS: Record<SaasProvider, string> = {
 export type ConnectorField = {
   name: "orgRef" | "clientId" | "secret";
   label: string;
+  /** Format example shown in the empty input — a value shape, never an instruction. */
   placeholder: string;
   secret?: boolean;
+  /** Mobile keyboard hint; inputs stay type="text"/"password" so pasting is never rejected. */
+  inputMode?: "text" | "url" | "email";
 };
 
 export type ConnectorSpec = {
@@ -41,9 +44,9 @@ export const CONNECTORS: ConnectorSpec[] = [
     label: "Zoom",
     seatNoun: "Licensed Zoom seats",
     fields: [
-      { name: "orgRef", label: "Account ID", placeholder: "from the Server-to-Server OAuth app" },
-      { name: "clientId", label: "Client ID", placeholder: "from the same app" },
-      { name: "secret", label: "Client secret", placeholder: "Server-to-Server OAuth", secret: true },
+      { name: "orgRef", label: "Account ID", placeholder: "q6gBJVO5Tze…" },
+      { name: "clientId", label: "Client ID", placeholder: "K3vQn8RsTUm…" },
+      { name: "secret", label: "Client secret", placeholder: "x7TuVwXyZ0a…", secret: true },
     ],
     setupHint:
       "A Zoom admin creates a Server-to-Server OAuth app in the Zoom App Marketplace (Develop > Build App) with the user:read:admin scope, then pastes the three values here. Stored encrypted, used read-only.",
@@ -60,8 +63,8 @@ export const CONNECTORS: ConnectorSpec[] = [
     label: "Atlassian",
     seatNoun: "Jira and Confluence seats",
     fields: [
-      { name: "orgRef", label: "Organization ID", placeholder: "from admin.atlassian.com" },
-      { name: "secret", label: "API key", placeholder: "Settings > API keys", secret: true },
+      { name: "orgRef", label: "Organization ID", placeholder: "1a2b3c4d-5e6f-…" },
+      { name: "secret", label: "API key", placeholder: "ATCTT3xFfGN0…", secret: true },
     ],
     setupHint:
       "An organization admin creates an API key under admin.atlassian.com > Settings > API keys and pastes the organization ID plus the key here. Stored encrypted, used read-only — managed users and product access only, nothing from inside Jira or Confluence.",
@@ -78,9 +81,14 @@ export const CONNECTORS: ConnectorSpec[] = [
     label: "Salesforce",
     seatNoun: "Salesforce user licenses",
     fields: [
-      { name: "orgRef", label: "My Domain URL", placeholder: "https://yourorg.my.salesforce.com" },
-      { name: "clientId", label: "Consumer key", placeholder: "from the Connected App" },
-      { name: "secret", label: "Consumer secret", placeholder: "Connected App", secret: true },
+      {
+        name: "orgRef",
+        label: "My Domain URL",
+        placeholder: "https://yourorg.my.salesforce.com",
+        inputMode: "url",
+      },
+      { name: "clientId", label: "Consumer key", placeholder: "3MVG9aBcDeFgHiJ…" },
+      { name: "secret", label: "Consumer secret", placeholder: "A1B2C3D4E5F6…", secret: true },
     ],
     setupHint:
       "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and a read-only integration user as the run-as user, then pastes the My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",

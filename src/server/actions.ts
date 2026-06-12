@@ -25,7 +25,7 @@ import {
 } from "~/server/db/schema";
 import { UmapiClient } from "~/server/adobe/client";
 import { buildSaasClient, isSaasProvider } from "~/server/saas/registry";
-import { validSalesforceUrl } from "~/server/saas/salesforce";
+import { normalizeSalesforceOrgRef } from "~/server/saas/salesforce";
 import { connectorSpec } from "~/lib/connectors";
 import { encryptSecret } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
@@ -373,12 +373,12 @@ export const connectSaasConnector = async (
   }
   let orgRef = values.orgRef!;
   if (provider === "salesforce") {
-    const url = validSalesforceUrl(orgRef);
-    if (!url)
+    const origin = normalizeSalesforceOrgRef(orgRef);
+    if (!origin)
       return fail(
         "The instance URL must be your https://<domain>.my.salesforce.com My Domain",
       );
-    orgRef = url.origin;
+    orgRef = origin;
   }
   const clientId = values.clientId ?? null;
   const secret = values.secret!;

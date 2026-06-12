@@ -1,10 +1,12 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
+import type { Metadata } from "next";
 import Link from "next/link";
 
-import { RuleBadge } from "~/components/workspace/RuleBadge";
+import { FindingChip } from "~/components/workspace/FindingChip";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
 import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
+import { ALL_RULES } from "~/lib/rules";
 import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
 import {
@@ -14,6 +16,8 @@ import {
   syncRuns,
   tenantSkus,
 } from "~/server/db/schema";
+
+export const metadata: Metadata = { title: "Overview" };
 
 type SkuRow = typeof tenantSkus.$inferSelect;
 
@@ -128,7 +132,7 @@ export default async function OverviewPage() {
           {
             label: "Open findings",
             value: fmtNumber(openFindings.length, currency),
-            sub: "across 6 rules",
+            sub: `across ${ALL_RULES.length} rules`,
             tone: "ink",
           },
         ].map((card) => (
@@ -299,7 +303,7 @@ export default async function OverviewPage() {
               className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 last:border-b-0"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <RuleBadge rule={f.rule} />
+                <FindingChip rule={f.rule} detail={f.detail} />
                 <span className="truncate text-sm">{f.title}</span>
               </div>
               <span className="tnum shrink-0 font-mono text-sm font-medium text-rust-text">

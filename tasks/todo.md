@@ -383,3 +383,128 @@ analyzes stored seats instead of auto-resolving findings. Code review
 echoed to the browser - server log only); P2 addressed (failed-sync hint on
 the connector page). Known follow-up: Adobe still auto-resolves findings on
 transient API failure - port the stored-seat fallback to it.
+
+---
+
+# Frontend review fixes (2026-06-12)
+
+Source: /frontend orchestrator review (marketing + dash code agents, Vercel
+Web Interface Guidelines, live Playwright pass at 1440/375). User: "fix all
+of it" - 1 P1, ~19 P2, ~25 P3. Constraint: ledger aesthetic locked, tighten
+only. Four parallel agents with disjoint file ownership.
+
+## Plan
+
+Agent A - marketing surface (+ root layout, ui.tsx):
+- [ ] P1 EmailCapture: persistent aria-live region (no unmount on success),
+      focus handling, aria-invalid, autoComplete/spellCheck, min-h-11 input
+- [ ] P2 lang="de" on datenschutz + impressum content
+- [ ] P2 footer internal links -> Link (mailto stays <a>)
+- [ ] P2 single German number convention on landing + pricing (incl. stale
+      payback claim -> accurate EUR 34.000 from deterministic demo)
+- [ ] P2 ui.tsx: cursor-pointer + touch-action on buttons; micro-button
+      44px effective hit area without visual change
+- [ ] P2 security subprocessors: + Resend row, DB naming aligned w/ legal
+- [ ] P3 SignInButtons disabled-state semantics; curly quotes (security);
+      viewport themeColor; title.template + marketing title reconcile;
+      FAQ anchors + heading order + connector-credentials entry (JSON-LD
+      synced); text-balance on h1/h2s; hero "D90" jargon -> plain language
+
+Agent B1 - dash pages (findings, home, users, portfolio):
+- [ ] P2 "across 6 rules" -> ALL_RULES.length
+- [ ] P2 rules.ts threshold-neutral inactivity labels
+- [ ] P2 findings: bulk-ack feedback (aria-live), select-all, disable at 0
+- [ ] P2 portfolio mobile cards + per-row aria-labels
+- [ ] P2 (dash)/not-found.tsx with shell
+- [ ] P3 chips aria-current + hide zero-count rules; provider-aware leak
+      chips if derivable from existing finding fields
+- [ ] P3 findings pagination (searchParams, preserves filter)
+- [ ] P3 users/[id] fmtDate + UPN break-all; TrendChart date fmt + font
+- [ ] P3 (dash) loading.tsx + error.tsx; metadata titles (owned pages)
+
+Agent B2 - settings + shell components:
+- [ ] P2 settings action results rendered (invite/remove/resend) aria-live
+- [ ] P2 member remove armed-confirm; invite input aria-label
+- [ ] P2 MobileNav: scrollable drawer + WorkspaceSwitcher in drawer
+- [ ] P2 WorkspaceSwitcher/CurrencySelect: no focus-loss disable, no
+      per-keypress submit
+- [ ] P3 connector forms: aria-live statuses, spellcheck/autocap/autocorrect
+      off, new-password on secrets, orgRef inputMode="url" (NOT type=url),
+      placeholders as format examples
+- [ ] P3 overflow fixes (actor email, sync steps, orgRef); motion-safe
+      pulse; breadcrumb semantics -> #connectors; DangerZone h2; skip link;
+      metadata titles (owned pages)
+
+Agent C - server/data + licenses:
+- [ ] P2 graphUserId on Adobe/SaaS disabled-in-Entra findings (orphans stay
+      null); tests updated
+- [ ] P2 licenses page: editable price sections for zoom/atlassian/
+      salesforce products (Adobe pattern)
+- [ ] P3 PriceRow aria-label display name; salesforce orgRef server-side
+      normalization; licenses metadata title
+
+## Acceptance criteria
+
+1. npm run check green; vitest green (54+, updated where contracts changed)
+2. Demo: user with an Adobe/SaaS leak shows that finding on /app/users/[id]
+   (after demo re-sync); finding links to the user page
+3. Licenses page has editable price rows for all connected SaaS providers
+4. Overview rule count computed, matches ALL_RULES.length
+5. One (German) number convention across landing + pricing money figures
+6. EmailCapture: success/error announced via persistent live region, no
+   form unmount, no focus loss (code-verified)
+7. Mobile: drawer scrollable at short viewports; portfolio usable at 375px;
+   findings select-all + zero-selection guard work
+8. Distinct document titles per app page
+9. Ledger aesthetic untouched (no color/font/layout redesign)
+10. Independent code-reviewer agent: no P0/P1 regressions vs these criteria
+
+Deliberate decisions: German number convention sitewide (product is
+EU/German-market; app + hero ledger already German). Salesforce orgRef stays
+text + inputMode="url" (type="url" rejects scheme-less paste). Payback claim
+pinned to deterministic demo (EUR 34.000/yr). Orphan findings keep
+graphUserId null (no directory user exists).
+
+## Review (2026-06-12, end of pass)
+
+All ~45 findings implemented across 46 modified + 7 new files
+(+~900/-300 lines). Four parallel agents with disjoint ownership; one
+flagged boundary crossing accepted (2-line graphId pass-through in
+runSync.ts identity mapping - required for the fix to reach analyzers).
+
+Gates: eslint clean, tsc clean, 56/56 vitest (suite grew 54 -> 56 with
+salesforce-normalization tests; graphUserId assertions strengthened).
+
+Orchestrator-found bug during verification (would have shipped broken):
+diffFindings updated title/detail/impact but not graphUserId on existing
+findings, so the user-page linkage fix only applied to brand-new findings.
+One-line fix in runSync.ts set clause; backfills every tenant on next sync.
+
+Live Playwright verification (fresh PGlite + reseeded demo): user page
+shows the Adobe leak for a disabled user with provider chip; overview
+"across 13 rules" computed; provider-aware chips (Salesforce/Adobe leak);
+licenses page has editable Zoom/Atlassian/Salesforce sections with
+display-name aria-labels; findings select-all -> "50 selected" + enabled
+button, disabled at zero, "Showing 1-50 of 59" + ?page=2 link, zero-count
+chips hidden; breadcrumb nav with #connectors anchor; skip link first
+focusable; (dash) loading skeleton streams; mobile drawer max-h 500px/
+overflow auto/overscroll contain at 560px viewport; email capture has
+persistent polite live region + autocomplete + spellcheck off + 44px
+input before any submit; pricing all-German figures (EUR 2.388 / 34.000);
+per-page document titles. Console clean post-rebuild.
+
+Independent code review (feature-dev:code-reviewer): no P0; all 10
+acceptance criteria pass. Its 3 P1s fixed same pass and re-gated:
+select-all indeterminate state (ref + effect), InviteForm email survival
+keyed remount (defaultValue applies once per mount), armed-confirm sr-only
+live region announcing "Press again to confirm removal." Its P2 about
+:443 rejection was a false premise (URL.origin drops default ports -
+verified); recount-after-revalidate timing accepted as cosmetic.
+
+Incident note: PGlite wedged (WASM Aborted on every query) after debug
+instances opened the dataDir between unclean dev-server kills. Recovered
+by rm -rf .pglite + mkdir -p .pglite/data (PGlite mkdir is not recursive)
++ db:push + demo reseed. Lesson recorded: never open a second PGlite on
+the dev dataDir, even with the server stopped mid-WAL.
+
+Not committed - working tree left for the user to review.

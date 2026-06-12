@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "~/components/ui";
 import type { ConnectorSpec } from "~/lib/connectors";
@@ -11,9 +11,16 @@ import {
 } from "~/server/actions";
 
 export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
-  const [error, setError] = useState<string | null>(null);
+  /* Object identity changes per failure so repeated identical errors re-focus. */
+  const [error, setError] = useState<{ message: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const errorRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
+
+  /* Move focus to the failure message so keyboard and SR users land on it. */
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   return (
     <form
@@ -24,7 +31,9 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
         startTransition(async () => {
           setError(null);
           const result = await connectSaasConnector(data);
-          if (!result.ok) setError(result.error ?? "Connection failed");
+          if (!result.ok) {
+            setError({ message: result.error ?? "Connection failed" });
+          }
           router.refresh();
         });
       }}
@@ -38,7 +47,11 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
             required
             type={f.secret ? "password" : "text"}
             placeholder={f.placeholder}
-            autoComplete="off"
+            inputMode={f.inputMode}
+            autoComplete={f.secret ? "new-password" : "off"}
+            spellCheck={false}
+            autoCapitalize="none"
+            autoCorrect="off"
             className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
           />
         </label>
@@ -47,7 +60,15 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
         <Button variant="primary" disabled={pending} className="px-4 py-2">
           {pending ? `Validating with ${spec.label}…` : spec.connectCta}
         </Button>
-        {error && <span className="text-xs text-rust-text">{error}</span>}
+        <span
+          ref={errorRef}
+          tabIndex={-1}
+          role="status"
+          aria-live="polite"
+          className="text-xs text-rust-text focus:outline-none"
+        >
+          {error?.message}
+        </span>
       </div>
     </form>
   );

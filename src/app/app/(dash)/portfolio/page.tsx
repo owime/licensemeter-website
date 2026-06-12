@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
@@ -7,6 +8,8 @@ import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { findings, snapshots, syncRuns, tenants } from "~/server/db/schema";
+
+export const metadata: Metadata = { title: "Portfolio" };
 
 /**
  * MSP/consultant view: every workspace this user can open, with the numbers
@@ -73,7 +76,8 @@ export default async function PortfolioPage() {
         </p>
       </header>
 
-      <div className="rise rise-2 mt-8 mb-8 overflow-x-auto border border-line bg-card">
+      {/* Desktop table */}
+      <div className="rise rise-2 mt-8 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
@@ -128,13 +132,68 @@ export default async function PortfolioPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <OpenWorkspaceButton tenantId={ws.id} />
+                  <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Mobile stacked cards */}
+      <ul className="rise rise-2 mt-8 mb-8 flex flex-col gap-3 md:hidden">
+        {sorted.map(({ ws, currency, snapshot, lastRun, openFindings }) => (
+          <li key={ws.id} className="border border-line bg-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{ws.name}</span>
+                  {ws.isDemo && <Pill tone="slate">demo</Pill>}
+                  {ws.id === ctx.tenant.id && (
+                    <span className="text-xs text-ink-faint">(current)</span>
+                  )}
+                </div>
+                <div className="text-[11px] tracking-wider text-ink-faint uppercase">
+                  {ws.role}
+                </div>
+              </div>
+              <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
+            </div>
+            <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+              <div className="flex justify-between gap-2">
+                <dt className="font-sans text-xs text-ink-faint">Waste/mo</dt>
+                <dd className="font-medium text-rust-text">
+                  {snapshot
+                    ? fmtMoney(snapshot.totalMonthlyWasteCents, currency)
+                    : "—"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                <dd>
+                  {snapshot
+                    ? fmtMoney(snapshot.totalMonthlySpendCents, currency)
+                    : "—"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="font-sans text-xs text-ink-faint">Findings</dt>
+                <dd>{fmtNumber(openFindings, currency)}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="font-sans text-xs text-ink-faint">Last sync</dt>
+                <dd className="font-sans">
+                  {lastRun?.status === "failed" ? (
+                    <span className="text-rust-text">failed</span>
+                  ) : (
+                    fmtAgo(lastRun?.finishedAt ?? null)
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

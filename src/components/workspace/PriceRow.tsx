@@ -8,10 +8,13 @@ import { updatePrice } from "~/server/actions";
 
 export const PriceEditor = ({
   skuId,
+  name,
   initial,
   currency,
 }: {
   skuId: string;
+  /** Human-readable product name for the aria-label; skuId is often a GUID. */
+  name?: string;
   initial: string;
   currency: string;
 }) => {
@@ -41,7 +44,7 @@ export const PriceEditor = ({
           setState("idle");
         }}
         inputMode="decimal"
-        aria-label={`Monthly price for ${skuId}`}
+        aria-label={`Monthly price for ${name ?? skuId}`}
         className="tnum w-24 border border-line bg-card px-2 py-1.5 text-right font-mono text-sm focus:border-ink"
       />
       <button

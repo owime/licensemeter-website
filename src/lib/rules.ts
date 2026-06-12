@@ -1,4 +1,5 @@
-import type { WasteRuleId } from "~/server/types";
+import { CONNECTOR_LABELS } from "~/lib/connectors";
+import type { SaasProvider, WasteRuleId } from "~/server/types";
 
 export const RULE_META: Record<
   WasteRuleId,
@@ -15,8 +16,10 @@ export const RULE_META: Record<
     badgeClass: "bg-gold-soft text-gold",
   },
   inactive_90d: {
-    label: "Inactive for 90+ days",
-    short: "Inactive 90d",
+    // Threshold-neutral: the inactivity window is per-workspace (30-180 days)
+    // and finding titles carry the actual day count.
+    label: "Inactive seat",
+    short: "Inactive",
     badgeClass: "bg-gold-soft text-gold",
   },
   shelfware: {
@@ -75,3 +78,28 @@ export const ALL_RULES = Object.keys(RULE_META) as WasteRuleId[];
 
 export const isWasteRule = (value: string): value is WasteRuleId =>
   value in RULE_META;
+
+/** Chip suffix per generic SaaS rule, prefixed with the provider name when known. */
+const SAAS_CHIP_SUFFIX: Partial<Record<WasteRuleId, string>> = {
+  saas_disabled_in_entra: "leak",
+  saas_orphaned: "orphan",
+  saas_inactive: "idle",
+};
+
+const isSaasProvider = (value: unknown): value is SaasProvider =>
+  typeof value === "string" && value in CONNECTOR_LABELS;
+
+/**
+ * Chip text for a concrete finding row. The generic SaaS rules store the
+ * provider in the finding detail, so row chips can name the product
+ * ("Zoom leak" instead of "App leak"). Filter pills stay rule-generic.
+ */
+export const findingChipLabel = (
+  rule: WasteRuleId,
+  detail: Record<string, unknown>,
+): string => {
+  const suffix = SAAS_CHIP_SUFFIX[rule];
+  return suffix && isSaasProvider(detail.provider)
+    ? `${CONNECTOR_LABELS[detail.provider]} ${suffix}`
+    : RULE_META[rule].short;
+};

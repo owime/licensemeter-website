@@ -606,6 +606,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       inactiveDays: tenant.inactiveDays,
     });
     const entraIdentities = joined.users.map((u) => ({
+      graphId: u.graphId,
       upn: u.upn,
       displayName: u.displayName,
       accountEnabled: u.accountEnabled,
@@ -772,6 +773,7 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
   });
 
   const entraIdentities = userRows.map((r) => ({
+    graphId: r.graphId,
     upn: r.upn,
     displayName: r.displayName,
     accountEnabled: r.accountEnabled,
@@ -891,6 +893,7 @@ const diffFindings = async (
         .set({
           title: fresh.title,
           detail: fresh.detail,
+          graphUserId: fresh.graphUserId,
           monthlyImpactCents: fresh.monthlyImpactCents,
           lastSeenAt: now,
           ...(f.status === "resolved"

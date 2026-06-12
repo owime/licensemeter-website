@@ -76,8 +76,8 @@ const STEPS = [
 // Mirrors the tiers on /pricing — keep both in sync.
 const PRICING_TEASER = [
   { name: "Starter", price: "79", seats: "up to 250 seats" },
-  { name: "Growth", price: "199", seats: "up to 1,000 seats" },
-  { name: "Scale", price: "499", seats: "up to 2,500 seats" },
+  { name: "Growth", price: "199", seats: "up to 1.000 seats" },
+  { name: "Scale", price: "499", seats: "up to 2.500 seats" },
 ] as const;
 
 /* Trailing separator so a wrapped line never starts with a stray slash. */
@@ -141,7 +141,7 @@ export default function LandingPage() {
               Waste ledger — {month}
             </span>
             <span className="font-mono text-xs whitespace-nowrap text-ink-faint">
-              Illustrative · D90
+              Illustrative · 90-day window
             </span>
           </div>
           <div className="px-6 py-5">
@@ -174,7 +174,7 @@ export default function LandingPage() {
           <p className="text-xs font-medium tracking-[0.2em] text-rust-text uppercase">
             How it works
           </p>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight">
+          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-balance">
             Six waste rules, every finding priced in euros.
           </h2>
           <div className="mt-10 grid gap-10 md:grid-cols-3">
@@ -243,7 +243,7 @@ export default function LandingPage() {
                   {tier.name}
                 </div>
                 <div className="mt-1 font-display text-2xl tracking-tight">
-                  €{tier.price}
+                  € {tier.price}
                   <span className="font-sans text-xs text-ink-soft">
                     {" "}
                     / month
@@ -260,7 +260,7 @@ export default function LandingPage() {
         <div className="border border-line bg-card px-6 py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-md">
-              <h2 className="font-display text-2xl tracking-tight">
+              <h2 className="font-display text-2xl tracking-tight text-balance">
                 Not ready to connect a tenant yet?
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
@@ -307,7 +307,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-24">
-        <h2 className="font-display text-3xl tracking-tight">
+        <h2 className="font-display text-3xl tracking-tight text-balance">
           See your waste number in two minutes.
         </h2>
         <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">

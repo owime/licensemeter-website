@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 
 import { BrandMark } from "~/components/BrandMark";
 import { NavLinks } from "./NavLinks";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import type { WorkspaceSummary } from "~/server/access";
 
 /** Ink top bar + full-height drawer for viewports below lg. */
 export const MobileNav = ({
@@ -13,12 +15,16 @@ export const MobileNav = ({
   userName,
   role,
   showPortfolio = false,
+  workspaces,
+  activeId,
 }: {
   tenantName: string;
   isDemo: boolean;
   userName: string;
   role: string;
   showPortfolio?: boolean;
+  workspaces: WorkspaceSummary[];
+  activeId: string;
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -72,16 +78,22 @@ export const MobileNav = ({
       </div>
 
       {/* Stays mounted so the burger's aria-controls always resolves;
-          Tailwind preflight gives [hidden] display:none !important. */}
+          Tailwind preflight gives [hidden] display:none !important.
+          Capped below the 3.75rem top bar and scrollable so Sign out
+          stays reachable on short viewports. */}
       <div
         id="mobile-nav-drawer"
         hidden={!open}
-        className="border-sidebar-line flex flex-col border-t pb-4"
+        className="border-sidebar-line flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4"
       >
         <div className="px-4 py-3">
-          <div className="text-paper truncate text-sm font-medium">
-            {tenantName}
-          </div>
+          {workspaces.length > 1 ? (
+            <WorkspaceSwitcher workspaces={workspaces} activeId={activeId} />
+          ) : (
+            <div className="text-paper truncate text-sm font-medium">
+              {tenantName}
+            </div>
+          )}
           <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
             {isDemo ? "Demo workspace" : "Connected tenant"}
           </div>

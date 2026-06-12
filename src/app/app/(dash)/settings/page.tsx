@@ -3,15 +3,12 @@ import Link from "next/link";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
+import { InviteForm } from "~/components/workspace/InviteForm";
+import { MemberActions } from "~/components/workspace/MemberActions";
 import { Button, Card, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
-import {
-  addMember,
-  removeMember,
-  resendInvite,
-  setInactiveDays,
-} from "~/server/actions";
+import { setInactiveDays } from "~/server/actions";
 import { db } from "~/server/db";
 import {
   adobeConnections,
@@ -53,6 +50,8 @@ const Capability = ({
     </div>
   </div>
 );
+
+export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const ctx = await requireAccess("viewer");
@@ -219,7 +218,7 @@ export default async function SettingsPage() {
                         run.status === "success"
                           ? "bg-moss"
                           : run.status === "running"
-                            ? "animate-pulse bg-gold"
+                            ? "bg-gold motion-safe:animate-pulse"
                             : run.status === "partial"
                               ? "bg-gold"
                               : "bg-rust"
@@ -230,7 +229,7 @@ export default async function SettingsPage() {
                       {fmtDate(run.startedAt)}
                     </span>
                   </div>
-                  <div className="font-mono text-[11px] text-ink-soft">
+                  <div className="min-w-0 font-mono text-[11px] break-words text-ink-soft">
                     {run.steps
                       .map(
                         (s) =>
@@ -270,29 +269,12 @@ export default async function SettingsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <Pill tone="slate">{m.role}</Pill>
-                  {isAdmin && !m.oid && (
-                    <form
-                      action={async () => {
-                        "use server";
-                        await resendInvite(m.id);
-                      }}
-                    >
-                      <button className="text-xs text-ink-faint underline-offset-4 hover:text-ink hover:underline">
-                        Resend
-                      </button>
-                    </form>
-                  )}
-                  {isAdmin && m.id !== ctx.membership.id && (
-                    <form
-                      action={async () => {
-                        "use server";
-                        await removeMember(m.id);
-                      }}
-                    >
-                      <button className="text-xs text-ink-faint underline-offset-4 hover:text-rust-text hover:underline">
-                        Remove
-                      </button>
-                    </form>
+                  {isAdmin && (
+                    <MemberActions
+                      membershipId={m.id}
+                      canResend={!m.oid}
+                      canRemove={m.id !== ctx.membership.id}
+                    />
                   )}
                 </div>
               </li>
@@ -300,73 +282,46 @@ export default async function SettingsPage() {
           </ul>
 
           {isAdmin && (
-            <form
-              action={async (formData) => {
-                "use server";
-                await addMember(formData);
-              }}
-              className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4"
-            >
-              <input
-                name="email"
-                type="email"
-                required
-                placeholder="colleague@yourcompany.com"
-                className="min-w-56 flex-1 border border-line bg-card px-3 py-2 text-sm focus:border-ink"
-              />
-              <select
-                name="role"
-                defaultValue="viewer"
-                aria-label="Role for the invited member"
-                className="border border-line bg-card px-2 py-2 text-sm focus:border-ink"
-              >
-                <option value="viewer">Viewer (finance)</option>
-                <option value="admin">Admin</option>
-                {isOwner && <option value="owner">Owner</option>}
-              </select>
-              <Button variant="primary" className="px-4 py-2">
-                Invite
-              </Button>
-              <p className="w-full text-xs text-ink-faint">
-                {inviteEmailsActive
-                  ? "Invited people get an email with a sign-in link and gain access on their first Microsoft sign-in."
-                  : "Invited people get access when they first sign in with Microsoft using this email."}{" "}
-                Same-tenant sign-in alone never grants access.
-              </p>
-            </form>
+            <InviteForm
+              allowOwner={isOwner}
+              inviteEmailsActive={inviteEmailsActive}
+            />
           )}
         </Card>
 
-        <Card title="Connectors">
-          <ul className="flex flex-col gap-2.5">
-            {connectorRows.map((row) => (
-              <li
-                key={row.href}
-                className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-2.5 text-sm last:border-b-0 last:pb-0"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-medium">{row.label}</span>
-                  <Pill tone="gold">Beta</Pill>
-                  <span className="text-ink-soft">{row.status}</span>
-                </div>
-                <Link
-                  href={row.href}
-                  className="text-xs font-medium text-ink underline-offset-4 hover:text-rust-text hover:underline"
+        {/* Anchor for the connector subpages' breadcrumb. */}
+        <div id="connectors" className="scroll-mt-24">
+          <Card title="Connectors">
+            <ul className="flex flex-col gap-2.5">
+              {connectorRows.map((row) => (
+                <li
+                  key={row.href}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-2.5 text-sm last:border-b-0 last:pb-0"
                 >
-                  {!isAdmin
-                    ? "View →"
-                    : row.connected || ctx.tenant.isDemo
-                      ? "Manage →"
-                      : "Configure →"}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs text-ink-faint">
-            Each connector has its own page under Settings. Seat assignments
-            only, never content.
-          </p>
-        </Card>
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{row.label}</span>
+                    <Pill tone="gold">Beta</Pill>
+                    <span className="text-ink-soft">{row.status}</span>
+                  </div>
+                  <Link
+                    href={row.href}
+                    className="text-xs font-medium text-ink underline-offset-4 hover:text-rust-text hover:underline"
+                  >
+                    {!isAdmin
+                      ? "View →"
+                      : row.connected || ctx.tenant.isDemo
+                        ? "Manage →"
+                        : "Configure →"}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-ink-faint">
+              Each connector has its own page under Settings. Seat assignments
+              only, never content.
+            </p>
+          </Card>
+        </div>
 
         {isAdmin && (
           <Card title="Activity">
@@ -383,7 +338,7 @@ export default async function SettingsPage() {
                       <span className="font-medium">
                         {entry.action.replaceAll("_", " ")}
                       </span>
-                      <span className="ml-2 truncate text-xs text-ink-faint">
+                      <span className="ml-2 text-xs break-all text-ink-faint">
                         {entry.actorEmail ?? entry.actorOid}
                       </span>
                     </span>

@@ -10,6 +10,12 @@ const W = 680;
 const H = 180;
 const PAD = { top: 16, right: 8, bottom: 24, left: 8 };
 
+/** Axis dates in the app's date style, without the year ("27 Apr"). */
+const fmtAxisDate = (day: string): string =>
+  new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(
+    new Date(day),
+  );
+
 const buildPath = (
   points: TrendPoint[],
   pick: (p: TrendPoint) => number,
@@ -80,25 +86,30 @@ export const TrendChart = ({
           />
           <path d={spendPath} fill="none" stroke="var(--color-ink-soft)" strokeWidth="1.5" />
           <path d={wastePath} fill="none" stroke="var(--color-rust)" strokeWidth="1.5" />
+          {/* In-chart labels scale with the viewBox — below sm they would render
+              unreadably small, so the legend line carries the range instead. */}
           <text
             x={PAD.left}
             y={H - 8}
-            className="fill-ink-faint font-mono"
-            fontSize="10"
+            className="fill-ink-faint font-mono max-sm:hidden"
+            fontSize="11"
           >
-            {first.day}
+            {fmtAxisDate(first.day)}
           </text>
           <text
             x={W - PAD.right}
             y={H - 8}
             textAnchor="end"
-            className="fill-ink-faint font-mono"
-            fontSize="10"
+            className="fill-ink-faint font-mono max-sm:hidden"
+            fontSize="11"
           >
-            {last.day}
+            {fmtAxisDate(last.day)}
           </text>
         </svg>
-        <div className="mt-2 flex gap-5 text-[11px] text-ink-soft">
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-ink-soft">
+          <span className="font-mono sm:hidden">
+            {fmtAxisDate(first.day)} → {fmtAxisDate(last.day)}
+          </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-0.5 w-4 bg-ink-soft" /> Monthly spend
           </span>

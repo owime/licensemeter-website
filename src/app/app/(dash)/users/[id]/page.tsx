@@ -1,4 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,6 +10,8 @@ import { skuDisplayName } from "~/server/graph/skuCatalog";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { findings, priceBook, tenantUsers } from "~/server/db/schema";
+
+export const metadata: Metadata = { title: "User detail" };
 
 const ACTIVITY_LABELS: Record<string, string> = {
   exchange: "Exchange",
@@ -67,7 +70,9 @@ export default async function UserDetailPage({
           <h1 className="font-display text-3xl tracking-tight">
             {user.displayName ?? user.upn}
           </h1>
-          <p className="mt-1 font-mono text-sm text-ink-soft">{user.upn}</p>
+          <p className="mt-1 font-mono text-sm break-all text-ink-soft">
+            {user.upn}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Pill tone={user.accountEnabled ? "moss" : "rust"}>
@@ -142,9 +147,11 @@ export default async function UserDetailPage({
             <div key={key} className="bg-card p-4">
               <dt className="font-sans text-xs text-ink-faint">{label}</dt>
               <dd className="mt-1">
-                {user.workloadActivity?.[
-                  key as keyof typeof user.workloadActivity
-                ] ?? "—"}
+                {fmtDate(
+                  user.workloadActivity?.[
+                    key as keyof typeof user.workloadActivity
+                  ] ?? null,
+                )}
               </dd>
             </div>
           ))}

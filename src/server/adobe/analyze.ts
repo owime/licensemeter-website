@@ -4,6 +4,7 @@ import type { AdobeUser } from "~/server/types";
 export const adobePriceKey = (product: string): string => `adobe:${product}`;
 
 export type EntraIdentity = {
+  graphId: string;
   upn: string;
   displayName: string | null;
   accountEnabled: boolean;
@@ -42,7 +43,7 @@ export const analyzeAdobeWaste = (
       findings.push({
         dedupeKey: `adobe_disabled_in_entra|${email}|-`,
         rule: "adobe_disabled_in_entra",
-        graphUserId: null,
+        graphUserId: entra.graphId,
         skuId: null,
         title: `Adobe seat, user disabled in Entra: ${entra.displayName ?? adobe.email}`,
         detail,

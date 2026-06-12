@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Datenschutzerklärung — LicenseMeter",
+  title: "Datenschutzerklärung",
   robots: { index: false },
 };
 
@@ -27,7 +27,7 @@ const Section = ({
  */
 export default function DatenschutzPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
+    <main lang="de" className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <h1 className="font-display text-4xl tracking-tight">
         Datenschutzerklärung
       </h1>

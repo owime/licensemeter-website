@@ -110,12 +110,21 @@ export default async function MarketingLayout({
               <ul className="mt-3 flex flex-col gap-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
-                    >
-                      {link.label}
-                    </a>
+                    {link.href.startsWith("/") ? (
+                      <Link
+                        href={link.href}
+                        className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

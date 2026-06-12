@@ -17,12 +17,20 @@ export default async function WorkspaceLayout({
 
   return (
     <div className="min-h-screen bg-paper lg:flex">
+      <a
+        href="#content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:border focus:border-ink focus:bg-paper focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink"
+      >
+        Skip to content
+      </a>
       <MobileNav
         tenantName={tenantName}
         isDemo={ctx.tenant.isDemo}
         userName={ctx.user.name}
         role={ctx.membership.role}
         showPortfolio={ctx.workspaces.length > 1}
+        workspaces={ctx.workspaces}
+        activeId={ctx.tenant.id}
       />
 
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto bg-sidebar lg:flex">
@@ -72,7 +80,7 @@ export default async function WorkspaceLayout({
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-12">
+      <main id="content" className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-12">
         {children}
       </main>
     </div>

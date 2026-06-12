@@ -50,15 +50,24 @@ export const SaasConnectorPage = async ({
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
       <header className="rise rise-1">
-        <p className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase">
+        <nav
+          aria-label="Breadcrumb"
+          className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+        >
           <Link
             href="/app/settings"
             className="underline-offset-4 hover:text-ink hover:underline"
           >
             Settings
           </Link>{" "}
-          / Connectors
-        </p>
+          /{" "}
+          <Link
+            href="/app/settings#connectors"
+            className="underline-offset-4 hover:text-ink hover:underline"
+          >
+            Connectors
+          </Link>
+        </nav>
         <div className="mt-2 flex items-center gap-3">
           <h1 className="font-display text-3xl tracking-tight">
             {spec.label} connector
@@ -82,8 +91,8 @@ export const SaasConnectorPage = async ({
                   Connected — {seatCount} {spec.seatNoun}
                 </div>
                 <div className="mt-0.5 text-xs text-ink-soft">
-                  {conn.orgRef} · last sync {fmtDate(conn.lastSyncAt)} (
-                  {conn.lastSyncStatus ?? "pending"})
+                  <span className="break-all">{conn.orgRef}</span> · last sync{" "}
+                  {fmtDate(conn.lastSyncAt)} ({conn.lastSyncStatus ?? "pending"})
                 </div>
                 {conn.lastSyncStatus === "failed" && (
                   <p className="mt-2 max-w-md text-xs text-rust-text">
