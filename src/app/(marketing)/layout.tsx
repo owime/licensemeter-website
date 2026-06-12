@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BrandMark } from "~/components/BrandMark";
 import { HeaderAuthCta } from "~/components/HeaderAuthCta";
+import { MarketingMobileNav } from "~/components/MarketingMobileNav";
 
 const SUPPORT_EMAIL = "support@licensemeter.com";
 
@@ -48,28 +49,33 @@ export default function MarketingLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="min-h-screen bg-paper">
-      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-6">
+      <header className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-6 py-6 sm:gap-x-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 font-display text-xl tracking-tight"
+          className="flex items-center gap-2.5 font-display text-lg tracking-tight sm:text-xl"
         >
           <BrandMark size={22} />
           <span>
             License<span className="text-rust-text">Meter</span>
           </span>
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-5">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="-my-3 py-3 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <div className="flex items-center gap-2">
+          {/* Inline links above sm; below they live in the burger drawer so
+              the header keeps only brand + CTA. */}
+          <nav aria-label="Main" className="hidden items-center gap-5 sm:flex">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="-my-3 py-3 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
           <HeaderAuthCta />
-        </nav>
+          <MarketingMobileNav items={NAV} />
+        </div>
       </header>
 
       {children}

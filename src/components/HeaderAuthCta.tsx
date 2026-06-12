@@ -29,20 +29,18 @@ export const HeaderAuthCta = () => {
     return () => ctrl.abort();
   }, []);
 
+  /* Always visible — on mobile the nav links live in the burger drawer, so
+     the action keeps its header slot. Labels shorten below sm to fit brand +
+     CTA + burger on 360px viewports without wrapping. */
   return signedIn ? (
-    <ButtonLink href="/app" variant="secondary" className="ml-1">
-      Open dashboard
+    <ButtonLink href="/app" variant="secondary">
+      <span className="sm:hidden">Dashboard</span>
+      <span className="hidden sm:inline">Open dashboard</span>
     </ButtonLink>
   ) : (
-    /*
-     * Wrapper span carries the responsive visibility: buttonClass hardcodes
-     * inline-flex, which outranks `hidden` in the compiled stylesheet when
-     * both sit on the same element.
-     */
-    <span className="ml-1 hidden sm:inline-flex">
-      <ButtonLink href="/#get-started" variant="secondary">
-        Free waste scan
-      </ButtonLink>
-    </span>
+    <ButtonLink href="/#get-started" variant="secondary">
+      <span className="sm:hidden">Free scan</span>
+      <span className="hidden sm:inline">Free waste scan</span>
+    </ButtonLink>
   );
 };
