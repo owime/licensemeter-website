@@ -61,7 +61,7 @@ export default function MarketingLayout({
             License<span className="text-rust-text">Meter</span>
           </span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-5">
           {/* Inline links above sm; below they live in the burger drawer so
               the header keeps only brand + CTA. */}
           <nav aria-label="Main" className="hidden items-center gap-5 sm:flex">
