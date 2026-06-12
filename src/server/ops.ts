@@ -31,6 +31,12 @@ export const notifyOps = async (
 ): Promise<void> => {
   console.error(`[ops] ${text}`);
 
+  // Webhook/email fire only from the production deployment. Local dev and
+  // preview deploys share the same .env credentials, and a crash on a dev
+  // machine must not page anyone (VERCEL_ENV is unset locally, "preview" on
+  // preview deploys). Raw process.env: system var, not in the env schema.
+  if (process.env.VERCEL_ENV !== "production") return;
+
   const wantWebhook = Boolean(env.ALERT_WEBHOOK_URL);
   const wantEmail = Boolean(env.ALERT_EMAIL) && emailEnabled();
   if (!wantWebhook && !wantEmail) return;
