@@ -10,22 +10,22 @@ export const DEMO_FIGURES = {
   orgName: "Meridian Industries GmbH",
   users: 155,
   /** Sum of monthlyImpactCents over all findings of the demo tenant. */
-  monthlyWasteCents: 284486,
+  monthlyWasteCents: 297986,
   /** Monthly Microsoft 365 spend: assigned seats times default list price. */
   monthlySpendCents: 697990,
-  findingsCount: 59,
+  findingsCount: 65,
   /** Disabled accounts still holding Microsoft 365 licenses. */
   leaverCount: 8,
-  /** Of those, people also holding Adobe, Zoom, Atlassian or Salesforce seats. */
-  crossVendorLeaverCount: 5,
+  /** Of those, people also holding Adobe, Zoom, Atlassian, Salesforce, AI console or AI seat access. */
+  crossVendorLeaverCount: 7,
   /** Waste grouped for the landing ledger card; sums to monthlyWasteCents. */
   byCategory: {
     /** Disabled in Entra but still licensed — M365 and connected apps. */
-    leavers: 70669,
+    leavers: 78669,
     /** Connected-app seats with no directory account at all. */
     orphaned: 4599,
     /** Inactive 90+ days or never active — M365 and connected apps. */
-    idle: 69658,
+    idle: 75158,
     copilotUnused: 39340,
     shelfware: 89210,
     guests: 11010,

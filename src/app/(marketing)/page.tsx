@@ -46,6 +46,30 @@ const CONNECTOR_STRIP = [
     tone: "gold" as const,
     blurb: "CRM licenses — the most expensive seats to forget.",
   },
+  {
+    name: "OpenAI",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "API spend by day, plus departed people still on the console.",
+  },
+  {
+    name: "Anthropic",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Claude API costs tracked daily, console access cross-checked.",
+  },
+  {
+    name: "ChatGPT",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Enterprise seats matched against your directory via CSV import.",
+  },
+  {
+    name: "Claude",
+    tag: "Beta",
+    tone: "gold" as const,
+    blurb: "Team and Enterprise seats that outlived their users.",
+  },
 ];
 
 /* Ledger lines render from the tested demo figures and sum exactly to the

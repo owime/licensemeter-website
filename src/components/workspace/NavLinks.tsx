@@ -17,6 +17,7 @@ const ITEMS: NavItem[] = [
   { href: "/app", label: "Overview" },
   { href: "/app/findings", label: "Findings", also: ["/app/users"] },
   { href: "/app/licenses", label: "Licenses & prices" },
+  { href: "/app/ai-costs", label: "AI costs" },
   {
     href: "/app/settings",
     label: "Settings",
@@ -25,6 +26,10 @@ const ITEMS: NavItem[] = [
       { href: "/app/settings/zoom", label: "Zoom" },
       { href: "/app/settings/atlassian", label: "Atlassian" },
       { href: "/app/settings/salesforce", label: "Salesforce" },
+      { href: "/app/settings/openai", label: "OpenAI" },
+      { href: "/app/settings/anthropic", label: "Anthropic" },
+      { href: "/app/settings/chatgpt", label: "ChatGPT" },
+      { href: "/app/settings/claude", label: "Claude" },
     ],
   },
 ];

@@ -53,19 +53,22 @@ export default async function LicensesPage() {
         new Map<string, number>(),
       ),
   ].sort((a, b) => a[0].localeCompare(b[0]));
-  const saasSections = CONNECTORS.map(({ provider, label }) => ({
-    provider,
-    label,
-    products: [
-      ...saasSeatRows
-        .filter((s) => s.provider === provider)
-        .flatMap((s) => s.products)
-        .reduce(
-          (m, product) => m.set(product, (m.get(product) ?? 0) + 1),
-          new Map<string, number>(),
-        ),
-    ].sort((a, b) => a[0].localeCompare(b[0])),
-  })).filter((section) => section.products.length > 0);
+  // Unpriced connectors (AI consoles) bill API usage, not seats — no price rows.
+  const saasSections = CONNECTORS.filter((c) => !c.unpriced)
+    .map(({ provider, label }) => ({
+      provider,
+      label,
+      products: [
+        ...saasSeatRows
+          .filter((s) => s.provider === provider)
+          .flatMap((s) => s.products)
+          .reduce(
+            (m, product) => m.set(product, (m.get(product) ?? 0) + 1),
+            new Map<string, number>(),
+          ),
+      ].sort((a, b) => a[0].localeCompare(b[0])),
+    }))
+    .filter((section) => section.products.length > 0);
   const sorted = [...skus].sort((a, b) =>
     (a.displayName ?? a.skuPartNumber).localeCompare(
       b.displayName ?? b.skuPartNumber,

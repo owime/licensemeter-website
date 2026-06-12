@@ -3,6 +3,10 @@ import { sql } from "drizzle-orm";
 import Link from "next/link";
 
 import {
+  ClearSeatsButton,
+  ImportSeatsForm,
+} from "~/components/workspace/ImportSeatsForm";
+import {
   SaasConnectForm,
   SaasDisconnectButton,
 } from "~/components/workspace/SaasConnectForm";
@@ -28,7 +32,7 @@ export const SaasConnectorPage = async ({
   const isAdmin = hasRole(ctx, "admin");
   const spec = connectorSpec(provider);
 
-  const [conn, seatCount] = await Promise.all([
+  const [conn, seats] = await Promise.all([
     db.query.saasConnections.findFirst({
       where: and(
         eq(saasConnections.tenantId, ctx.tenant.id),
@@ -36,7 +40,10 @@ export const SaasConnectorPage = async ({
       ),
     }),
     db
-      .select({ n: sql<number>`count(*)::int` })
+      .select({
+        n: sql<number>`count(*)::int`,
+        lastImportAt: sql<Date | string | null>`max(${saasSeats.syncedAt})`,
+      })
       .from(saasSeats)
       .where(
         and(
@@ -44,8 +51,12 @@ export const SaasConnectorPage = async ({
           eq(saasSeats.provider, provider),
         ),
       )
-      .then((r) => r[0]?.n ?? 0),
+      .then((r) => r[0] ?? { n: 0, lastImportAt: null }),
   ]);
+  const seatCount = seats.n;
+  /* AI connectors store a fixed sentinel as orgRef — only show the value
+     when the spec actually collects one. */
+  const showOrgRef = spec.fields.some((f) => f.name === "orgRef");
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
@@ -81,9 +92,35 @@ export const SaasConnectorPage = async ({
           {ctx.tenant.isDemo ? (
             <p className="text-sm text-ink-soft">
               Connected with demo data — {seatCount} {spec.seatNoun} correlated
-              against the directory. On a real workspace this uses credentials
-              your {spec.label} admin creates.
+              against the directory.{" "}
+              {spec.kind === "import"
+                ? `On a real workspace an admin pastes the member export from ${spec.label} here.`
+                : `On a real workspace this uses credentials your ${spec.label} admin creates.`}
             </p>
+          ) : spec.kind === "import" ? (
+            <div className="flex flex-col gap-3">
+              {seatCount > 0 ? (
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="text-sm">
+                    <div className="font-medium">
+                      Imported — {seatCount} {spec.seatNoun}
+                    </div>
+                    <div className="mt-0.5 text-xs text-ink-soft">
+                      last import {fmtDate(seats.lastImportAt)}
+                    </div>
+                  </div>
+                  {isAdmin && <ClearSeatsButton spec={spec} />}
+                </div>
+              ) : isAdmin ? (
+                <p className="text-sm text-ink-soft">{spec.setupHint}</p>
+              ) : (
+                <p className="text-sm text-ink-soft">
+                  Not connected. A workspace admin can import the {spec.label}{" "}
+                  member list here.
+                </p>
+              )}
+              {isAdmin && <ImportSeatsForm spec={spec} />}
+            </div>
           ) : conn ? (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="text-sm">
@@ -91,8 +128,13 @@ export const SaasConnectorPage = async ({
                   Connected — {seatCount} {spec.seatNoun}
                 </div>
                 <div className="mt-0.5 text-xs text-ink-soft">
-                  <span className="break-all">{conn.orgRef}</span> · last sync{" "}
-                  {fmtDate(conn.lastSyncAt)} ({conn.lastSyncStatus ?? "pending"})
+                  {showOrgRef && (
+                    <>
+                      <span className="break-all">{conn.orgRef}</span> ·{" "}
+                    </>
+                  )}
+                  last sync {fmtDate(conn.lastSyncAt)} (
+                  {conn.lastSyncStatus ?? "pending"})
                 </div>
                 {conn.lastSyncStatus === "failed" && (
                   <p className="mt-2 max-w-md text-xs text-rust-text">
@@ -128,11 +170,24 @@ export const SaasConnectorPage = async ({
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-ink-faint">
-            Seat assignments only — nothing is read from inside {spec.label}.
-            Prices come from the {provider}:&lt;product&gt; keys in your price
-            book.
-          </p>
+          {spec.unpriced ? (
+            <p className="mt-3 text-xs text-ink-faint">
+              Costs are reported by the provider in USD and shown on the{" "}
+              <Link
+                href="/app/ai-costs"
+                className="underline underline-offset-4 hover:text-ink"
+              >
+                AI costs
+              </Link>{" "}
+              page. Console membership itself carries no per-seat price.
+            </p>
+          ) : (
+            <p className="mt-3 text-xs text-ink-faint">
+              Seat assignments only — nothing is read from inside {spec.label}.
+              Prices come from the {provider}:&lt;product&gt; keys in your
+              price book.
+            </p>
+          )}
         </Card>
       </div>
     </div>

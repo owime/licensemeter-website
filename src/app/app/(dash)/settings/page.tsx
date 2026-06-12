@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
@@ -17,6 +17,7 @@ import {
   auditLog,
   memberships,
   saasConnections,
+  saasSeats,
   syncRuns,
 } from "~/server/db/schema";
 import { emailEnabled } from "~/server/email";
@@ -61,29 +62,36 @@ export default async function SettingsPage() {
   const isOwner = hasRole(ctx, "owner");
   const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
-  const [members, runs, activity, adobeConn, saasConns] = await Promise.all([
-    db.query.memberships.findMany({
-      where: eq(memberships.tenantId, ctx.tenant.id),
-    }),
-    db.query.syncRuns.findMany({
-      where: eq(syncRuns.tenantId, ctx.tenant.id),
-      orderBy: desc(syncRuns.startedAt),
-      limit: 8,
-    }),
-    isAdmin
-      ? db.query.auditLog.findMany({
-          where: eq(auditLog.tenantId, ctx.tenant.id),
-          orderBy: desc(auditLog.createdAt),
-          limit: 30,
-        })
-      : Promise.resolve([]),
-    db.query.adobeConnections.findFirst({
-      where: eq(adobeConnections.tenantId, ctx.tenant.id),
-    }),
-    db.query.saasConnections.findMany({
-      where: eq(saasConnections.tenantId, ctx.tenant.id),
-    }),
-  ]);
+  const [members, runs, activity, adobeConn, saasConns, importedSeats] =
+    await Promise.all([
+      db.query.memberships.findMany({
+        where: eq(memberships.tenantId, ctx.tenant.id),
+      }),
+      db.query.syncRuns.findMany({
+        where: eq(syncRuns.tenantId, ctx.tenant.id),
+        orderBy: desc(syncRuns.startedAt),
+        limit: 8,
+      }),
+      isAdmin
+        ? db.query.auditLog.findMany({
+            where: eq(auditLog.tenantId, ctx.tenant.id),
+            orderBy: desc(auditLog.createdAt),
+            limit: 30,
+          })
+        : Promise.resolve([]),
+      db.query.adobeConnections.findFirst({
+        where: eq(adobeConnections.tenantId, ctx.tenant.id),
+      }),
+      db.query.saasConnections.findMany({
+        where: eq(saasConnections.tenantId, ctx.tenant.id),
+      }),
+      // Import-kind connectors have no connection row — seats are the signal.
+      db
+        .select({ provider: saasSeats.provider, n: sql<number>`count(*)::int` })
+        .from(saasSeats)
+        .where(eq(saasSeats.tenantId, ctx.tenant.id))
+        .groupBy(saasSeats.provider),
+    ]);
 
   const statusOf = (connected: boolean) =>
     ctx.tenant.isDemo
@@ -99,7 +107,10 @@ export default async function SettingsPage() {
       status: statusOf(Boolean(adobeConn)),
     },
     ...CONNECTORS.map((c) => {
-      const connected = saasConns.some((s) => s.provider === c.provider);
+      const connected =
+        c.kind === "import"
+          ? importedSeats.some((s) => s.provider === c.provider)
+          : saasConns.some((s) => s.provider === c.provider);
       return {
         label: c.label,
         href: `/app/settings/${c.provider}`,

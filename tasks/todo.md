@@ -1,73 +1,83 @@
-# Conversion + Retention Sprint (2026-06-12)
+# AI Connectors Sprint (2026-06-12)
 
-Goal: ship the conversion work (hero leak story, /msp page, aligned demo figures,
-price-book credibility) and the retention work (delta digest, all-clear email,
-offboarding-leak alerts, renewal-window framing). Stripe checkout is excluded
-(no keys yet); publisher verification / secret rotation / legal are founder tasks.
+Goal: ship (A) AI spend connectors — OpenAI + Anthropic admin-key connectors syncing
+daily API cost data (backfilled) and console member lists, with a new AI costs page,
+digest spend line and console-leak findings — and (B) AI seat CSV import for ChatGPT
+and Claude member lists through the existing SaaS waste rules. SCIM continuous seat
+sync is deferred until an Enterprise customer asks. Full plan:
+~/.claude/plans/reflective-fluttering-bumblebee.md
+
+User decisions: full AI demo fixtures (marketing euro figures recompute via
+demoFigures single source); landing connector strip + SITE_DEFINITION updated.
 
 ## Plan
 
-- [x] 1. Schema: tenants.renewalDate (date, null) + tenants.leakAlerts (bool, default true); db:push locally
-- [x] 2. Agent A (marketing): hero rewrite around offboarding-leak story; /msp page + nav/sitemap;
-       single source for demo-derived figures (landing card + pricing € 34.000 claim)
-- [x] 3. Agent B (dashboard): list-price estimate labeling + price-book prompt on overview;
-       licenses CSV bulk import/export; settings renewal date + leak-alerts toggle; overview renewal card
-- [x] 4. Agent C (server): delta digest (new/resolved last 7d) + all-clear variant + renewal line;
-       leak alert email on sync for newly inserted leak-rule findings
-- [x] 5. Integration: npm run check + vitest green; Playwright walkthrough (landing, /msp, pricing,
-       demo overview/licenses/settings)
-- [x] 6. Independent code review (feature-dev:code-reviewer) on the full diff; fix findings
-- [x] 7. Commit; apply additive prod migration via Supabase; push; CI green; verify live site
-- [x] 8. Review section below + memory update + remaining-roadmap summary
+- [x] 1. WP1+WP2 foundations: SaasProvider 7 members, SyncStep +6 literals, AuditAction
+       +seats_imported/+seats_import_cleared, ConnectorSpec kind/unpriced + 4 specs,
+       aiSpendDaily table, local db:push (dev server stopped)
+- [x] 2. WP3 (agent): openaiAdmin.ts + anthropicAdmin.ts (users + costs, pure mappers,
+       status-only errors), registry helpers + demo fixtures + deterministic demo spend,
+       mapper tests
+- [x] 3. WP5a (agent): parseMembers.ts + tests (header detection, delimiters, dedupe,
+       status mapping, last-active)
+- [x] 4. WP7 (agent): computeAiSpendDelta + tests, aiSpendLine in emails, digest route query
+- [x] 5. WP4+WP5b: runSync (imported-seat analysis, syncAiSpend backfill/7d re-pull,
+       spend failure isolated from member analysis), actions (connect fixes, importSeats,
+       clearImportedSeats)
+- [x] 6. WP6 (agent): NavLinks, 4 settings subpages, SaasConnectorPage kind branch,
+       ImportSeatsForm, settings connected-detection, licenses !unpriced filter,
+       ai-costs page, SpendChart
+- [x] 7. WP8: DEMO_FIGURES recompute, connector strip + SITE_DEFINITION, all tests green
+- [x] 8. Independent code review (feature-dev:code-reviewer); fix findings
+- [x] 9. Verify: npm test + npm run check, Playwright demo walkthrough, demo sync
+       idempotency
+- [ ] 10. Ship: Supabase migration (RLS app_all + grants licensemeter_app) BEFORE deploy,
+       commit, push, CI green, live spot-checks (migration APPLIED + grants verified)
 
 ## Acceptance criteria
 
-- AC1: Landing hero leads with the cross-vendor offboarding-leak story; SITE_DEFINITION remains
-  single-sourced in src/lib/site.ts; marketing tree stays static (no cookies()/auth()).
-- AC2: /msp exists with metadata + Breadcrumb JSON-LD, linked from marketing nav and sitemap;
-  no invented prices (CTA = demo + talk-to-us).
-- AC3: Landing ledger card and pricing annual-waste claim derive from one shared source
-  (src/lib/demoFigures.ts) guarded by a test against the demo fixtures, or are explicitly
-  labeled as the same illustrative example. No contradictory euro figures on the site.
-- AC4: Demo overview shows "estimated at list prices" qualifier + a set-your-prices prompt
-  while the tenant's price book has zero custom rows; both disappear once a price is customized.
-- AC5: /app/licenses supports bulk price entry (CSV paste or upload: key,monthly price) with
-  per-row validation feedback, and CSV export of the current book; works for M365 SKUs and
-  connector keys (adobe:/zoom:/atlassian:/salesforce:).
-- AC6: Settings persists renewalDate (clearable) and leakAlerts per workspace, admin/owner-gated,
-  audit-logged. Overview shows a renewal card when renewalDate is within 90 days (days left,
-  open findings count, monthly waste).
-- AC7: Digest email leads with the 7-day delta (new findings + euro impact, resolved count);
-  sends an all-clear variant when 0 open findings AND a successful sync in the last 8 days
-  (instead of silently skipping); includes the renewal line when within 90 days; demo excluded.
-- AC8: On sync, newly inserted findings from leak rules (disabled-in-Entra / orphaned connector
-  seats, plus the M365 disabled-account rule) trigger one immediate email to owners/admins,
-  gated by tenants.leakAlerts, demo excluded, no repeat alert for the same finding on later syncs.
-- AC9: npm run check green; full vitest suite green (currently 56) plus new tests for delta
-  computation, leak-rule filtering, and CSV price parsing.
-- AC10: Committed and pushed with prod schema migration applied first; CI green; live site
-  spot-checked (/, /msp, /pricing).
+- AC1: Admin connects OpenAI/Anthropic with one admin key; invalid key fails with a
+  generic message; valid key stored encrypted, audited, sync triggered.
+- AC2: /app/ai-costs shows backfilled daily USD spend (per-provider totals, top
+  categories, trend chart); USD never converted or mixed into EUR snapshots.
+- AC3: Entra-disabled console members produce provider-chipped saas_disabled_in_entra
+  findings (impact 0); orphans likewise. No new rule IDs; ALL_RULES stays 13.
+- AC4: CSV paste on settings/chatgpt + settings/claude creates seats; disabled/orphaned
+  (+ inactive when last-active present) findings appear; re-import replaces; clear
+  resolves findings; both audited.
+- AC5: chatgpt:/claude: price keys editable on licenses page; openai/anthropic console
+  members produce no price section.
+- AC6: Digest includes "AI API spend last 7 days" line when spend rows exist; helper
+  unit-tested, UTC-pinned.
+- AC7: Demo shows AI costs chart, ChatGPT + Claude leaver findings, console leaks;
+  demoFigures.test.ts green; landing/pricing/msp figures consistent; connector strip +
+  SITE_DEFINITION mention the AI connectors.
+- AC8: npm test + npm run check green; demo sync run twice is idempotent.
+- AC9: Prod migration applied via Supabase MCP with RLS policy + licensemeter_app
+  grants BEFORE deploy; verified via has_table_privilege.
+- AC10: Playwright walkthrough of all new pages passes incl. aria-live results and
+  demo-blocked import message.
 
 ## Review
 
-All acceptance criteria verified (AC1-AC10). Shipped as d2e32b2; prod migration
-tenant_renewal_date_and_leak_alerts applied before deploy; CI green; live checks:
-/msp 200, new hero on landing, € 2.844,86 consistent across landing, pricing and
-the production demo tenant overview.
-
-- True demo figures derived and guarded: € 2.844,86/mo waste (was € 1.833,90 stale on
-  landing), about € 34.000/yr — demoFigures.test.ts recomputes from fixtures through the
-  full rules pipeline, so marketing can never drift from the demo again.
-- Playwright end-to-end: hero + ledger card render from demoFigures; /msp static and
-  linked; price import "Applied 2 prices. Skipped 1 unknown key" with German and dot
-  decimals; qualifier + accuracy card disappear after import; waste recomputed
-  2.844,86 -> 2.532,90 after custom prices; renewal card "Renewal in 50 days" with
-  UTC-pinned math; settings save announces via aria-live; zero console errors.
-- Independent review found 1 P0 (renewal math parsed date string in local TZ — fixed by
-  extracting daysUntilDate, UTC-pinned, shared with the digest) and 3 applicable P1s
-  (all-clear gate now accepts partial syncs + isNotNull guards; email subjects scrubbed
-  of CR/LF). One P1 was a false positive (blank-line CSV case already covered by a
-  passing test).
-- 90/90 vitest, lint + tsc clean, production build green (/msp prerendered).
-- Excluded from this sprint by dependency: Stripe checkout (no keys), publisher
-  verification, secret rotation, legal placeholders (founder tasks).
+- All ACs verified. 132 vitest tests green (was 90 + concurrent welcome-email suite),
+  next lint + tsc clean. Prod migration ai_spend_daily applied via Supabase MCP with
+  app_all RLS policy mirrored from saas_seats; has_table_privilege verified for
+  licensemeter_app before any deploy.
+- Browser walkthrough on the demo tenant (dev server, port 3000): /app/ai-costs renders
+  per-provider USD stat cards, 60-day two-series chart with legend + aria-label, top
+  categories table and the USD footnote; findings show all 6 new AI rows across pages
+  1-2 (ChatGPT leak 55 EUR + idle 55 EUR, Claude leak 25 EUR, OpenAI/Anthropic console
+  leaks + orphan at impact 0); licenses shows ChatGPT/Claude price sections and no
+  console-member rows; settings lists all 8 connectors; new subpages render with demo
+  guard; landing shows the 9-entry connector strip and the recomputed 2.979,86 figure.
+  Second demo sync idempotent (finding rows and spend totals stable).
+- Independent review (feature-dev:code-reviewer): no P0. Fixed same pass: P1 product-name
+  120-char cap in parseMembers (flows into price book keys / dedupe keys; regression
+  test added), P2 SpendChart now renders a "chart appears after three days" note instead
+  of vanishing for freshly connected tenants. Deliberately not "fixed": demo ai_spend_daily
+  rows accumulating across days — the page windows to 90 days so old rows never render,
+  growth is ~4 rows/day, and a fixed anchor date would make the demo chart look stale.
+- Coordination note: a concurrent session shipped the welcome-email feature (cdc82d6)
+  mid-sprint; shared files (actions.ts, email.ts, digest route, marketing page) were
+  layered carefully and the tree was re-verified after their commit.

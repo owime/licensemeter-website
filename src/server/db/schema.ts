@@ -299,6 +299,29 @@ export const saasSeats = pgTable(
   (t) => [primaryKey({ columns: [t.tenantId, t.provider, t.email] })],
 );
 
+/**
+ * Daily API spend per AI connector (openai/anthropic), one row per provider,
+ * UTC bucket day and cost category (model / line item). Amounts are USD cents
+ * exactly as billed by the provider — never converted into the workspace
+ * currency or mixed into the seat-spend snapshots.
+ */
+export const aiSpendDaily = pgTable(
+  "ai_spend_daily",
+  {
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    provider: text("provider").$type<SaasProvider>().notNull(),
+    day: date("day").notNull(),
+    category: text("category").notNull(),
+    amountCents: integer("amount_cents").notNull().default(0),
+    syncedAt: timestamp("synced_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.provider, t.day, t.category] })],
+);
+
 /** Who did what, per workspace. Cascade-deleted with the tenant (GDPR-clean). */
 export const auditLog = pgTable(
   "audit_log",

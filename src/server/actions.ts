@@ -16,6 +16,7 @@ import { db } from "~/server/db";
 import {
   adobeConnections,
   adobeUsers,
+  aiSpendDaily,
   emailSignups,
   findings,
   memberships,
@@ -27,7 +28,12 @@ import {
 } from "~/server/db/schema";
 import { parsePrices } from "~/app/app/(dash)/licenses/parsePrices";
 import { UmapiClient } from "~/server/adobe/client";
-import { buildSaasClient, isSaasProvider } from "~/server/saas/registry";
+import {
+  buildSaasClient,
+  isImportProvider,
+  isSaasProvider,
+} from "~/server/saas/registry";
+import { parseMembers } from "~/server/saas/parseMembers";
 import { normalizeSalesforceOrgRef } from "~/server/saas/salesforce";
 import { connectorSpec } from "~/lib/connectors";
 import { encryptSecret } from "~/server/crypto";
@@ -45,6 +51,12 @@ const fail = (error: string): ActionResult => ({ ok: false, error });
 const ok = (): ActionResult => ({ ok: true });
 
 const revalidateApp = () => revalidatePath("/app", "layout");
+
+const chunk = <T>(arr: T[], size: number): T[][] => {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
 
 /** Acknowledge / reopen a finding. */
 export const setFindingStatus = async (
@@ -520,6 +532,8 @@ export const connectSaasConnector = async (
   if (!isSaasProvider(providerRaw)) return fail("Unknown connector");
   const provider = providerRaw;
   const spec = connectorSpec(provider);
+  if (spec.kind === "import")
+    return fail("This connector takes a member CSV import, not credentials");
 
   const values: Record<string, string> = {};
   for (const field of spec.fields) {
@@ -528,7 +542,9 @@ export const connectSaasConnector = async (
     if (v.length > 1000) return fail(`${field.label} is too long`);
     values[field.name] = v;
   }
-  let orgRef = values.orgRef!;
+  // AI connectors authenticate with a bare admin key; the org reference is a
+  // fixed sentinel because neither provider exposes a cheap org-id lookup.
+  let orgRef = values.orgRef ?? "admin";
   if (provider === "salesforce") {
     const origin = normalizeSalesforceOrgRef(orgRef);
     if (!origin)
@@ -609,7 +625,138 @@ export const disconnectSaasConnector = async (
         eq(saasSeats.provider, provider),
       ),
     );
+  await db
+    .delete(aiSpendDaily)
+    .where(
+      and(
+        eq(aiSpendDaily.tenantId, ctx.tenant.id),
+        eq(aiSpendDaily.provider, provider),
+      ),
+    );
   await audit(ctx, "connector_disconnected", { provider });
+  await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return ok();
+};
+
+export type ImportSeatsResult = ActionResult & {
+  /** Seats written for the provider. */
+  imported: number;
+  /** Lines that could not be parsed into a member. */
+  invalid: number;
+};
+
+/**
+ * Replace a CSV-import connector's seat snapshot (chatgpt/claude) with the
+ * pasted member table. The new snapshot fully replaces the previous one; the
+ * analysis re-runs so findings appear or auto-resolve immediately.
+ */
+export const importSeats = async (
+  formData: FormData,
+): Promise<ImportSeatsResult> => {
+  const none = (r: ActionResult): ImportSeatsResult => ({
+    ...r,
+    imported: 0,
+    invalid: 0,
+  });
+  const ctx = await apiAccess("admin");
+  if (!ctx) return none(fail("Not allowed"));
+  if (ctx.tenant.isDemo)
+    return none(fail("The demo workspace ships with demo connector data"));
+
+  const providerValue = formData.get("provider");
+  const providerRaw =
+    typeof providerValue === "string" ? providerValue.trim() : "";
+  if (!isSaasProvider(providerRaw) || !isImportProvider(providerRaw))
+    return none(fail("Unknown connector"));
+  const provider = providerRaw;
+  const spec = connectorSpec(provider);
+
+  const raw = formData.get("csv");
+  const text = typeof raw === "string" ? raw : "";
+  if (text.trim() === "") return none(fail("Paste the member table first"));
+  if (text.length > 1_000_000)
+    return none(fail("Paste is too large — split the export and import it in parts"));
+
+  const parsed = parseMembers(text);
+  if ("error" in parsed) return none(fail(parsed.error));
+  if (parsed.rows.length === 0)
+    return none(
+      fail("No member rows recognized — paste the table including its header row"),
+    );
+
+  const now = new Date();
+  const rows = parsed.rows.map((m) => ({
+    tenantId: ctx.tenant.id,
+    provider,
+    email: m.email,
+    displayName: m.displayName,
+    status: m.status,
+    products: m.products ?? [spec.label],
+    lastActiveAt: m.lastActiveAt,
+    syncedAt: now,
+  }));
+
+  await db
+    .delete(saasSeats)
+    .where(
+      and(
+        eq(saasSeats.tenantId, ctx.tenant.id),
+        eq(saasSeats.provider, provider),
+      ),
+    );
+  for (const batch of chunk(rows, 250)) {
+    await db.insert(saasSeats).values(batch);
+  }
+
+  // Prefill price keys for the imported products so they appear on the
+  // licenses page; admins enter real per-seat prices there.
+  const products = [...new Set(rows.flatMap((r) => r.products))];
+  if (products.length > 0) {
+    await db
+      .insert(priceBook)
+      .values(
+        products.map((p) => ({
+          tenantId: ctx.tenant.id,
+          skuId: `${provider}:${p}`,
+          monthlyPriceCents: 0,
+          source: "default" as const,
+        })),
+      )
+      .onConflictDoNothing();
+  }
+
+  await audit(ctx, "seats_imported", {
+    provider,
+    imported: rows.length,
+    invalid: parsed.invalid.length,
+  });
+  await runAnalysis(ctx.tenant.id);
+  revalidateApp();
+  return { ok: true, imported: rows.length, invalid: parsed.invalid.length };
+};
+
+/** Remove an import connector's seat snapshot; findings auto-resolve. */
+export const clearImportedSeats = async (
+  providerRaw: string,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace ships with demo connector data");
+  if (!isSaasProvider(providerRaw) || !isImportProvider(providerRaw))
+    return fail("Unknown connector");
+  const provider = providerRaw;
+
+  await db
+    .delete(saasSeats)
+    .where(
+      and(
+        eq(saasSeats.tenantId, ctx.tenant.id),
+        eq(saasSeats.provider, provider),
+      ),
+    );
+  await audit(ctx, "seats_import_cleared", { provider });
   await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return ok();

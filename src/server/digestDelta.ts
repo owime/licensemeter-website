@@ -2,7 +2,8 @@ import type { FindingStatus } from "~/server/types";
 
 /**
  * Pure helpers behind the weekly digest's "what changed" framing: the 7-day
- * finding delta and the renewal-window date math. No DB, no IO — unit tested.
+ * finding delta, the AI API spend week-over-week split, and the
+ * renewal-window date math. No DB, no IO — unit tested.
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -109,3 +110,27 @@ export const renewalPhrase = (days: number): string =>
     : days === 1
       ? "Renewal in 1 day"
       : `Renewal in ${days} days`;
+
+export type AiSpendDay = { day: string; amountCents: number };
+
+/**
+ * Week-over-week AI API spend split. A row's age in whole days (UTC-pinned
+ * via daysUntilDate, same boundary semantics) picks its bucket: 0-6 days old
+ * → last7Cents, exactly 7 through 13 → prior7Cents, anything else — future
+ * days, older rows, malformed day strings — is ignored.
+ */
+export const computeAiSpendDelta = (
+  rows: AiSpendDay[],
+  now: Date,
+): { last7Cents: number; prior7Cents: number } => {
+  let last7Cents = 0;
+  let prior7Cents = 0;
+  for (const row of rows) {
+    const until = daysUntilDate(row.day, now);
+    if (until === null) continue;
+    const age = -until;
+    if (age >= 0 && age < 7) last7Cents += row.amountCents;
+    else if (age >= 7 && age < 14) prior7Cents += row.amountCents;
+  }
+  return { last7Cents, prior7Cents };
+};

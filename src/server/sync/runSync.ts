@@ -6,6 +6,7 @@ import { db } from "~/server/db";
 import {
   adobeConnections,
   adobeUsers as adobeUsersTable,
+  aiSpendDaily,
   findings,
   memberships,
   priceBook,
@@ -24,7 +25,9 @@ import {
   buildSaasClient,
   DEMO_SAAS_PRICES,
   demoSaasClient,
+  IMPORT_PROVIDERS,
   SAAS_PROVIDERS,
+  type AiSpendClient,
 } from "~/server/saas/registry";
 import { decryptSecret } from "~/server/crypto";
 import type { AdobeUser, SaasProvider, SaasSeat } from "~/server/types";
@@ -66,6 +69,72 @@ export type SyncResult = {
   runId: string;
   status: SyncRunStatus;
   steps: SyncStep[];
+};
+
+const dayString = (d: Date): string => d.toISOString().slice(0, 10);
+
+const dayMinus = (day: string, days: number): string =>
+  dayString(new Date(Date.parse(`${day}T00:00:00Z`) - days * 24 * 60 * 60 * 1000));
+
+/**
+ * Pull daily cost rows for an AI connector and upsert them. The first sync
+ * backfills as far as the provider exposes (OpenAI 180 days, Anthropic ~90);
+ * later syncs re-pull from seven days before the newest stored day so
+ * late-settling costs heal. Failures become a warning step and never disturb
+ * the member analysis already collected for the provider.
+ */
+const syncAiSpend = async (
+  tenantId: string,
+  provider: "openai" | "anthropic",
+  client: AiSpendClient,
+  now: Date,
+  steps: SyncStep[],
+): Promise<void> => {
+  const step = `${provider}Spend` as const;
+  try {
+    const [latest] = await db
+      .select({ day: sql<string | null>`max(${aiSpendDaily.day})` })
+      .from(aiSpendDaily)
+      .where(
+        and(
+          eq(aiSpendDaily.tenantId, tenantId),
+          eq(aiSpendDaily.provider, provider),
+        ),
+      );
+    const sinceDay = latest?.day
+      ? dayMinus(latest.day, 7)
+      : dayMinus(dayString(now), provider === "openai" ? 180 : 90);
+    const rows = await client.getSpend(sinceDay);
+    for (const batch of chunk(rows, 250)) {
+      await db
+        .insert(aiSpendDaily)
+        .values(
+          batch.map((r) => ({
+            tenantId,
+            provider,
+            day: r.day,
+            category: r.category,
+            amountCents: r.amountCents,
+            syncedAt: now,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [
+            aiSpendDaily.tenantId,
+            aiSpendDaily.provider,
+            aiSpendDaily.day,
+            aiSpendDaily.category,
+          ],
+          set: {
+            amountCents: sql`excluded.amount_cents`,
+            syncedAt: sql`excluded.synced_at`,
+          },
+        });
+    }
+    steps.push({ step, status: "ok", count: rows.length });
+  } catch (err) {
+    steps.push({ step, status: "warning", message: errText(err) });
+  }
 };
 
 /**
@@ -248,7 +317,8 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       }
     }
 
-    // --- SaaS connectors (beta): Zoom, Atlassian, Salesforce ---------------
+    // --- SaaS connectors (beta): Zoom, Atlassian, Salesforce, OpenAI,
+    // Anthropic (the AI pair also syncs daily API spend) -------------------
     // Seats per provider that produced data this run. On a transient fetch
     // failure the stored snapshot is analyzed instead, so findings survive a
     // flaky provider API rather than auto-resolving and reopening.
@@ -291,6 +361,15 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
               ),
             );
         }
+        if (provider === "openai" || provider === "anthropic") {
+          await syncAiSpend(
+            tenantId,
+            provider,
+            saasClient as AiSpendClient,
+            now,
+            steps,
+          );
+        }
       } catch (err) {
         steps.push({
           step: `${provider}Seats`,
@@ -324,6 +403,39 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
               ),
             );
         }
+      }
+    }
+
+    // Import-based connectors (chatgpt/claude) have no API client: their
+    // stored seats are replaced only by a new CSV import and never pruned by
+    // sync, but they join the analysis on every run. Demo tenants get their
+    // fixtures through the regular loop above instead.
+    if (!tenant.isDemo) {
+      for (const provider of IMPORT_PROVIDERS) {
+        if (saasRows.has(provider)) continue;
+        const stored = await db.query.saasSeats.findMany({
+          where: and(
+            eq(saasSeatsTable.tenantId, tenantId),
+            eq(saasSeatsTable.provider, provider),
+          ),
+        });
+        if (stored.length === 0) continue;
+        saasRows.set(
+          provider,
+          stored.map((r) => ({
+            email: r.email,
+            displayName: r.displayName,
+            status: r.status,
+            products: r.products,
+            lastActiveAt: r.lastActiveAt,
+          })),
+        );
+        steps.push({
+          step: `${provider}Seats`,
+          status: "ok",
+          count: stored.length,
+          message: "imported snapshot",
+        });
       }
     }
 

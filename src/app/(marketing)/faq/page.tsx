@@ -23,8 +23,8 @@ const FAQS = [
     a: "In Postgres in the EU (Frankfurt). Data is kept only while your tenant is connected: disconnecting the workspace deletes everything immediately, and you can additionally revoke the enterprise application in Entra ID at any time.",
   },
   {
-    q: "How are the Adobe, Zoom, Atlassian and Salesforce credentials stored?",
-    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments — never content. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
+    q: "How are the Adobe, Zoom, Atlassian, Salesforce, OpenAI and Anthropic credentials stored?",
+    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments, member lists and daily cost totals — never content or prompts. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
   },
   {
     q: "Who in our company can see the data?",

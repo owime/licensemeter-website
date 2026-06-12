@@ -98,7 +98,8 @@ const deltaBlock = (delta: {
   </p>`;
 };
 
-const renewalBlock = (line: string): string => `
+/** Pre-composed plain-text line (renewal, AI spend) set off by a hairline rule. */
+const lineBlock = (line: string): string => `
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;line-height:1.5;border-top:1px solid #e7e2d6;padding-top:12px;margin-top:16px">
     ${escapeHtml(line)}
   </p>`;
@@ -121,10 +122,13 @@ export const digestHtml = (args: {
   };
   /** Pre-composed renewal-window line; omitted when no renewal is near. */
   renewalLine?: string;
+  /** Pre-composed AI API spend line; omitted when no spend rows exist. */
+  aiSpendLine?: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   <h1 style="font-size:22px;font-weight:normal">License waste — ${escapeHtml(args.tenantName)}</h1>
   ${args.delta ? deltaBlock(args.delta) : ""}
+  ${args.aiSpendLine ? lineBlock(args.aiSpendLine) : ""}
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d">
     Monthly spend ${escapeHtml(args.monthlySpend)} ·
     waste <strong style="color:#a8330d">${escapeHtml(args.monthlyWaste)}</strong> ·
@@ -140,7 +144,7 @@ export const digestHtml = (args: {
       )
       .join("")}
   </table>
-  ${args.renewalLine ? renewalBlock(args.renewalLine) : ""}
+  ${args.renewalLine ? lineBlock(args.renewalLine) : ""}
   <p style="font-family:Arial,sans-serif;font-size:13px;margin-top:16px">
     <a href="${args.appUrl}/app/findings" style="color:#1c1a16">Open the findings →</a>
   </p>
@@ -159,6 +163,8 @@ export const allClearHtml = (args: {
   resolvedCount: number;
   resolvedImpact: string;
   renewalLine?: string;
+  /** Pre-composed AI API spend line; omitted when no spend rows exist. */
+  aiSpendLine?: string;
   appUrl: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
@@ -173,7 +179,8 @@ export const allClearHtml = (args: {
   </p>`
       : ""
   }
-  ${args.renewalLine ? renewalBlock(args.renewalLine) : ""}
+  ${args.renewalLine ? lineBlock(args.renewalLine) : ""}
+  ${args.aiSpendLine ? lineBlock(args.aiSpendLine) : ""}
   <p style="font-family:Arial,sans-serif;font-size:13px;margin-top:16px">
     <a href="${args.appUrl}/app/findings" style="color:#1c1a16">Open LicenseMeter →</a>
   </p>

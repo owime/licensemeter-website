@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  computeAiSpendDelta,
   computeDigestDelta,
   daysUntilDate,
   daysUntilRenewal,
@@ -165,5 +166,62 @@ describe("renewalPhrase", () => {
     expect(renewalPhrase(0)).toBe("Renewal today");
     expect(renewalPhrase(1)).toBe("Renewal in 1 day");
     expect(renewalPhrase(45)).toBe("Renewal in 45 days");
+  });
+});
+
+describe("computeAiSpendDelta", () => {
+  it("returns zeros for no rows", () => {
+    expect(computeAiSpendDelta([], NOW)).toEqual({
+      last7Cents: 0,
+      prior7Cents: 0,
+    });
+  });
+
+  it("counts today in the last-7 bucket", () => {
+    expect(
+      computeAiSpendDelta([{ day: "2026-06-12", amountCents: 500 }], NOW),
+    ).toEqual({ last7Cents: 500, prior7Cents: 0 });
+  });
+
+  it("puts exactly 7 days old in the prior bucket, 6 days old in last-7", () => {
+    expect(
+      computeAiSpendDelta(
+        [
+          { day: "2026-06-06", amountCents: 300 }, // age 6
+          { day: "2026-06-05", amountCents: 700 }, // age 7
+        ],
+        NOW,
+      ),
+    ).toEqual({ last7Cents: 300, prior7Cents: 700 });
+  });
+
+  it("includes age 13 in the prior bucket and ignores age 14", () => {
+    expect(
+      computeAiSpendDelta(
+        [
+          { day: "2026-05-30", amountCents: 400 }, // age 13
+          { day: "2026-05-29", amountCents: 9_999 }, // age 14
+        ],
+        NOW,
+      ),
+    ).toEqual({ last7Cents: 0, prior7Cents: 400 });
+  });
+
+  it("ignores malformed day strings", () => {
+    expect(
+      computeAiSpendDelta([{ day: "not-a-date", amountCents: 1000 }], NOW),
+    ).toEqual({ last7Cents: 0, prior7Cents: 0 });
+  });
+
+  it("sums multiple rows on the same day", () => {
+    expect(
+      computeAiSpendDelta(
+        [
+          { day: "2026-06-10", amountCents: 250 },
+          { day: "2026-06-10", amountCents: 150 },
+        ],
+        NOW,
+      ),
+    ).toEqual({ last7Cents: 400, prior7Cents: 0 });
   });
 });

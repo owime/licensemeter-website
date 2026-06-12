@@ -138,8 +138,8 @@ export default function MspPage() {
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-soft">
           Offboarding is where client money leaks. LicenseMeter cross-checks
-          every Adobe, Zoom, Atlassian and Salesforce seat (connectors in
-          beta) against the client&rsquo;s directory, so the account you
+          every Adobe, Zoom, Atlassian, Salesforce, ChatGPT and Claude seat
+          (connectors in beta) against the client&rsquo;s directory, so the account you
           disabled months ago surfaces with the paid seats it still holds. The
           live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
           ex-employees still licensed, {DEMO_FIGURES.crossVendorLeaverCount} of

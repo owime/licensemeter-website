@@ -5,6 +5,7 @@ import { env, siteUrl } from "~/env";
 import { fmtMoney } from "~/lib/format";
 import { db } from "~/server/db";
 import {
+  aiSpendDaily,
   findings,
   memberships,
   snapshots,
@@ -12,6 +13,7 @@ import {
   tenants,
 } from "~/server/db/schema";
 import {
+  computeAiSpendDelta,
   computeDigestDelta,
   daysUntilRenewal,
   DELTA_WINDOW_MS,
@@ -51,46 +53,77 @@ export const GET = async (req: NextRequest) => {
     where: eq(tenants.isDemo, false),
   });
   const now = new Date();
+  // Covers both 7-day buckets of computeAiSpendDelta; UTC-pinned like the
+  // yyyy-mm-dd day column it is compared against.
+  const aiSpendSince = new Date(now.getTime() - 2 * DELTA_WINDOW_MS)
+    .toISOString()
+    .slice(0, 10);
   let sent = 0;
 
   for (const tenant of allTenants) {
     try {
-      const [admins, open, resolvedRecent, latest] = await Promise.all([
-        db.query.memberships.findMany({
-          where: and(
-            eq(memberships.tenantId, tenant.id),
-            inArray(memberships.role, ["owner", "admin"]),
-            isNotNull(memberships.oid),
-          ),
-        }),
-        db.query.findings.findMany({
-          where: and(
-            eq(findings.tenantId, tenant.id),
-            inArray(findings.status, ["open", "acknowledged"]),
-          ),
-          orderBy: desc(findings.monthlyImpactCents),
-        }),
-        db.query.findings.findMany({
-          where: and(
-            eq(findings.tenantId, tenant.id),
-            // status filter keeps this disjoint from the open/acknowledged
-            // query above — a reopened finding can carry a stale resolvedAt.
-            eq(findings.status, "resolved"),
-            isNotNull(findings.resolvedAt),
-            gte(findings.resolvedAt, new Date(now.getTime() - DELTA_WINDOW_MS)),
-          ),
-        }),
-        db.query.snapshots.findFirst({
-          where: eq(snapshots.tenantId, tenant.id),
-          orderBy: desc(snapshots.day),
-        }),
-      ]);
+      const [admins, open, resolvedRecent, latest, aiSpendRows] =
+        await Promise.all([
+          db.query.memberships.findMany({
+            where: and(
+              eq(memberships.tenantId, tenant.id),
+              inArray(memberships.role, ["owner", "admin"]),
+              isNotNull(memberships.oid),
+            ),
+          }),
+          db.query.findings.findMany({
+            where: and(
+              eq(findings.tenantId, tenant.id),
+              inArray(findings.status, ["open", "acknowledged"]),
+            ),
+            orderBy: desc(findings.monthlyImpactCents),
+          }),
+          db.query.findings.findMany({
+            where: and(
+              eq(findings.tenantId, tenant.id),
+              // status filter keeps this disjoint from the open/acknowledged
+              // query above — a reopened finding can carry a stale resolvedAt.
+              eq(findings.status, "resolved"),
+              isNotNull(findings.resolvedAt),
+              gte(
+                findings.resolvedAt,
+                new Date(now.getTime() - DELTA_WINDOW_MS),
+              ),
+            ),
+          }),
+          db.query.snapshots.findFirst({
+            where: eq(snapshots.tenantId, tenant.id),
+            orderBy: desc(snapshots.day),
+          }),
+          db.query.aiSpendDaily.findMany({
+            where: and(
+              eq(aiSpendDaily.tenantId, tenant.id),
+              gte(aiSpendDaily.day, aiSpendSince),
+            ),
+            columns: { day: true, amountCents: true },
+          }),
+        ]);
 
       const to = admins.map((m) => m.email).filter(Boolean);
       if (to.length === 0) continue;
 
       const delta = computeDigestDelta([...open, ...resolvedRecent], now);
       const renewalDays = daysUntilRenewal(tenant.renewalDate, now);
+      // AI API spend is metered in USD by the providers and never converted,
+      // so the line is formatted in USD regardless of the workspace currency.
+      let aiSpendLine: string | undefined;
+      if (aiSpendRows.length > 0) {
+        const { last7Cents, prior7Cents } = computeAiSpendDelta(
+          aiSpendRows,
+          now,
+        );
+        const diff = last7Cents - prior7Cents;
+        const vsPrior =
+          prior7Cents > 0
+            ? ` (${diff >= 0 ? "+" : "-"}${fmtMoney(Math.abs(diff), "USD")} vs prior week)`
+            : "";
+        aiSpendLine = `AI API spend last 7 days: ${fmtMoney(last7Cents, "USD")}${vsPrior} — billed in USD.`;
+      }
       const tenantLabel = tenant.name ?? "your tenant";
       const tenantName = tenant.name ?? tenant.tid;
 
@@ -120,6 +153,7 @@ export const GET = async (req: NextRequest) => {
               renewalDays === null
                 ? undefined
                 : `${renewalPhrase(renewalDays)} — you go in clean.`,
+            aiSpendLine,
             appUrl: siteUrl(),
           }),
         });
@@ -145,8 +179,14 @@ export const GET = async (req: NextRequest) => {
         html: digestHtml({
           tenantName,
           currency: tenant.currency,
-          monthlySpend: fmtMoney(latest?.totalMonthlySpendCents ?? 0, tenant.currency),
-          monthlyWaste: fmtMoney(latest?.totalMonthlyWasteCents ?? 0, tenant.currency),
+          monthlySpend: fmtMoney(
+            latest?.totalMonthlySpendCents ?? 0,
+            tenant.currency,
+          ),
+          monthlyWaste: fmtMoney(
+            latest?.totalMonthlyWasteCents ?? 0,
+            tenant.currency,
+          ),
           openFindings: open.length,
           topFindings: open.slice(0, 5).map((f) => ({
             title: f.title,
@@ -162,6 +202,7 @@ export const GET = async (req: NextRequest) => {
             renewalDays === null
               ? undefined
               : `${renewalPhrase(renewalDays)} — ${open.length} open finding${open.length === 1 ? "" : "s"} worth ${fmtMoney(openCents, tenant.currency)}/mo to reclaim before you re-commit.`,
+          aiSpendLine,
           appUrl: siteUrl(),
         }),
       });

@@ -35,6 +35,12 @@ export type SyncStep = {
     | "zoomSeats"
     | "atlassianSeats"
     | "salesforceSeats"
+    | "openaiSeats"
+    | "anthropicSeats"
+    | "chatgptSeats"
+    | "claudeSeats"
+    | "openaiSpend"
+    | "anthropicSpend"
     | "wasteAnalysis";
   status: "ok" | "warning" | "failed" | "skipped";
   message?: string;
@@ -56,8 +62,19 @@ export type WasteRuleId =
   | "overlapping_licenses"
   | "service_plans_disabled";
 
-/** Connectors built on the generic SaaS framework (Adobe predates it). */
-export type SaasProvider = "zoom" | "atlassian" | "salesforce";
+/**
+ * Connectors built on the generic SaaS framework (Adobe predates it).
+ * zoom/atlassian/salesforce/openai/anthropic authenticate with stored
+ * credentials; chatgpt/claude are CSV-import connectors with no API client.
+ */
+export type SaasProvider =
+  | "zoom"
+  | "atlassian"
+  | "salesforce"
+  | "openai"
+  | "anthropic"
+  | "chatgpt"
+  | "claude";
 
 /** One seat in a connected SaaS product, normalized across providers. */
 export type SaasSeat = {
@@ -69,6 +86,15 @@ export type SaasSeat = {
   products: string[];
   /** Last sign-in/activity, null when the provider exposes no signal. */
   lastActiveAt: Date | null;
+};
+
+/** One day of API spend for an AI connector, in USD cents as billed. */
+export type AiSpendRow = {
+  /** ISO date (yyyy-mm-dd), UTC bucket day. */
+  day: string;
+  /** Model / line item as reported by the provider. */
+  category: string;
+  amountCents: number;
 };
 
 /** One Adobe Admin Console user as returned by the User Management API. */
@@ -100,6 +126,8 @@ export type AuditAction =
   | "findings_bulk_updated"
   | "export_pricebook_csv"
   | "prices_imported"
+  | "seats_imported"
+  | "seats_import_cleared"
   | "renewal_date_changed"
   | "leak_alerts_changed";
 

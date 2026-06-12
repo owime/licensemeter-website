@@ -11,6 +11,10 @@ export const CONNECTOR_LABELS: Record<SaasProvider, string> = {
   zoom: "Zoom",
   atlassian: "Atlassian",
   salesforce: "Salesforce",
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  chatgpt: "ChatGPT",
+  claude: "Claude",
 };
 
 export type ConnectorField = {
@@ -26,8 +30,13 @@ export type ConnectorField = {
 export type ConnectorSpec = {
   provider: SaasProvider;
   label: string;
+  /** "api" connectors authenticate with stored credentials; "import" connectors take a pasted member CSV. */
+  kind: "api" | "import";
+  /** Set when the provider's seats carry no per-seat price — no price-book section is rendered. */
+  unpriced?: true;
   /** What the seats are called in product copy. */
   seatNoun: string;
+  /** Credential fields ("api" kind); empty for "import" connectors. */
   fields: ConnectorField[];
   /** How the admin obtains the credentials, shown above the form. */
   setupHint: string;
@@ -42,6 +51,7 @@ export const CONNECTORS: ConnectorSpec[] = [
   {
     provider: "zoom",
     label: "Zoom",
+    kind: "api",
     seatNoun: "Licensed Zoom seats",
     fields: [
       { name: "orgRef", label: "Account ID", placeholder: "q6gBJVO5Tze…" },
@@ -61,6 +71,7 @@ export const CONNECTORS: ConnectorSpec[] = [
   {
     provider: "atlassian",
     label: "Atlassian",
+    kind: "api",
     seatNoun: "Jira and Confluence seats",
     fields: [
       { name: "orgRef", label: "Organization ID", placeholder: "1a2b3c4d-5e6f-…" },
@@ -79,6 +90,7 @@ export const CONNECTORS: ConnectorSpec[] = [
   {
     provider: "salesforce",
     label: "Salesforce",
+    kind: "api",
     seatNoun: "Salesforce user licenses",
     fields: [
       {
@@ -99,6 +111,76 @@ export const CONNECTORS: ConnectorSpec[] = [
     ],
     hasActivity: true,
     connectCta: "Connect Salesforce",
+  },
+  {
+    provider: "openai",
+    label: "OpenAI",
+    kind: "api",
+    unpriced: true,
+    seatNoun: "OpenAI console members",
+    fields: [
+      { name: "secret", label: "Admin API key", placeholder: "sk-admin-…", secret: true },
+    ],
+    setupHint:
+      "An organization Owner creates an Admin API key under platform.openai.com > Settings > Organization > Admin keys and pastes it here. Stored encrypted, used read-only — member list and daily cost totals only, never request content.",
+    detects: [
+      "Console members whose Entra ID account is disabled — departed people who may still hold live API keys.",
+      "Console members with no matching directory account at all.",
+      "Daily API spend by line item, backfilled on first sync and tracked on the AI costs page.",
+    ],
+    hasActivity: false,
+    connectCta: "Connect OpenAI",
+  },
+  {
+    provider: "anthropic",
+    label: "Anthropic",
+    kind: "api",
+    unpriced: true,
+    seatNoun: "Anthropic console members",
+    fields: [
+      { name: "secret", label: "Admin API key", placeholder: "sk-ant-admin…", secret: true },
+    ],
+    setupHint:
+      "An organization admin creates an Admin API key in the Claude Console under Settings > Admin keys and pastes it here. Stored encrypted, used read-only — member list and daily cost totals only, never request content.",
+    detects: [
+      "Console members whose Entra ID account is disabled — departed people who may still hold live API keys.",
+      "Console members with no matching directory account at all.",
+      "Daily API spend by model, backfilled on first sync and tracked on the AI costs page.",
+    ],
+    hasActivity: false,
+    connectCta: "Connect Anthropic",
+  },
+  {
+    provider: "chatgpt",
+    label: "ChatGPT",
+    kind: "import",
+    seatNoun: "ChatGPT seats",
+    fields: [],
+    setupHint:
+      "In the ChatGPT admin workspace, open Members and export or copy the member table including its header row, then paste it below. The list is matched against Entra ID and stored like any other connector's seats.",
+    detects: [
+      "ChatGPT seats held by accounts that are disabled in Entra ID.",
+      "Seats with no matching directory account at all.",
+      "Seats with no activity for your inactivity threshold, when the export includes a last-active column.",
+    ],
+    hasActivity: true,
+    connectCta: "Import member CSV",
+  },
+  {
+    provider: "claude",
+    label: "Claude",
+    kind: "import",
+    seatNoun: "Claude seats",
+    fields: [],
+    setupHint:
+      "In the Claude admin settings, open Members and export or copy the member table including its header row, then paste it below. The list is matched against Entra ID and stored like any other connector's seats.",
+    detects: [
+      "Claude seats held by accounts that are disabled in Entra ID.",
+      "Seats with no matching directory account at all.",
+      "Seats with no activity for your inactivity threshold, when the export includes a last-active column.",
+    ],
+    hasActivity: true,
+    connectCta: "Import member CSV",
   },
 ];
 
