@@ -287,9 +287,10 @@ export default function LandingPage() {
                 Not ready to connect a tenant yet?
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                Leave your email and you get the security one-pager for your
-                IT team plus one note at general availability. A personal
-                email, not a list.
+                Leave your email and the security one-pager plus a
+                getting-started guide for your first scan land in your inbox
+                right away — and one note at general availability. Unsubscribe
+                any time.
               </p>
             </div>
             <div className="w-full sm:max-w-sm">

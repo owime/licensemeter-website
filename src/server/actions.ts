@@ -4,6 +4,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import {
   apiAccess,
@@ -33,6 +34,7 @@ import { encryptSecret } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
 import { notifyOps } from "~/server/ops";
 import { clientIp, rateLimit } from "~/server/rateLimit";
+import { maybeSendWelcome } from "~/server/welcome";
 import { siteUrl } from "~/env";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import type { MembershipRole } from "~/server/types";
@@ -651,6 +653,10 @@ export const captureEmail = async (
     .returning({ id: emailSignups.id });
   if (inserted.length > 0) {
     void notifyOps(`new email signup from the landing page: ${email}`);
+    // Fresh inserts only — re-submits and pre-feature rows never re-send.
+    // after() lets the form respond immediately while the send still
+    // completes before the serverless function freezes.
+    after(() => maybeSendWelcome(email));
   }
   return ok();
 };

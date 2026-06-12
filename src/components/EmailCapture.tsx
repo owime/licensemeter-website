@@ -23,7 +23,7 @@ export const EmailCapture = () => {
           if (result.ok) {
             setState("done");
             setMessage(
-              "Thanks — you will hear from us personally, nothing automated.",
+              "Sent — the guide and the security one-pager are on their way to your inbox.",
             );
             // The fields hide on success — park focus on the confirmation
             // before the commit so it is never dropped to <body>.
@@ -65,7 +65,7 @@ export const EmailCapture = () => {
         disabled={pending}
         className={buttonClass("secondary", state === "done" ? "hidden" : "")}
       >
-        {pending ? "Sending…" : "Keep me posted"}
+        {pending ? "Sending…" : "Send me the guide"}
       </button>
       {/* Live region mounted from first render so announcements are reliable. */}
       <p

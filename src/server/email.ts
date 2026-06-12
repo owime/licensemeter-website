@@ -1,4 +1,5 @@
 import { env } from "~/env";
+import { escapeHtml } from "~/lib/html";
 
 /**
  * Outgoing mail via Resend, entirely env-gated: without RESEND_API_KEY and
@@ -11,6 +12,11 @@ export const sendEmail = async (args: {
   to: string[];
   subject: string;
   html: string;
+  /** Sender override (must be on the verified domain); EMAIL_FROM otherwise. */
+  from?: string;
+  replyTo?: string;
+  /** Extra SMTP headers, e.g. List-Unsubscribe. */
+  headers?: Record<string, string>;
 }): Promise<boolean> => {
   if (!emailEnabled()) return false;
   const res = await fetch("https://api.resend.com/emails", {
@@ -20,12 +26,14 @@ export const sendEmail = async (args: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: args.from ?? env.EMAIL_FROM,
       to: args.to,
       // Tenant display names flow into subjects; strip header-breaking
       // control characters and cap the length.
       subject: args.subject.replace(/[\r\n]+/g, " ").slice(0, 200),
       html: args.html,
+      ...(args.replyTo ? { reply_to: args.replyTo } : {}),
+      ...(args.headers ? { headers: args.headers } : {}),
     }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -34,13 +42,6 @@ export const sendEmail = async (args: {
   }
   return true;
 };
-
-const escapeHtml = (s: string): string =>
-  s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
 
 /** Workspace invitation: who invited you, where, as what — one click to sign in. */
 export const inviteHtml = (args: {

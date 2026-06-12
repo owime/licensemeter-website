@@ -345,6 +345,9 @@ export const emailSignups = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     email: text("email").notNull(),
+    /** When the automated welcome email went out; null for pre-feature rows. */
+    welcomeSentAt: timestamp("welcome_sent_at", { withTimezone: true }),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
     source: text("source").notNull().default("landing"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
