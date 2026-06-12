@@ -100,8 +100,8 @@ export default function DatenschutzPage() {
         <p>
           Wenn Sie auf der Startseite Ihre E-Mail-Adresse hinterlassen,
           speichern wir diese, um Ihnen die angeforderten Unterlagen
-          (Security-Überblick) und eine einmalige Mitteilung zur allgemeinen
-          Verfügbarkeit zuzusenden (Art. 6 Abs. 1 lit. b DSGVO). Es erfolgt
+          (Security-Überblick) und eine einmalige Mitteilung zum Start der
+          Abrechnung zuzusenden (Art. 6 Abs. 1 lit. b DSGVO). Es erfolgt
           kein automatisierter Newsletter-Versand. Die Adresse wird auf
           Anfrage jederzeit gelöscht.
         </p>

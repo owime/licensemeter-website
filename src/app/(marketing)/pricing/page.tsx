@@ -195,9 +195,9 @@ export default function PricingPage() {
             a year.
           </p>
           <p className="mt-3 text-xs text-ink-faint">
-            Early access: billing starts with general availability. Connected
-            workspaces use LicenseMeter free until then.
-            {/* TODO before launch: confirm the early-access wording or remove. */}
+            Billing is not switched on yet. Workspaces that connect now use
+            LicenseMeter free until it is, and you will hear from me well
+            before anything costs money.
           </p>
         </div>
       </section>

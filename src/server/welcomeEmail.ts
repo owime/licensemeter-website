@@ -169,7 +169,7 @@ export const welcomeHtml = (args: {
 
   <p style="${sans};font-size:11px;color:#a39d8f;line-height:1.6;border-top:1px solid #e7e2d6;padding-top:14px;margin:0">
     You get this one email because ${escapeHtml(args.email)} was entered on
-    licensemeter.com. One more note follows at general availability,
+    licensemeter.com. One short note follows when billing starts,
     or <a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#a39d8f">unsubscribe</a>
     any time. LicenseMeter · EU-hosted in Frankfurt.
   </p>

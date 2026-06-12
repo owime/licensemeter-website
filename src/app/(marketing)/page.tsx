@@ -343,8 +343,8 @@ export default async function LandingPage() {
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                 Leave your email and the security one-pager plus a
                 getting-started guide for your first scan land in your inbox
-                right away, and one note at general availability. Unsubscribe
-                any time.
+                right away. One short note follows when billing starts.
+                Unsubscribe any time.
               </p>
             </div>
             <div className="w-full sm:max-w-sm">
