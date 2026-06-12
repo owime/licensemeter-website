@@ -108,9 +108,32 @@ export default async function OverviewPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
-          {hasRole(ctx, "admin") && <SyncNowButton />}
+          {/* Trial workspaces (consentedAt null) have no Graph access — a
+              manual sync could only fail. Demo tenants have consentedAt set. */}
+          {hasRole(ctx, "admin") && ctx.tenant.consentedAt && <SyncNowButton />}
         </div>
       </header>
+
+      {!ctx.tenant.consentedAt && !ctx.tenant.isDemo && (
+        <section className="rise rise-2 mt-8">
+          <Card title="CSV trial workspace">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="max-w-2xl text-sm text-ink-soft">
+                Figures come from your uploaded exports. Connect the read-only
+                sync for nightly updates, leak alerts and trends.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonLink variant="primary" href="/app/connect">
+                  Connect the read-only sync
+                </ButtonLink>
+                <ButtonLink href="/app/connect/csv">
+                  Upload fresh exports
+                </ButtonLink>
+              </div>
+            </div>
+          </Card>
+        </section>
+      )}
 
       {renewalDays !== null && renewalDays < 0 && (
         <p className="rise rise-2 mt-8 text-sm text-ink-faint">

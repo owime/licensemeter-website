@@ -8,6 +8,13 @@ import "./src/env.js";
 const config = {
   reactStrictMode: true,
   serverExternalPackages: ["@electric-sql/pglite"],
+  experimental: {
+    serverActions: {
+      // The CSV trial posts two admin-center exports (5 MB each, checked
+      // server-side) through a server action; the default limit is 1 MB.
+      bodySizeLimit: "8mb",
+    },
+  },
   // The floating dev badge sits exactly over the sidebar's sign-out button.
   devIndicators: false,
   async headers() {

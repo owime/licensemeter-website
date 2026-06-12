@@ -1,7 +1,9 @@
+import { isNotNull } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { tenants } from "~/server/db/schema";
 import { runSync } from "~/server/sync/runSync";
 
 export const maxDuration = 300;
@@ -15,7 +17,11 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const allTenants = await db.query.tenants.findMany();
+  // CSV-trial workspaces (consentedAt null) have no Graph access — syncing
+  // them could only fail. The demo tenant has consentedAt set by its seed.
+  const allTenants = await db.query.tenants.findMany({
+    where: isNotNull(tenants.consentedAt),
+  });
 
   // Bounded concurrency: sequential syncs would exceed maxDuration once a
   // handful of tenants are connected (worst case ~45s each on retry paths).

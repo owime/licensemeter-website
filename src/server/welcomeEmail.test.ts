@@ -73,4 +73,9 @@ describe("welcomeHtml", () => {
     expect(html).toContain(`€ ${demoEuros(DEMO_FIGURES.monthlyWasteCents)}`);
     expect(html).toContain("No write access, ever.");
   });
+
+  it("names the accurate consent role and links the CSV trial", () => {
+    expect(html).toContain("Privileged Role Administrator");
+    expect(html).toContain("/app/connect/csv");
+  });
 });

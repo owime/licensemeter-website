@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { siteUrl } from "~/env";
+import { env, siteUrl } from "~/env";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 export const metadata: Metadata = {
@@ -29,6 +29,64 @@ const STORED_DATA = [
 ];
 
 const BASE = siteUrl();
+
+const CONNECTOR_APP_ID =
+  env.CONNECTOR_CLIENT_ID ??
+  "<LicenseMeter connector application ID — shown on the consent screen>";
+
+/**
+ * Microsoft Graph PowerShell for the delegate-consent section. The permission
+ * names are rendered from CONNECTOR_SCOPES, so the script can never drift
+ * from the consent screen. Cmdlet shapes follow Microsoft Learn
+ * (manage-app-consent-policies, custom-consent-permissions).
+ */
+const DELEGATE_CONSENT_SCRIPT = `# One-time setup - requires Privileged Role Administrator or Global Administrator.
+Connect-MgGraph -Scopes "Policy.ReadWrite.PermissionGrant","RoleManagement.ReadWrite.Directory"
+
+# Microsoft Graph service principal; app-role IDs looked up by permission
+# name, so the grant covers exactly what the consent screen shows.
+$graphSp = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
+$permissionNames = @(
+${CONNECTOR_SCOPES.map((s) => `  "${s.scope}"`).join(",\n")}
+)
+$permissionIds = $graphSp.AppRoles |
+  Where-Object { $_.Value -in $permissionNames } |
+  ForEach-Object { $_.Id }
+
+# Abort rather than create a policy with an empty permission list — an empty
+# list would mean "all permissions of this resource", far broader than intended.
+if ($permissionIds.Count -ne $permissionNames.Count) {
+  throw "Resolved $($permissionIds.Count) of $($permissionNames.Count) permission IDs - aborting. Update the Microsoft.Graph module and retry."
+}
+
+# App consent policy: exactly these application permissions, only for the
+# LicenseMeter connector as the client app.
+New-MgPolicyPermissionGrantPolicy \`
+  -Id "licensemeter-read-only" \`
+  -DisplayName "LicenseMeter read-only consent" \`
+  -Description "Admin consent for the LicenseMeter connector's read-only Graph permissions only."
+
+New-MgPolicyPermissionGrantPolicyInclude \`
+  -PermissionGrantPolicyId "licensemeter-read-only" \`
+  -PermissionType "application" \`
+  -ResourceApplication $graphSp.AppId \`
+  -Permissions $permissionIds \`
+  -ClientApplicationIds @("${CONNECTOR_APP_ID}")
+
+# Custom directory role whose only permission is consenting under that policy.
+New-MgRoleManagementDirectoryRoleDefinition -BodyParameter @{
+  displayName     = "LicenseMeter Consent Approver"
+  description     = "Grants tenant-wide admin consent for the LicenseMeter connector's read-only permissions, nothing else."
+  isEnabled       = $true
+  rolePermissions = @(
+    @{ allowedResourceActions = @(
+      "microsoft.directory/servicePrincipals/managePermissionGrantsForAll.licensemeter-read-only"
+    ) }
+  )
+}
+
+# Assign the role in the portal: Entra ID > Roles and administrators >
+# "LicenseMeter Consent Approver" > Add assignment.`;
 
 const Section = ({
   id,
@@ -87,6 +145,46 @@ export default function SecurityPage() {
           The consent is recorded in your tenant&rsquo;s audit log. Sign-in to
           the dashboard itself uses a separate app registration with only
           openid, profile and email.
+        </p>
+      </Section>
+
+      <Section
+        id="delegate-consent"
+        title="Delegating the consent — without standing Global Administrator rights"
+      >
+        <p>
+          Tenant-wide admin consent for Microsoft Graph application
+          permissions — the kind listed above — can be granted by a Global
+          Administrator or a Privileged Role Administrator; an Application
+          Administrator is not sufficient for Graph application permissions,
+          a boundary Microsoft sets, not us. Entra ID does let an organization
+          delegate this consent narrowly: an app consent policy pinned to
+          exactly these five read-only permissions and to the LicenseMeter
+          connector app, attached to a custom directory role. The one-time
+          setup itself requires a Privileged Role Administrator or Global
+          Administrator and Microsoft Graph PowerShell — the role permission
+          cannot be added in the Entra portal yet — and belongs in your
+          identity team&rsquo;s review.
+        </p>
+        <pre className="mt-5 overflow-x-auto border border-line bg-card p-4 font-mono text-xs leading-relaxed text-ink">
+          <code>{DELEGATE_CONSENT_SCRIPT}</code>
+        </pre>
+        {!env.CONNECTOR_CLIENT_ID && (
+          <p className="mt-3 text-xs text-ink-faint">
+            The connector application ID is shown on the connect page and in
+            Microsoft&rsquo;s consent dialog.
+          </p>
+        )}
+        <p className="mt-4">
+          No role with consent rights at hand today? The{" "}
+          <Link
+            href="/app/connect/csv"
+            className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
+          >
+            CSV trial
+          </Link>{" "}
+          computes your waste number from two Microsoft 365 admin center
+          exports — no consent at all.
         </p>
       </Section>
 

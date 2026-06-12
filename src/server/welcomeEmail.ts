@@ -82,6 +82,7 @@ export const welcomeHtml = (args: {
   const connectUrl = `${args.baseUrl}/app/connect?${UTM}`;
   const securityUrl = `${args.baseUrl}/security?${UTM}`;
   const homeUrl = `${args.baseUrl}/?${UTM}`;
+  const csvTrialUrl = `${args.baseUrl}/app/connect/csv?${UTM}`;
   const demoWaste = `€ ${demoEuros(DEMO_FIGURES.monthlyWasteCents)}`;
 
   return `
@@ -102,7 +103,7 @@ export const welcomeHtml = (args: {
 
   <table style="width:100%;border-collapse:collapse;margin:0 0 24px">
     ${step("01", "Sign in with Microsoft — any work account, no setup and nothing installed.")}
-    ${step("02", `Your Global Admin approves <strong>read-only</strong> access once. Not the admin yourself? Forward this email — the one-pager below answers what they will ask.`)}
+    ${step("02", `Your Global Administrator — or Privileged Role Administrator — approves <strong>read-only</strong> access once. Not the admin yourself? Forward this email; the one-pager below answers what they will ask.`)}
     ${step("03", "The first sync takes about two minutes. You get every unused, leaked or forgotten seat priced in euros per month — and PowerShell scripts to reclaim them.")}
   </table>
 
@@ -116,6 +117,9 @@ export const welcomeHtml = (args: {
     Want to poke around first? The
     <a href="${escapeHtml(homeUrl)}" style="color:#1c1a16">live demo</a> is a
     155-person tenant wasting ${demoWaste} a month — one click, no account.
+    No admin with consent rights at hand? Start with the
+    <a href="${escapeHtml(csvTrialUrl)}" style="color:#1c1a16">CSV trial</a> —
+    your number from two admin-center exports, no consent at all.
   </p>
 
   <div style="border:1px solid #d2ccbb;background:#faf8f3;padding:20px 22px;margin:0 0 28px">
@@ -140,6 +144,12 @@ export const welcomeHtml = (args: {
       ${fact("Never content.", "License assignments, sign-in activity and usage metadata only — no mailboxes, no files, no messages.")}
       ${fact("EU data residency.", "Hosted in Frankfurt; disconnecting deletes all synced data immediately.")}
     </table>
+    <p style="${sans};font-size:13px;color:#6b665d;line-height:1.55;margin:14px 0 0">
+      Microsoft requires a Global Administrator or Privileged Role
+      Administrator for these application permissions; larger organizations
+      can delegate consent for exactly these five permissions — the security
+      overview shows how.
+    </p>
     <p style="${sans};font-size:13px;margin:14px 0 0">
       <a href="${escapeHtml(securityUrl)}" style="color:#1c1a16">Full security overview →</a>
       <span style="color:#a39d8f">&nbsp;·&nbsp; A signed AVV (DPA) is available on request.</span>

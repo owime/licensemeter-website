@@ -19,8 +19,8 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Their Global Admin consents",
-    body: "The client's Global Admin completes Microsoft's standard admin-consent dialog — read-only application permissions, recorded in their audit log.",
+    title: "Their Global Administrator (or Privileged Role Administrator) consents",
+    body: "The client's admin completes Microsoft's standard admin-consent dialog — read-only application permissions, recorded in their audit log.",
   },
   {
     n: "03",

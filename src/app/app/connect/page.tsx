@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ConnectPoller } from "~/components/workspace/ConnectPoller";
-import { buttonClass } from "~/components/ui";
+import { ButtonLink, buttonClass } from "~/components/ui";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { getAccessContext, requireSession } from "~/server/access";
 
@@ -33,7 +33,9 @@ export default async function ConnectPage({
   const error = typeof sp.error === "string" ? sp.error : null;
 
   // Already connected and syncing finished -> straight to the dashboard.
-  if (ctx && status !== "syncing") redirect("/app");
+  // CSV-trial workspaces (consentedAt null) stay: this page IS their upgrade
+  // path to the real read-only sync.
+  if (ctx?.tenant.consentedAt && status !== "syncing") redirect("/app");
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
@@ -103,12 +105,27 @@ export default async function ConnectPage({
           </div>
 
           {!session.user.isDemo && (
-            <p className="mt-6 text-xs text-ink-faint">
-              Not a Global Admin? Forward this page to one. Managing a
-              customer&apos;s tenant as a partner works too: you start the
-              flow, their Global Admin completes the Microsoft dialog, and you
-              become the workspace owner.
-            </p>
+            <>
+              <p className="mt-6 text-xs text-ink-faint">
+                Not a Global Administrator (or Privileged Role Administrator)?
+                Forward this page to one. Managing a customer&apos;s tenant as
+                a partner works too: you start the flow, their Global
+                Administrator completes the Microsoft dialog, and you become
+                the workspace owner.
+              </p>
+
+              <div className="mt-8 border border-line bg-card p-4">
+                <p className="text-sm text-ink-soft">
+                  No admin with consent rights at hand? Start with the CSV
+                  trial — two admin-center exports, no consent at all.
+                </p>
+                <div className="mt-3">
+                  <ButtonLink href="/app/connect/csv">
+                    Try it with CSV exports
+                  </ButtonLink>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}
