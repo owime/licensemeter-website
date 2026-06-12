@@ -10,7 +10,7 @@ import { env } from "~/env";
 /**
  * AES-256-GCM for third-party credentials at rest (Adobe client secrets).
  * Key derived from AUTH_SECRET via HKDF so no extra key material is managed;
- * rotating AUTH_SECRET invalidates stored secrets (documented trade-off —
+ * rotating AUTH_SECRET invalidates stored secrets (documented trade-off:
  * customers simply re-enter the Adobe credential).
  */
 const key = (): Buffer =>

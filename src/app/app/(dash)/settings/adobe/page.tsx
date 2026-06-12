@@ -6,7 +6,7 @@ import {
   AdobeConnectForm,
   AdobeDisconnectButton,
 } from "~/components/workspace/AdobeConnectForm";
-import { Card, Pill } from "~/components/ui";
+import { Card } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
@@ -50,19 +50,16 @@ export default async function AdobeConnectorPage() {
             Connectors
           </Link>
         </nav>
-        <div className="mt-2 flex items-center gap-3">
-          <h1 className="font-display text-3xl tracking-tight">
-            Adobe connector
-          </h1>
-          <Pill tone="gold">Beta</Pill>
-        </div>
+        <h1 className="mt-2 font-display text-3xl tracking-tight">
+          Adobe connector
+        </h1>
       </header>
 
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
             <p className="text-sm text-ink-soft">
-              Connected with demo data — {adobeCount} Adobe seats correlated
+              Connected with demo data: {adobeCount} Adobe seats correlated
               against the directory. On a real workspace this uses your Adobe
               Admin Console credentials.
             </p>
@@ -70,7 +67,7 @@ export default async function AdobeConnectorPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="text-sm">
                 <div className="font-medium">
-                  Connected — {adobeCount} Adobe seats
+                  Connected: {adobeCount} Adobe seats
                 </div>
                 <div className="mt-0.5 text-xs text-ink-soft">
                   Org {adobeConn.orgId} · last sync{" "}
@@ -86,7 +83,7 @@ export default async function AdobeConnectorPage() {
                 Detect Adobe seats still assigned to people who are disabled or
                 gone in Entra ID. Create an OAuth server-to-server project with
                 the User Management API in the Adobe Developer Console (System
-                Admin required), then paste the credentials — they are stored
+                Admin required), then paste the credentials. They are stored
                 encrypted and used read-only.
               </p>
               <AdobeConnectForm />
@@ -105,7 +102,7 @@ export default async function AdobeConnectorPage() {
               <span aria-hidden="true" className="mt-0.5 text-rust-text">
                 ·
               </span>
-              Adobe seats whose owner is disabled in Entra ID — paid Creative
+              Adobe seats whose owner is disabled in Entra ID: paid Creative
               Cloud for accounts that can no longer sign in.
             </li>
             <li className="flex gap-3">
@@ -116,7 +113,7 @@ export default async function AdobeConnectorPage() {
             </li>
           </ul>
           <p className="mt-3 text-xs text-ink-faint">
-            Entitlements only — no Adobe documents or content are read. Prices
+            Entitlements only: no Adobe documents or content are read. Prices
             come from the adobe:&lt;product&gt; keys in your price book.
           </p>
           <p className="mt-2 text-xs text-ink-faint">

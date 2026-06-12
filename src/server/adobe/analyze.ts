@@ -12,7 +12,7 @@ export type EntraIdentity = {
 
 /**
  * Adobe offboarding-leak detection: Adobe has no usage API, but correlating
- * seats with Entra account state catches what Adobe's own console cannot —
+ * seats with Entra account state catches what Adobe's own console cannot:
  * seats held by people who were disabled or never existed in the directory.
  */
 export const analyzeAdobeWaste = (

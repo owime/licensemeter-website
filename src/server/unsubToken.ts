@@ -3,7 +3,7 @@ import { createHmac, hkdfSync, timingSafeEqual } from "node:crypto";
 /**
  * Stateless unsubscribe tokens: HMAC over the normalized email with a key
  * derived from AUTH_SECRET (same HKDF pattern as crypto.ts, own context).
- * Nothing to store or expire — a link stays valid until AUTH_SECRET rotates.
+ * Nothing to store or expire: a link stays valid until AUTH_SECRET rotates.
  * The secret arrives as an argument so this module stays env-free for tests.
  */
 const key = (secret: string): Buffer =>

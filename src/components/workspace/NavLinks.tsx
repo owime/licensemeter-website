@@ -9,7 +9,7 @@ type NavItem = {
   label: string;
   /** Extra routes that belong to this section, e.g. drill-downs. */
   also?: string[];
-  /** Sub-pages shown while the section is active — one per connector. */
+  /** Sub-pages shown while the section is active, one per connector. */
   children?: NavChild[];
 };
 

@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="mx-auto max-w-4xl">
       <h1 className="font-display text-3xl tracking-tight">Not found</h1>
       <p className="mt-2 max-w-md text-sm text-ink-soft">
-        This page or record does not exist in this workspace — it may have
+        This page or record does not exist in this workspace. It may have
         been removed by a later sync.
       </p>
       <Link

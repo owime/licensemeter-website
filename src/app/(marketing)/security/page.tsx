@@ -15,7 +15,7 @@ const NEVER_ACCESSED = [
   "Files in OneDrive, SharePoint or Teams",
   "Teams messages or meeting content",
   "Passwords, credentials or security tokens of your users",
-  "Any write access — LicenseMeter cannot change anything in your tenant",
+  "Any write access: LicenseMeter cannot change anything in your tenant",
 ];
 
 const STORED_DATA = [
@@ -32,7 +32,7 @@ const BASE = siteUrl();
 
 const CONNECTOR_APP_ID =
   env.CONNECTOR_CLIENT_ID ??
-  "<LicenseMeter connector application ID — shown on the consent screen>";
+  "<LicenseMeter connector application ID, shown on the consent screen>";
 
 /**
  * Microsoft Graph PowerShell for the delegate-consent section. The permission
@@ -53,7 +53,7 @@ $permissionIds = $graphSp.AppRoles |
   Where-Object { $_.Value -in $permissionNames } |
   ForEach-Object { $_.Id }
 
-# Abort rather than create a policy with an empty permission list — an empty
+# Abort rather than create a policy with an empty permission list - an empty
 # list would mean "all permissions of this resource", far broader than intended.
 if ($permissionIds.Count -ne $permissionNames.Count) {
   throw "Resolved $($permissionIds.Count) of $($permissionNames.Count) permission IDs - aborting. Update the Microsoft.Graph module and retry."
@@ -126,7 +126,7 @@ export default function SecurityPage() {
           <strong className="text-ink">
             application permissions that are read-only without exception
           </strong>
-          . LicenseMeter then syncs nightly using its own credential — no
+          . LicenseMeter then syncs nightly using its own credential: no
           service account in your tenant, no agent, no mailbox plugin. You can
           revoke the application in Entra ID at any time, independently of us.
         </p>
@@ -150,11 +150,11 @@ export default function SecurityPage() {
 
       <Section
         id="delegate-consent"
-        title="Delegating the consent — without standing Global Administrator rights"
+        title="Delegating the consent without standing Global Administrator rights"
       >
         <p>
           Tenant-wide admin consent for Microsoft Graph application
-          permissions — the kind listed above — can be granted by a Global
+          permissions (the kind listed above) can be granted by a Global
           Administrator or a Privileged Role Administrator; an Application
           Administrator is not sufficient for Graph application permissions,
           a boundary Microsoft sets, not us. Entra ID does let an organization
@@ -162,8 +162,8 @@ export default function SecurityPage() {
           exactly these five read-only permissions and to the LicenseMeter
           connector app, attached to a custom directory role. The one-time
           setup itself requires a Privileged Role Administrator or Global
-          Administrator and Microsoft Graph PowerShell — the role permission
-          cannot be added in the Entra portal yet — and belongs in your
+          Administrator and Microsoft Graph PowerShell (the role permission
+          cannot be added in the Entra portal yet) and belongs in your
           identity team&rsquo;s review.
         </p>
         <pre className="mt-5 overflow-x-auto border border-line bg-card p-4 font-mono text-xs leading-relaxed text-ink">
@@ -184,7 +184,7 @@ export default function SecurityPage() {
             CSV trial
           </Link>{" "}
           computes your waste number from two Microsoft 365 admin center
-          exports — no consent at all.
+          exports, with no consent at all.
         </p>
       </Section>
 
@@ -198,7 +198,7 @@ export default function SecurityPage() {
           ))}
         </ul>
         <p className="mt-4">
-          Usage reports are consumed as counts and last-activity dates only —
+          Usage reports are consumed as counts and last-activity dates only:
           metadata, never content.
         </p>
       </Section>
@@ -225,7 +225,7 @@ export default function SecurityPage() {
           {/* TODO before launch: confirm the exact provider/region wording. */}{" "}
           Data is retained only while your tenant is connected. Disconnecting
           the workspace (Settings → Danger zone) deletes all synced data
-          immediately and irreversibly — users, findings, prices, history.
+          immediately and irreversibly: users, findings, prices, history.
           Revoking the enterprise application in your Entra ID additionally
           cuts our access at the source.
         </p>
@@ -239,7 +239,7 @@ export default function SecurityPage() {
             ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
             [
               "Resend Inc.",
-              "Email delivery — workspace notifications and weekly digest, EU region",
+              "Email delivery: workspace notifications and weekly digest, EU region",
             ],
           ].map(([name, role]) => (
             <li
@@ -270,7 +270,7 @@ export default function SecurityPage() {
           Microsoft publisher verification for the LicenseMeter app
           registrations is in progress.
           {/* TODO: update this wording the day verification completes. */}{" "}
-          Until it completes, the consent dialog shows the apps as unverified —
+          Until it completes, the consent dialog shows the apps as unverified,
           and tenants with strict consent policies may block them. Microsoft
           displays the verification status directly in the consent dialog, so
           your admin can always confirm the current state independently of

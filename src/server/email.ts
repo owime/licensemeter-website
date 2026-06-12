@@ -46,7 +46,7 @@ export const sendEmail = async (args: {
   return true;
 };
 
-/** Workspace invitation: who invited you, where, as what — one click to sign in. */
+/** Workspace invitation: who invited you, where, as what. One click to sign in. */
 export const inviteHtml = (args: {
   inviterName: string;
   tenantName: string;
@@ -63,7 +63,7 @@ export const inviteHtml = (args: {
     <strong style="color:#1c1a16">${escapeHtml(args.tenantName)}</strong>
     as <strong style="color:#1c1a16">${escapeHtml(args.role)}</strong>.
     LicenseMeter shows which Microsoft 365 licenses the organization pays for
-    but nobody uses — with read-only access to license metadata, never content.
+    but nobody uses, with read-only access to license metadata, never content.
   </p>
   <p style="margin:24px 0">
     <a href="${args.appUrl}/api/auth/signin"
@@ -73,13 +73,13 @@ export const inviteHtml = (args: {
   </p>
   <p style="font-family:Arial,sans-serif;font-size:12px;color:#a39d8f;line-height:1.5">
     Use the Microsoft account for this email address. If you did not expect
-    this invitation, you can ignore this email — nothing is shared without
+    this invitation, you can ignore this email. Nothing is shared without
     signing in.
   </p>
 </div>`;
 
 /**
- * "N new findings since last week (+X/mo). M resolved (Y/mo freed)." — the
+ * "N new findings since last week (+X/mo). M resolved (Y/mo freed)." The
  * money figures arrive pre-formatted. Zero-count parts degrade gracefully.
  */
 const deltaBlock = (delta: {
@@ -131,7 +131,7 @@ export const digestHtml = (args: {
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   ${emailWordmark(args.appUrl)}
-  <h1 style="font-size:22px;font-weight:normal">License waste — ${escapeHtml(args.tenantName)}</h1>
+  <h1 style="font-size:22px;font-weight:normal">License waste: ${escapeHtml(args.tenantName)}</h1>
   ${args.delta ? deltaBlock(args.delta) : ""}
   ${args.aiSpendLine ? lineBlock(args.aiSpendLine) : ""}
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d">
@@ -160,7 +160,7 @@ export const digestHtml = (args: {
 
 /**
  * Weekly all-clear: sent instead of going silent when a recently synced
- * tenant has zero open findings — the moment the product proved its value.
+ * tenant has zero open findings, the moment the product proved its value.
  */
 export const allClearHtml = (args: {
   tenantName: string;
@@ -174,7 +174,7 @@ export const allClearHtml = (args: {
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   ${emailWordmark(args.appUrl)}
-  <h1 style="font-size:22px;font-weight:normal">All clear — ${escapeHtml(args.tenantName)}</h1>
+  <h1 style="font-size:22px;font-weight:normal">All clear: ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;line-height:1.5">
     No open findings. Nothing new leaked this week.
   </p>
@@ -208,14 +208,14 @@ export const reportHtml = (args: {
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   ${emailWordmark(args.appUrl)}
-  <h1 style="font-size:22px;font-weight:normal">Monthly report — ${escapeHtml(args.tenantName)}</h1>
+  <h1 style="font-size:22px;font-weight:normal">Monthly report: ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d">
     Monthly spend ${escapeHtml(args.monthlySpend)} ·
     waste <strong style="color:#a8330d">${escapeHtml(args.monthlyWaste)}</strong> ·
     ${args.openFindings} open findings
   </p>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;line-height:1.5">
-    The full report is attached as PDF — board-ready, with every finding priced.
+    The full report is attached as PDF: board-ready, with every finding priced.
   </p>
   <p style="font-family:Arial,sans-serif;font-size:13px;margin-top:16px">
     <a href="${args.appUrl}/app" style="color:#1c1a16">Open LicenseMeter →</a>
@@ -226,7 +226,7 @@ export const reportHtml = (args: {
 </div>`;
 
 /**
- * Immediate alert when a sync inserts new offboarding-leak findings —
+ * Immediate alert when a sync inserts new offboarding-leak findings:
  * seats that keep billing after the user was disabled or removed.
  */
 export const leakAlertHtml = (args: {
@@ -239,10 +239,10 @@ export const leakAlertHtml = (args: {
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   ${emailWordmark(args.appUrl)}
-  <h1 style="font-size:22px;font-weight:normal">New offboarding leaks — ${escapeHtml(args.tenantName)}</h1>
+  <h1 style="font-size:22px;font-weight:normal">New offboarding leaks: ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d;line-height:1.5">
     The last sync found ${args.leakCount} seat${args.leakCount === 1 ? "" : "s"} still paid for
-    after the user was disabled or removed —
+    after the user was disabled or removed:
     <strong style="color:#a8330d">${escapeHtml(args.totalImpact)}/mo</strong> until reclaimed.
   </p>
   <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">

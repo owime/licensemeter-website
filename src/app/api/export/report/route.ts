@@ -6,7 +6,7 @@ import { renderWasteReportPdf } from "~/server/report/renderReport";
 
 export const maxDuration = 60;
 
-/** Branded PDF waste report — the artifact finance forwards upward. */
+/** Branded PDF waste report: the artifact finance forwards upward. */
 export const GET = async () => {
   const ctx = await apiAccess("viewer");
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

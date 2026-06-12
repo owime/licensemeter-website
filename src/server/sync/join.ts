@@ -120,7 +120,7 @@ export const joinSignals = (args: {
   });
 
   // Per-user inactivity detection works when sign-ins (P1) or joinable
-  // reports exist. No sign-ins AND no usage rows (report unavailable — e.g.
+  // reports exist. No sign-ins AND no usage rows (report unavailable, e.g.
   // a delegated scan without a reports-capable role) means no signal at all:
   // "full" here would flag every user as never active.
   const activitySignal: JoinResult["activitySignal"] =

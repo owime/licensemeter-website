@@ -42,7 +42,7 @@ const chunk = <T>(arr: T[], size: number): T[][] => {
   return out;
 };
 
-/** Most common UPN domain — the default workspace name. */
+/** Most common UPN domain, the default workspace name. */
 const dominantDomain = (upns: string[]): string | null => {
   const counts = new Map<string, number>();
   for (const upn of upns) {
@@ -93,7 +93,7 @@ export const submitCsvTrial = async (
   // Keyed by tenant, not IP: one organization gets 10 uploads per hour no
   // matter how many colleagues try.
   if (!rateLimit(`csvtrial:${tid}`, 10, 60 * 60 * 1000)) {
-    return fail("Too many uploads for your organization — please try again later.");
+    return fail("Too many uploads for your organization. Please try again later.");
   }
 
   const directoryParsed = parseDirectoryExport(await directoryFile.text());
@@ -110,7 +110,7 @@ export const submitCsvTrial = async (
     usageRows = usageParsed.rows;
     if (detectConcealment(directoryRows, usageRows)) {
       return fail(
-        "The usage report does not join to your users — report identities are " +
+        "The usage report does not join to your users: report identities are " +
           "concealed. In the Microsoft 365 admin center, turn off Reports > " +
           "Settings > display concealed names, re-export, and upload again " +
           "(or leave the usage file out).",
@@ -150,24 +150,24 @@ export const submitCsvTrial = async (
     if (existing.consentedAt) {
       return fail(
         membership
-          ? "Your organization already has a connected workspace — open it from the workspace switcher."
-          : "Your organization already has a connected workspace — ask an admin there for an invite.",
+          ? "Your organization already has a connected workspace. Open it from the workspace switcher."
+          : "Your organization already has a connected workspace. Ask an admin there for an invite.",
       );
     }
     if (!membership) {
       return fail(
-        "A trial workspace for your organization already exists — ask the colleague who created it for an invite.",
+        "A trial workspace for your organization already exists. Ask the colleague who created it for an invite.",
       );
     }
     tenantId = existing.id;
     // Replace the previous upload: in a trial workspace every stored user and
-    // SKU row came from CSV, so clearing both tables (price book untouched —
+    // SKU row came from CSV, so clearing both tables (price book untouched,
     // edited prices survive) and repopulating is exact.
     await db.delete(tenantUsers).where(eq(tenantUsers.tenantId, tenantId));
     await db.delete(tenantSkus).where(eq(tenantSkus.tenantId, tenantId));
   } else {
     // onConflictDoNothing: two colleagues uploading at the same moment race
-    // on the tid unique index — the loser gets a message, not a 500.
+    // on the tid unique index: the loser gets a message, not a 500.
     const [inserted] = await db
       .insert(tenants)
       .values({
@@ -183,7 +183,7 @@ export const submitCsvTrial = async (
       .returning({ id: tenants.id });
     if (!inserted) {
       return fail(
-        "Someone in your organization created this workspace just now — ask them for an invite.",
+        "Someone in your organization created this workspace just now. Ask them for an invite.",
       );
     }
     tenantId = inserted.id;
@@ -334,7 +334,7 @@ export const submitCsvTrial = async (
   }
 
   // Refresh the signal columns on every upload (a usage file may be added or
-  // dropped between uploads) — runAnalysis reads them from the tenant row.
+  // dropped between uploads). runAnalysis reads them from the tenant row.
   await db
     .update(tenants)
     .set({

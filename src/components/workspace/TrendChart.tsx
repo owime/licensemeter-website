@@ -32,7 +32,7 @@ const buildPath = (
     .join(" ");
 
 /**
- * Spend vs waste over the collected daily snapshots. Server-rendered SVG —
+ * Spend vs waste over the collected daily snapshots. Server-rendered SVG:
  * the ledger aesthetic wants a precise line, not an animated chart library.
  */
 export const TrendChart = ({
@@ -54,7 +54,7 @@ export const TrendChart = ({
     <section className="rise rise-3 mt-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-          Trend — {points.length} days
+          Trend ({points.length} days)
         </h2>
         <span className="text-xs text-ink-soft">
           Waste {fmtMoney(first.wasteCents, currency)} →{" "}
@@ -86,7 +86,7 @@ export const TrendChart = ({
           />
           <path d={spendPath} fill="none" stroke="var(--color-ink-soft)" strokeWidth="1.5" />
           <path d={wastePath} fill="none" stroke="var(--color-rust)" strokeWidth="1.5" />
-          {/* In-chart labels scale with the viewBox — below sm they would render
+          {/* In-chart labels scale with the viewBox. Below sm they would render
               unreadably small, so the legend line carries the range instead. */}
           <text
             x={PAD.left}

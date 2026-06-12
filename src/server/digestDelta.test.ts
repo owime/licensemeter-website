@@ -88,7 +88,7 @@ describe("computeDigestDelta", () => {
   it("does not count a reopened finding with a stale resolvedAt as resolved", () => {
     const delta = computeDigestDelta(
       [
-        // Auto-resolved by a sync, then manually reopened in the UI — the
+        // Auto-resolved by a sync, then manually reopened in the UI: the
         // status actions do not clear resolvedAt.
         row({
           status: "open",

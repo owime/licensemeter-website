@@ -23,22 +23,22 @@ export const EmailCapture = () => {
           if (result.ok) {
             setState("done");
             setMessage(
-              "Sent — the guide and the security one-pager are on their way to your inbox.",
+              "Sent. The guide and the security one-pager are on their way to your inbox.",
             );
-            // The fields hide on success — park focus on the confirmation
+            // The fields hide on success: park focus on the confirmation
             // before the commit so it is never dropped to <body>.
             statusRef.current?.focus();
           } else {
             setState("error");
             setMessage(
-              result.error ?? "Something went wrong — please try again.",
+              result.error ?? "Something went wrong. Please try again.",
             );
             inputRef.current?.focus();
           }
         });
       }}
     >
-      {/* Honeypot — hidden from humans, irresistible to bots. */}
+      {/* Honeypot: hidden from humans, irresistible to bots. */}
       <input
         type="text"
         name="website"

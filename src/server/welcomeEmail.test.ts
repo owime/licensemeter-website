@@ -32,7 +32,7 @@ describe("welcomeSubject", () => {
   it("personalizes business domains and stays neutral for freemail", () => {
     expect(welcomeSubject("anna@contoso.com")).toContain("for contoso.com");
     expect(welcomeSubject("a@gmail.com")).toBe(
-      "Your first waste scan — plus the one-pager for your Global Admin",
+      "Your first waste scan, plus the one-pager for your Global Admin",
     );
   });
 });
@@ -89,7 +89,7 @@ describe("welcomeHtml", () => {
     expect(html).toContain("instant scan");
     expect(html).toContain("runs with your own permissions");
     // The scan sentence links the connect chooser, never /api/scan/start
-    // directly — a scan must start from a signed-in browser session.
+    // directly: a scan must start from a signed-in browser session.
     expect(html).not.toContain("/api/scan/start");
     const connectLinks = html.match(
       /href="https:\/\/www\.licensemeter\.com\/app\/connect\?utm_source=welcome_email/g,

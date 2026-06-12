@@ -6,7 +6,7 @@ import { CONNECTOR_SCOPES } from "~/lib/scopes";
  * The automated welcome email for landing-page signups. Designed to be
  * forwarded: the middle section is the security one-pager a Global Admin
  * needs to approve the read-only consent, with the scope table rendered
- * from the same CONNECTOR_SCOPES constant as the connect page — the email
+ * from the same CONNECTOR_SCOPES constant as the connect page, so the email
  * can never promise different permissions than the consent screen shows.
  * Pure module (no env, no db) so the content stays unit-testable.
  */
@@ -53,8 +53,8 @@ export const welcomeDomain = (email: string): string | null => {
 export const welcomeSubject = (email: string): string => {
   const domain = welcomeDomain(email);
   return domain
-    ? `Your first waste scan for ${domain} — plus the one-pager for your Global Admin`
-    : "Your first waste scan — plus the one-pager for your Global Admin";
+    ? `Your first waste scan for ${domain}, plus the one-pager for your Global Admin`
+    : "Your first waste scan, plus the one-pager for your Global Admin";
 };
 
 const sans = "font-family:Arial,sans-serif";
@@ -87,14 +87,14 @@ export const welcomeHtml = (args: {
 
   return `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
-  <span style="display:none;max-height:0;overflow:hidden">Fifteen minutes to your number — and everything IT security will ask, ready to forward.</span>
+  <span style="display:none;max-height:0;overflow:hidden">Fifteen minutes to your number, and everything IT security will ask, ready to forward.</span>
   ${emailWordmark(args.baseUrl)}
 
   <h1 style="font-size:24px;font-weight:normal;margin:0 0 12px">
     Your first waste scan${domain ? ` for ${escapeHtml(domain)}` : ""}
   </h1>
   <p style="${sans};font-size:14px;color:#6b665d;line-height:1.55;margin:0 0 20px">
-    You left your email on licensemeter.com — here is everything you need to
+    You left your email on licensemeter.com. Here is everything you need to
     see what ${domain ? escapeHtml(domain) : "your tenant"} pays every month
     for seats nobody uses, including the security one-pager your Global Admin
     will ask for. It is further down, written so you can forward this email
@@ -102,32 +102,32 @@ export const welcomeHtml = (args: {
   </p>
 
   <table style="width:100%;border-collapse:collapse;margin:0 0 24px">
-    ${step("01", "Sign in with Microsoft — any work account, no setup and nothing installed.")}
-    ${step("02", `Your Global Administrator — or Privileged Role Administrator — approves <strong>read-only</strong> access once. Not the admin yourself? Forward this email; the one-pager below answers what they will ask.`)}
-    ${step("03", "The first sync takes about two minutes. You get every unused, leaked or forgotten seat priced in euros per month — and PowerShell scripts to reclaim them.")}
+    ${step("01", "Sign in with Microsoft: any work account, no setup and nothing installed.")}
+    ${step("02", `Your Global Administrator (or Privileged Role Administrator) approves <strong>read-only</strong> access once. Not the admin yourself? Forward this email; the one-pager below answers what they will ask.`)}
+    ${step("03", "The first sync takes about two minutes. You get every unused, leaked or forgotten seat priced in euros per month, plus PowerShell scripts to reclaim them.")}
   </table>
 
   <p style="margin:0 0 10px">
     <a href="${escapeHtml(connectUrl)}"
        style="${sans};font-size:14px;background:#1c1a16;color:#faf8f3;padding:12px 20px;text-decoration:none">
-      Connect your tenant — read-only
+      Connect your tenant (read-only)
     </a>
   </p>
   <p style="${sans};font-size:13px;color:#6b665d;line-height:1.55;margin:0 0 32px">
     Want to poke around first? The
     <a href="${escapeHtml(homeUrl)}" style="color:#1c1a16">live demo</a> is a
-    155-person tenant wasting ${demoWaste} a month — one click, no account.
+    155-person tenant wasting ${demoWaste} a month. One click, no account.
     No admin with consent rights at hand? Start with the
-    <a href="${escapeHtml(csvTrialUrl)}" style="color:#1c1a16">CSV trial</a> —
+    <a href="${escapeHtml(csvTrialUrl)}" style="color:#1c1a16">CSV trial</a>:
     your number from two admin-center exports, no consent at all.
     An Application Administrator? The
     <a href="${escapeHtml(connectUrl)}" style="color:#1c1a16">instant scan</a>
-    runs with your own permissions — one click after sign-in.
+    runs with your own permissions, one click after sign-in.
   </p>
 
   <div style="border:1px solid #d2ccbb;background:#faf8f3;padding:20px 22px;margin:0 0 28px">
     <p style="${sans};font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a8330d;margin:0 0 8px">
-      For your Global Admin — the one-pager
+      For your Global Admin: the one-pager
     </p>
     <p style="${sans};font-size:13px;color:#6b665d;line-height:1.55;margin:0 0 14px">
       LicenseMeter requests exactly these Microsoft Graph application
@@ -144,13 +144,13 @@ export const welcomeHtml = (args: {
     </table>
     <table style="width:100%;border-collapse:collapse">
       ${fact("No write access, ever.", "Remediation ships as PowerShell scripts your admins review and run themselves.")}
-      ${fact("Never content.", "License assignments, sign-in activity and usage metadata only — no mailboxes, no files, no messages.")}
+      ${fact("Never content.", "License assignments, sign-in activity and usage metadata only. No mailboxes, no files, no messages.")}
       ${fact("EU data residency.", "Hosted in Frankfurt; disconnecting deletes all synced data immediately.")}
     </table>
     <p style="${sans};font-size:13px;color:#6b665d;line-height:1.55;margin:14px 0 0">
       Microsoft requires a Global Administrator or Privileged Role
       Administrator for these application permissions; larger organizations
-      can delegate consent for exactly these five permissions — the security
+      can delegate consent for exactly these five permissions. The security
       overview shows how.
     </p>
     <p style="${sans};font-size:13px;margin:14px 0 0">
@@ -160,16 +160,16 @@ export const welcomeHtml = (args: {
   </div>
 
   <p style="${sans};font-size:14px;color:#1c1a16;line-height:1.55;margin:0 0 4px">
-    I read every reply — questions about scopes, pricing or your setup land
+    I read every reply. Questions about scopes, pricing or your setup land
     directly with me.
   </p>
   <p style="${sans};font-size:13px;color:#6b665d;margin:0 0 32px">
-    — Ugur Koc · Microsoft MVP for Intune and Security Copilot
+    Ugur Koc · Microsoft MVP for Intune and Security Copilot
   </p>
 
   <p style="${sans};font-size:11px;color:#a39d8f;line-height:1.6;border-top:1px solid #e7e2d6;padding-top:14px;margin:0">
     You get this one email because ${escapeHtml(args.email)} was entered on
-    licensemeter.com. One more note follows at general availability —
+    licensemeter.com. One more note follows at general availability,
     or <a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#a39d8f">unsubscribe</a>
     any time. LicenseMeter · EU-hosted in Frankfurt.
   </p>

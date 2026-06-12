@@ -38,7 +38,7 @@ export const mapAnthropicUsers = (users: AnthropicApiUser[]): SaasSeat[] =>
  * The cost report buckets by day and groups by description, with amounts as
  * decimal strings already in cents. Several token types share a description,
  * so cent floats accumulate per (day, category) and are rounded once at the
- * end — rounding each result separately drifts.
+ * end, because rounding each result separately drifts.
  */
 export const mapAnthropicCostBuckets = (
   buckets: AnthropicCostBucket[],

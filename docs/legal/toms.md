@@ -1,4 +1,4 @@
-# Technische und organisatorische Maßnahmen (TOMs) — ENTWURF
+# Technische und organisatorische Maßnahmen (TOMs) (ENTWURF)
 
 > Anlage 1 zum AVV. Stand: Juni 2026. Jede Angabe entspricht der tatsächlichen
 > Implementierung; bei Änderungen aktualisieren.
@@ -35,7 +35,7 @@
 ## 4. Eingabekontrolle / Protokollierung
 
 - Aktivitätsprotokoll je Workspace (Exporte, Preisänderungen,
-  Mitgliederverwaltung, Synchronisationen) — einsehbar für Admins,
+  Mitgliederverwaltung, Synchronisationen), einsehbar für Admins,
   kaskadenweise gelöscht mit dem Workspace
 - Synchronisationsläufe mit Schrittprotokoll; operative Alarme bei
   Fehlschlägen (Webhook)

@@ -142,7 +142,7 @@ const syncAiSpend = async (
  * waste analysis, diff findings, and record a per-step run log. Non-critical
  * steps degrade to warnings; the sync continues with what it has.
  *
- * An injected client overrides the default selection — the delegated instant
+ * An injected client overrides the default selection: the delegated instant
  * scan passes a DelegatedGraphClient bound to the admin's one-shot token.
  */
 export const runSync = async (
@@ -160,7 +160,7 @@ export const runSync = async (
 
   // Fail runs stuck in "running" (crashed process) so the lock cannot
   // deadlock. Six minutes: every sync path runs under maxDuration 300s, so a
-  // running row older than that is dead — and the instant-scan poller should
+  // running row older than that is dead, and the instant-scan poller should
   // not show "syncing" for longer than this after a hard kill.
   await db
     .update(syncRuns)
@@ -278,7 +278,7 @@ export const runSync = async (
       });
     }
 
-    // --- Adobe (beta): entitlements for offboarding-leak detection ---------
+    // --- Adobe: entitlements for offboarding-leak detection ----------------
     let adobeRows: AdobeUser[] = [];
     let adobeActive = false;
     const adobeConn = await db.query.adobeConnections.findFirst({
@@ -326,7 +326,7 @@ export const runSync = async (
       }
     }
 
-    // --- SaaS connectors (beta): Zoom, Atlassian, Salesforce, OpenAI,
+    // --- SaaS connectors: Zoom, Atlassian, Salesforce, OpenAI,
     // Anthropic (the AI pair also syncs daily API spend) -------------------
     // Seats per provider that produced data this run. On a transient fetch
     // failure the stored snapshot is analyzed instead, so findings survive a
@@ -835,7 +835,7 @@ export const runSync = async (
 };
 
 /**
- * Re-runs the waste analysis from data already in the database — used after
+ * Re-runs the waste analysis from data already in the database, used after
  * price book edits so impact figures update without a Graph round trip.
  * Falls back gracefully when the tenant has never synced.
  */
@@ -888,7 +888,7 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
     now,
     // Prefer the signal recorded by the last sync; the boolean derivation is
     // only a fallback for tenants synced before the column existed. Unknown
-    // concealment (null) is treated as concealed — conservative, no false
+    // concealment (null) is treated as concealed: conservative, no false
     // per-user inactivity findings.
     activitySignal:
       tenant.activitySignal ??
@@ -989,7 +989,7 @@ export type InsertedFinding = {
  * Reconciles the new analysis with stored findings:
  * new keys are inserted as open, reappearing resolved findings reopen,
  * acknowledged findings stay acknowledged, vanished findings auto-resolve.
- * Returns the rows it inserted — first appearances only, which gives leak
+ * Returns the rows it inserted, first appearances only, which gives leak
  * alerts natural dedup across syncs (later syncs merely bump lastSeenAt).
  */
 const diffFindings = async (
@@ -1059,7 +1059,7 @@ const diffFindings = async (
 };
 
 /**
- * Immediate email when a sync inserts new offboarding-leak findings — the
+ * Immediate email when a sync inserts new offboarding-leak findings, the
  * finding class that recurs forever, so it should not wait for the digest.
  * Fully isolated: any failure goes to ops and never affects the sync result.
  */

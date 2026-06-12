@@ -191,7 +191,7 @@ export default async function UserDetailPage({
               <span className="tnum shrink-0 font-mono text-sm font-medium text-rust-text">
                 {f.monthlyImpactCents > 0
                   ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                  : "—"}
+                  : "-"}
               </span>
             </li>
           ))}

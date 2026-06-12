@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
  * OAuth-cookie payload guard: the kind marker that branches the delegated
  * instant scan off the shared callback must be backward compatible (legacy
  * sign-in payloads carry no kind) and strict (only the exact literal "scan"
- * counts — anything else reads as a plain sign-in).
+ * counts, anything else reads as a plain sign-in).
  */
 
 // session.ts pulls ~/env at import; provide the only required test-env var

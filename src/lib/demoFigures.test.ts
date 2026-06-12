@@ -29,7 +29,7 @@ const INACTIVE_DAYS = 90;
 /**
  * Recomputes the demo tenant analysis exactly as runSync does for demo
  * workspaces: fixture clients, default price book, joined signals, all three
- * analyzers. No database involved — every input is deterministic.
+ * analyzers. No database involved: every input is deterministic.
  */
 const recompute = async () => {
   const client = new DemoGraphClient();

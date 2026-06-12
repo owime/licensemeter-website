@@ -10,7 +10,7 @@ import { runSync } from "~/server/sync/runSync";
  * Delegated instant scan: a signed-in admin runs the regular sync pipeline
  * once with their OWN delegated Graph token instead of the connector's
  * standing application permissions. The workspace it produces is a trial
- * workspace (tenants.consentedAt stays null) exactly like the CSV trial —
+ * workspace (tenants.consentedAt stays null) exactly like the CSV trial:
  * when the tenant later completes real admin consent, the first app-only
  * sync's upsert-and-prune storage replaces the scan data automatically.
  */
@@ -65,7 +65,7 @@ export const resolveScanTenant = async (
   }
 
   // onConflictDoNothing: two colleagues scanning at the same moment race on
-  // the tid unique index — the loser gets a message, not a 500.
+  // the tid unique index: the loser gets a message, not a 500.
   const [inserted] = await db
     .insert(tenants)
     .values({
@@ -102,7 +102,7 @@ export const resolveScanTenant = async (
 /**
  * Runs the one-shot scan: the full sync pipeline (steps, syncRuns rows,
  * snapshot, findings diff) over a DelegatedGraphClient bound to the user's
- * access token. The token lives only in this call's memory — nothing is
+ * access token. The token lives only in this call's memory. Nothing is
  * persisted, so there is no re-run without the admin coming back.
  */
 export const runDelegatedScan = async (

@@ -10,7 +10,7 @@ export const saasPriceKey = (provider: SaasProvider, product: string): string =>
 /**
  * The same offboarding-leak correlation as the Adobe connector, plus an
  * inactivity rule where the provider exposes a last-login signal. A null
- * lastActiveAt produces no finding — absence of data is not evidence of
+ * lastActiveAt produces no finding: absence of data is not evidence of
  * waste (same conservatism as the Graph-side rules).
  */
 export const analyzeSaasWaste = (

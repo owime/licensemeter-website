@@ -102,13 +102,13 @@ export default async function OverviewPage() {
               ? "Sync running…"
               : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
-              <span className="ml-2 text-rust-text">— last sync failed</span>
+              <span className="ml-2 text-rust-text">(last sync failed)</span>
             )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
-          {/* Trial workspaces (consentedAt null) have no Graph access — a
+          {/* Trial workspaces (consentedAt null) have no Graph access: a
               manual sync could only fail. Demo tenants have consentedAt set. */}
           {hasRole(ctx, "admin") && ctx.tenant.consentedAt && <SyncNowButton />}
         </div>
@@ -141,7 +141,7 @@ export default async function OverviewPage() {
 
       {renewalDays !== null && renewalDays < 0 && (
         <p className="rise rise-2 mt-8 text-sm text-ink-faint">
-          Renewal date passed —{" "}
+          Renewal date passed:{" "}
           <Link
             href="/app/settings"
             className="underline underline-offset-4 hover:text-ink"
@@ -330,7 +330,7 @@ export default async function OverviewPage() {
               {sortedSkus.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-ink-soft">
-                    No license data yet — run a sync.
+                    No license data yet. Run a sync.
                   </td>
                 </tr>
               )}
@@ -379,7 +379,7 @@ export default async function OverviewPage() {
           })}
           {sortedSkus.length === 0 && (
             <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
-              No license data yet — run a sync.
+              No license data yet. Run a sync.
             </li>
           )}
         </ul>
@@ -410,7 +410,7 @@ export default async function OverviewPage() {
               <span className="tnum shrink-0 font-mono text-sm font-medium text-rust-text">
                 {f.monthlyImpactCents > 0
                   ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                  : "—"}
+                  : "-"}
               </span>
             </li>
           ))}

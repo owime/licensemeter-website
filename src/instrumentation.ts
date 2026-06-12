@@ -2,7 +2,7 @@
  * Next.js server-error hook: every unhandled error in route handlers, server
  * components and server actions lands here. Reports to the ops webhook when
  * configured (Sentry-class basics without another vendor); always logs.
- * Uses raw process.env — instrumentation runs before env validation.
+ * Uses raw process.env: instrumentation runs before env validation.
  */
 export function register(): void {
   // No startup instrumentation needed yet.

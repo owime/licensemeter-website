@@ -70,7 +70,7 @@ export const ConnectPoller = () => {
             aria-hidden="true"
             className="inline-block size-2 rounded-full bg-rust motion-safe:animate-pulse"
           />
-          Running the first sync — pulling licenses, users and usage reports…
+          Running the first sync: pulling licenses, users and usage reports…
         </div>
       )}
     </div>

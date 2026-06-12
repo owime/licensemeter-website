@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "Can LicenseMeter change anything in our tenant?",
-    a: "No. The connector app holds exclusively read-only application permissions — there is no write scope to misuse. Remediation happens through PowerShell scripts we generate for your admins to review and run themselves.",
+    a: "No. The connector app holds exclusively read-only application permissions. There is no write scope to misuse. Remediation happens through PowerShell scripts we generate for your admins to review and run themselves.",
   },
   {
     q: "Can you read our email, files or Teams messages?",
-    a: "No. The granted scopes cannot access mailbox content, files or messages. Usage reports are consumed as last-activity dates and counts — metadata, never content.",
+    a: "No. The granted scopes cannot access mailbox content, files or messages. Usage reports are consumed as last-activity dates and counts: metadata, never content.",
   },
   {
     q: "Where is our data stored, and for how long?",
@@ -24,7 +24,7 @@ const FAQS = [
   },
   {
     q: "How are the Adobe, Zoom, Atlassian, Salesforce, OpenAI and Anthropic credentials stored?",
-    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments, member lists and daily cost totals — never content or prompts. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
+    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments, member lists and daily cost totals, never content or prompts. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
   },
   {
     q: "Who in our company can see the data?",
@@ -44,7 +44,7 @@ const FAQS = [
   },
   {
     q: "Does connecting really require a Global Administrator?",
-    a: "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator — an Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions — no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's five read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.",
+    a: "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's five read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.",
   },
   {
     q: "Do you offer a DPA (AVV)?",
@@ -52,11 +52,11 @@ const FAQS = [
   },
   {
     q: "What exactly do you charge for?",
-    a: "The first scan is free — you see your waste number before paying anything. The subscription covers continuous monitoring: nightly syncs, new findings as people join and leave, exports and remediation scripts.",
+    a: "The first scan is free. You see your waste number before paying anything. The subscription covers continuous monitoring: nightly syncs, new findings as people join and leave, exports and remediation scripts.",
   },
   {
-    q: "We are an MSP — can we manage several client tenants?",
-    a: "Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you — no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. See the MSP page for details.",
+    q: "We are an MSP. Can we manage several client tenants?",
+    a: "Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. See the MSP page for details.",
   },
 ] as const;
 

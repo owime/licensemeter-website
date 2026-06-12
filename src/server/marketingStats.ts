@@ -4,7 +4,7 @@ import { db } from "~/server/db";
 import { snapshots, tenants } from "~/server/db/schema";
 
 export type ScanStats = {
-  /** Consented, non-demo tenants — what "connected" means in the copy. */
+  /** Consented, non-demo tenants: what "connected" means in the copy. */
   tenants: number;
   /** Mean latest-snapshot waste share across those tenants, in percent (one decimal). */
   avgWastePct: number;
@@ -13,7 +13,7 @@ export type ScanStats = {
 /**
  * Truthful social-proof aggregate for the static landing page, read once per
  * build/ISR revalidation. Returns null until the figures are worth quoting
- * (at least 5 consenting tenants and a sane average) — and on ANY failure,
+ * (at least 5 consenting tenants and a sane average), and on ANY failure,
  * because a database hiccup at build time must never break the build. The
  * caller renders nothing for null.
  */
@@ -27,8 +27,8 @@ export const getScanStats = async (): Promise<ScanStats | null> => {
         .select({ n: sql<number>`count(*)::int` })
         .from(tenants)
         .where(consented()),
-      // Latest snapshot per tenant: DISTINCT ON over (tenant, day desc) —
-      // both production Postgres and the PGlite dev fallback support it.
+      // Latest snapshot per tenant: DISTINCT ON over (tenant, day desc).
+      // Both production Postgres and the PGlite dev fallback support it.
       db
         .selectDistinctOn([snapshots.tenantId], {
           spendCents: snapshots.totalMonthlySpendCents,

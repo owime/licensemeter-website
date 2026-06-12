@@ -35,8 +35,8 @@ export const mapOpenAiUsers = (users: OpenAiApiUser[]): SaasSeat[] =>
 /**
  * Costs arrive as daily buckets whose results report USD dollars per line
  * item. Several results can share a line item, so dollar floats accumulate
- * per (day, category) and are rounded to cents once at the end — rounding
- * each result separately drifts.
+ * per (day, category) and are rounded to cents once at the end, because
+ * rounding each result separately drifts.
  */
 export const mapOpenAiCostBuckets = (
   buckets: OpenAiCostBucket[],

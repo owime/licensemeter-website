@@ -5,9 +5,9 @@ import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt =
-  "LicenseMeter — they left the company, their licenses didn't";
+  "LicenseMeter: they left the company, their licenses didn't";
 
-/* Brand mark (see src/components/BrandMark.tsx) as a data URI — satori
+/* Brand mark (see src/components/BrandMark.tsx) as a data URI: satori
  * renders raster/SVG images more reliably than inline SVG elements. */
 const MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g fill="#1c1a16"><rect x="6" y="6.5" width="4.5" height="19"/><rect x="13.75" y="6.5" width="4.5" height="19"/><rect x="21.5" y="6.5" width="4.5" height="19"/></g><line x1="3.5" y1="22.5" x2="28.5" y2="9.5" stroke="#bc3e12" stroke-width="4.5"/></svg>`;
 const MARK_SRC = `data:image/svg+xml,${encodeURIComponent(MARK_SVG)}`;
@@ -85,7 +85,7 @@ export default function OpenGraphImage() {
           }}
         >
           <span>
-            Waste ledger — € {demoEuros(DEMO_FIGURES.monthlyWasteCents)} / month
+            Waste ledger · € {demoEuros(DEMO_FIGURES.monthlyWasteCents)} / month
             recoverable
           </span>
           <span style={{ color: "#75705f" }}>licensemeter</span>

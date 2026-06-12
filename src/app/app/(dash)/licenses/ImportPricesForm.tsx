@@ -56,7 +56,7 @@ export const ImportPricesForm = () => {
     <form action={formAction} className="flex flex-col gap-3">
       <label htmlFor="price-import-csv" className="text-sm text-ink-soft">
         One product per line:{" "}
-        <span className="font-mono text-xs">key,monthly price</span> — the key
+        <span className="font-mono text-xs">key,monthly price</span>. The key
         is an M365 SKU id or part number, or a connector key like{" "}
         <span className="font-mono text-xs">adobe:Photoshop</span>. Prices
         accept 14.90 and 14,90; unknown keys are skipped.

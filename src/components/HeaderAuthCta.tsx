@@ -29,7 +29,7 @@ export const HeaderAuthCta = () => {
     return () => ctrl.abort();
   }, []);
 
-  /* Always visible — on mobile the nav links live in the burger drawer, so
+  /* Always visible: on mobile the nav links live in the burger drawer, so
      the action keeps its header slot. Labels shorten below sm to fit brand +
      CTA + burger on 360px viewports without wrapping. */
   return signedIn ? (

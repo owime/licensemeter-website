@@ -1,4 +1,4 @@
-# Auftragsverarbeitungsvertrag (AVV) — ENTWURF
+# Auftragsverarbeitungsvertrag (AVV) (ENTWURF)
 
 > Entwurf gemäß Art. 28 Abs. 3 DSGVO. Vor Verwendung anwaltlich prüfen lassen
 > und [Platzhalter] ausfüllen. Dieses Dokument wird Kunden auf Anfrage als PDF
@@ -6,9 +6,9 @@
 
 ## 1. Parteien
 
-Verantwortlicher (Kunde): [Firma, Anschrift — wird je Vertrag ergänzt]
+Verantwortlicher (Kunde): [Firma, Anschrift, wird je Vertrag ergänzt]
 
-Auftragsverarbeiter (Anbieter): [Vor- und Nachname], [Anschrift], Deutschland —
+Auftragsverarbeiter (Anbieter): [Vor- und Nachname], [Anschrift], Deutschland,
 nachfolgend "LicenseMeter".
 
 ## 2. Gegenstand und Dauer
@@ -25,7 +25,7 @@ Verarbeitung endet mit dem Trennen des Workspace durch den Kunden.
 Nächtliche, lesende Synchronisation über die vom Kunden per Admin Consent
 autorisierten Microsoft-Graph-Berechtigungen (User.Read.All,
 AuditLog.Read.All, Reports.Read.All, LicenseAssignment.Read.All,
-ReportSettings.Read.All — sämtlich lesend) bzw. die Adobe User Management API;
+ReportSettings.Read.All, sämtlich lesend) bzw. die Adobe User Management API;
 Speicherung der Ergebnisse; Berechnung von Einsparpotenzialen; Anzeige für vom
 Kunden eingeladene Nutzer; Exporte (CSV, PowerShell-Skripte).
 
@@ -69,14 +69,14 @@ unverzügliche Löschung bei Trennung.
 
 Anlage 2: Vercel Inc. (Hosting, EU-Funktionsregion Frankfurt), Supabase Inc.
 (PostgreSQL-Datenbank, AWS eu-central-1 Frankfurt), Microsoft (Identity
-Platform und Graph API), [Resend Inc. (E-Mail-Versand) — nur falls aktiviert].
+Platform und Graph API), [Resend Inc. (E-Mail-Versand), nur falls aktiviert].
 Änderungen werden dem Kunden vorab mit Widerspruchsmöglichkeit (14 Tage)
 mitgeteilt.
 
 ## 10. Betroffenenrechte und Unterstützung
 
 Der Anbieter unterstützt den Kunden bei der Erfüllung von Betroffenenrechten
-(Art. 12–23 DSGVO). Anfragen Betroffener leitet der Anbieter unverzüglich an
+(Art. 12 bis 23 DSGVO). Anfragen Betroffener leitet der Anbieter unverzüglich an
 den Kunden weiter.
 
 ## 11. Meldung von Verletzungen

@@ -2,7 +2,7 @@ import type { SaasProvider } from "~/server/types";
 
 /**
  * Client-safe connector descriptions: labels, credential field specs and
- * page copy. No server imports — this file is shared by client components,
+ * page copy. No server imports: this file is shared by client components,
  * server pages and the sidebar nav. The server-side counterpart (clients,
  * demo fixtures) lives in src/server/saas/registry.ts.
  */
@@ -20,7 +20,7 @@ export const CONNECTOR_LABELS: Record<SaasProvider, string> = {
 export type ConnectorField = {
   name: "orgRef" | "clientId" | "secret";
   label: string;
-  /** Format example shown in the empty input — a value shape, never an instruction. */
+  /** Format example shown in the empty input: a value shape, never an instruction. */
   placeholder: string;
   secret?: boolean;
   /** Mobile keyboard hint; inputs stay type="text"/"password" so pasting is never rejected. */
@@ -32,7 +32,7 @@ export type ConnectorSpec = {
   label: string;
   /** "api" connectors authenticate with stored credentials; "import" connectors take a pasted member CSV. */
   kind: "api" | "import";
-  /** Set when the provider's seats carry no per-seat price — no price-book section is rendered. */
+  /** Set when the provider's seats carry no per-seat price; no price-book section is rendered. */
   unpriced?: true;
   /** What the seats are called in product copy. */
   seatNoun: string;
@@ -63,7 +63,7 @@ export const CONNECTORS: ConnectorSpec[] = [
     detects: [
       "Licensed Zoom seats held by accounts that are disabled in Entra ID.",
       "Licensed seats with no matching directory account at all.",
-      "Licensed seats nobody has signed into for your inactivity threshold — common where Teams took over.",
+      "Licensed seats nobody has signed into for your inactivity threshold, common where Teams took over.",
     ],
     hasActivity: true,
     connectCta: "Connect Zoom",
@@ -78,7 +78,7 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "API key", placeholder: "ATCTT3xFfGN0…", secret: true },
     ],
     setupHint:
-      "An organization admin creates an API key under admin.atlassian.com > Settings > API keys and pastes the organization ID plus the key here. Stored encrypted, used read-only — managed users and product access only, nothing from inside Jira or Confluence.",
+      "An organization admin creates an API key under admin.atlassian.com > Settings > API keys and pastes the organization ID plus the key here. Stored encrypted, used read-only: managed users and product access only, nothing from inside Jira or Confluence.",
     detects: [
       "Jira and Confluence seats held by accounts that are disabled in Entra ID.",
       "Seats with no matching directory account at all.",
@@ -105,7 +105,7 @@ export const CONNECTORS: ConnectorSpec[] = [
     setupHint:
       "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and a read-only integration user as the run-as user, then pastes the My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",
     detects: [
-      "Salesforce licenses held by accounts that are disabled in Entra ID — at Salesforce prices, usually the single most expensive leak.",
+      "Salesforce licenses held by accounts that are disabled in Entra ID. At Salesforce prices, usually the single most expensive leak.",
       "Licenses with no matching directory account at all.",
       "Licenses nobody has logged into for your inactivity threshold.",
     ],
@@ -122,9 +122,9 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "Admin API key", placeholder: "sk-admin-…", secret: true },
     ],
     setupHint:
-      "An organization Owner creates an Admin API key under platform.openai.com > Settings > Organization > Admin keys and pastes it here. Stored encrypted, used read-only — member list and daily cost totals only, never request content.",
+      "An organization Owner creates an Admin API key under platform.openai.com > Settings > Organization > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",
     detects: [
-      "Console members whose Entra ID account is disabled — departed people who may still hold live API keys.",
+      "Console members whose Entra ID account is disabled: departed people who may still hold live API keys.",
       "Console members with no matching directory account at all.",
       "Daily API spend by line item, backfilled on first sync and tracked on the AI costs page.",
     ],
@@ -141,9 +141,9 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "Admin API key", placeholder: "sk-ant-admin…", secret: true },
     ],
     setupHint:
-      "An organization admin creates an Admin API key in the Claude Console under Settings > Admin keys and pastes it here. Stored encrypted, used read-only — member list and daily cost totals only, never request content.",
+      "An organization admin creates an Admin API key in the Claude Console under Settings > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",
     detects: [
-      "Console members whose Entra ID account is disabled — departed people who may still hold live API keys.",
+      "Console members whose Entra ID account is disabled: departed people who may still hold live API keys.",
       "Console members with no matching directory account at all.",
       "Daily API spend by model, backfilled on first sync and tracked on the AI costs page.",
     ],

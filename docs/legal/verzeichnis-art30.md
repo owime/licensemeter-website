@@ -1,4 +1,4 @@
-# Verzeichnis von Verarbeitungstätigkeiten (Art. 30 Abs. 2 DSGVO) — ENTWURF
+# Verzeichnis von Verarbeitungstätigkeiten (Art. 30 Abs. 2 DSGVO) (ENTWURF)
 
 > Internes Dokument des Auftragsverarbeiters. [Platzhalter] ausfüllen.
 
@@ -25,10 +25,10 @@ Kein Datenschutzbeauftragter bestellt [Schwellenwerte prüfen].
 
 ## Verarbeitung 2: Eigene Verarbeitung als Verantwortlicher
 
-- Workspace-Mitglieder (Name, E-Mail, Entra-IDs, Rollen) — Vertragserfüllung,
+- Workspace-Mitglieder (Name, E-Mail, Entra-IDs, Rollen): Vertragserfüllung,
   Löschung mit Workspace
-- E-Mail-Interessenten der Landing-Page (E-Mail, Zeitpunkt) — Zusendung
+- E-Mail-Interessenten der Landing-Page (E-Mail, Zeitpunkt): Zusendung
   angeforderter Unterlagen, Löschung auf Anfrage
-- Aktivitätsprotokolle je Workspace — Nachvollziehbarkeit, Löschung mit
+- Aktivitätsprotokolle je Workspace: Nachvollziehbarkeit, Löschung mit
   Workspace
-- Hosting-Logs (Vercel) — Betriebssicherheit, Fristen des Anbieters
+- Hosting-Logs (Vercel): Betriebssicherheit, Fristen des Anbieters

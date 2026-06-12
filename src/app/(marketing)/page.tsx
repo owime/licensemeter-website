@@ -4,7 +4,7 @@ import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
 import { RoiCalculator } from "~/components/RoiCalculator";
 import { SignInButtons } from "~/components/SignInButtons";
-import { Pill } from "~/components/ui";
+import { Pill, type PillTone } from "~/components/ui";
 import {
   DEMO_ANNUAL_WASTE_ROUNDED,
   DEMO_FIGURES,
@@ -14,81 +14,71 @@ import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 import { getScanStats } from "~/server/marketingStats";
 
-/** "12,4" — German decimal convention, matching the euro figures around it. */
+/** "12,4": German decimal convention, matching the euro figures around it. */
 const fmtPct = (n: number): string =>
   new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 }).format(n);
 
 /* Plain-text names by design: referencing compatibility is nominative use;
  * official logos would need each vendor's permission (see footer notice). */
-const CONNECTOR_STRIP = [
+const CONNECTOR_STRIP: Array<{
+  name: string;
+  href: string;
+  blurb: string;
+  tag?: string;
+  tone?: PillTone;
+}> = [
   {
     name: "Microsoft 365",
     tag: "Core",
-    tone: "moss" as const,
+    tone: "moss",
     href: "/security",
     blurb:
       "The full scan: licenses, sign-in activity and usage reports.",
   },
   {
     name: "Adobe",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/adobe",
     blurb: "Creative Cloud seats held by people who are disabled or gone.",
   },
   {
     name: "Zoom",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/zoom",
     blurb: "Licensed seats nobody has opened since Teams took over.",
   },
   {
     name: "Atlassian",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/atlassian",
     blurb: "Jira and Confluence seats that outlived their users.",
   },
   {
     name: "Salesforce",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/salesforce",
-    blurb: "CRM licenses — the most expensive seats to forget.",
+    blurb: "CRM licenses, the most expensive seats to forget.",
   },
   {
     name: "OpenAI",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/openai",
     blurb: "API spend by day, plus departed people still on the console.",
   },
   {
     name: "Anthropic",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/anthropic",
     blurb: "Claude API costs tracked daily, console access cross-checked.",
   },
   {
     name: "ChatGPT",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/chatgpt",
     blurb: "Enterprise seats matched against your directory via CSV import.",
   },
   {
     name: "Claude",
-    tag: "Beta",
-    tone: "gold" as const,
     href: "/connectors/claude",
     blurb: "Team and Enterprise seats that outlived their users.",
   },
 ];
 
 /* Ledger lines render from the tested demo figures and sum exactly to the
- * headline — the card is a preview of the live demo tenant, not a mockup. */
+ * headline: the card is a preview of the live demo tenant, not a mockup. */
 const LEDGER_LINES = [
   { label: "Left the company, still licensed", cents: DEMO_FIGURES.byCategory.leavers },
   { label: "App seats with no directory account", cents: DEMO_FIGURES.byCategory.orphaned },
@@ -114,7 +104,7 @@ const STEPS = [
   {
     n: "02",
     title: "Synced nightly",
-    body: "Directory, license assignments, sign-in activity and usage reports, joined into one waste analysis — and every connected app's seat list checked against who still works there.",
+    body: "Directory, license assignments, sign-in activity and usage reports, joined into one waste analysis. Every connected app's seat list is checked against who still works there.",
   },
   {
     n: "03",
@@ -123,7 +113,7 @@ const STEPS = [
   },
 ] as const;
 
-// Mirrors the tiers on /pricing — keep both in sync.
+// Mirrors the tiers on /pricing - keep both in sync.
 const PRICING_TEASER = [
   { name: "Starter", price: "79", seats: "up to 250 seats" },
   { name: "Growth", price: "199", seats: "up to 1.000 seats" },
@@ -201,7 +191,7 @@ export default async function LandingPage() {
         <div className="rise rise-3 self-center border border-line bg-card shadow-[0_1px_0_var(--color-line)]">
           <div className="flex items-baseline justify-between gap-3 border-b border-line px-6 py-4">
             <span className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-              Waste ledger — {month}
+              Waste ledger · {month}
             </span>
             <span className="font-mono text-xs whitespace-nowrap text-ink-faint">
               Demo tenant · {DEMO_FIGURES.users} users
@@ -274,7 +264,7 @@ export default async function LandingPage() {
                     <span className="text-sm font-medium underline-offset-4 group-hover:underline">
                       {c.name}
                     </span>
-                    <Pill tone={c.tone}>{c.tag}</Pill>
+                    {c.tag && c.tone ? <Pill tone={c.tone}>{c.tag}</Pill> : null}
                   </div>
                   <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
                     {c.blurb}
@@ -335,7 +325,7 @@ export default async function LandingPage() {
           What does your tenant leak?
         </h2>
         <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
-          Your assumptions, your math — the scan replaces guesses with your
+          Your assumptions, your math. The scan replaces guesses with your
           actual number.
         </p>
         <div className="mt-8">
@@ -353,7 +343,7 @@ export default async function LandingPage() {
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                 Leave your email and the security one-pager plus a
                 getting-started guide for your first scan land in your inbox
-                right away — and one note at general availability. Unsubscribe
+                right away, and one note at general availability. Unsubscribe
                 any time.
               </p>
             </div>
@@ -380,7 +370,7 @@ export default async function LandingPage() {
               >
                 open-source tools for Microsoft 365 admins
               </a>{" "}
-              — IntuneAssignmentChecker, IntuneBrew, DeviceOffboardingManager.
+              (IntuneAssignmentChecker, IntuneBrew, DeviceOffboardingManager).
               LicenseMeter asks for read-only access to your tenant, so you
               should know exactly who is behind it. I answer support myself.
             </p>
@@ -401,7 +391,7 @@ export default async function LandingPage() {
         <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
           {demoEnabled
             ? "Start on the live demo tenant, no account needed. When you are ready, run the same read-only scan on your own."
-            : "Connect read-only and see the monthly cost of every wasted seat — before you decide anything."}
+            : "Connect read-only and see the monthly cost of every wasted seat before you decide anything."}
         </p>
         <div className="mt-8">
           <SignInButtons

@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Portfolio" };
 
 /**
  * MSP/consultant view: every workspace this user can open, with the numbers
- * that matter for a QBR — seats, spend, waste, open findings, sync health.
+ * that matter for a QBR: seats, spend, waste, open findings, sync health.
  */
 export default async function PortfolioPage() {
   const ctx = await requireAccess("viewer");
@@ -109,17 +109,17 @@ export default async function PortfolioPage() {
                   </div>
                 </td>
                 <td className="tnum px-4 py-3 text-right font-mono">
-                  {snapshot ? fmtNumber(snapshot.assignedSeats, currency) : "—"}
+                  {snapshot ? fmtNumber(snapshot.assignedSeats, currency) : "-"}
                 </td>
                 <td className="tnum px-4 py-3 text-right font-mono">
                   {snapshot
                     ? fmtMoney(snapshot.totalMonthlySpendCents, currency)
-                    : "—"}
+                    : "-"}
                 </td>
                 <td className="tnum px-4 py-3 text-right font-mono font-medium text-rust-text">
                   {snapshot
                     ? fmtMoney(snapshot.totalMonthlyWasteCents, currency)
-                    : "—"}
+                    : "-"}
                 </td>
                 <td className="tnum px-4 py-3 text-right font-mono">
                   {fmtNumber(openFindings, currency)}
@@ -165,7 +165,7 @@ export default async function PortfolioPage() {
                 <dd className="font-medium text-rust-text">
                   {snapshot
                     ? fmtMoney(snapshot.totalMonthlyWasteCents, currency)
-                    : "—"}
+                    : "-"}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
@@ -173,7 +173,7 @@ export default async function PortfolioPage() {
                 <dd>
                   {snapshot
                     ? fmtMoney(snapshot.totalMonthlySpendCents, currency)
-                    : "—"}
+                    : "-"}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">

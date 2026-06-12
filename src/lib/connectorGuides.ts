@@ -39,7 +39,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Adobe",
     kind: "api",
     summary:
-      "Find Creative Cloud seats held by people who are disabled or gone, via Adobe's User Management API — entitlements only, read-only.",
+      "Find Creative Cloud seats held by people who are disabled or gone, via Adobe's User Management API. Entitlements only, read-only.",
     intro:
       "Adobe seats are expensive and offboarding rarely reaches the Admin Console. LicenseMeter reads the user list and product entitlements through the User Management API and cross-checks every seat against Entra ID.",
     steps: [
@@ -53,7 +53,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Copy the credentials",
-        body: "The credential details page shows the organization ID, client ID and client secret — the three values LicenseMeter asks for.",
+        body: "The credential details page shows the organization ID, client ID and client secret: the three values LicenseMeter asks for.",
       },
       {
         title: "Connect",
@@ -66,7 +66,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     ],
     neverReads: [
       "Files, libraries or any Creative Cloud content",
-      "Usage data — Adobe's API exposes entitlements only, so there is no inactivity signal",
+      "Usage data: Adobe's API exposes entitlements only, so there is no inactivity signal",
     ],
     detects: [
       "Creative Cloud seats held by accounts that are disabled in Entra ID.",
@@ -79,13 +79,13 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Zoom",
     kind: "api",
     summary:
-      "Find licensed Zoom seats held by departed or long-inactive people — a Server-to-Server OAuth app with one read scope.",
+      "Find licensed Zoom seats held by departed or long-inactive people. A Server-to-Server OAuth app with one read scope.",
     intro:
       "Zoom licenses linger after Teams takes over and after people leave. LicenseMeter lists licensed users and their last login and cross-checks each seat against Entra ID.",
     steps: [
       {
         title: "Create the Server-to-Server OAuth app",
-        body: "In the Zoom App Marketplace under Develop > Build App, a Zoom account admin creates a Server-to-Server OAuth app and activates it. The app stays internal to your account — nothing is published.",
+        body: "In the Zoom App Marketplace under Develop > Build App, a Zoom account admin creates a Server-to-Server OAuth app and activates it. The app stays internal to your account. Nothing is published.",
         doc: {
           label: "Zoom Server-to-Server OAuth guide",
           href: "https://developers.zoom.us/docs/internal-apps/s2s-oauth/",
@@ -93,7 +93,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Grant the scope",
-        body: "Add the user:read:admin scope. Nothing else is required — LicenseMeter only lists users.",
+        body: "Add the user:read:admin scope. Nothing else is required: LicenseMeter only lists users.",
       },
       {
         title: "Connect",
@@ -113,7 +113,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Atlassian",
     kind: "api",
     summary:
-      "Find Jira and Confluence seats that outlived their users — one organization API key, read-only.",
+      "Find Jira and Confluence seats that outlived their users. One organization API key, read-only.",
     intro:
       "Atlassian product access survives offboarding more often than most. LicenseMeter reads managed users and their product access through the organization admin API and cross-checks each seat against Entra ID.",
     steps: [
@@ -147,7 +147,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Salesforce",
     kind: "api",
     summary:
-      "Find Salesforce licenses still assigned to departed people — usually the single most expensive leak. Connected App with client credentials, read-only.",
+      "Find Salesforce licenses still assigned to departed people, usually the single most expensive leak. Connected App with client credentials, read-only.",
     intro:
       "At Salesforce prices, one forgotten seat pays for a lot of tooling. LicenseMeter queries the user list with license type and last login and cross-checks every license against Entra ID.",
     steps: [
@@ -161,7 +161,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Set a read-only run-as user",
-        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated API-only integration user whose profile can read users and nothing more — LicenseMeter's only query is the user list.",
+        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated API-only integration user whose profile can read users and nothing more. LicenseMeter's only query is the user list.",
       },
       {
         title: "Connect",
@@ -172,7 +172,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "The user list: email, name, active flag and license type",
       "Last login per user",
     ],
-    neverReads: ["CRM records — no accounts, contacts, opportunities or reports"],
+    neverReads: ["CRM records: no accounts, contacts, opportunities or reports"],
     detects: detectsOf("salesforce"),
     settingsPath: "/app/settings/salesforce",
   },
@@ -181,7 +181,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "OpenAI",
     kind: "api",
     summary:
-      "Track your organization's OpenAI API spend by day and catch departed employees still on the console — one admin key, read-only.",
+      "Track your organization's OpenAI API spend by day and catch departed employees still on the console. One admin key, read-only.",
     intro:
       "API spend is invisible until the invoice, and console membership outlives offboarding. With one Admin API key, LicenseMeter backfills up to 180 days of daily cost data and cross-checks every console member against Entra ID.",
     steps: [
@@ -195,11 +195,11 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Connect",
-        body: "Paste the key on the OpenAI connector page — a single field. It is validated read-only before storage and encrypted at rest (AES-256-GCM).",
+        body: "Paste the key into the single field on the OpenAI connector page. It is validated read-only before storage and encrypted at rest (AES-256-GCM).",
       },
       {
         title: "Let the first sync backfill",
-        body: "Up to 180 days of daily cost data and the current console member list arrive with the first sync. Spend appears on the AI costs page in USD, exactly as billed — never converted.",
+        body: "Up to 180 days of daily cost data and the current console member list arrive with the first sync. Spend appears on the AI costs page in USD, exactly as billed, never converted.",
       },
     ],
     reads: [
@@ -218,13 +218,13 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Anthropic",
     kind: "api",
     summary:
-      "Track your organization's Claude API spend by model and catch departed employees still on the console — one admin key, read-only.",
+      "Track your organization's Claude API spend by model and catch departed employees still on the console. One admin key, read-only.",
     intro:
       "With one Admin API key, LicenseMeter backfills around 90 days of daily Claude API cost data and cross-checks every console member against Entra ID.",
     steps: [
       {
         title: "Create an Admin API key",
-        body: "An organization admin opens the Claude Console under Settings > Admin keys and provisions a key — it starts with sk-ant-admin. Admin keys exist on organization accounts, not on individual ones.",
+        body: "An organization admin opens the Claude Console under Settings > Admin keys and provisions a key, which starts with sk-ant-admin. Admin keys exist on organization accounts, not on individual ones.",
         doc: {
           label: "Anthropic Admin API documentation",
           href: "https://platform.claude.com/docs/en/manage-claude/admin-api",
@@ -232,7 +232,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Connect",
-        body: "Paste the key on the Anthropic connector page — a single field. Validated read-only before storage, encrypted at rest (AES-256-GCM).",
+        body: "Paste the key into the single field on the Anthropic connector page. Validated read-only before storage, encrypted at rest (AES-256-GCM).",
       },
       {
         title: "Let the first sync backfill",
@@ -259,7 +259,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "ChatGPT",
     kind: "import",
     summary:
-      "Match your ChatGPT Enterprise or Business member list against Entra ID with a CSV paste — no credentials, no API.",
+      "Match your ChatGPT Enterprise or Business member list against Entra ID with a CSV paste. No credentials, no API.",
     intro:
       "ChatGPT seats are bought fast and reviewed rarely. Paste the member export from the admin workspace and LicenseMeter prices every seat held by someone who is disabled, gone or inactive.",
     steps: [
@@ -277,14 +277,14 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Price the seats",
-        body: "Set your per-seat price under Licenses & prices (chatgpt:<seat type>) so findings carry your real numbers. Re-import any time — each paste replaces the previous snapshot.",
+        body: "Set your per-seat price under Licenses & prices (chatgpt:<seat type>) so findings carry your real numbers. Re-import any time. Each paste replaces the previous snapshot.",
       },
     ],
     reads: [
       "Only what is in your paste: member emails, names, seat types, status and last-active dates",
     ],
     neverReads: [
-      "Conversations, prompts or anything inside ChatGPT — no ChatGPT credentials are stored at all",
+      "Conversations, prompts or anything inside ChatGPT: no ChatGPT credentials are stored at all",
     ],
     detects: detectsOf("chatgpt"),
     settingsPath: "/app/settings/chatgpt",
@@ -294,7 +294,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     name: "Claude",
     kind: "import",
     summary:
-      "Match your Claude Team or Enterprise member list against Entra ID with a CSV paste — no credentials, no API.",
+      "Match your Claude Team or Enterprise member list against Entra ID with a CSV paste. No credentials, no API.",
     intro:
       "Claude seats follow the same offboarding physics as every other subscription. Paste the member list from the admin settings and LicenseMeter prices every seat held by someone who is disabled, gone or inactive.",
     steps: [
@@ -312,14 +312,14 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Price the seats",
-        body: "Set your per-seat price under Licenses & prices (claude:<seat type>). Re-import any time — each paste replaces the previous snapshot.",
+        body: "Set your per-seat price under Licenses & prices (claude:<seat type>). Re-import any time. Each paste replaces the previous snapshot.",
       },
     ],
     reads: [
       "Only what is in your paste: member emails, names, seat types, status and last-active dates",
     ],
     neverReads: [
-      "Conversations, prompts or anything inside Claude — no Claude credentials are stored at all",
+      "Conversations, prompts or anything inside Claude: no Claude credentials are stored at all",
     ],
     detects: detectsOf("claude"),
     settingsPath: "/app/settings/claude",

@@ -13,14 +13,14 @@ export type WasteReportPdf = {
   buffer: Buffer;
   /** licensemeter-report-<workspace-slug-or-id>-<yyyy-mm>.pdf */
   filename: string;
-  /** Standing totals as rendered into the PDF — reused for email subject/body. */
+  /** Standing totals as rendered into the PDF, reused for email subject/body. */
   monthlySpendCents: number;
   monthlyWasteCents: number;
   openFindings: number;
 };
 
 /**
- * Loads a tenant's license data and renders the branded waste-report PDF —
+ * Loads a tenant's license data and renders the branded waste-report PDF,
  * shared by the authenticated export route and the monthly report cron.
  */
 export const renderWasteReportPdf = async (
@@ -74,14 +74,14 @@ export const renderWasteReportPdf = async (
             label: RULE_META[rule].label,
             count: agg.count,
             impact:
-              agg.impact > 0 ? `${fmtMoney(agg.impact, currency)}/mo` : "—",
+              agg.impact > 0 ? `${fmtMoney(agg.impact, currency)}/mo` : "-",
           })),
         topFindings: open.slice(0, 12).map((f) => ({
           title: f.title,
           impact:
             f.monthlyImpactCents > 0
               ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-              : "—",
+              : "-",
         })),
       },
     }),

@@ -20,11 +20,11 @@ export const DEMO_FIGURES = {
   crossVendorLeaverCount: 7,
   /** Waste grouped for the landing ledger card; sums to monthlyWasteCents. */
   byCategory: {
-    /** Disabled in Entra but still licensed — M365 and connected apps. */
+    /** Disabled in Entra but still licensed: M365 and connected apps. */
     leavers: 78669,
     /** Connected-app seats with no directory account at all. */
     orphaned: 4599,
-    /** Inactive 90+ days or never active — M365 and connected apps. */
+    /** Inactive 90+ days or never active: M365 and connected apps. */
     idle: 75158,
     copilotUnused: 39340,
     shelfware: 89210,
@@ -32,7 +32,7 @@ export const DEMO_FIGURES = {
   },
 } as const;
 
-/** "2.844,86" — German number convention used across the marketing copy. */
+/** "2.844,86": the German number convention used across the marketing copy. */
 export const demoEuros = (cents: number): string =>
   new Intl.NumberFormat("de-DE", {
     minimumFractionDigits: 2,

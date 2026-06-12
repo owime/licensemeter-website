@@ -40,7 +40,7 @@ const TIERS = [
 
 const BASE = siteUrl();
 
-/* SoftwareApplication with concrete EUR offers — the machine-readable price
+/* SoftwareApplication with concrete EUR offers: the machine-readable price
  * list answer engines quote instead of guessing. Static content from TIERS;
  * "<" escaped so nothing can terminate the script element. */
 const PRICING_LD = {
@@ -103,7 +103,7 @@ export default function PricingPage() {
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
         Every plan starts the same way: connect read-only and see your waste
         number for free. The subscription is for acting on it month after
-        month — licenses leak every time someone joins, moves or leaves.
+        month. Licenses leak every time someone joins, moves or leaves.
       </p>
 
       <div className="mt-12 grid gap-px border border-line bg-line md:grid-cols-3">
@@ -183,7 +183,7 @@ export default function PricingPage() {
             <span className="tnum font-mono">€ 440</span> a year, a Copilot
             seat about <span className="tnum font-mono">€ 340</span>. The
             Growth plan costs <span className="tnum font-mono">€ 2.388</span>{" "}
-            a year — six reclaimed E3 seats cover it. The live demo tenant of{" "}
+            a year. Six reclaimed E3 seats cover it. The live demo tenant of{" "}
             {DEMO_FIGURES.users} people shows{" "}
             <span className="tnum font-mono text-rust-text">
               € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}
@@ -195,7 +195,7 @@ export default function PricingPage() {
             a year.
           </p>
           <p className="mt-3 text-xs text-ink-faint">
-            Early access: billing starts with general availability — connected
+            Early access: billing starts with general availability. Connected
             workspaces use LicenseMeter free until then.
             {/* TODO before launch: confirm the early-access wording or remove. */}
           </p>

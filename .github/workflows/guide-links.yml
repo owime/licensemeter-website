@@ -50,7 +50,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           title="Connector guide vendor links broken"
-          body=$(printf 'The weekly link check found vendor documentation links that no longer resolve:\n\n```\n%s```\n\nFix the href in src/lib/connectorGuides.ts — the step copy is written to stand alone, so only the link needs updating.' "$BROKEN")
+          body=$(printf 'The weekly link check found vendor documentation links that no longer resolve:\n\n```\n%s```\n\nFix the href in src/lib/connectorGuides.ts. The step copy is written to stand alone, so only the link needs updating.' "$BROKEN")
           existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --body "$body"

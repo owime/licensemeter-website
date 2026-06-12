@@ -23,7 +23,7 @@ export type NotifyOptions = {
  * - ALERT_WEBHOOK_URL (Teams/Slack incoming webhook, {text} payload)
  * - ALERT_EMAIL via Resend (requires RESEND_API_KEY + EMAIL_FROM)
  * DB-backed cooldown dedup keeps incident storms from flooding either channel.
- * Never throws — alerting must not take down the thing it alerts about.
+ * Never throws: alerting must not take down the thing it alerts about.
  */
 export const notifyOps = async (
   text: string,
@@ -92,7 +92,7 @@ export const notifyOps = async (
         subject: `LicenseMeter alert: ${text.slice(0, 80)}`,
         html: `<div style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;max-width:560px">
   <p>${escapeHtml(message)}</p>
-  <p style="font-size:11px;color:#a39d8f">Operational alert from licensemeter.com — sync failures and crashes are deduplicated per 30-minute window.</p>
+  <p style="font-size:11px;color:#a39d8f">Operational alert from licensemeter.com. Sync failures and crashes are deduplicated per 30-minute window.</p>
 </div>`,
       });
     } catch (err) {

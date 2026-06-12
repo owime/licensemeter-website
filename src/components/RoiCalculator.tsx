@@ -10,7 +10,7 @@ import {
   parseSeats,
 } from "~/components/roiMath";
 
-/** "1.250" — seat counts in the same German convention as the money. */
+/** "1.250": seat counts in the same German convention as the money. */
 const fmtSeats = (n: number): string =>
   new Intl.NumberFormat("de-DE").format(n);
 
@@ -19,7 +19,7 @@ const inputClass =
 
 /**
  * Interactive waste estimate for the landing page. Every number on screen is
- * the visitor's own assumption — we assert nothing; the math (integer cents,
+ * the visitor's own assumption: we assert nothing; the math (integer cents,
  * plan pick, break-even) lives in roiMath.ts where it is unit-tested.
  */
 export const RoiCalculator = () => {
@@ -41,7 +41,7 @@ export const RoiCalculator = () => {
     <div className="border border-line bg-card shadow-[0_1px_0_var(--color-line)]">
       <div className="flex items-baseline justify-between gap-3 border-b border-line px-6 py-4">
         <span className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-          Waste estimate — your assumptions
+          Waste estimate · your assumptions
         </span>
         <span className="font-mono text-xs whitespace-nowrap text-ink-faint">
           No data leaves this page
@@ -111,7 +111,7 @@ export const RoiCalculator = () => {
               id={shareHintId}
               className="mt-1 text-xs leading-relaxed text-ink-faint"
             >
-              Your assumption — the demo tenant runs at {DEMO_WASTE_PCT}{" "}
+              Your assumption: the demo tenant runs at {DEMO_WASTE_PCT}{" "}
               percent, well-run tenants still leak single digits.
             </p>
           </div>
@@ -133,13 +133,13 @@ export const RoiCalculator = () => {
               {result.paysOff ? (
                 <>
                   At {fmtSeats(seats)} seats that is the {result.plan.name}{" "}
-                  plan at € {result.plan.priceEur}/month — paid back at a
+                  plan at € {result.plan.priceEur}/month, paid back at a
                   fraction of this.
                 </>
               ) : result.breakEvenSeats !== null ? (
                 <>
                   At this assumption the subscription only pays off above{" "}
-                  {fmtSeats(result.breakEvenSeats)} seats — run the free scan
+                  {fmtSeats(result.breakEvenSeats)} seats. Run the free scan
                   and use your real number.
                 </>
               ) : (

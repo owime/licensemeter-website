@@ -17,7 +17,7 @@ export const DangerZone = ({ tenantName }: { tenantName: string }) => {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <p className="max-w-md text-sm text-ink-soft">
-          Disconnecting deletes every synced record for {tenantName} — users,
+          Disconnecting deletes every synced record for {tenantName}: users,
           findings, prices, history. The admin consent in your tenant can then
           be revoked under Enterprise applications.
         </p>

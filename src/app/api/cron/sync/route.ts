@@ -17,7 +17,7 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  // CSV-trial workspaces (consentedAt null) have no Graph access — syncing
+  // CSV-trial workspaces (consentedAt null) have no Graph access. Syncing
   // them could only fail. The demo tenant has consentedAt set by its seed.
   const allTenants = await db.query.tenants.findMany({
     where: isNotNull(tenants.consentedAt),

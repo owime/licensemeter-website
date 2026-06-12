@@ -95,8 +95,7 @@ export default function MarketingLayout({
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
               License waste analytics for Microsoft 365, with Adobe, Zoom,
               Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude
-              connectors in beta. Read-only, EU-hosted, built for IT and
-              finance.
+              connectors. Read-only, EU-hosted, built for IT and finance.
             </p>
           </div>
           {FOOTER_COLUMNS.map((col) => (
@@ -129,7 +128,7 @@ export default function MarketingLayout({
           ))}
         </div>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 border-t border-line px-6 py-6 text-xs text-ink-faint">
-          <span>LicenseMeter — built by Ugur Koc</span>
+          <span>LicenseMeter, built by Ugur Koc</span>
           <span>
             Independent tool, not affiliated with Microsoft, Adobe, Zoom,
             Atlassian, Salesforce, OpenAI or Anthropic. All product names are

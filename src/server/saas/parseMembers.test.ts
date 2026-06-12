@@ -123,7 +123,7 @@ describe("parseMembers", () => {
   it("returns an error when no email column is found", () => {
     expect(parseMembers("name,status\nJane,active")).toEqual({
       error:
-        "No email column found — paste the member table including its header row",
+        "No email column found. Paste the member table including its header row",
     });
   });
 
@@ -159,7 +159,7 @@ describe("parseMembers", () => {
         "b@acme.com,\n" +
         "c@acme.com,n/a\n" +
         "d@acme.com,-\n" +
-        "e@acme.com,—\n" +
+        "e@acme.com,\u2014\n" +
         "f@acme.com,2026-05-01",
     );
     expect(rows.map((r) => r.lastActiveAt)).toEqual([

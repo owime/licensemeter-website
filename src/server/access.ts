@@ -46,11 +46,11 @@ export const hasRole = (ctx: AccessContext, minRole: MembershipRole) =>
  * Resolves every workspace the signed-in user may open, then the active one.
  *
  * Membership matching is invite-based and deliberately asymmetric:
- * - by Entra object id — the user has opened this workspace before;
- * - unclaimed invites by UPN — valid from ANY tenant, because UPN domains are
+ * - by Entra object id: the user has opened this workspace before;
+ * - unclaimed invites by UPN: valid from ANY tenant, because UPN domains are
  *   verified by Microsoft (a consultant invited as consultant@msp.example can
  *   only be the account whose home tenant owns msp.example);
- * - unclaimed invites by email claim — valid only when signing in FROM the
+ * - unclaimed invites by email claim: valid only when signing in FROM the
  *   workspace tenant itself, because the email attribute is admin/user-mutable
  *   and must not grant cross-tenant access.
  *

@@ -2,7 +2,7 @@ import { siteUrl } from "~/env";
 import { SITE_DEFINITION } from "~/lib/site";
 
 /* Curated site map for LLMs (llms.txt convention): a definition, the facts
- * worth citing, and where the details live. Served as a route handler — a
+ * worth citing, and where the details live. Served as a route handler: a
  * public/ file would conflict with App Router metadata routes. */
 export const dynamic = "force-static";
 
@@ -15,7 +15,7 @@ export function GET(): Response {
 Built by Ugur Koc, Microsoft MVP for Intune and Security Copilot. Key facts:
 
 - Read-only by design: the connector app holds no write scopes; remediation ships as generated PowerShell scripts that admins review and run themselves.
-- Never reads content: no mailboxes, files or messages — license assignments, sign-in activity and usage metadata only.
+- Never reads content: no mailboxes, files or messages. License assignments, sign-in activity and usage metadata only.
 - EU data residency (Postgres, Frankfurt); disconnecting a workspace deletes all synced data immediately.
 - Flat pricing per tenant: Starter € 79/month (up to 250 seats), Growth € 199/month (up to 1.000 seats), Scale € 499/month (up to 2.500 seats). The first waste scan is free.
 - Works with and without Entra ID P1: detection falls back to Microsoft 365 usage reports when precise sign-in timestamps are unavailable.

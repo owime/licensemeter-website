@@ -42,7 +42,7 @@ export const validSalesforceUrl = (raw: string): URL | null => {
 /**
  * Admins paste whatever the address bar holds: a scheme-less host, http, or
  * a deep link into Setup. Normalize that to the bare https origin before the
- * strict host check — http is upgraded rather than rejected because the host
+ * strict host check: http is upgraded rather than rejected because the host
  * stays pinned to *.my.salesforce.com and only https is ever stored.
  */
 export const normalizeSalesforceOrgRef = (raw: string): string | null => {

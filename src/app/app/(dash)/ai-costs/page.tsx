@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "AI costs" };
 /** The connectors that report daily API spend, in display order. */
 const AI_PROVIDERS: SaasProvider[] = ["openai", "anthropic"];
 
-/** UTC day string (yyyy-mm-dd) n days before now — aiSpendDaily buckets by UTC day. */
+/** UTC day string (yyyy-mm-dd) n days before now. aiSpendDaily buckets by UTC day. */
 const dayAgo = (days: number): string =>
   new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 
@@ -113,7 +113,7 @@ export default async function AiCostsPage() {
             ? "Sync running…"
             : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
           {lastRun?.status === "failed" && (
-            <span className="ml-2 text-rust-text">— last sync failed</span>
+            <span className="ml-2 text-rust-text">(last sync failed)</span>
           )}
         </p>
       </header>
@@ -124,7 +124,7 @@ export default async function AiCostsPage() {
             <div className="flex flex-col gap-4">
               <p className="max-w-2xl text-sm text-ink-soft">
                 Connect OpenAI or Anthropic to see what your organization
-                spends on their APIs — daily totals by model and line item,
+                spends on their APIs: daily totals by model and line item,
                 exactly as billed. The same connector correlates console
                 members against Entra ID, so departed people who still hold
                 live API keys surface as findings.
@@ -144,7 +144,7 @@ export default async function AiCostsPage() {
         <section className="rise rise-2 mt-8">
           <Card title="Connection">
             <p className="text-sm text-ink-soft">
-              Connected — the first sync brings in the provider&apos;s cost
+              Connected. The first sync brings in the provider&apos;s cost
               history.
             </p>
           </Card>
@@ -200,7 +200,7 @@ export default async function AiCostsPage() {
                   {otherCents > 0 && (
                     <tr className="border-b border-line last:border-b-0 hover:bg-paper">
                       <td className="px-4 py-3 text-ink-soft">Other</td>
-                      <td className="px-4 py-3 text-ink-faint">—</td>
+                      <td className="px-4 py-3 text-ink-faint">-</td>
                       <td className="tnum px-4 py-3 text-right font-mono">
                         {fmtMoney(otherCents, "USD")}
                       </td>
@@ -224,7 +224,7 @@ export default async function AiCostsPage() {
       )}
 
       <p className="rise rise-4 mt-8 mb-8 text-xs text-ink-faint">
-        Billed by the providers in USD — shown as billed, never converted to
+        Billed by the providers in USD. Shown as billed, never converted to
         your workspace currency.
       </p>
     </div>

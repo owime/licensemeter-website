@@ -33,7 +33,7 @@ export default function ImpressumPage() {
           <p className="mt-2">
             E-Mail: support@licensemeter.com
             <br />
-            [Telefonnummer — optional]
+            [Telefonnummer, optional]
           </p>
         </section>
 

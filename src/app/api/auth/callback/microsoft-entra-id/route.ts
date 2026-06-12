@@ -49,7 +49,7 @@ const NEEDS_ADMIN_PATTERN = /AADSTS65004|AADSTS9009[45]|AADSTS65001|admin/i;
 
 /**
  * Instant-scan return leg (oauth cookie carries kind:"scan"): the user must
- * still hold a valid session — the scan piggybacks on it and NEVER creates
+ * still hold a valid session: the scan piggybacks on it and NEVER creates
  * or modifies the session cookie. Redeems the code for a one-shot delegated
  * Graph token, applies the same workspace guard matrix as the CSV trial,
  * kicks the sync after the redirect and lets the connect page poll it.
@@ -134,7 +134,7 @@ const handleScanCallback = async (
   );
   res.cookies.delete(OAUTH_COOKIE);
   // Make the scanned workspace the active one so the poller (and /app)
-  // land on it — same as the CSV trial. The session cookie stays untouched.
+  // land on it, same as the CSV trial. The session cookie stays untouched.
   res.cookies.set(WORKSPACE_COOKIE, tenantId, workspaceCookieOptions());
   return res;
 };

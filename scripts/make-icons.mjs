@@ -60,7 +60,7 @@ await sharp({
 
 /* Email-header mark: transparent background (emails render on white and on
  * the paper card), 96px for crisp display at 28-32 CSS px. Served from
- * public/ — safe alongside the app-dir icon routes; only a public
+ * public/, safe alongside the app-dir icon routes; only a public
  * favicon.ico would conflict. */
 const transparentMark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g fill="#1c1a16"><rect x="6" y="6.5" width="4.5" height="19"/><rect x="13.75" y="6.5" width="4.5" height="19"/><rect x="21.5" y="6.5" width="4.5" height="19"/></g><line x1="3.5" y1="22.5" x2="28.5" y2="9.5" stroke="#bc3e12" stroke-width="4.5"/></svg>`;
 await sharp(Buffer.from(transparentMark))

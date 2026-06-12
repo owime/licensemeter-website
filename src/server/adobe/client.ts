@@ -18,7 +18,7 @@ type UmapiUser = {
 /**
  * Adobe User Management API via OAuth server-to-server credentials that the
  * customer's Adobe System Admin creates in the Adobe Developer Console.
- * Entitlements only — Adobe exposes no per-user usage data, which is why the
+ * Entitlements only: Adobe exposes no per-user usage data, which is why the
  * connector detects offboarding leaks rather than utilization.
  */
 export class UmapiClient implements AdobeClient {

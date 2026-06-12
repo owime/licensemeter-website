@@ -100,7 +100,7 @@ export type WasteInput = {
   now: Date;
   /**
    * "full": per-user activity is reliable (Entra P1 sign-ins and/or joinable usage reports).
-   * "none": no per-user activity signal (no P1 and concealed reports) — per-user
+   * "none": no per-user activity signal (no P1 and concealed reports); per-user
    * inactivity rules are skipped and an aggregate finding is emitted instead.
    */
   activitySignal: "full" | "none";
@@ -246,7 +246,7 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
       }
     }
 
-    // Rule 7: suite + standalone double-pay (active users only — inactivity
+    // Rule 7: suite + standalone double-pay (active users only; inactivity
     // rules above already price the full license set for flagged users).
     const heldSkus = new Set(u.licenses.map((l) => l.skuId));
     const redundantIds = new Set<string>();
@@ -315,7 +315,7 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
     }
   }
 
-  // Rule 4: shelfware — paid seats nobody is assigned to.
+  // Rule 4: shelfware, paid seats nobody is assigned to.
   for (const sku of skus) {
     if (isShelfwareExempt(sku)) continue;
     const unassigned = sku.prepaidEnabled - sku.consumedUnits;
@@ -338,8 +338,8 @@ export const analyzeWaste = (input: WasteInput): WasteFinding[] => {
     }
   }
 
-  // Rule 8: paid suites where users have service plans switched off —
-  // informational (plan fractions cannot be priced), hints at downgrades.
+  // Rule 8: paid suites where users have service plans switched off.
+  // Informational (plan fractions cannot be priced), hints at downgrades.
   for (const [skuId, count] of planDisables) {
     findings.push({
       dedupeKey: key("service_plans_disabled", "aggregate", skuId),

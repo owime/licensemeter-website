@@ -164,7 +164,7 @@ export const importPrices = async (
 
   // Resolve keys case-insensitively to the canonical price book skuId:
   // existing price book keys (GUIDs and provider:product) plus the tenant's
-  // SKU part numbers. Two reads, one write — no per-row queries.
+  // SKU part numbers. Two reads, one write, no per-row queries.
   const [bookRows, skuRows] = await Promise.all([
     db.query.priceBook.findMany({
       where: eq(priceBook.tenantId, ctx.tenant.id),
@@ -263,7 +263,7 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
     });
   await audit(ctx, "member_added", { email, role });
 
-  // Invite email — never from the public demo workspace (open-relay risk),
+  // Invite email: never from the public demo workspace (open-relay risk),
   // and never a reason for the invite itself to fail.
   if (!ctx.tenant.isDemo && emailEnabled()) {
     try {
@@ -572,7 +572,7 @@ export const connectSaasConnector = async (
   const secret = values.secret!;
 
   // Validate against the provider before storing anything. Full error goes
-  // to the server log only — provider error bodies can echo submitted
+  // to the server log only, because provider error bodies can echo submitted
   // credentials, so the browser gets a generic message.
   try {
     const client = await buildSaasClient(provider, {
@@ -584,7 +584,7 @@ export const connectSaasConnector = async (
   } catch (err) {
     console.error(`[saas connect] ${provider}:`, err);
     return fail(
-      `${spec.label} rejected the credentials — check the values and try again`,
+      `${spec.label} rejected the credentials. Check the values and try again`,
     );
   }
 
@@ -691,13 +691,13 @@ export const importSeats = async (
   const text = typeof raw === "string" ? raw : "";
   if (text.trim() === "") return none(fail("Paste the member table first"));
   if (text.length > 1_000_000)
-    return none(fail("Paste is too large — split the export and import it in parts"));
+    return none(fail("Paste is too large. Split the export and import it in parts"));
 
   const parsed = parseMembers(text);
   if ("error" in parsed) return none(fail(parsed.error));
   if (parsed.rows.length === 0)
     return none(
-      fail("No member rows recognized — paste the table including its header row"),
+      fail("No member rows recognized. Paste the table including its header row"),
     );
 
   const now = new Date();
@@ -792,7 +792,7 @@ export const switchWorkspace = async (
 };
 
 /**
- * Public email capture from the landing page (no auth — visitors).
+ * Public email capture from the landing page (no auth, just visitors).
  * Honeypot field + format check + unique constraint keep junk out.
  */
 export const captureEmail = async (
@@ -801,7 +801,7 @@ export const captureEmail = async (
   if (formData.get("website")) return ok(); // honeypot: pretend success to bots
   const ip = clientIp(await headers());
   if (!rateLimit(`capture:${ip}`, 5, 60 * 60 * 1000)) {
-    return fail("Too many attempts — please try again later");
+    return fail("Too many attempts, please try again later");
   }
   const raw = formData.get("email");
   const email = typeof raw === "string" ? raw.trim().toLowerCase() : "";
@@ -815,7 +815,7 @@ export const captureEmail = async (
     .returning({ id: emailSignups.id });
   if (inserted.length > 0) {
     void notifyOps(`new email signup from the landing page: ${email}`);
-    // Fresh inserts only — re-submits and pre-feature rows never re-send.
+    // Fresh inserts only: re-submits and pre-feature rows never re-send.
     // after() lets the form respond immediately while the send still
     // completes before the serverless function freezes.
     after(() => maybeSendWelcome(email));

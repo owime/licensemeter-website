@@ -3,7 +3,7 @@ import type { FindingStatus } from "~/server/types";
 /**
  * Pure helpers behind the weekly digest's "what changed" framing: the 7-day
  * finding delta, the AI API spend week-over-week split, and the
- * renewal-window date math. No DB, no IO — unit tested.
+ * renewal-window date math. No DB, no IO, unit tested.
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -33,7 +33,7 @@ const withinWindow = (t: Date, now: Date): boolean =>
 /**
  * 7-day delta over finding rows (boundary inclusive: exactly 7 days old still
  * counts). A finding that appeared and was resolved within the same window
- * counts as resolved, not as new — the status filters keep the two branches
+ * counts as resolved, not as new. The status filters keep the two branches
  * disjoint per row. The resolved branch also requires status "resolved":
  * a manually reopened finding can carry a stale resolvedAt (the UI status
  * actions do not clear it) and has not actually freed any money.
@@ -70,8 +70,8 @@ export const computeDigestDelta = (
 /**
  * Whole days from `now`'s UTC date to a yyyy-mm-dd date-column string,
  * negative when the date is past, null when unset or malformed. Both sides
- * are pinned to UTC midnight — `new Date("yyyy-mm-dd")` math drifts a day
- * on servers west of UTC.
+ * are pinned to UTC midnight, since `new Date("yyyy-mm-dd")` math drifts a
+ * day on servers west of UTC.
  */
 export const daysUntilDate = (
   dateStr: string | null,
@@ -116,8 +116,8 @@ export type AiSpendDay = { day: string; amountCents: number };
 /**
  * Week-over-week AI API spend split. A row's age in whole days (UTC-pinned
  * via daysUntilDate, same boundary semantics) picks its bucket: 0-6 days old
- * → last7Cents, exactly 7 through 13 → prior7Cents, anything else — future
- * days, older rows, malformed day strings — is ignored.
+ * → last7Cents, exactly 7 through 13 → prior7Cents, anything else (future
+ * days, older rows, malformed day strings) is ignored.
  */
 export const computeAiSpendDelta = (
   rows: AiSpendDay[],

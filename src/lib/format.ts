@@ -19,7 +19,7 @@ export const fmtNumber = (n: number, currency = "EUR"): string =>
   new Intl.NumberFormat(CURRENCY_LOCALE[currency] ?? "en-US").format(n);
 
 export const fmtDate = (d: Date | string | null): string => {
-  if (!d) return "—";
+  if (!d) return "-";
   const date = typeof d === "string" ? new Date(d) : d;
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",

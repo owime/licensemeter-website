@@ -93,7 +93,7 @@ describe("input parsing", () => {
 
 describe("DEMO_WASTE_PCT", () => {
   it("matches the demo tenant the marketing pages quote (43 percent)", () => {
-    // 297986 / 697990 — recomputed so the slider hint cannot go stale.
+    // 297986 / 697990, recomputed so the slider hint cannot go stale.
     expect(DEMO_WASTE_PCT).toBe(43);
   });
 });

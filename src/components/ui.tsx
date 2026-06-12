@@ -2,7 +2,7 @@ import Link from "next/link";
 
 /**
  * The three button tiers of the design system. Primary and secondary are
- * sentence case; micro is the uppercase 11px tier for table-row actions —
+ * sentence case; micro is the uppercase 11px tier for table-row actions:
  * visually ~26px tall, with an invisible ::after overlay stretching the hit
  * area to 44px for touch without disturbing table-row layouts.
  */
@@ -37,7 +37,7 @@ export const ButtonLink = ({
   <Link className={buttonClass(variant, className)} {...props} />
 );
 
-/** Plain anchor button — for downloads and API-route links. */
+/** Plain anchor button, for downloads and API-route links. */
 export const ButtonAnchor = ({
   variant = "secondary",
   className = "",

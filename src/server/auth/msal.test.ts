@@ -25,7 +25,7 @@ describe("SCAN_SCOPES", () => {
     );
   });
 
-  it("never requests offline_access — the scan token is one-shot by design", () => {
+  it("never requests offline_access: the scan token is one-shot by design", () => {
     expect(SCAN_SCOPES).not.toContain("offline_access");
   });
 });

@@ -36,7 +36,7 @@ const RECENT_SYNC_MS = 8 * 24 * 60 * 60 * 1000;
  * Weekly digest to workspace owners/admins. No-op until Resend is configured.
  * Leads with the 7-day delta; tenants with zero open findings get a short
  * all-clear instead of silence (silence right after everything is fixed reads
- * like the product stopped working — a churn signal).
+ * like the product stopped working, a churn signal).
  */
 export const GET = async (req: NextRequest) => {
   if (
@@ -82,7 +82,7 @@ export const GET = async (req: NextRequest) => {
             where: and(
               eq(findings.tenantId, tenant.id),
               // status filter keeps this disjoint from the open/acknowledged
-              // query above — a reopened finding can carry a stale resolvedAt.
+              // query above: a reopened finding can carry a stale resolvedAt.
               eq(findings.status, "resolved"),
               isNotNull(findings.resolvedAt),
               gte(
@@ -122,13 +122,13 @@ export const GET = async (req: NextRequest) => {
           prior7Cents > 0
             ? ` (${diff >= 0 ? "+" : "-"}${fmtMoney(Math.abs(diff), "USD")} vs prior week)`
             : "";
-        aiSpendLine = `AI API spend last 7 days: ${fmtMoney(last7Cents, "USD")}${vsPrior} — billed in USD.`;
+        aiSpendLine = `AI API spend last 7 days: ${fmtMoney(last7Cents, "USD")}${vsPrior}, billed in USD.`;
       }
       const tenantLabel = tenant.name ?? "your tenant";
       const tenantName = tenant.name ?? tenant.tid;
 
       if (open.length === 0) {
-        // All clear — but only for tenants that actually synced recently.
+        // All clear, but only for tenants that actually synced recently.
         // A stale tenant with no data would get a hollow "all clear" forever.
         const recentSync = await db.query.syncRuns.findFirst({
           where: and(
@@ -152,7 +152,7 @@ export const GET = async (req: NextRequest) => {
             renewalLine:
               renewalDays === null
                 ? undefined
-                : `${renewalPhrase(renewalDays)} — you go in clean.`,
+                : `${renewalPhrase(renewalDays)}. You go in clean.`,
             aiSpendLine,
             appUrl: siteUrl(),
           }),
@@ -164,7 +164,7 @@ export const GET = async (req: NextRequest) => {
       const wasteCents = latest?.totalMonthlyWasteCents ?? 0;
       const openCents = open.reduce((s, f) => s + f.monthlyImpactCents, 0);
       // New findings lead the subject; otherwise fall back to the standing
-      // totals. With unpriced SKUs the waste is 0 — lead with the findings
+      // totals. With unpriced SKUs the waste is 0. Lead with the findings
       // count instead of an underwhelming zero.
       const subject =
         delta.newCount > 0
@@ -201,7 +201,7 @@ export const GET = async (req: NextRequest) => {
           renewalLine:
             renewalDays === null
               ? undefined
-              : `${renewalPhrase(renewalDays)} — ${open.length} open finding${open.length === 1 ? "" : "s"} worth ${fmtMoney(openCents, tenant.currency)}/mo to reclaim before you re-commit.`,
+              : `${renewalPhrase(renewalDays)}, with ${open.length} open finding${open.length === 1 ? "" : "s"} worth ${fmtMoney(openCents, tenant.currency)}/mo to reclaim before you re-commit.`,
           aiSpendLine,
           appUrl: siteUrl(),
         }),

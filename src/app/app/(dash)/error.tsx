@@ -2,7 +2,7 @@
 
 import { Button } from "~/components/ui";
 
-/** Dash-level error boundary. No internals on screen — just a way back. */
+/** Dash-level error boundary. No internals on screen, just a way back. */
 export default function DashError({ reset }: { reset: () => void }) {
   return (
     <div className="mx-auto max-w-4xl">
@@ -10,7 +10,7 @@ export default function DashError({ reset }: { reset: () => void }) {
         Something went wrong
       </h1>
       <p className="mt-2 max-w-md text-sm text-ink-soft">
-        This page failed to load. Your data is unaffected — try again, and if
+        This page failed to load. Your data is unaffected. Try again, and if
         it keeps happening, sign out and back in.
       </p>
       <div className="mt-5">

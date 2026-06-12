@@ -1,4 +1,4 @@
-/** The connector app's Graph application permissions — all read-only. */
+/** The connector app's Graph application permissions, all read-only. */
 export const CONNECTOR_SCOPES = [
   {
     scope: "User.Read.All",

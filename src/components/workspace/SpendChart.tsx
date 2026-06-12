@@ -22,7 +22,7 @@ const STROKES = ["var(--color-ink-soft)", "var(--color-rust)"];
 const SWATCHES = ["bg-ink-soft", "bg-rust"];
 
 /**
- * Daily AI API spend per provider. Server-rendered SVG sibling of TrendChart —
+ * Daily AI API spend per provider. Server-rendered SVG sibling of TrendChart:
  * up to two series share one y-scale, the x-axis is the union of both
  * series' days, and amounts are USD cents exactly as billed.
  */
@@ -74,10 +74,10 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
     <section className="rise rise-3 mt-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-          Daily API spend — {days.length} days
+          Daily API spend ({days.length} days)
         </h2>
         <span className="text-xs text-ink-soft">
-          Latest — {latestParts.join(" · ")}
+          Latest: {latestParts.join(" · ")}
         </span>
       </div>
       <div className="mt-3 border border-line bg-card p-4">
@@ -107,7 +107,7 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
                 />
               ),
           )}
-          {/* In-chart labels scale with the viewBox — below sm they would render
+          {/* In-chart labels scale with the viewBox. Below sm they would render
               unreadably small, so the legend line carries the range instead. */}
           <text
             x={PAD.left}

@@ -4,7 +4,7 @@
  * same shapes the Graph sync stores, without touching env or the database.
  *
  * Directory file: Users > Active users > "Export users" (users.csv).
- * Usage file:     Reports > Usage > Active users > Export (detail) — the
+ * Usage file:     Reports > Usage > Active users > Export (detail), the
  *                 same report family as Graph getOffice365ActiveUserDetail.
  *
  * Header matching is alias-based (English and German, case-insensitive)
@@ -121,7 +121,7 @@ const headerError = (
   const expected = missing.map((m) => `"${m.aliases[0]}"`).join(", ");
   const semicolonHint =
     header.length === 1 && (header[0]?.includes(";") ?? false)
-      ? " The file looks semicolon-separated — upload the original comma-separated export from the admin center."
+      ? " The file looks semicolon-separated. Upload the original comma-separated export from the admin center."
       : "";
   return {
     ok: false,
@@ -302,7 +302,7 @@ export const parseUsageExport = (
 
 /**
  * True when the usage report is unusable for the per-user join: identities
- * are concealed (opaque hashes instead of UPNs — the tenant's "display
+ * are concealed (opaque hashes instead of UPNs, the tenant's "display
  * concealed names" report setting) or almost nothing joins to the directory.
  */
 export const detectConcealment = (

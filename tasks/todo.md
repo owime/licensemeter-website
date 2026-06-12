@@ -1,53 +1,43 @@
-# Connector Setup Guides (2026-06-12, follow-on)
+# GA pass: Beta labels out, em dashes out, full product review (2026-06-12)
 
-Goal: public step-by-step setup guides for all 8 connectors (Adobe, Zoom, Atlassian,
-Salesforce, OpenAI, Anthropic, ChatGPT, Claude) with verified official vendor doc
-links, served as static marketing pages and cross-linked from the settings subpages.
-Approved scope from chat: guide registry as single source, /connectors/<slug> +
-index, SEO surface, link rot resilience (copy self-sufficient, stable vendor URLs).
+Goal: (1) remove every Beta/beta label so all connectors present as GA,
+(2) remove all em dashes from texts and rewrite them warm and human (no
+mechanical hyphen swaps in user-facing copy), (3) full review of every
+feature, page, button, link and text; deliverable is a prioritized list
+of fixes and improvements.
 
 ## Plan
 
-- [x] 1. Verify every vendor doc URL resolves to the right live page (WebFetch)
-- [x] 2. src/lib/connectorGuides.ts: slug, vendor, tagline, credential steps
-       (title/body/optional verified docUrl), reads[], neverReads[], settingsPath;
-       Adobe included even though it predates the CONNECTORS spec array
-- [x] 3. Routes: src/app/(marketing)/connectors/page.tsx (index) +
-       connectors/[slug]/page.tsx (generateStaticParams, generateMetadata,
-       Breadcrumb JSON-LD, connect CTA); marketing tree stays static — no
-       cookies()/auth()
-- [x] 4. Cross-links: SaasConnectorPage + Adobe settings page "Full setup guide";
-       landing connector strip entries link to their guide; footer Connectors
-       link; sitemap.ts entries
-- [x] 5. Gates: vitest + npm run check green; dev-server render check of all 9 pages
-- [x] 6. Reviewer pass on the diff; fixed: detects empty-guard + breadcrumb
-       aria-current (no P0; verdict ship)
-- [ ] 7. Commit own files only (concurrent session active), push, CI, live checks
-
-## Review
-
-- All 9 routes render locally (index 8 cards; every guide: 3 numbered steps with
-  a verified official-doc link, what-it-finds, reads/never-reads split, Breadcrumb
-  JSON-LD, target=_blank rel=noopener noreferrer; unknown slug 404s via
-  dynamicParams=false). Marketing tree confirmed static by the reviewer (no
-  request-time reads). Vendor URLs live-verified: Adobe UMAPI, Zoom S2S OAuth,
-  Atlassian org admin API, Salesforce client-credentials setup (search-indexed,
-  page is JS-rendered), OpenAI Admin APIs guide, Anthropic Admin API +
-  Usage/Cost API, ChatGPT Enterprise members article, Claude members article.
+- [ ] 1. Beta removal (19 hits): Pills in settings/adobe/SaasConnectorPage,
+       licenses "(beta)" headers, landing strip tag: "Beta" x8, marketing
+       layout footer line, msp page, SITE_DEFINITION in site.ts (hero +
+       JSON-LD + llms.txt share it), runSync comments, README
+- [ ] 2. Em dash removal: 349 in src/ plus docs/, README, SETUP, one
+       workflow file; 4 parallel rewrite agents with disjoint file sets;
+       style: comma/period/colon/parens or restructure, tests updated in
+       lockstep; en dash in findings/page.tsx normalized too
+- [ ] 3. Gates: npm run check + npm test green, zero "—" and zero
+       user-facing "beta" greps
+- [ ] 4. Full review fan-out (read-only agents): A marketing pages,
+       B dashboard app, C server/API/cron, D emails + PDF + exports,
+       E live click-through of every link/button (local dev + prod
+       link check). Plus: verify prod tenants.monthly_report column
+       exists (memory flagged the migration as blocked mid-session)
+- [ ] 5. Compile prioritized findings list (fix now / fix soon / ideas)
 
 ## Acceptance criteria
 
-- AC1: /connectors lists all 8 guides; /connectors/<slug> renders numbered setup
-  steps, a what-we-read / never-read split, the read-only + encryption story and a
-  connect CTA, for every provider including Adobe.
-- AC2: Every external vendor link in the guides was fetched and verified live in
-  this session; links open in new tabs with rel="noopener noreferrer".
-- AC3: Pages are static (build route table), indexed (sitemap + metadata +
-  Breadcrumb JSON-LD), German number convention not applicable (no figures).
-- AC4: Each settings connector subpage links to its guide; landing strip entries
-  link to guides; no copy forked from connectors.ts specs (guides reference the
-  same labels).
-- AC5: npm test + npm run check green; all 9 routes return 200 locally and live.
+- AC1: grep -ri "beta" over src/ has zero user-visible hits (UI strings,
+  marketing copy, emails); README/docs no longer call connectors beta
+- AC2: grep "—" over src/ docs/ README.md SETUP.md .github returns zero;
+  rewritten copy reads natural (no " - " splices in marketing/email copy)
+- AC3: npm run check and npm test pass; SITE_DEFINITION still single-source
+  (hero = JSON-LD = llms.txt verbatim)
+- AC4: review covers every route (marketing, dash, api), every nav/footer
+  link, every form/button, emails, PDF, and prod link health; findings
+  listed with severity and file refs
+- AC5: working tree committed locally; push only after user confirms
+  (push auto-deploys prod)
 
 ## Review
 

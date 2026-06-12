@@ -46,7 +46,7 @@ const Capability = ({
     <div>
       <div className="text-sm font-medium">{label}</div>
       <div className="text-sm text-ink-soft">
-        {ok === null ? "Unknown — run a sync" : ok ? okText : warnText}
+        {ok === null ? "Unknown: run a sync" : ok ? okText : warnText}
       </div>
       {ok === false && hint && (
         <div className="mt-1 max-w-xl text-xs text-ink-faint">{hint}</div>
@@ -86,7 +86,7 @@ export default async function SettingsPage() {
       db.query.saasConnections.findMany({
         where: eq(saasConnections.tenantId, ctx.tenant.id),
       }),
-      // Import-kind connectors have no connection row — seats are the signal.
+      // Import-kind connectors have no connection row: seats are the signal.
       db
         .select({ provider: saasSeats.provider, n: sql<number>`count(*)::int` })
         .from(saasSeats)
@@ -230,13 +230,13 @@ export default async function SettingsPage() {
             ok={ctx.tenant.hasP1}
             label="Entra ID P1 sign-in activity"
             okText="Per-user last sign-in is available."
-            warnText="No Entra ID P1/P2 — falling back to usage-report activity."
+            warnText="No Entra ID P1/P2, falling back to usage-report activity."
             hint="Without P1, inactivity detection uses workload reports only, which is slightly less precise."
           />
           <Capability
             ok={ctx.tenant.concealedNames === null ? null : !ctx.tenant.concealedNames}
             label="Identifiable usage reports"
-            okText="Usage reports include user names — per-user findings enabled."
+            okText="Usage reports include user names. Per-user findings enabled."
             warnText="Report names are concealed (Microsoft default since 2021); usage-based findings are aggregate only."
             hint="A Global Admin can change this in Microsoft 365 admin center > Settings > Org settings > Reports (the change is audit-logged)."
           />
@@ -350,7 +350,6 @@ export default async function SettingsPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{row.label}</span>
-                    <Pill tone="gold">Beta</Pill>
                     <span className="text-ink-soft">{row.status}</span>
                   </div>
                   <Link
@@ -400,7 +399,7 @@ export default async function SettingsPage() {
               </ul>
             )}
             <p className="mt-3 text-xs text-ink-faint">
-              Exports, price changes, membership and sync actions — kept with
+              Exports, price changes, membership and sync actions. Kept with
               the workspace, deleted with it.
             </p>
           </Card>
@@ -411,7 +410,7 @@ export default async function SettingsPage() {
         )}
         {ctx.tenant.isDemo && (
           <p className="text-xs text-ink-faint">
-            This is the demo workspace — synthetic data, refreshed on every
+            This is the demo workspace: synthetic data, refreshed on every
             sync. Connect a real tenant from a Microsoft sign-in to see your
             own numbers.
           </p>

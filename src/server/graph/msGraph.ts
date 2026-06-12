@@ -19,7 +19,7 @@ const msalApps = new Map<string, ConfidentialClientApplication>();
 
 /**
  * Right after admin consent, the freshly created service principal can take a
- * minute to propagate to the token service — first syncs would always fail
+ * minute to propagate to the token service, so first syncs would always fail
  * without a retry on this class of error.
  */
 const CONSENT_PROPAGATION_PATTERNS =
@@ -229,20 +229,20 @@ export class MsGraphClient implements GraphClient {
   }
 }
 
-/** 401/403 — the delegated caller lacks the directory role for this read. */
+/** 401/403: the delegated caller lacks the directory role for this read. */
 const isAuthDenied = (err: unknown): boolean =>
   err instanceof GraphHttpError && (err.status === 401 || err.status === 403);
 
 /**
- * GraphClient over a delegated user access token — the one-shot instant
- * scan. Unlike the app-only client, delegated reads are bounded by the
+ * GraphClient over a delegated user access token, used by the one-shot
+ * instant scan. Unlike the app-only client, delegated reads are bounded by the
  * signed-in USER'S directory roles on top of the consented scopes: usage
  * and Copilot reports need a reports-capable role (Reports Reader, Global
  * Reader, ...), signInActivity additionally needs Entra ID P1, and
  * /admin/reportSettings is admin-only. Every role-bounded source therefore
  * degrades on 401/403 into the same signal-absent shapes the sync pipeline
  * already handles for non-P1/concealed tenants. Only the directory reads
- * (users, subscribedSkus) may fail the scan — without them there is nothing
+ * (users, subscribedSkus) may fail the scan: without them there is nothing
  * to analyze.
  */
 export class DelegatedGraphClient implements GraphClient {
@@ -263,7 +263,7 @@ export class DelegatedGraphClient implements GraphClient {
 
   async getSubscribedSkus(): Promise<GraphSubscribedSku[]> {
     // Plain directory read (delegated LicenseAssignment.Read.All suffices,
-    // no role needed). Critical — a failure here fails the scan, same as
+    // no role needed). Critical: a failure here fails the scan, same as
     // the app-only sync.
     return getAllPages<GraphSubscribedSku>(
       this.accessToken,
@@ -295,7 +295,7 @@ export class DelegatedGraphClient implements GraphClient {
       return await getAllPages<GraphUser>(this.accessToken, url);
     } catch (err) {
       // signInActivity is doubly gated for delegated callers: tenant P1 AND
-      // an auditlog-capable user role. Either denial degrades the same way —
+      // an auditlog-capable user role. Either denial degrades the same way:
       // the sync retries without sign-in data and falls back to usage reports.
       if (
         opts.includeSignInActivity &&
@@ -308,14 +308,14 @@ export class DelegatedGraphClient implements GraphClient {
           err instanceof Error ? err.message : String(err),
         );
       }
-      throw err; // plain user list failing is fatal — nothing to analyze
+      throw err; // plain user list failing is fatal: nothing to analyze
     }
   }
 
   async getActiveUserDetail(period: "D90"): Promise<UsageReportRow[]> {
     // Role-bounded: throws GraphHttpError 403 without Reports Reader/Global
     // Reader. The sync records the failure as a warning and the join treats
-    // the missing rows as "no activity signal" — never a thrown scan.
+    // the missing rows as "no activity signal", never a thrown scan.
     return fetchActiveUserDetail(this.accessToken, period);
   }
 

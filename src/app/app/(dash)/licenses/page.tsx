@@ -53,7 +53,7 @@ export default async function LicensesPage() {
         new Map<string, number>(),
       ),
   ].sort((a, b) => a[0].localeCompare(b[0]));
-  // Unpriced connectors (AI consoles) bill API usage, not seats — no price rows.
+  // Unpriced connectors (AI consoles) bill API usage, not seats. No price rows.
   const saasSections = CONNECTORS.filter((c) => !c.unpriced)
     .map(({ provider, label }) => ({
       provider,
@@ -84,7 +84,7 @@ export default async function LicensesPage() {
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-ink-soft">
             Prices start as list-price estimates. Enter what you actually pay
-            per seat and month — every impact figure recalculates from your
+            per seat and month. Every impact figure recalculates from your
             numbers. There is no Microsoft API for tenant pricing.
           </p>
         </div>
@@ -155,7 +155,7 @@ export default async function LicensesPage() {
             {sorted.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-ink-soft">
-                  No license data yet — run a sync.
+                  No license data yet. Run a sync.
                 </td>
               </tr>
             )}
@@ -214,7 +214,7 @@ export default async function LicensesPage() {
         })}
         {sorted.length === 0 && (
           <li className="border border-line bg-card px-4 py-10 text-center text-sm text-ink-soft">
-            No license data yet — run a sync.
+            No license data yet. Run a sync.
           </li>
         )}
       </ul>
@@ -222,7 +222,7 @@ export default async function LicensesPage() {
       {adobeProducts.length > 0 && (
         <section className="rise rise-3 mb-8">
           <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-            Adobe products (beta)
+            Adobe products
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-ink-soft">
             Seat counts come from the Adobe Admin Console; Adobe publishes no
@@ -266,7 +266,7 @@ export default async function LicensesPage() {
       {saasSections.map(({ provider, label, products }) => (
         <section key={provider} className="rise rise-3 mb-8">
           <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-            {label} products (beta)
+            {label} products
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-ink-soft">
             Seat counts come from the {label} connector; {label} publishes no

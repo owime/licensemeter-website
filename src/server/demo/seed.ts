@@ -72,7 +72,7 @@ const seedDemoWorkspace = async (): Promise<void> => {
 
 /**
  * 45 days of synthetic snapshot history so the demo shows the trend chart
- * (a real tenant accumulates these nightly). Waste drifts down — the story
+ * (a real tenant accumulates these nightly). Waste drifts down, the story
  * the product sells. Deterministic; today's row is overwritten by the sync.
  */
 const seedDemoHistory = async (tenantId: string): Promise<void> => {

@@ -26,13 +26,13 @@ const fraunces = Fraunces({
 });
 
 const TITLE =
-  "LicenseMeter — find the Microsoft 365 licenses you pay for but do not use";
+  "LicenseMeter | find the Microsoft 365 licenses you pay for but do not use";
 const DESCRIPTION =
   "LicenseMeter connects read-only to your Microsoft 365 tenant and shows the monthly cost of unused, misassigned and forgotten licenses.";
 
 const BASE = siteUrl();
 
-/* Organization + WebSite entities on every page — the anchor Google and AI
+/* Organization + WebSite entities on every page: the anchor Google and AI
  * answer engines use to resolve what LicenseMeter is and who runs it.
  * Static content; "<" escaped so nothing can terminate the script element. */
 const SITE_LD = {
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "./" },
   applicationName: "LicenseMeter",
   category: "Business Software",
-  title: { default: TITLE, template: "%s — LicenseMeter" },
+  title: { default: TITLE, template: "%s | LicenseMeter" },
   description: DESCRIPTION,
   openGraph: {
     type: "website",

@@ -239,7 +239,7 @@ export const adobeConnections = pgTable("adobe_connections", {
     .defaultNow(),
 });
 
-/** Latest Adobe user snapshot per tenant (entitlements only — Adobe has no usage API). */
+/** Latest Adobe user snapshot per tenant (entitlements only: Adobe has no usage API). */
 export const adobeUsers = pgTable(
   "adobe_users",
   {
@@ -304,7 +304,7 @@ export const saasSeats = pgTable(
 /**
  * Daily API spend per AI connector (openai/anthropic), one row per provider,
  * UTC bucket day and cost category (model / line item). Amounts are USD cents
- * exactly as billed by the provider — never converted into the workspace
+ * exactly as billed by the provider, never converted into the workspace
  * currency or mixed into the seat-spend snapshots.
  */
 export const aiSpendDaily = pgTable(
@@ -350,7 +350,7 @@ export const opsAlerts = pgTable("ops_alerts", {
   suppressedCount: integer("suppressed_count").notNull().default(0),
 });
 
-/** Every Microsoft identity that ever signed in — powers first-sign-in alerts. */
+/** Every Microsoft identity that ever signed in. Powers first-sign-in alerts. */
 export const seenSignins = pgTable("seen_signins", {
   oid: text("oid").primaryKey(),
   tid: text("tid").notNull(),

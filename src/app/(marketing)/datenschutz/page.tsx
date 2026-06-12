@@ -59,7 +59,7 @@ export default function DatenschutzPage() {
           Marketing-Cookies gesetzt.
         </p>
         <p>
-          Zur Reichweitenmessung setzen wir Vercel Web Analytics ein — ein
+          Zur Reichweitenmessung setzen wir Vercel Web Analytics ein, ein
           cookiefreies Verfahren, das ausschließlich aggregierte, anonymisierte
           Seitenaufrufe erfasst (Art. 6 Abs. 1 lit. f DSGVO). Es werden keine
           geräteübergreifenden Profile gebildet und keine IP-Adressen
@@ -111,7 +111,7 @@ export default function DatenschutzPage() {
         <p>
           Vercel Inc. (Hosting, EU-Funktionsregion), Supabase Inc. (Datenbank,
           AWS eu-central-1 Frankfurt), Microsoft (Identitätsplattform und
-          Graph API), Resend Inc. (E-Mail-Versand, EU-Region eu-west-1 — nur
+          Graph API), Resend Inc. (E-Mail-Versand, EU-Region eu-west-1; nur
           Workspace-Benachrichtigungen an Administratoren). Die jeweils
           aktuelle Liste ist Bestandteil des AVV.
         </p>

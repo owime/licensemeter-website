@@ -9,7 +9,7 @@ import { verifyUnsubToken } from "~/server/unsubToken";
 
 /**
  * Unsubscribe endpoint for the welcome email. GET only renders a confirm
- * page — mail scanners and link prefetchers (Outlook SafeLinks, Gmail)
+ * page: mail scanners and link prefetchers (Outlook SafeLinks, Gmail)
  * follow GETs, so the state change happens exclusively on POST. The same
  * POST URL serves RFC 8058 one-click unsubscribe from the List-Unsubscribe
  * header. The HMAC token is the entire authorization; responses are
@@ -24,7 +24,7 @@ const page = (title: string, body: string): Response =>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>${escapeHtml(title)} — LicenseMeter</title>
+<title>${escapeHtml(title)} | LicenseMeter</title>
 </head>
 <body style="margin:0;background:#faf8f3;color:#1c1a16;font-family:Georgia,serif">
 <div style="max-width:560px;margin:0 auto;padding:96px 24px">
@@ -46,7 +46,7 @@ const parse = (
   const sp = req.nextUrl.searchParams;
   const e = sp.get("e") ?? "";
   const t = sp.get("t") ?? "";
-  // Buffer.from(_, "base64url") never throws — garbage just decodes to
+  // Buffer.from(_, "base64url") never throws: garbage just decodes to
   // garbage bytes. The @ check and the HMAC verify are the actual gate.
   const email = Buffer.from(e, "base64url").toString("utf8");
   if (!email.includes("@") || email.length > 254) return null;
@@ -69,8 +69,8 @@ export const GET = (req: NextRequest): Response => {
   return page(
     "Unsubscribe",
     `<p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d;line-height:1.55">
-      No more emails to <strong style="color:#1c1a16">${escapeHtml(parsed.email)}</strong> —
-      confirm below and you are off the list.
+      No more emails to <strong style="color:#1c1a16">${escapeHtml(parsed.email)}</strong>.
+      Confirm below and you are off the list.
     </p>
     <form method="post" style="margin-top:20px">
       <button type="submit"

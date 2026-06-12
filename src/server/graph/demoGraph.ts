@@ -33,7 +33,7 @@ const LAST = [
   "Schulz", "Vogel", "Wagner", "Weber", "Wolf", "Zimmermann",
 ];
 
-/** Deterministic demo identity formula — shared with the Adobe demo fixture. */
+/** Deterministic demo identity formula, shared with the Adobe demo fixture. */
 export const demoUpn = (i: number): string => {
   const first = FIRST[i % FIRST.length]!;
   const last = LAST[(i * 7 + 3) % LAST.length]!;

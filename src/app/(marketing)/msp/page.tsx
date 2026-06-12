@@ -20,7 +20,7 @@ const STEPS = [
   {
     n: "02",
     title: "Their Global Administrator (or Privileged Role Administrator) consents",
-    body: "The client's admin completes Microsoft's standard admin-consent dialog — read-only application permissions, recorded in their audit log.",
+    body: "The client's admin completes Microsoft's standard admin-consent dialog: read-only application permissions, recorded in their audit log.",
   },
   {
     n: "03",
@@ -32,7 +32,7 @@ const STEPS = [
 const FEATURES = [
   {
     title: "Portfolio, sorted by waste",
-    body: "Seats, spend, monthly waste, open findings and sync health for every client workspace in one table — sorted by waste, so you open the right tenant first.",
+    body: "Seats, spend, monthly waste, open findings and sync health for every client workspace in one table, sorted by waste so you open the right tenant first.",
   },
   {
     title: "A price book per client",
@@ -40,16 +40,16 @@ const FEATURES = [
   },
   {
     title: "The QBR deliverable",
-    body: "A branded PDF waste report per tenant — spend, waste and every finding with its monthly cost. Plus CSV exports for finance and generated PowerShell scripts the client's IT reviews and runs.",
+    body: "A branded PDF waste report per tenant: spend, waste and every finding with its monthly cost. Plus CSV exports for finance and generated PowerShell scripts the client's IT reviews and runs.",
   },
   {
     title: "A digest that does the chasing",
-    body: "Each workspace emails its owners and admins a weekly digest with the waste number and the largest open findings — clients see progress between QBRs without logging in.",
+    body: "Each workspace emails its owners and admins a weekly digest with the waste number and the largest open findings. Clients see progress between QBRs without logging in.",
   },
 ] as const;
 
 const TRUST_ITEMS = [
-  "Read-only application permissions — no write scope exists",
+  "Read-only application permissions (no write scope exists)",
   "Remediation ships as PowerShell scripts, run by the client's IT",
   "EU data residency (Postgres, Frankfurt)",
   "Disconnecting a workspace deletes everything",
@@ -106,7 +106,7 @@ export default function MspPage() {
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
         You run Microsoft 365 for five, twenty, fifty clients. LicenseMeter
-        gives every client tenant its own read-only workspace — and gives you
+        gives every client tenant its own read-only workspace, and gives you
         one portfolio, sorted by what each client wastes per month.
       </p>
       <div className="mt-8">
@@ -139,11 +139,11 @@ export default function MspPage() {
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-soft">
           Offboarding is where client money leaks. LicenseMeter cross-checks
           every Adobe, Zoom, Atlassian, Salesforce, ChatGPT and Claude seat
-          (connectors in beta) against the client&rsquo;s directory, so the account you
+          against the client&rsquo;s directory, so the account you
           disabled months ago surfaces with the paid seats it still holds. The
           live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
           ex-employees still licensed, {DEMO_FIGURES.crossVendorLeaverCount} of
-          them in connected apps —{" "}
+          them in connected apps. That&rsquo;s{" "}
           <span className="tnum font-mono text-rust-text">
             € {demoEuros(DEMO_FIGURES.byCategory.leavers)}
           </span>{" "}
@@ -182,7 +182,7 @@ export default function MspPage() {
           >
             security overview
           </Link>{" "}
-          lists every granted scope and what is stored — written to be
+          lists every granted scope and what is stored. It is written to be
           forwarded to the client&rsquo;s security team as is.
         </p>
       </section>

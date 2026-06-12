@@ -89,7 +89,7 @@ export const GET = async (req: NextRequest) => {
 
   // The single most important founder signal there is.
   void notifyOps(
-    `tenant connected: ${grantedTid} by ${stateRow!.email} — first sync starting`,
+    `tenant connected: ${grantedTid} by ${stateRow!.email}, first sync starting`,
   );
 
   // First sync runs after the redirect is sent; the connect page polls status.

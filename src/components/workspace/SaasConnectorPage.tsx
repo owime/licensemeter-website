@@ -10,7 +10,7 @@ import {
   SaasConnectForm,
   SaasDisconnectButton,
 } from "~/components/workspace/SaasConnectForm";
-import { Card, Pill } from "~/components/ui";
+import { Card } from "~/components/ui";
 import { connectorSpec } from "~/lib/connectors";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
@@ -19,7 +19,7 @@ import { saasConnections, saasSeats } from "~/server/db/schema";
 import type { SaasProvider } from "~/server/types";
 
 /**
- * Shared settings subpage for the generic SaaS connectors — one route per
+ * Shared settings subpage for the generic SaaS connectors: one route per
  * provider wraps this with its provider id (the Adobe page predates the
  * framework and keeps its own implementation).
  */
@@ -54,7 +54,7 @@ export const SaasConnectorPage = async ({
       .then((r) => r[0] ?? { n: 0, lastImportAt: null }),
   ]);
   const seatCount = seats.n;
-  /* AI connectors store a fixed sentinel as orgRef — only show the value
+  /* AI connectors store a fixed sentinel as orgRef. Only show the value
      when the spec actually collects one. */
   const showOrgRef = spec.fields.some((f) => f.name === "orgRef");
 
@@ -79,19 +79,16 @@ export const SaasConnectorPage = async ({
             Connectors
           </Link>
         </nav>
-        <div className="mt-2 flex items-center gap-3">
-          <h1 className="font-display text-3xl tracking-tight">
-            {spec.label} connector
-          </h1>
-          <Pill tone="gold">Beta</Pill>
-        </div>
+        <h1 className="mt-2 font-display text-3xl tracking-tight">
+          {spec.label} connector
+        </h1>
       </header>
 
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
             <p className="text-sm text-ink-soft">
-              Connected with demo data — {seatCount} {spec.seatNoun} correlated
+              Connected with demo data: {seatCount} {spec.seatNoun} correlated
               against the directory.{" "}
               {spec.kind === "import"
                 ? `On a real workspace an admin pastes the member export from ${spec.label} here.`
@@ -103,7 +100,7 @@ export const SaasConnectorPage = async ({
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="text-sm">
                     <div className="font-medium">
-                      Imported — {seatCount} {spec.seatNoun}
+                      Imported: {seatCount} {spec.seatNoun}
                     </div>
                     <div className="mt-0.5 text-xs text-ink-soft">
                       last import {fmtDate(seats.lastImportAt)}
@@ -125,7 +122,7 @@ export const SaasConnectorPage = async ({
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="text-sm">
                 <div className="font-medium">
-                  Connected — {seatCount} {spec.seatNoun}
+                  Connected: {seatCount} {spec.seatNoun}
                 </div>
                 <div className="mt-0.5 text-xs text-ink-soft">
                   {showOrgRef && (
@@ -183,7 +180,7 @@ export const SaasConnectorPage = async ({
             </p>
           ) : (
             <p className="mt-3 text-xs text-ink-faint">
-              Seat assignments only — nothing is read from inside {spec.label}.
+              Seat assignments only: nothing is read from inside {spec.label}.
               Prices come from the {provider}:&lt;product&gt; keys in your
               price book.
             </p>

@@ -18,21 +18,21 @@ export const unsubscribeUrl = (email: string): string => {
 /**
  * Welcome email for a fresh landing signup. Callers gate on the fresh insert
  * (the unique email index makes that the once-ever guarantee); this adds the
- * remaining suppressions and never throws — a failed send must not fail the
+ * remaining suppressions and never throws: a failed send must not fail the
  * capture, it alerts ops instead so the founder can follow up personally.
  */
 export const maybeSendWelcome = async (email: string): Promise<void> => {
   try {
     if (!emailEnabled()) return;
     // Idempotency and consent, independent of the caller: no signup row,
-    // already welcomed, or unsubscribed all mean no send — which keeps the
+    // already welcomed, or unsubscribed all mean no send, which keeps the
     // function safe for retries or future callers beyond captureEmail.
     const signup = await db.query.emailSignups.findFirst({
       where: eq(emailSignups.email, email),
       columns: { welcomeSentAt: true, unsubscribedAt: true },
     });
     if (!signup || signup.welcomeSentAt || signup.unsubscribedAt) return;
-    // Existing members already have a workspace — the connect pitch is wrong
+    // Existing members already have a workspace: the connect pitch is wrong
     // for them, and they never asked for the guide.
     const member = await db.query.memberships.findFirst({
       where: eq(memberships.email, email),

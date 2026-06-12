@@ -119,7 +119,7 @@ export default async function FindingsPage({
     ? "No resolved findings yet."
     : ruleParam
       ? "No findings match this filter."
-      : "No open findings — nothing to reclaim right now.";
+      : "No open findings. Nothing to reclaim right now.";
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -260,7 +260,7 @@ export default async function FindingsPage({
                   <td className="tnum px-4 py-3 text-right font-mono font-medium text-rust-text">
                     {f.monthlyImpactCents > 0
                       ? fmtMoney(f.monthlyImpactCents, currency)
-                      : "—"}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-ink-soft">
                     {fmtDate(f.firstSeenAt)}
@@ -314,7 +314,7 @@ export default async function FindingsPage({
                 <span className="tnum font-mono text-sm font-medium text-rust-text">
                   {f.monthlyImpactCents > 0
                     ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                    : "—"}
+                    : "-"}
                 </span>
               </div>
               {isAdmin && !showResolved && (
@@ -338,7 +338,7 @@ export default async function FindingsPage({
           className="-mt-4 mb-8 flex flex-wrap items-center justify-between gap-3"
         >
           <span className="tnum text-xs text-ink-soft">
-            Showing {(page - 1) * PAGE_SIZE + 1}–
+            Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
             {Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
           </span>
           <div className="flex items-center gap-2">

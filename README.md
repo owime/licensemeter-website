@@ -19,7 +19,7 @@ puts a monthly price on every wasted seat.
 | Licensed guest account | `userType = Guest` holding paid licenses |
 
 Every finding carries a monthly cost from an editable per-tenant price book
-(prefilled with list-price estimates — there is no Microsoft API for tenant
+(prefilled with list-price estimates, as there is no Microsoft API for tenant
 pricing), a CSV export for finance, and a generated PowerShell remediation
 script for IT. LicenseMeter itself never writes to the tenant.
 
@@ -39,7 +39,7 @@ Detection adapts to what the customer tenant allows:
 - Next.js 15 (App Router) + Tailwind CSS 4, deployable on Vercel
 - MSAL auth-code flow with PKCE for multi-tenant Entra sign-in
   (`/organizations`), jose-signed session cookies
-- Drizzle ORM — Postgres in production, embedded PGlite for local dev/demo
+- Drizzle ORM: Postgres in production, embedded PGlite for local dev/demo
 - MSAL (client credentials) for app-only Graph access per customer tenant
 - Vitest unit tests for the waste engine, signal joining, and CSV parsing
 
@@ -51,7 +51,7 @@ npm run db:push        # creates the embedded PGlite database
 npm run dev
 ```
 
-Open http://localhost:3000 and click "Explore the demo workspace" — demo mode
+Open http://localhost:3000 and click "Explore the demo workspace". Demo mode
 (`DEMO_MODE=true` in `.env`) seeds a deterministic fixture tenant with ~155
 users and all six waste patterns, no Entra setup required.
 
@@ -89,7 +89,7 @@ Customer tenant (Entra ID + Graph)        Adobe Admin Console (planned)
 
 ## Roadmap
 
-Shipped since v1: Adobe connector (beta, offboarding-leak detection), trend
+Shipped since v1: Adobe connector (offboarding-leak detection), trend
 charts, MSP multi-workspace, per-workspace activity log, weekly digest
 (activates with a Resend key), ops alerting webhook, health endpoint.
 

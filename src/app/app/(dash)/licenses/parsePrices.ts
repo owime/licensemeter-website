@@ -41,12 +41,12 @@ const germanDecimal = (cells: string[]): string | null => {
  * Accepted shapes per line (key first, price last):
  * - "key,price" with price as "14.90", "14,90" or "15"
  * - the price-book export format "key,display_name,price", so an edited
- *   export round-trips — quoted names with embedded commas included
+ *   export round-trips, quoted names with embedded commas included
  * - semicolon- or tab-separated lines (German Excel CSV / spreadsheet paste)
  *
  * Header rows (first cell "key") and blank lines are dropped; anything else
  * that yields no key or no parseable price lands in `invalid`. Key existence
- * is NOT checked here — the server action resolves keys against the tenant.
+ * is NOT checked here: the server action resolves keys against the tenant.
  */
 export const parsePrices = (text: string): ParsedPrices => {
   const rows: ParsedPriceRow[] = [];

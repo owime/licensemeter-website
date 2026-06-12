@@ -18,8 +18,8 @@ export type ParsedMembers =
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Placeholders admin panels print instead of a last-active date. */
-const NO_DATE = new Set(["", "never", "-", "—"]);
+/** Placeholders admin panels print instead of a last-active date (\u2014 is the em dash some tables render). */
+const NO_DATE = new Set(["", "never", "-", "\u2014"]);
 
 /**
  * Web tables paste as TSV and German Excel exports as semicolon CSV; both
@@ -62,7 +62,7 @@ const splitProducts = (raw: string): string[] | null => {
   return parts.length > 0 ? parts : null;
 };
 
-/** ISO date-only strings parse as UTC midnight — desired for day math. */
+/** ISO date-only strings parse as UTC midnight, desired for day math. */
 const parseLastActive = (raw: string): Date | null => {
   if (NO_DATE.has(raw.toLowerCase())) return null;
   const ms = Date.parse(raw);
@@ -90,7 +90,7 @@ export const parseMembers = (text: string): ParsedMembers => {
   if (emailCol < 0)
     return {
       error:
-        "No email column found — paste the member table including its header row",
+        "No email column found. Paste the member table including its header row",
     };
   const nameCol = findColumn(headers, /^(display\s*)?name$/);
   const firstNameCol = findColumn(headers, /^first\s*name$/);

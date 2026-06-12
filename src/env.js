@@ -11,7 +11,7 @@ export const env = createEnv({
     /**
      * Postgres connection string for production (Neon/Supabase EU etc.).
      * When unset, the app falls back to an embedded PGlite database under
-     * .pglite/ — development and demo only.
+     * .pglite/, development and demo only.
      */
     DATABASE_URL: z.string().url().optional(),
 
@@ -49,7 +49,7 @@ export const env = createEnv({
     DEMO_MODE: z.enum(["true", "false"]).optional(),
 
     /**
-     * Incoming-webhook URL (Teams/Slack compatible) for operational alerts —
+     * Incoming-webhook URL (Teams/Slack compatible) for operational alerts:
      * failed syncs, cron errors. Optional; alerts log to console without it.
      */
     ALERT_WEBHOOK_URL: z.string().url().optional(),
@@ -98,7 +98,7 @@ export const env = createEnv({
 export const isDemoMode = () => env.DEMO_MODE === "true";
 
 /**
- * Like appBaseUrl but never throws — for sitemap/OG metadata where a localhost
+ * Like appBaseUrl but never throws, for sitemap/OG metadata where a localhost
  * fallback during local production builds is harmless.
  */
 export const siteUrl = () => env.APP_BASE_URL ?? "http://localhost:3000";

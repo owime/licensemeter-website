@@ -2,11 +2,11 @@
  * Pure math behind the landing-page ROI calculator. Deliberately React-free
  * so roiMath.test.ts can pin the cents arithmetic, the plan-pick boundaries
  * and the break-even logic; the component only formats what this returns.
- * All money is integer cents — no float euros anywhere.
+ * All money is integer cents, no float euros anywhere.
  */
 import { DEMO_FIGURES } from "~/lib/demoFigures";
 
-/** Mirrors the tiers on /pricing — keep both in sync. maxSeats is the pick boundary. */
+/** Mirrors the tiers on /pricing - keep both in sync. maxSeats is the pick boundary. */
 export const PLAN_TIERS = [
   { name: "Starter", priceEur: 79, maxSeats: 250 },
   { name: "Growth", priceEur: 199, maxSeats: 1000 },

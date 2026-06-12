@@ -83,11 +83,11 @@ export const generateRemediationScript = (rows: FindingRow[]): string => {
 
       if (f.rule.startsWith("saas_")) {
         const consoles: Record<string, string> = {
-          zoom: "Zoom web portal (admin.zoom.us > User Management) — downgrade to Basic or remove",
+          zoom: "Zoom web portal (admin.zoom.us > User Management): downgrade to Basic or remove",
           atlassian:
-            "Atlassian admin (admin.atlassian.com > Directory) — remove product access",
+            "Atlassian admin (admin.atlassian.com > Directory): remove product access",
           salesforce:
-            "Salesforce Setup > Users — deactivate or reassign the license",
+            "Salesforce Setup > Users: deactivate or reassign the license",
         };
         const provider =
           typeof detail.provider === "string" ? detail.provider : "";

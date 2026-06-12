@@ -1,8 +1,8 @@
 /**
- * The LicenseMeter mark: a tally being struck out — count the seats, strike
+ * The LicenseMeter mark: a tally being struck out. Count the seats, strike
  * the waste. Colors are brand constants matching the tokens in globals.css;
  * "light" sits on paper surfaces (ink bars, rust strike), "dark" sits on the
- * ink sidebar (paper bars, rust-bright strike — rust reads only 3.3:1 there).
+ * ink sidebar (paper bars, rust-bright strike - rust reads only 3.3:1 there).
  * The favicon set (src/app/icon.svg, scripts/make-icons.mjs) carries the same
  * geometry in the light palette and must be regenerated if this changes.
  */

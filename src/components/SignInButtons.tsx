@@ -65,7 +65,7 @@ export const SignInButtons = ({
     {showNote && (
       <p className="mt-3 text-xs text-ink-faint">
         The demo needs no account. Scanning your own tenant signs you in with
-        Microsoft first — the read-only consent is a separate, clearly
+        Microsoft first. The read-only consent is a separate, clearly
         explained step.
       </p>
     )}

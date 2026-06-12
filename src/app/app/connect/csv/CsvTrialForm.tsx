@@ -11,7 +11,7 @@ const inputClass =
 /**
  * Two file inputs + optional workspace name, wrapped in useActionState so
  * parse/guard failures land in the aria-live region (ImportPricesForm
- * pattern). Success never returns — the action redirects to /app.
+ * pattern). Success never returns: the action redirects to /app.
  */
 export const CsvTrialForm = () => {
   const [result, formAction, pending] = useActionState(
@@ -36,7 +36,7 @@ export const CsvTrialForm = () => {
         />
         <p className="text-xs text-ink-soft">
           Microsoft 365 admin center &gt; Users &gt; Active users &gt; Export
-          users — who holds which licenses, and who is blocked.
+          users. It shows who holds which licenses, and who is blocked.
         </p>
       </div>
 
@@ -52,7 +52,7 @@ export const CsvTrialForm = () => {
           className={inputClass}
         />
         <p className="text-xs text-ink-soft">
-          Reports &gt; Usage &gt; Active users &gt; Export (detail) — adds
+          Reports &gt; Usage &gt; Active users &gt; Export (detail). This adds
           inactivity detection on top of the offboarding and overlap checks.
         </p>
       </div>

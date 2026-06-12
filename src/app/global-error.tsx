@@ -1,6 +1,6 @@
 "use client";
 
-/** Last-resort error boundary — minimal because globals.css may not be loaded. */
+/** Last-resort error boundary, minimal because globals.css may not be loaded. */
 export default function GlobalError({
   reset,
 }: {

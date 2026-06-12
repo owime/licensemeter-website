@@ -219,7 +219,7 @@ describe("provider mappers", () => {
     ).toBe(ORIGIN);
     expect(normalizeSalesforceOrgRef("ACME.My.Salesforce.com")).toBe(ORIGIN);
     // Deliberate choice: a pasted http URL is upgraded to https rather than
-    // rejected — the host is still pinned to *.my.salesforce.com and the
+    // rejected, because the host is still pinned to *.my.salesforce.com and the
     // stored origin (the only thing we ever fetch) is always https.
     expect(normalizeSalesforceOrgRef("http://acme.my.salesforce.com")).toBe(
       ORIGIN,

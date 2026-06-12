@@ -85,7 +85,7 @@ export type ReportData = {
 
 export const WasteReport = ({ data }: { data: ReportData }) => (
   <Document
-    title={`License waste report — ${data.tenantName}`}
+    title={`License waste report: ${data.tenantName}`}
     author="LicenseMeter"
   >
     <Page size="A4" style={styles.page}>

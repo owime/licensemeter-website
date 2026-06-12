@@ -8,7 +8,7 @@ import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 export const metadata: Metadata = {
   title: "Connectors",
   description:
-    "Setup guides for every LicenseMeter connector: Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude — read-only credentials, official vendor documentation, what is read and what never is.",
+    "Setup guides for every LicenseMeter connector: Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude. Read-only credentials, official vendor documentation, what is read and what never is.",
 };
 
 const BASE = siteUrl();
@@ -38,7 +38,7 @@ export default function ConnectorsIndexPage() {
         Connect what your company already pays for.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
-        Microsoft 365 is the core connection — granted once through
+        Microsoft 365 is the core connection, granted once through
         Microsoft&rsquo;s admin-consent dialog, documented in the{" "}
         <Link
           href="/security"

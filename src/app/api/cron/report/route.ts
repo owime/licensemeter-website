@@ -15,8 +15,8 @@ export const maxDuration = 300;
  * Monthly PDF waste report to workspace owners/admins, for workspaces that
  * opted in via Settings. Runs on the 1st right after the nightly sync, so
  * the numbers are hours old at most. Trial workspaces (consentedAt null)
- * are included — their imported data is valid and the report is the
- * retention hook — but tenants with no stored data at all are skipped.
+ * are included: their imported data is valid and the report is the
+ * retention hook. But tenants with no stored data at all are skipped.
  * No-op until Resend is configured.
  */
 export const GET = async (req: NextRequest) => {
@@ -45,7 +45,7 @@ export const GET = async (req: NextRequest) => {
             isNotNull(memberships.oid),
           ),
         }),
-        // Cheap emptiness probes — never render a PDF of nothing but zeros.
+        // Cheap emptiness probes: never render a PDF of nothing but zeros.
         db.query.tenantSkus.findFirst({
           where: eq(tenantSkus.tenantId, tenant.id),
           columns: { skuId: true },
@@ -62,7 +62,7 @@ export const GET = async (req: NextRequest) => {
 
       const pdf = await renderWasteReportPdf(tenant.id);
       const tenantLabel = tenant.name ?? "your tenant";
-      // With unpriced SKUs the waste is 0 — lead with the findings count
+      // With unpriced SKUs the waste is 0. Lead with the findings count
       // instead of an underwhelming zero (same fallback as the digest).
       const subject =
         pdf.monthlyWasteCents > 0

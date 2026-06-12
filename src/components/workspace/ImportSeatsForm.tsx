@@ -62,7 +62,7 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
         className="text-sm text-ink-soft"
       >
         Paste the member table from the {spec.label} admin panel including its
-        header row — copied web tables and CSV exports both work. An email
+        header row. Copied web tables and CSV exports both work. An email
         column is required; name, status, plan and last-active columns are
         picked up when present. A new import replaces the current snapshot.
       </label>
