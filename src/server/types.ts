@@ -129,7 +129,8 @@ export type AuditAction =
   | "seats_imported"
   | "seats_import_cleared"
   | "renewal_date_changed"
-  | "leak_alerts_changed";
+  | "leak_alerts_changed"
+  | "monthly_report_changed";
 
 /** Aggregate counts captured when user identities are concealed in usage reports. */
 export type AggregateUsage = {

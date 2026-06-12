@@ -6,6 +6,7 @@ import { DangerZone } from "~/components/workspace/DangerZone";
 import { InviteForm } from "~/components/workspace/InviteForm";
 import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
+import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle";
 import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
 import { Button, Card, Pill } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
@@ -203,6 +204,18 @@ export default async function SettingsPage() {
                 {isAdmin ? (
                   <LeakAlertsToggle initial={ctx.tenant.leakAlerts} />
                 ) : ctx.tenant.leakAlerts ? (
+                  "On"
+                ) : (
+                  "Off"
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink-faint">Monthly PDF report</dt>
+              <dd className="mt-0.5">
+                {isAdmin ? (
+                  <MonthlyReportToggle initial={ctx.tenant.monthlyReport} />
+                ) : ctx.tenant.monthlyReport ? (
                   "On"
                 ) : (
                   "Off"

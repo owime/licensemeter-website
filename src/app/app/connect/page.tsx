@@ -14,6 +14,19 @@ const ERROR_TEXT: Record<string, string> = {
   expired_state: "The consent link expired (15 minutes). Please retry.",
   consent_declined: "Consent was declined in the Microsoft dialog.",
   consent_incomplete: "Microsoft did not confirm the consent. Please retry.",
+  scan_declined:
+    "The Microsoft permissions dialog was cancelled or declined — no scan was run. You can retry any time.",
+  scan_needs_admin:
+    "Your organization requires admin approval for the scan's delegated permissions. An Application Administrator or Cloud Application Administrator can run it — or start with the CSV trial below.",
+  scan_demo: "The instant scan is not available for the demo workspace.",
+  scan_already_synced:
+    "Your organization already has a connected workspace with the nightly sync — open it from the workspace switcher.",
+  scan_already_synced_invite:
+    "Your organization already has a connected workspace — ask an admin there for an invite.",
+  scan_trial_invite:
+    "A trial workspace for your organization already exists — ask the colleague who created it for an invite.",
+  scan_mismatch:
+    "The account that approved the scan does not match your signed-in account. Sign in with the account you want to scan with and retry.",
 };
 
 export const metadata = {
@@ -33,8 +46,8 @@ export default async function ConnectPage({
   const error = typeof sp.error === "string" ? sp.error : null;
 
   // Already connected and syncing finished -> straight to the dashboard.
-  // CSV-trial workspaces (consentedAt null) stay: this page IS their upgrade
-  // path to the real read-only sync.
+  // Trial workspaces (consentedAt null — instant scan or CSV) stay: this
+  // page IS their upgrade path to the real read-only sync.
   if (ctx?.tenant.consentedAt && status !== "syncing") redirect("/app");
 
   return (
@@ -59,11 +72,16 @@ export default async function ConnectPage({
         </div>
       ) : (
         <>
-          <p className="mt-4 text-ink-soft">
-            A Global Administrator of your Microsoft 365 tenant grants
-            LicenseMeter <strong className="text-ink">read-only</strong>{" "}
-            application permissions once. Nothing is ever written to your
-            tenant, and mailbox or file contents are never readable.
+          <p className="mt-6 text-sm font-medium text-ink">
+            Connect the read-only sync
+          </p>
+          <p className="mt-1 text-ink-soft">
+            A Global Administrator or Privileged Role Administrator of your
+            Microsoft 365 tenant grants LicenseMeter{" "}
+            <strong className="text-ink">read-only</strong> application
+            permissions once — that unlocks nightly monitoring, leak alerts
+            and trends. Nothing is ever written to your tenant, and mailbox
+            or file contents are never readable.
           </p>
 
           <ul className="mt-6 border border-line bg-card">
@@ -115,6 +133,30 @@ export default async function ConnectPage({
               </p>
 
               <div className="mt-8 border border-line bg-card p-4">
+                <p className="text-sm font-medium text-ink">
+                  Run an instant scan
+                </p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  One-time scan with the same read-only scopes, running with{" "}
+                  <strong className="text-ink">your</strong> permissions while
+                  you are signed in — no standing access, no stored tokens.
+                  Works for Application Administrators and Cloud Application
+                  Administrators, who cannot grant the consent above.
+                </p>
+                <p className="mt-2 text-xs text-ink-faint">
+                  Data quality note: usage-based inactivity detection needs a
+                  reports-capable role (Reports Reader, Global Reader).
+                  Without one, the scan still finds disabled accounts, guests,
+                  shelfware and license overlaps.
+                </p>
+                <div className="mt-3">
+                  <a href="/api/scan/start" className={buttonClass("secondary")}>
+                    Run an instant scan
+                  </a>
+                </div>
+              </div>
+
+              <div className="mt-4 border border-line bg-card p-4">
                 <p className="text-sm text-ink-soft">
                   No admin with consent rights at hand? Start with the CSV
                   trial — two admin-center exports, no consent at all.

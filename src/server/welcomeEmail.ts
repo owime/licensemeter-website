@@ -120,6 +120,9 @@ export const welcomeHtml = (args: {
     No admin with consent rights at hand? Start with the
     <a href="${escapeHtml(csvTrialUrl)}" style="color:#1c1a16">CSV trial</a> —
     your number from two admin-center exports, no consent at all.
+    An Application Administrator? The
+    <a href="${escapeHtml(connectUrl)}" style="color:#1c1a16">instant scan</a>
+    runs with your own permissions — one click after sign-in.
   </p>
 
   <div style="border:1px solid #d2ccbb;background:#faf8f3;padding:20px 22px;margin:0 0 28px">

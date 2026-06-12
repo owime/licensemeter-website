@@ -1,8 +1,10 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { after, NextResponse, type NextRequest } from "next/server";
 
 import { env } from "~/env";
 import {
+  getScanClient,
   getSignInClient,
+  SCAN_SCOPES,
   SIGNIN_SCOPES,
   signInRedirectUri,
 } from "~/server/auth/msal";
@@ -13,11 +15,18 @@ import {
   readOAuthCookie,
   SESSION_COOKIE,
   sessionCookieOptions,
+  type OAuthPayload,
 } from "~/server/auth/session";
+import { auth } from "~/server/auth";
+import { WORKSPACE_COOKIE, workspaceCookieOptions } from "~/server/access";
 import { db } from "~/server/db";
 import { seenSignins } from "~/server/db/schema";
 import { notifyOps } from "~/server/ops";
+import { resolveScanTenant, runDelegatedScan } from "~/server/scan";
 import { sql } from "drizzle-orm";
+
+/** The delegated instant scan runs inside after() on this route. */
+export const maxDuration = 300;
 
 const backToLanding = (req: NextRequest, reason: string) => {
   console.error(`[auth] sign-in failed: ${reason}`);
@@ -26,10 +35,115 @@ const backToLanding = (req: NextRequest, reason: string) => {
   return res;
 };
 
+const backToConnect = (req: NextRequest, code: string, reason: string) => {
+  console.error(`[scan] instant scan aborted (${code}): ${reason}`);
+  const res = NextResponse.redirect(
+    new URL(`/app/connect?error=${code}`, req.url),
+  );
+  res.cookies.delete(OAUTH_COOKIE);
+  return res;
+};
+
+/** Consent errors that mean "your tenant requires an admin for this". */
+const NEEDS_ADMIN_PATTERN = /AADSTS65004|AADSTS9009[45]|AADSTS65001|admin/i;
+
+/**
+ * Instant-scan return leg (oauth cookie carries kind:"scan"): the user must
+ * still hold a valid session — the scan piggybacks on it and NEVER creates
+ * or modifies the session cookie. Redeems the code for a one-shot delegated
+ * Graph token, applies the same workspace guard matrix as the CSV trial,
+ * kicks the sync after the redirect and lets the connect page poll it.
+ */
+const handleScanCallback = async (
+  req: NextRequest,
+  oauth: OAuthPayload,
+): Promise<Response> => {
+  const params = req.nextUrl.searchParams;
+  const code = params.get("code");
+  const state = params.get("state");
+  const error = params.get("error");
+
+  const session = await auth();
+  if (!session?.user?.oid) {
+    const res = NextResponse.redirect(new URL("/", req.url));
+    res.cookies.delete(OAUTH_COOKIE);
+    return res;
+  }
+  if (session.user.isDemo) {
+    return backToConnect(req, "scan_demo", "demo session");
+  }
+
+  if (error) {
+    const detail = `${error}: ${params.get("error_description") ?? ""}`;
+    return backToConnect(
+      req,
+      NEEDS_ADMIN_PATTERN.test(detail) ? "scan_needs_admin" : "scan_declined",
+      detail,
+    );
+  }
+  if (!code || !state || state !== oauth.state) {
+    return backToConnect(req, "invalid_state", "state mismatch");
+  }
+
+  let accessToken: string;
+  let claims: VerifiedEntraClaims;
+  try {
+    const result = await getScanClient().acquireTokenByCode({
+      code,
+      scopes: SCAN_SCOPES,
+      redirectUri: signInRedirectUri(),
+      codeVerifier: oauth.verifier,
+    });
+    if (!result.accessToken) throw new Error("no access token in redemption");
+    accessToken = result.accessToken;
+    claims = await verifyEntraIdToken(
+      result.idToken,
+      env.AUTH_MICROSOFT_ENTRA_ID_ID ?? "",
+    );
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return backToConnect(
+      req,
+      NEEDS_ADMIN_PATTERN.test(detail) ? "scan_needs_admin" : "scan_declined",
+      `token redemption failed: ${detail}`,
+    );
+  }
+
+  // The token must belong to the signed-in user: the scan runs with THEIR
+  // permissions and writes into the workspace keyed by THEIR tenant.
+  if (claims.tid !== session.user.tid || claims.oid !== session.user.oid) {
+    return backToConnect(req, "scan_mismatch", "token identity != session");
+  }
+
+  const resolved = await resolveScanTenant(session.user);
+  if (!resolved.ok) return backToConnect(req, resolved.error, "guard matrix");
+  const tenantId = resolved.tenantId;
+
+  void notifyOps(
+    `instant scan started: ${session.user.upn} (tenant ${session.user.tid})`,
+  );
+
+  // The scan runs after the redirect is sent; the connect page polls the
+  // sync status exactly like the consent flow's first sync.
+  after(async () => {
+    await runDelegatedScan(tenantId, accessToken);
+  });
+
+  const res = NextResponse.redirect(
+    new URL("/app/connect?status=syncing", req.url),
+  );
+  res.cookies.delete(OAUTH_COOKIE);
+  // Make the scanned workspace the active one so the poller (and /app)
+  // land on it — same as the CSV trial. The session cookie stays untouched.
+  res.cookies.set(WORKSPACE_COOKIE, tenantId, workspaceCookieOptions());
+  return res;
+};
+
 /**
  * Auth-code redirect leg: validate state, redeem the code via MSAL (which
  * performs the token exchange over TLS directly with Entra), establish the
- * session from the id_token claims.
+ * session from the id_token claims. The integrity-protected OAuth cookie's
+ * kind branches the delegated instant scan off before the sign-in logic.
  */
 export const GET = async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
@@ -37,11 +151,13 @@ export const GET = async (req: NextRequest) => {
   const state = params.get("state");
   const error = params.get("error");
 
+  const oauth = await readOAuthCookie();
+  if (oauth?.kind === "scan") return handleScanCallback(req, oauth);
+
   if (error) {
     return backToLanding(req, `${error}: ${params.get("error_description") ?? ""}`);
   }
 
-  const oauth = await readOAuthCookie();
   if (!oauth) return backToLanding(req, "missing or expired oauth cookie");
   if (!code || !state || state !== oauth.state) {
     return backToLanding(req, "state mismatch");

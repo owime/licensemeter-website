@@ -141,18 +141,27 @@ const syncAiSpend = async (
  * Full sync for one tenant: pull Graph data, persist the snapshot, run the
  * waste analysis, diff findings, and record a per-step run log. Non-critical
  * steps degrade to warnings; the sync continues with what it has.
+ *
+ * An injected client overrides the default selection — the delegated instant
+ * scan passes a DelegatedGraphClient bound to the admin's one-shot token.
  */
-export const runSync = async (tenantId: string): Promise<SyncResult> => {
+export const runSync = async (
+  tenantId: string,
+  { client: clientOverride }: { client?: GraphClient } = {},
+): Promise<SyncResult> => {
   const tenant = await db.query.tenants.findFirst({
     where: eq(tenants.id, tenantId),
   });
   if (!tenant) throw new Error(`Unknown tenant ${tenantId}`);
 
-  const client: GraphClient = tenant.isDemo
-    ? new DemoGraphClient()
-    : new MsGraphClient(tenant.tid);
+  const client: GraphClient =
+    clientOverride ??
+    (tenant.isDemo ? new DemoGraphClient() : new MsGraphClient(tenant.tid));
 
-  // Fail runs stuck in "running" (crashed process) so the lock cannot deadlock.
+  // Fail runs stuck in "running" (crashed process) so the lock cannot
+  // deadlock. Six minutes: every sync path runs under maxDuration 300s, so a
+  // running row older than that is dead — and the instant-scan poller should
+  // not show "syncing" for longer than this after a hard kill.
   await db
     .update(syncRuns)
     .set({ status: "failed", error: "stale run", finishedAt: new Date() })
@@ -160,7 +169,7 @@ export const runSync = async (tenantId: string): Promise<SyncResult> => {
       and(
         eq(syncRuns.tenantId, tenantId),
         eq(syncRuns.status, "running"),
-        lt(syncRuns.startedAt, new Date(Date.now() - 15 * 60 * 1000)),
+        lt(syncRuns.startedAt, new Date(Date.now() - 6 * 60 * 1000)),
       ),
     );
 

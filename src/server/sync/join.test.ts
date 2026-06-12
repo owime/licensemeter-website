@@ -93,6 +93,37 @@ describe("joinSignals", () => {
     );
   });
 
+  it("degrades to no activity signal without P1 and without usage rows (role-denied delegated scan)", () => {
+    const result = joinSignals({
+      hasP1: false,
+      graphUsers: [graphUser({})],
+      usageRows: [],
+      copilotRows: [],
+    });
+    // "full" here would flag every user as never active despite zero data.
+    expect(result.activitySignal).toBe("none");
+    expect(result.copilotSignal).toBe("none");
+    expect(result.usageAggregate).toBeUndefined();
+  });
+
+  it("keeps the full signal without P1 when joinable usage rows exist", () => {
+    const result = joinSignals({
+      hasP1: false,
+      graphUsers: [graphUser({})],
+      usageRows: [
+        {
+          userPrincipalName: "jane.doe@contoso.example",
+          exchangeLastActivityDate: "2026-06-01",
+          oneDriveLastActivityDate: null,
+          sharePointLastActivityDate: null,
+          teamsLastActivityDate: null,
+        },
+      ],
+      copilotRows: [],
+    });
+    expect(result.activitySignal).toBe("full");
+  });
+
   it("degrades to no activity signal without P1 and with concealed reports", () => {
     const result = joinSignals({
       hasP1: false,

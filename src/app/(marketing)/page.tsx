@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
+import { RoiCalculator } from "~/components/RoiCalculator";
 import { SignInButtons } from "~/components/SignInButtons";
 import { Pill } from "~/components/ui";
 import {
@@ -11,6 +12,11 @@ import {
 } from "~/lib/demoFigures";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
+import { getScanStats } from "~/server/marketingStats";
+
+/** "12,4" — German decimal convention, matching the euro figures around it. */
+const fmtPct = (n: number): string =>
+  new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 }).format(n);
 
 /* Plain-text names by design: referencing compatibility is nominative use;
  * official logos would need each vendor's permission (see footer notice). */
@@ -134,10 +140,14 @@ const trustItemClass =
  * crawlers alike. */
 export const revalidate = 86400;
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const entraConfigured = Boolean(env.AUTH_MICROSOFT_ENTRA_ID_ID);
   const demoEnabled = isDemoMode();
   const month = new Date().toLocaleString("en-US", { month: "long" });
+  /* Build/ISR-time aggregate; null (renders nothing) until the numbers are
+   * worth quoting. Reads the db without any request-bound API, so the route
+   * stays fully static. */
+  const stats = await getScanStats();
 
   return (
     <main>
@@ -180,6 +190,12 @@ export default function LandingPage() {
               </Link>
             </li>
           </ul>
+          {stats && (
+            <p className="mt-4 text-[13px] text-ink-faint">
+              Across {stats.tenants} connected tenants, an average of{" "}
+              {fmtPct(stats.avgWastePct)} percent of license spend is waste.
+            </p>
+          )}
         </div>
 
         <div className="rise rise-3 self-center border border-line bg-card shadow-[0_1px_0_var(--color-line)]">
@@ -311,6 +327,19 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pt-16">
+        <h2 className="font-display text-3xl tracking-tight text-balance">
+          What does your tenant leak?
+        </h2>
+        <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
+          Your assumptions, your math — the scan replaces guesses with your
+          actual number.
+        </p>
+        <div className="mt-8">
+          <RoiCalculator />
         </div>
       </section>
 

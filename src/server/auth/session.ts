@@ -53,11 +53,23 @@ export const createSessionToken = async (user: SessionUser): Promise<string> =>
     .setExpirationTime(`${SESSION_MAX_AGE}s`)
     .sign(key);
 
-/** State + PKCE verifier for the in-flight OAuth redirect, integrity-protected. */
-export const createOAuthToken = async (payload: {
+/**
+ * Which redirect flow the OAuth cookie belongs to. Absent (legacy payloads
+ * and the regular sign-in) means sign-in; "scan" marks the delegated
+ * instant-scan flow, which shares the registered redirect URI.
+ */
+export type OAuthFlowKind = "scan";
+
+export type OAuthPayload = {
   state: string;
   verifier: string;
-}): Promise<string> =>
+  kind?: OAuthFlowKind;
+};
+
+/** State + PKCE verifier for the in-flight OAuth redirect, integrity-protected. */
+export const createOAuthToken = async (
+  payload: OAuthPayload,
+): Promise<string> =>
   new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -92,15 +104,30 @@ export const auth = async (): Promise<Session | null> => {
   };
 };
 
-export const readOAuthCookie = async (): Promise<{
-  state: string;
-  verifier: string;
-} | null> => {
-  const token = (await cookies()).get(OAUTH_COOKIE)?.value;
-  const payload = await verifyToken<{ state?: string; verifier?: string }>(token);
+/**
+ * Verifies and shapes an OAuth-cookie token. Backward compatible: payloads
+ * signed without a kind (in-flight sign-ins from before the scan flow
+ * shipped) still verify and read as plain sign-ins; any unknown kind value
+ * is treated as a sign-in too, never as a scan.
+ */
+export const parseOAuthToken = async (
+  token: string | undefined,
+): Promise<OAuthPayload | null> => {
+  const payload = await verifyToken<{
+    state?: string;
+    verifier?: string;
+    kind?: string;
+  }>(token);
   if (!payload?.state || !payload?.verifier) return null;
-  return { state: payload.state, verifier: payload.verifier };
+  return {
+    state: payload.state,
+    verifier: payload.verifier,
+    ...(payload.kind === "scan" ? { kind: "scan" as const } : {}),
+  };
 };
+
+export const readOAuthCookie = async (): Promise<OAuthPayload | null> =>
+  parseOAuthToken((await cookies()).get(OAUTH_COOKIE)?.value);
 
 /** For server actions (sign out from the sidebar). */
 export const clearSessionCookie = async (): Promise<void> => {

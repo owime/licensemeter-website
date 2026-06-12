@@ -117,6 +117,51 @@ const getAllPages = async <T>(token: string, firstUrl: string): Promise<T[]> => 
 const USER_FIELDS =
   "id,displayName,userPrincipalName,accountEnabled,userType,createdDateTime,assignedLicenses,licenseAssignmentStates";
 
+/** Office 365 active-user-detail CSV -> usage rows (shared by both clients). */
+const fetchActiveUserDetail = async (
+  token: string,
+  period: "D90",
+): Promise<UsageReportRow[]> => {
+  const res = await graphFetch(
+    token,
+    `${GRAPH}/reports/getOffice365ActiveUserDetail(period='${period}')`,
+  );
+  const text = await res.text();
+  return csvToRecords(text).map((r) => ({
+    userPrincipalName: r["User Principal Name"] ?? "",
+    exchangeLastActivityDate: reportDate(r["Exchange Last Activity Date"]),
+    oneDriveLastActivityDate: reportDate(r["OneDrive Last Activity Date"]),
+    sharePointLastActivityDate: reportDate(r["SharePoint Last Activity Date"]),
+    teamsLastActivityDate: reportDate(r["Teams Last Activity Date"]),
+  }));
+};
+
+/** Copilot usage report (CSV or JSON shape) -> rows (shared by both clients). */
+const fetchCopilotUsage = async (
+  token: string,
+  period: "D90",
+): Promise<CopilotUsageRow[]> => {
+  const res = await graphFetch(
+    token,
+    `${GRAPH}/copilot/reports/getMicrosoft365CopilotUsageUserDetail(period='${period}')?$format=text/csv`,
+  );
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("json")) {
+    const body = (await res.json()) as {
+      value?: { userPrincipalName?: string; lastActivityDate?: string | null }[];
+    };
+    return (body.value ?? []).map((r) => ({
+      userPrincipalName: r.userPrincipalName ?? "",
+      lastActivityDate: r.lastActivityDate ?? null,
+    }));
+  }
+  const text = await res.text();
+  return csvToRecords(text).map((r) => ({
+    userPrincipalName: r["User Principal Name"] ?? "",
+    lastActivityDate: reportDate(r["Last Activity Date"]),
+  }));
+};
+
 export class MsGraphClient implements GraphClient {
   constructor(private readonly tid: string) {}
 
@@ -175,40 +220,108 @@ export class MsGraphClient implements GraphClient {
 
   async getActiveUserDetail(period: "D90"): Promise<UsageReportRow[]> {
     const token = await getAppToken(this.tid);
-    const res = await graphFetch(
-      token,
-      `${GRAPH}/reports/getOffice365ActiveUserDetail(period='${period}')`,
-    );
-    const text = await res.text();
-    return csvToRecords(text).map((r) => ({
-      userPrincipalName: r["User Principal Name"] ?? "",
-      exchangeLastActivityDate: reportDate(r["Exchange Last Activity Date"]),
-      oneDriveLastActivityDate: reportDate(r["OneDrive Last Activity Date"]),
-      sharePointLastActivityDate: reportDate(r["SharePoint Last Activity Date"]),
-      teamsLastActivityDate: reportDate(r["Teams Last Activity Date"]),
-    }));
+    return fetchActiveUserDetail(token, period);
   }
 
   async getCopilotUsage(period: "D90"): Promise<CopilotUsageRow[]> {
     const token = await getAppToken(this.tid);
-    const res = await graphFetch(
-      token,
-      `${GRAPH}/copilot/reports/getMicrosoft365CopilotUsageUserDetail(period='${period}')?$format=text/csv`,
-    );
-    const contentType = res.headers.get("content-type") ?? "";
-    if (contentType.includes("json")) {
-      const body = (await res.json()) as {
-        value?: { userPrincipalName?: string; lastActivityDate?: string | null }[];
-      };
-      return (body.value ?? []).map((r) => ({
-        userPrincipalName: r.userPrincipalName ?? "",
-        lastActivityDate: r.lastActivityDate ?? null,
-      }));
+    return fetchCopilotUsage(token, period);
+  }
+}
+
+/** 401/403 — the delegated caller lacks the directory role for this read. */
+const isAuthDenied = (err: unknown): boolean =>
+  err instanceof GraphHttpError && (err.status === 401 || err.status === 403);
+
+/**
+ * GraphClient over a delegated user access token — the one-shot instant
+ * scan. Unlike the app-only client, delegated reads are bounded by the
+ * signed-in USER'S directory roles on top of the consented scopes: usage
+ * and Copilot reports need a reports-capable role (Reports Reader, Global
+ * Reader, ...), signInActivity additionally needs Entra ID P1, and
+ * /admin/reportSettings is admin-only. Every role-bounded source therefore
+ * degrades on 401/403 into the same signal-absent shapes the sync pipeline
+ * already handles for non-P1/concealed tenants. Only the directory reads
+ * (users, subscribedSkus) may fail the scan — without them there is nothing
+ * to analyze.
+ */
+export class DelegatedGraphClient implements GraphClient {
+  constructor(private readonly accessToken: string) {}
+
+  async getOrganizationName(): Promise<string | null> {
+    try {
+      const res = await graphFetch(
+        this.accessToken,
+        `${GRAPH}/organization?$select=displayName`,
+      );
+      const body = (await res.json()) as { value?: { displayName?: string }[] };
+      return body.value?.[0]?.displayName ?? null;
+    } catch {
+      return null;
     }
-    const text = await res.text();
-    return csvToRecords(text).map((r) => ({
-      userPrincipalName: r["User Principal Name"] ?? "",
-      lastActivityDate: reportDate(r["Last Activity Date"]),
-    }));
+  }
+
+  async getSubscribedSkus(): Promise<GraphSubscribedSku[]> {
+    // Plain directory read (delegated LicenseAssignment.Read.All suffices,
+    // no role needed). Critical — a failure here fails the scan, same as
+    // the app-only sync.
+    return getAllPages<GraphSubscribedSku>(
+      this.accessToken,
+      `${GRAPH}/subscribedSkus`,
+    );
+  }
+
+  async getReportConcealment(): Promise<boolean | null> {
+    try {
+      const res = await graphFetch(
+        this.accessToken,
+        `${GRAPH}/admin/reportSettings`,
+      );
+      const body = (await res.json()) as { displayConcealedNames?: boolean };
+      return body.displayConcealedNames ?? null;
+    } catch {
+      // Admin-only endpoint: most scan users get a 403 here. Unknown
+      // concealment is handled downstream (joined.concealed fallback).
+      return null;
+    }
+  }
+
+  async listUsers(opts: { includeSignInActivity: boolean }): Promise<GraphUser[]> {
+    const select = opts.includeSignInActivity
+      ? `${USER_FIELDS},signInActivity`
+      : USER_FIELDS;
+    const url = `${GRAPH}/users?$select=${select}&$top=250`;
+    try {
+      return await getAllPages<GraphUser>(this.accessToken, url);
+    } catch (err) {
+      // signInActivity is doubly gated for delegated callers: tenant P1 AND
+      // an auditlog-capable user role. Either denial degrades the same way —
+      // the sync retries without sign-in data and falls back to usage reports.
+      if (
+        opts.includeSignInActivity &&
+        (isAuthDenied(err) ||
+          (err instanceof GraphHttpError &&
+            (err.code === "Authentication_RequestFromNonPremiumTenantOrB2CTenant" ||
+              /premium/i.test(err.message))))
+      ) {
+        throw new PremiumLicenseRequiredError(
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+      throw err; // plain user list failing is fatal — nothing to analyze
+    }
+  }
+
+  async getActiveUserDetail(period: "D90"): Promise<UsageReportRow[]> {
+    // Role-bounded: throws GraphHttpError 403 without Reports Reader/Global
+    // Reader. The sync records the failure as a warning and the join treats
+    // the missing rows as "no activity signal" — never a thrown scan.
+    return fetchActiveUserDetail(this.accessToken, period);
+  }
+
+  async getCopilotUsage(period: "D90"): Promise<CopilotUsageRow[]> {
+    // Role-bounded like the usage report; failure -> warning step and
+    // copilotSignal "none" downstream.
+    return fetchCopilotUsage(this.accessToken, period);
   }
 }

@@ -78,4 +78,16 @@ describe("welcomeHtml", () => {
     expect(html).toContain("Privileged Role Administrator");
     expect(html).toContain("/app/connect/csv");
   });
+
+  it("offers the instant scan to Application Administrators via the chooser page", () => {
+    expect(html).toContain("instant scan");
+    expect(html).toContain("runs with your own permissions");
+    // The scan sentence links the connect chooser, never /api/scan/start
+    // directly — a scan must start from a signed-in browser session.
+    expect(html).not.toContain("/api/scan/start");
+    const connectLinks = html.match(
+      /href="https:\/\/www\.licensemeter\.com\/app\/connect\?utm_source=welcome_email/g,
+    );
+    expect(connectLinks).toHaveLength(2);
+  });
 });

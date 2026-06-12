@@ -116,16 +116,20 @@ export default async function OverviewPage() {
 
       {!ctx.tenant.consentedAt && !ctx.tenant.isDemo && (
         <section className="rise rise-2 mt-8">
-          <Card title="CSV trial workspace">
+          <Card title="Trial workspace">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="max-w-2xl text-sm text-ink-soft">
-                Figures come from your uploaded exports. Connect the read-only
-                sync for nightly updates, leak alerts and trends.
+                Figures come from your last instant scan or CSV upload.
+                Connect the read-only sync for nightly updates, leak alerts
+                and trends.
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonLink variant="primary" href="/app/connect">
                   Connect the read-only sync
                 </ButtonLink>
+                <ButtonAnchor href="/api/scan/start">
+                  Re-run instant scan
+                </ButtonAnchor>
                 <ButtonLink href="/app/connect/csv">
                   Upload fresh exports
                 </ButtonLink>

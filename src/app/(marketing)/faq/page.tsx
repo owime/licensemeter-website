@@ -44,7 +44,7 @@ const FAQS = [
   },
   {
     q: "Does connecting really require a Global Administrator?",
-    a: "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator — an Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. Larger organizations can delegate consent for exactly LicenseMeter's five read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.",
+    a: "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator — an Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions — no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's five read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.",
   },
   {
     q: "Do you offer a DPA (AVV)?",

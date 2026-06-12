@@ -17,6 +17,8 @@ export const sendEmail = async (args: {
   replyTo?: string;
   /** Extra SMTP headers, e.g. List-Unsubscribe. */
   headers?: Record<string, string>;
+  /** File attachments; content is base64-encoded. */
+  attachments?: { filename: string; content: string }[];
 }): Promise<boolean> => {
   if (!emailEnabled()) return false;
   const res = await fetch("https://api.resend.com/emails", {
@@ -34,6 +36,7 @@ export const sendEmail = async (args: {
       html: args.html,
       ...(args.replyTo ? { reply_to: args.replyTo } : {}),
       ...(args.headers ? { headers: args.headers } : {}),
+      ...(args.attachments ? { attachments: args.attachments } : {}),
     }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -186,6 +189,35 @@ export const allClearHtml = (args: {
   </p>
   <p style="font-family:Arial,sans-serif;font-size:11px;color:#a39d8f;margin-top:24px">
     Weekly digest for workspace admins. Manage members in Settings.
+  </p>
+</div>`;
+
+/**
+ * Cover note for the monthly PDF report: one line of standing totals,
+ * the attached report does the talking.
+ */
+export const reportHtml = (args: {
+  tenantName: string;
+  monthlySpend: string;
+  monthlyWaste: string;
+  openFindings: number;
+  appUrl: string;
+}): string => `
+<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  <h1 style="font-size:22px;font-weight:normal">Monthly report — ${escapeHtml(args.tenantName)}</h1>
+  <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d">
+    Monthly spend ${escapeHtml(args.monthlySpend)} ·
+    waste <strong style="color:#a8330d">${escapeHtml(args.monthlyWaste)}</strong> ·
+    ${args.openFindings} open findings
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;line-height:1.5">
+    The full report is attached as PDF — board-ready, with every finding priced.
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:13px;margin-top:16px">
+    <a href="${args.appUrl}/app" style="color:#1c1a16">Open LicenseMeter →</a>
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:11px;color:#a39d8f;margin-top:24px">
+    Monthly PDF report for workspace admins. Turn this off in Settings.
   </p>
 </div>`;
 

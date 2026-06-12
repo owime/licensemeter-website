@@ -44,6 +44,8 @@ export const tenants = pgTable(
     renewalDate: date("renewal_date"),
     /** Immediate email when a sync inserts new offboarding-leak findings. */
     leakAlerts: boolean("leak_alerts").notNull().default(true),
+    /** Monthly PDF waste report to owners/admins (QBR deliverable). */
+    monthlyReport: boolean("monthly_report").notNull().default(false),
     /** Signal quality from the last sync; lets price edits re-run analysis offline. */
     activitySignal: text("activity_signal").$type<"full" | "none">(),
     copilotSignal: text("copilot_signal").$type<"per-user" | "aggregate" | "none">(),

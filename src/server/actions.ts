@@ -422,6 +422,21 @@ export const setLeakAlerts = async (
   return ok();
 };
 
+/** Monthly PDF waste report emailed to workspace owners/admins. */
+export const setMonthlyReport = async (
+  enabled: boolean,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  await db
+    .update(tenants)
+    .set({ monthlyReport: enabled === true })
+    .where(eq(tenants.id, ctx.tenant.id));
+  await audit(ctx, "monthly_report_changed", { enabled: enabled === true });
+  revalidateApp();
+  return ok();
+};
+
 export const setCurrency = async (currency: string): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
