@@ -17,8 +17,8 @@ offboarding-leak alerts, renewal-window framing). Stripe checkout is excluded
 - [x] 5. Integration: npm run check + vitest green; Playwright walkthrough (landing, /msp, pricing,
        demo overview/licenses/settings)
 - [x] 6. Independent code review (feature-dev:code-reviewer) on the full diff; fix findings
-- [ ] 7. Commit; apply additive prod migration via Supabase; push; CI green; verify live site
-- [ ] 8. Review section below + memory update + remaining-roadmap summary
+- [x] 7. Commit; apply additive prod migration via Supabase; push; CI green; verify live site
+- [x] 8. Review section below + memory update + remaining-roadmap summary
 
 ## Acceptance criteria
 
@@ -50,7 +50,10 @@ offboarding-leak alerts, renewal-window framing). Stripe checkout is excluded
 
 ## Review
 
-All acceptance criteria verified locally (AC1-AC9); AC10 completed at push time.
+All acceptance criteria verified (AC1-AC10). Shipped as d2e32b2; prod migration
+tenant_renewal_date_and_leak_alerts applied before deploy; CI green; live checks:
+/msp 200, new hero on landing, € 2.844,86 consistent across landing, pricing and
+the production demo tenant overview.
 
 - True demo figures derived and guarded: € 2.844,86/mo waste (was € 1.833,90 stale on
   landing), about € 34.000/yr — demoFigures.test.ts recomputes from fixtures through the
