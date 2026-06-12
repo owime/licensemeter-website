@@ -111,6 +111,22 @@ export const FindingsBulkForm = ({
   );
 };
 
+/**
+ * Label wrapper stretching a ~16px checkbox to a 44px touch target via the
+ * same invisible ::after overlay as the micro button tier in ui.tsx, without
+ * changing the table density. Clicks anywhere on the overlay toggle the
+ * wrapped checkbox.
+ */
+export const CheckboxHitArea = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
+  <label className="relative inline-flex cursor-pointer touch-manipulation align-middle after:absolute after:-inset-3.5 after:content-['']">
+    {children}
+  </label>
+);
+
 /** Header checkbox that toggles every row checkbox in the findings table. */
 export const SelectAllFindings = () => {
   const { count, total, setAll } = useContext(SelectionContext);
@@ -119,12 +135,14 @@ export const SelectAllFindings = () => {
     if (ref.current) ref.current.indeterminate = count > 0 && count < total;
   }, [count, total]);
   return (
-    <input
-      ref={ref}
-      type="checkbox"
-      aria-label="Select all findings"
-      checked={total > 0 && count === total}
-      onChange={(e) => setAll(e.target.checked)}
-    />
+    <CheckboxHitArea>
+      <input
+        ref={ref}
+        type="checkbox"
+        aria-label="Select all findings"
+        checked={total > 0 && count === total}
+        onChange={(e) => setAll(e.target.checked)}
+      />
+    </CheckboxHitArea>
   );
 };

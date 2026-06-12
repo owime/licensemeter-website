@@ -3,9 +3,9 @@ import { findingChipLabel, RULE_META } from "~/lib/rules";
 import type { WasteRuleId } from "~/server/types";
 
 /**
- * RuleBadge variant for concrete finding rows: the generic SaaS rules pick
- * up the provider name from the finding detail ("Zoom leak" instead of
- * "App leak"). Filter pills keep using RuleBadge's rule-generic text.
+ * Rule pill for concrete finding rows: the generic SaaS rules pick up the
+ * provider name from the finding detail ("Zoom leak" instead of "App leak").
+ * Filter pills keep using RULE_META's rule-generic short text.
  */
 export const FindingChip = ({
   rule,

@@ -10,10 +10,18 @@ import { DEMO_FIGURES } from "~/lib/demoFigures";
 export const PLAN_TIERS = [
   { name: "Starter", priceEur: 79, maxSeats: 250 },
   { name: "Growth", priceEur: 199, maxSeats: 1000 },
-  { name: "Scale", priceEur: 499, maxSeats: Number.POSITIVE_INFINITY },
+  { name: "Scale", priceEur: 499, maxSeats: 2500 },
 ] as const;
 
 export type PlanTier = (typeof PLAN_TIERS)[number];
+
+/**
+ * Marker for seat counts above the largest published tier: /pricing routes
+ * those tenants to talk-to-us, so the calculator must never quote Scale there.
+ */
+export const OVER_CAP = "over-cap";
+
+export type PlanPick = PlanTier | typeof OVER_CAP;
 
 /**
  * Waste share of the demo tenant, recomputed from the tested demo figures so
@@ -23,9 +31,9 @@ export const DEMO_WASTE_PCT = Math.round(
   (DEMO_FIGURES.monthlyWasteCents / DEMO_FIGURES.monthlySpendCents) * 100,
 );
 
-/** <=250 Starter, <=1000 Growth, else Scale. */
-export const pickPlan = (seats: number): PlanTier =>
-  PLAN_TIERS.find((tier) => seats <= tier.maxSeats) ?? PLAN_TIERS[2];
+/** <=250 Starter, <=1000 Growth, <=2500 Scale, above that OVER_CAP. */
+export const pickPlan = (seats: number): PlanPick =>
+  PLAN_TIERS.find((tier) => seats <= tier.maxSeats) ?? OVER_CAP;
 
 /** "36,70" or "36.70" → 3670 cents; anything unparseable or negative → 0. */
 export const parseEuroToCents = (raw: string): number => {
@@ -46,7 +54,8 @@ export const parseSeats = (raw: string): number => {
  * applies AT that size (tiers checked cheapest-first, so a break-even that
  * overshoots a tier's seat cap falls through to the next plan). Integer
  * ceiling division keeps exact boundaries exact. Null when the assumption
- * yields no waste at all (zero cost per seat).
+ * yields no waste at all (zero cost per seat) or when the break-even lies
+ * above the largest published tier.
  */
 export const breakEvenSeats = (
   costPerSeatCents: number,
@@ -61,14 +70,14 @@ export const breakEvenSeats = (
       (planPriceTimes100 % wastePerHundredSeatsCents === 0 ? 0 : 1);
     if (seats <= tier.maxSeats) return seats;
   }
-  /* istanbul ignore next -- the last tier is uncapped */
   return null;
 };
 
 export type RoiResult = {
   monthlyWasteCents: number;
   annualWasteCents: number;
-  plan: PlanTier;
+  /** The published plan at this seat count, or OVER_CAP above the largest tier. */
+  plan: PlanPick;
   /** Whether the assumed monthly waste covers the picked plan's price. */
   paysOff: boolean;
   /** See breakEvenSeats. */
@@ -88,7 +97,7 @@ export const computeRoi = (
     monthlyWasteCents,
     annualWasteCents: monthlyWasteCents * 12,
     plan,
-    paysOff: monthlyWasteCents >= plan.priceEur * 100,
+    paysOff: plan !== OVER_CAP && monthlyWasteCents >= plan.priceEur * 100,
     breakEvenSeats: breakEvenSeats(costPerSeatCents, wastePct),
   };
 };

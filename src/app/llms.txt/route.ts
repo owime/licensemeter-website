@@ -27,6 +27,7 @@ Built by Ugur Koc, Microsoft MVP for Intune and Security Copilot. Key facts:
 - [For MSPs](${base}/msp): portfolio view across client tenants, consultant consent flow, per-client price books and QBR-ready reports
 - [Security](${base}/security): granted scopes, stored data, residency, subprocessors, DPA
 - [FAQ](${base}/faq): the questions IT and security teams ask before granting admin consent
+- [Connectors](${base}/connectors): step-by-step setup guides for all 8 connectors (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT, Claude)
 `;
   return new Response(body, {
     headers: { "Content-Type": "text/plain; charset=utf-8" },

@@ -1,13 +1,19 @@
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { ButtonLink, Card } from "~/components/ui";
 import { SpendChart } from "~/components/workspace/SpendChart";
 import { CONNECTOR_LABELS } from "~/lib/connectors";
-import { fmtAgo, fmtMoney } from "~/lib/format";
-import { requireAccess } from "~/server/access";
+import { fmtAgo, fmtDate, fmtMoney } from "~/lib/format";
+import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
-import { aiSpendDaily, saasConnections, syncRuns } from "~/server/db/schema";
+import {
+  aiSpendDaily,
+  saasConnections,
+  syncRuns,
+  tenantUsers,
+} from "~/server/db/schema";
 import type { SaasProvider } from "~/server/types";
 
 export const metadata: Metadata = { title: "AI costs" };
@@ -22,8 +28,12 @@ const dayAgo = (days: number): string =>
 export default async function AiCostsPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
+  const isAdmin = hasRole(ctx, "admin");
+  // CSV/scan trials never get syncRuns rows and cannot sync connectors;
+  // their freshness signal is the import time on the user snapshots.
+  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
-  const [rows, aiConns, lastRun] = await Promise.all([
+  const [rows, aiConns, lastRun, importedUser] = await Promise.all([
     db.query.aiSpendDaily.findMany({
       where: and(
         eq(aiSpendDaily.tenantId, tenantId),
@@ -41,6 +51,12 @@ export default async function AiCostsPage() {
       where: eq(syncRuns.tenantId, tenantId),
       orderBy: desc(syncRuns.startedAt),
     }),
+    isTrial
+      ? db.query.tenantUsers.findFirst({
+          where: eq(tenantUsers.tenantId, tenantId),
+          orderBy: desc(tenantUsers.syncedAt),
+        })
+      : Promise.resolve(undefined),
   ]);
 
   const monthPrefix = new Date().toISOString().slice(0, 7);
@@ -111,7 +127,9 @@ export default async function AiCostsPage() {
         <p className="mt-1 text-sm text-ink-soft">
           {lastRun?.status === "running"
             ? "Sync running…"
-            : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+            : isTrial
+              ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
+              : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
           {lastRun?.status === "failed" && (
             <span className="ml-2 text-rust-text">(last sync failed)</span>
           )}
@@ -129,14 +147,46 @@ export default async function AiCostsPage() {
                 members against Entra ID, so departed people who still hold
                 live API keys surface as findings.
               </p>
-              <div className="flex flex-wrap gap-2">
-                <ButtonLink href="/app/settings/openai">
-                  Connect OpenAI
-                </ButtonLink>
-                <ButtonLink href="/app/settings/anthropic">
-                  Connect Anthropic
-                </ButtonLink>
-              </div>
+              {isTrial ? (
+                <>
+                  <p className="max-w-2xl text-sm text-ink-soft">
+                    Connect your Microsoft 365 tenant first, then add the AI
+                    connectors.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <ButtonLink href="/app/connect">
+                      Connect the read-only sync
+                    </ButtonLink>
+                  </div>
+                </>
+              ) : !isAdmin ? (
+                <p className="max-w-2xl text-sm text-ink-soft">
+                  Connecting needs an admin. Ask a workspace admin to connect{" "}
+                  <Link
+                    href="/app/settings/openai"
+                    className="underline underline-offset-4 hover:text-ink"
+                  >
+                    OpenAI
+                  </Link>{" "}
+                  or{" "}
+                  <Link
+                    href="/app/settings/anthropic"
+                    className="underline underline-offset-4 hover:text-ink"
+                  >
+                    Anthropic
+                  </Link>
+                  .
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <ButtonLink href="/app/settings/openai">
+                    Connect OpenAI
+                  </ButtonLink>
+                  <ButtonLink href="/app/settings/anthropic">
+                    Connect Anthropic
+                  </ButtonLink>
+                </div>
+              )}
             </div>
           </Card>
         </section>

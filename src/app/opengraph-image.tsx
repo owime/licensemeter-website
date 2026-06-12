@@ -68,8 +68,8 @@ export default function OpenGraphImage() {
               fontFamily: "sans-serif",
             }}
           >
-            Microsoft 365, Adobe, Zoom, Atlassian and Salesforce seats, priced
-            monthly. Read-only. EU-hosted.
+            Microsoft 365 plus eight SaaS connectors, priced per month.
+            Read-only. EU-hosted.
           </div>
         </div>
         <div

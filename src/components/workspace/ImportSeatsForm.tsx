@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { Button } from "~/components/ui";
 import type { ConnectorSpec } from "~/lib/connectors";
 import { clearImportedSeats, importSeats } from "~/server/actions";
-import type { ImportSeatsResult } from "~/server/actions";
+import type { ActionResult, ImportSeatsResult } from "~/server/actions";
 
 type ImportState = (ImportSeatsResult & { csv?: string }) | null;
 
@@ -102,21 +101,61 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
   );
 };
 
-/** Mirrors SaasDisconnectButton: useTransition + refresh, no confirm step. */
+/**
+ * Armed-confirm clear (same pattern as MemberActions): the first press arms
+ * the button, the second one fires the action; failures surface in the live
+ * region instead of being discarded.
+ */
 export const ClearSeatsButton = ({ spec }: { spec: ConnectorSpec }) => {
-  const [pending, startTransition] = useTransition();
-  const router = useRouter();
+  const [armed, setArmed] = useState(false);
+  const [result, formAction, pending] = useActionState(
+    async (_prev: ActionResult | null) => clearImportedSeats(spec.provider),
+    null,
+  );
+
+  /* Disarm when the confirm click does not come within ~5s. */
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), 5000);
+    return () => clearTimeout(t);
+  }, [armed]);
+
+  const message = armed
+    ? `This removes the imported ${spec.label} seats. Press again to confirm.`
+    : result && !result.ok
+      ? (result.error ?? "Something went wrong")
+      : null;
+
   return (
-    <Button
-      disabled={pending}
-      onClick={() =>
-        startTransition(async () => {
-          await clearImportedSeats(spec.provider);
-          router.refresh();
-        })
-      }
+    <form
+      action={formAction}
+      onSubmit={(e) => {
+        /* First submit arms only; the second one fires the action. */
+        if (!armed) {
+          e.preventDefault();
+          setArmed(true);
+        } else {
+          setArmed(false);
+        }
+      }}
+      className="flex flex-col items-end gap-1"
     >
-      {pending ? "Removing…" : "Clear imported seats"}
-    </Button>
+      <Button disabled={pending} onBlur={() => setArmed(false)}>
+        {pending
+          ? "Removing…"
+          : armed
+            ? "Confirm clear"
+            : "Clear imported seats"}
+      </Button>
+      <span
+        role="status"
+        aria-live="polite"
+        className={
+          message ? "max-w-64 text-right text-xs text-rust-text" : "sr-only"
+        }
+      >
+        {message}
+      </span>
+    </form>
   );
 };

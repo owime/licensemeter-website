@@ -193,6 +193,16 @@ export const runSync = async (
   const now = new Date();
 
   try {
+    // Demo workspaces self-heal their price book: visitors may edit prices,
+    // so every demo sync drops the rows and the prefill blocks below rebuild
+    // them from the one canonical source (skuCatalog defaults plus the
+    // DEMO_ADOBE_PRICES / DEMO_SAAS_PRICES estimates, source "default"),
+    // before the analysis reads prices. Keeps the live demo aligned with the
+    // marketing figures in demoFigures.ts; never touches non-demo tenants.
+    if (tenant.isDemo) {
+      await db.delete(priceBook).where(eq(priceBook.tenantId, tenantId));
+    }
+
     // --- Pull phase -----------------------------------------------------
     const orgName = await client.getOrganizationName();
 

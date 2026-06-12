@@ -4,19 +4,28 @@ import {
   breakEvenSeats,
   computeRoi,
   DEMO_WASTE_PCT,
+  OVER_CAP,
   parseEuroToCents,
   parseSeats,
   pickPlan,
 } from "./roiMath";
 
+/** Plan name of a pick, or the over-cap marker itself. */
+const pickName = (seats: number): string => {
+  const pick = pickPlan(seats);
+  return pick === OVER_CAP ? pick : pick.name;
+};
+
 describe("pickPlan boundaries", () => {
-  it("mirrors the published tiers: <=250 Starter, <=1000 Growth, else Scale", () => {
-    expect(pickPlan(25).name).toBe("Starter");
-    expect(pickPlan(250).name).toBe("Starter");
-    expect(pickPlan(251).name).toBe("Growth");
-    expect(pickPlan(1000).name).toBe("Growth");
-    expect(pickPlan(1001).name).toBe("Scale");
-    expect(pickPlan(5000).name).toBe("Scale");
+  it("mirrors the published tiers: <=250 Starter, <=1000 Growth, <=2500 Scale, above that over-cap", () => {
+    expect(pickName(25)).toBe("Starter");
+    expect(pickName(250)).toBe("Starter");
+    expect(pickName(251)).toBe("Growth");
+    expect(pickName(1000)).toBe("Growth");
+    expect(pickName(1001)).toBe("Scale");
+    expect(pickName(2500)).toBe("Scale");
+    expect(pickName(2501)).toBe(OVER_CAP);
+    expect(pickName(5000)).toBe(OVER_CAP);
   });
 });
 
@@ -26,9 +35,19 @@ describe("computeRoi", () => {
     // 250 * 3670 = 917500 cents spend; 8% = 73400 cents
     expect(r.monthlyWasteCents).toBe(73400);
     expect(r.annualWasteCents).toBe(880800);
-    expect(r.plan.name).toBe("Starter");
-    expect(r.plan.priceEur).toBe(79);
+    expect(r.plan).toEqual({ name: "Starter", priceEur: 79, maxSeats: 250 });
     expect(r.paysOff).toBe(true);
+  });
+
+  it("marks seat counts above the largest tier as over-cap but keeps the waste math", () => {
+    const r = computeRoi(3000, 3670, 8);
+    // 3000 * 3670 = 11010000 cents spend; 8% = 880800 cents
+    expect(r.monthlyWasteCents).toBe(880800);
+    expect(r.annualWasteCents).toBe(880800 * 12);
+    // /pricing routes >2.500 seats to talk-to-us, so no plan is quoted.
+    expect(r.plan).toBe(OVER_CAP);
+    expect(r.paysOff).toBe(false);
+    expect(r.breakEvenSeats).toBe(27);
   });
 
   it("is honest when the assumed waste stays under the plan price", () => {
@@ -51,13 +70,23 @@ describe("computeRoi", () => {
 
 describe("breakEvenSeats", () => {
   it("falls through to the plan that applies at the break-even size", () => {
-    // 10 EUR/seat at 1%: Starter would need 790 seats (> 250 cap),
-    // Growth would need 1990 (> 1000 cap), Scale needs 4990.
-    expect(breakEvenSeats(1000, 1)).toBe(4990);
-    const atBreakEven = computeRoi(4990, 1000, 1);
-    expect(atBreakEven.plan.name).toBe("Scale");
+    // 10 EUR/seat at 2%: Starter would need 395 seats (> 250 cap),
+    // Growth needs exactly 995 (within its 1.000 cap).
+    expect(breakEvenSeats(1000, 2)).toBe(995);
+    const atBreakEven = computeRoi(995, 1000, 2);
+    expect(atBreakEven.plan).toEqual({
+      name: "Growth",
+      priceEur: 199,
+      maxSeats: 1000,
+    });
     expect(atBreakEven.paysOff).toBe(true);
-    expect(computeRoi(4989, 1000, 1).paysOff).toBe(false);
+    expect(computeRoi(994, 1000, 2).paysOff).toBe(false);
+  });
+
+  it("returns null when the break-even lies above the largest published tier", () => {
+    // 10 EUR/seat at 1%: Starter would need 790 seats, Growth 1990,
+    // Scale 4990, each above its cap, so no published plan breaks even.
+    expect(breakEvenSeats(1000, 1)).toBeNull();
   });
 
   it("handles exact divisibility without overshooting by one", () => {

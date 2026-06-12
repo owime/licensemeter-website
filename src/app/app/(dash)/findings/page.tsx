@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CopyScriptButton } from "~/components/workspace/CopyScriptButton";
 import { FindingChip } from "~/components/workspace/FindingChip";
 import {
+  CheckboxHitArea,
   FindingsBulkForm,
   SelectAllFindings,
 } from "~/components/workspace/FindingsSelectionBar";
@@ -153,13 +154,13 @@ export default async function FindingsPage({
         <Link
           href={filterHref(null)}
           aria-current={!ruleParam && !showResolved ? "true" : undefined}
-          className={`px-3 py-1.5 text-xs font-medium ${
+          className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
             !ruleParam && !showResolved
               ? "bg-ink text-paper"
               : "border border-line bg-card text-ink-soft hover:border-ink"
           }`}
         >
-          All open ({activeRows.length})
+          All active ({activeRows.length})
         </Link>
         {visibleRules.map((rule) => {
           const agg = totalByRule.get(rule);
@@ -170,7 +171,7 @@ export default async function FindingsPage({
               aria-current={
                 ruleParam === rule && !showResolved ? "true" : undefined
               }
-              className={`px-3 py-1.5 text-xs font-medium ${
+              className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
                 ruleParam === rule && !showResolved
                   ? "bg-ink text-paper"
                   : "border border-line bg-card text-ink-soft hover:border-ink"
@@ -183,7 +184,7 @@ export default async function FindingsPage({
         <Link
           href={filterHref(null, true)}
           aria-current={showResolved ? "true" : undefined}
-          className={`px-3 py-1.5 text-xs font-medium ${
+          className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
             showResolved
               ? "bg-ink text-paper"
               : "border border-line bg-card text-ink-soft hover:border-ink"
@@ -203,17 +204,21 @@ export default async function FindingsPage({
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
               {isAdmin && !showResolved && (
-                <th className="w-8 px-3 py-3">
+                <th scope="col" className="w-8 px-3 py-3">
                   <SelectAllFindings />
                 </th>
               )}
-              <th className="px-4 py-3 font-medium">Rule</th>
-              <th className="px-4 py-3 font-medium">Finding</th>
-              <th className="px-4 py-3 text-right font-medium">Impact / mo</th>
-              <th className="px-4 py-3 font-medium">First seen</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+              <th scope="col" className="px-4 py-3 font-medium">Rule</th>
+              <th scope="col" className="px-4 py-3 font-medium">Finding</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Impact / mo
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">First seen</th>
+              <th scope="col" className="px-4 py-3 font-medium">Status</th>
               {isAdmin && !showResolved && (
-                <th className="px-4 py-3 text-right font-medium">Action</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium">
+                  Action
+                </th>
               )}
             </tr>
           </thead>
@@ -227,12 +232,14 @@ export default async function FindingsPage({
                 >
                   {isAdmin && !showResolved && (
                     <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
-                        name="id"
-                        value={f.id}
-                        aria-label={`Select ${f.title}`}
-                      />
+                      <CheckboxHitArea>
+                        <input
+                          type="checkbox"
+                          name="id"
+                          value={f.id}
+                          aria-label={`Select ${f.title}`}
+                        />
+                      </CheckboxHitArea>
                     </td>
                   )}
                   <td className="px-4 py-3">

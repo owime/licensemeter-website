@@ -18,9 +18,13 @@ vi.mock("next/headers", () => ({
   },
 }));
 
-const { createOAuthToken, parseOAuthToken } = await import(
-  "~/server/auth/session"
-);
+const {
+  createOAuthToken,
+  expiredOAuthCookie,
+  expiredSessionCookie,
+  parseOAuthToken,
+  validateReturnTo,
+} = await import("~/server/auth/session");
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 
@@ -82,5 +86,118 @@ describe("parseOAuthToken", () => {
       .setExpirationTime("600s")
       .sign(new TextEncoder().encode("a-completely-different-signing-key"));
     expect(await parseOAuthToken(foreign)).toBeNull();
+  });
+
+  it("round-trips a valid returnTo", async () => {
+    const token = await createOAuthToken({
+      state: "s7",
+      verifier: "v7",
+      returnTo: "/app/connect/csv",
+    });
+    expect(await parseOAuthToken(token)).toEqual({
+      state: "s7",
+      verifier: "v7",
+      returnTo: "/app/connect/csv",
+    });
+  });
+
+  it("strips an invalid returnTo at consumption time instead of trusting the cookie", async () => {
+    const token = await legacyToken({
+      state: "s8",
+      verifier: "v8",
+      returnTo: "https://evil.example/app",
+    });
+    const parsed = await parseOAuthToken(token);
+    expect(parsed).toEqual({ state: "s8", verifier: "v8" });
+    expect(parsed?.returnTo).toBeUndefined();
+  });
+});
+
+/**
+ * Post-sign-in redirect targets: in-app paths only. The same guard runs when
+ * the signin route mints the cookie and when the callback consumes it.
+ */
+describe("validateReturnTo", () => {
+  it("accepts in-app paths", () => {
+    expect(validateReturnTo("/app")).toBe("/app");
+    expect(validateReturnTo("/app/connect/csv")).toBe("/app/connect/csv");
+    expect(validateReturnTo("/app/settings/zoom")).toBe("/app/settings/zoom");
+  });
+
+  it("rejects absent values and anything outside /app", () => {
+    expect(validateReturnTo(null)).toBeNull();
+    expect(validateReturnTo(undefined)).toBeNull();
+    expect(validateReturnTo("")).toBeNull();
+    expect(validateReturnTo("/")).toBeNull();
+    expect(validateReturnTo("/pricing")).toBeNull();
+    expect(validateReturnTo("app/connect")).toBeNull();
+  });
+
+  it("rejects absolute, protocol-relative, backslash and CR/LF forms", () => {
+    expect(validateReturnTo("https://evil.example/app")).toBeNull();
+    expect(validateReturnTo("//evil.example/app")).toBeNull();
+    expect(validateReturnTo("/app://evil.example")).toBeNull();
+    expect(validateReturnTo("/app\\evil")).toBeNull();
+    expect(validateReturnTo("/app/x\r\nSet-Cookie: a=b")).toBeNull();
+    expect(validateReturnTo("/app/x\n")).toBeNull();
+  });
+});
+
+/**
+ * Cookie deletion is a Set-Cookie too, and browsers drop any Set-Cookie for
+ * a __Host- name without Secure. The expired-cookie helpers must therefore
+ * mirror the exact attributes the cookies were set with, in dev and in prod.
+ */
+describe("expired cookie helpers", () => {
+  it("expire with the same attributes the cookie was set with", () => {
+    expect(expiredSessionCookie()).toEqual({
+      name: "lm_session",
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+      maxAge: 0,
+    });
+    expect(expiredOAuthCookie()).toEqual({
+      name: "lm_oauth",
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+      maxAge: 0,
+    });
+  });
+
+  it("carries Secure, path '/' and the __Host- name in production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    // Production env validation wants a longer secret than the test default.
+    vi.stubEnv("AUTH_SECRET", "prod-secret-prod-secret-prod-secret");
+    vi.resetModules();
+    try {
+      const prod = await import("~/server/auth/session");
+      expect(prod.expiredSessionCookie()).toEqual({
+        name: "__Host-lm_session",
+        value: "",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        maxAge: 0,
+      });
+      expect(prod.expiredOAuthCookie()).toEqual({
+        name: "__Host-lm_oauth",
+        value: "",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        maxAge: 0,
+      });
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
   });
 });

@@ -11,7 +11,7 @@ import {
 import { verifyEntraIdToken, type VerifiedEntraClaims } from "~/server/auth/verifyIdToken";
 import {
   createSessionToken,
-  OAUTH_COOKIE,
+  expiredOAuthCookie,
   readOAuthCookie,
   SESSION_COOKIE,
   sessionCookieOptions,
@@ -31,7 +31,7 @@ export const maxDuration = 300;
 const backToLanding = (req: NextRequest, reason: string) => {
   console.error(`[auth] sign-in failed: ${reason}`);
   const res = NextResponse.redirect(new URL(`/?signin=failed`, req.url));
-  res.cookies.delete(OAUTH_COOKIE);
+  res.cookies.set(expiredOAuthCookie());
   return res;
 };
 
@@ -40,7 +40,7 @@ const backToConnect = (req: NextRequest, code: string, reason: string) => {
   const res = NextResponse.redirect(
     new URL(`/app/connect?error=${code}`, req.url),
   );
-  res.cookies.delete(OAUTH_COOKIE);
+  res.cookies.set(expiredOAuthCookie());
   return res;
 };
 
@@ -66,7 +66,7 @@ const handleScanCallback = async (
   const session = await auth();
   if (!session?.user?.oid) {
     const res = NextResponse.redirect(new URL("/", req.url));
-    res.cookies.delete(OAUTH_COOKIE);
+    res.cookies.set(expiredOAuthCookie());
     return res;
   }
   if (session.user.isDemo) {
@@ -132,7 +132,7 @@ const handleScanCallback = async (
   const res = NextResponse.redirect(
     new URL("/app/connect?status=syncing", req.url),
   );
-  res.cookies.delete(OAUTH_COOKIE);
+  res.cookies.set(expiredOAuthCookie());
   // Make the scanned workspace the active one so the poller (and /app)
   // land on it, same as the CSV trial. The session cookie stays untouched.
   res.cookies.set(WORKSPACE_COOKIE, tenantId, workspaceCookieOptions());
@@ -215,8 +215,10 @@ export const GET = async (req: NextRequest) => {
     isDemo: false,
   });
 
-  const res = NextResponse.redirect(new URL("/app", req.url));
-  res.cookies.delete(OAUTH_COOKIE);
+  // returnTo was validated again inside readOAuthCookie; absent or invalid
+  // values fall back to the default landing.
+  const res = NextResponse.redirect(new URL(oauth.returnTo ?? "/app", req.url));
+  res.cookies.set(expiredOAuthCookie());
   res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
   return res;
 };

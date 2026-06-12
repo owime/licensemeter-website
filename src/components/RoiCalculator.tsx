@@ -6,6 +6,7 @@ import { demoEuros } from "~/lib/demoFigures";
 import {
   computeRoi,
   DEMO_WASTE_PCT,
+  OVER_CAP,
   parseEuroToCents,
   parseSeats,
 } from "~/components/roiMath";
@@ -111,8 +112,8 @@ export const RoiCalculator = () => {
               id={shareHintId}
               className="mt-1 text-xs leading-relaxed text-ink-faint"
             >
-              Your assumption: the demo tenant runs at {DEMO_WASTE_PCT}{" "}
-              percent, well-run tenants still leak single digits.
+              Well-run tenants still leak single digits. For comparison, the
+              live demo tenant runs at {DEMO_WASTE_PCT} percent.
             </p>
           </div>
         </div>
@@ -130,7 +131,12 @@ export const RoiCalculator = () => {
               year
             </div>
             <p className="mt-5 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
-              {result.paysOff ? (
+              {result.plan === OVER_CAP ? (
+                <>
+                  More than 2.500 seats: talk to us. The scan math works the
+                  same.
+                </>
+              ) : result.paysOff ? (
                 <>
                   At {fmtSeats(seats)} seats that is the {result.plan.name}{" "}
                   plan at € {result.plan.priceEur}/month, paid back at a

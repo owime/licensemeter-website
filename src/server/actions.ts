@@ -26,7 +26,10 @@ import {
   tenants,
   tenantSkus,
 } from "~/server/db/schema";
-import { parsePrices } from "~/app/app/(dash)/licenses/parsePrices";
+import {
+  parsePrices,
+  parsePriceValue,
+} from "~/app/app/(dash)/licenses/parsePrices";
 import { UmapiClient } from "~/server/adobe/client";
 import {
   buildSaasClient,
@@ -109,11 +112,12 @@ export const updatePrice = async (
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
 
-  const parsed = Number.parseFloat(price.replace(",", "."));
-  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100_000) {
-    return fail("Invalid price");
+  // Strict parse (shared with the bulk import): "14.90" or German "14,90",
+  // 0..100000. Saving 0 keeps marking the row as unpriced, exactly as before.
+  const cents = parsePriceValue(price);
+  if (cents === null) {
+    return fail("Enter a price like 12,50 or 14.90");
   }
-  const cents = Math.round(parsed * 100);
 
   const updated = await db
     .update(priceBook)
@@ -199,7 +203,8 @@ export const importPrices = async (
 
   if (bySku.size === 0) {
     return {
-      ...fail("No lines matched a product in this workspace"),
+      // Trailing period: the form appends the skipped/unparsed sentences.
+      ...fail("No lines matched a product in this workspace."),
       applied: 0,
       skipped,
       invalid: invalid.length,
@@ -239,6 +244,11 @@ export const importPrices = async (
 export const addMember = async (formData: FormData): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) {
+    return fail(
+      "The demo workspace keeps its members fixed. Connect your own tenant to manage people.",
+    );
+  }
 
   const emailRaw = formData.get("email");
   const roleRaw = formData.get("role");
@@ -253,14 +263,38 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
   if (role === "owner" && ctx.membership.role !== "owner") {
     return fail("Only owners can add owners");
   }
+  if (!rateLimit(`invite:${ctx.tenant.id}`, 20, 60 * 60 * 1000)) {
+    return fail("Too many invites this hour, please try again later");
+  }
 
-  await db
-    .insert(memberships)
-    .values({ tenantId: ctx.tenant.id, email, role })
-    .onConflictDoUpdate({
-      target: [memberships.tenantId, memberships.email],
-      set: { role },
-    });
+  // An invite must never change the role of someone who has already signed
+  // in (that would bypass the owner-removal rule below); only an UNCLAIMED
+  // invite may be re-sent with a corrected role, restarting its expiry.
+  // Case-insensitive match: trial-created memberships can store mixed case.
+  const existing = await db.query.memberships.findFirst({
+    where: and(
+      eq(memberships.tenantId, ctx.tenant.id),
+      eq(sql`lower(${memberships.email})`, email),
+    ),
+  });
+  if (existing?.oid) {
+    return fail("That address is already a member of this workspace");
+  }
+  if (existing?.role === "owner" && ctx.membership.role !== "owner") {
+    return fail("Only owners can change an owner invite");
+  }
+  if (existing) {
+    await db
+      .update(memberships)
+      .set({ role, createdAt: new Date() })
+      .where(eq(memberships.id, existing.id));
+  } else {
+    // onConflictDoNothing: a concurrent identical invite wins harmlessly.
+    await db
+      .insert(memberships)
+      .values({ tenantId: ctx.tenant.id, email, role })
+      .onConflictDoNothing();
+  }
   await audit(ctx, "member_added", { email, role });
 
   // Invite email: never from the public demo workspace (open-relay risk),
@@ -292,6 +326,11 @@ export const resendInvite = async (
 ): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) {
+    return fail(
+      "The demo workspace keeps its members fixed. Connect your own tenant to manage people.",
+    );
+  }
 
   const target = await db.query.memberships.findFirst({
     where: and(
@@ -336,6 +375,11 @@ export const removeMember = async (
 ): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) {
+    return fail(
+      "The demo workspace keeps its members fixed. Connect your own tenant to manage people.",
+    );
+  }
 
   const target = await db.query.memberships.findFirst({
     where: and(
@@ -452,7 +496,7 @@ export const setCurrency = async (currency: string): Promise<ActionResult> => {
   return ok();
 };
 
-/** Manual sync trigger from the settings page. */
+/** Manual sync trigger from the Overview page. */
 export const triggerSync = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
@@ -815,11 +859,14 @@ export const captureEmail = async (
     .returning({ id: emailSignups.id });
   if (inserted.length > 0) {
     void notifyOps(`new email signup from the landing page: ${email}`);
-    // Fresh inserts only: re-submits and pre-feature rows never re-send.
-    // after() lets the form respond immediately while the send still
-    // completes before the serverless function freezes.
-    after(() => maybeSendWelcome(email));
   }
+  // Duplicates go through the same send path: the welcomeSentAt stamp makes
+  // it a no-op once delivered, so resubmitting the form is the natural retry
+  // after a transient send failure. Rows captured before the welcome email
+  // existed are only mailed if the person resubmits (intended). after() lets
+  // the form respond immediately while the send still completes before the
+  // serverless function freezes.
+  after(() => maybeSendWelcome(email));
   return ok();
 };
 

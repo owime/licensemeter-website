@@ -63,6 +63,21 @@ export default async function AdobeConnectorPage() {
               against the directory. On a real workspace this uses your Adobe
               Admin Console credentials.
             </p>
+          ) : ctx.tenant.consentedAt === null ? (
+            /* CSV-trial workspace: a connector can never sync without the
+               Microsoft connection, so don't collect credentials that would
+               sit idle. */
+            <p className="text-sm text-ink-soft">
+              Connectors cross-check seats against your Microsoft 365
+              directory, so{" "}
+              <Link
+                href="/app/connect"
+                className="underline underline-offset-4 hover:text-ink"
+              >
+                connect your tenant
+              </Link>{" "}
+              first.
+            </p>
           ) : adobeConn ? (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="text-sm">
@@ -70,9 +85,10 @@ export default async function AdobeConnectorPage() {
                   Connected: {adobeCount} Adobe seats
                 </div>
                 <div className="mt-0.5 text-xs text-ink-soft">
-                  Org {adobeConn.orgId} · last sync{" "}
-                  {fmtDate(adobeConn.lastSyncAt)} (
-                  {adobeConn.lastSyncStatus ?? "pending"})
+                  Org {adobeConn.orgId} ·{" "}
+                  {adobeConn.lastSyncAt
+                    ? `last sync ${fmtDate(adobeConn.lastSyncAt)} (${adobeConn.lastSyncStatus ?? "pending"})`
+                    : "first sync pending"}
                 </div>
               </div>
               {isAdmin && <AdobeDisconnectButton />}

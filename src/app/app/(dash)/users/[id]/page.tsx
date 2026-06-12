@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { RuleBadge } from "~/components/workspace/RuleBadge";
+import { FindingChip } from "~/components/workspace/FindingChip";
 import { Pill } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
 import { skuDisplayName } from "~/server/graph/skuCatalog";
@@ -174,7 +174,7 @@ export default async function UserDetailPage({
               className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 last:border-b-0"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <RuleBadge rule={f.rule} />
+                <FindingChip rule={f.rule} detail={f.detail} />
                 <span className="truncate text-sm">{f.title}</span>
                 <Pill
                   tone={

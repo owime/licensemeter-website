@@ -46,6 +46,39 @@ export const cookieOptions = (maxAge: number) => ({
 export const sessionCookieOptions = () => cookieOptions(SESSION_MAX_AGE);
 export const oauthCookieOptions = () => cookieOptions(OAUTH_MAX_AGE);
 
+/**
+ * Deleting a cookie is itself a Set-Cookie, and browsers reject any
+ * Set-Cookie for a __Host- name that lacks Secure. A bare delete() emits no
+ * attributes, so in production it is silently ignored and the cookie
+ * survives. Always expire with exactly the attributes the cookie was set
+ * with (path "/", httpOnly, sameSite, secure in prod); maxAge 0 kills it.
+ */
+const expiredCookie = (name: string) => ({
+  name,
+  value: "",
+  ...cookieOptions(0),
+});
+
+export const expiredSessionCookie = () => expiredCookie(SESSION_COOKIE);
+export const expiredOAuthCookie = () => expiredCookie(OAUTH_COOKIE);
+
+/**
+ * Post-sign-in destinations are restricted to in-app paths: must start with
+ * "/app" and carry no protocol-relative ("//"), absolute ("://"), backslash
+ * or CR/LF trickery. Returns null for anything invalid or absent; callers
+ * fall back to their default. Applied when the signin route mints the OAuth
+ * cookie AND again when the callback consumes it: the cookie is signed, not
+ * trusted.
+ */
+export const validateReturnTo = (
+  value: string | null | undefined,
+): string | null => {
+  if (!value) return null;
+  if (!value.startsWith("/app") || value.startsWith("//")) return null;
+  if (value.includes("://") || /[\\\r\n]/.test(value)) return null;
+  return value;
+};
+
 export const createSessionToken = async (user: SessionUser): Promise<string> =>
   new SignJWT({ ...user })
     .setProtectedHeader({ alg: "HS256" })
@@ -64,6 +97,8 @@ export type OAuthPayload = {
   state: string;
   verifier: string;
   kind?: OAuthFlowKind;
+  /** Validated in-app path to land on after sign-in; absent means default. */
+  returnTo?: string;
 };
 
 /** State + PKCE verifier for the in-flight OAuth redirect, integrity-protected. */
@@ -117,12 +152,20 @@ export const parseOAuthToken = async (
     state?: string;
     verifier?: string;
     kind?: string;
+    returnTo?: string;
   }>(token);
   if (!payload?.state || !payload?.verifier) return null;
+  // Re-validate returnTo at consumption time; an invalid value reads as
+  // absent and the callback falls back to its default destination.
+  const returnTo =
+    typeof payload.returnTo === "string"
+      ? validateReturnTo(payload.returnTo)
+      : null;
   return {
     state: payload.state,
     verifier: payload.verifier,
     ...(payload.kind === "scan" ? { kind: "scan" as const } : {}),
+    ...(returnTo ? { returnTo } : {}),
   };
 };
 
@@ -131,5 +174,5 @@ export const readOAuthCookie = async (): Promise<OAuthPayload | null> =>
 
 /** For server actions (sign out from the sidebar). */
 export const clearSessionCookie = async (): Promise<void> => {
-  (await cookies()).delete(SESSION_COOKIE);
+  (await cookies()).set(expiredSessionCookie());
 };

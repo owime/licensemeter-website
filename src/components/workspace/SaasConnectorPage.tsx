@@ -94,6 +94,21 @@ export const SaasConnectorPage = async ({
                 ? `On a real workspace an admin pastes the member export from ${spec.label} here.`
                 : `On a real workspace this uses credentials your ${spec.label} admin creates.`}
             </p>
+          ) : ctx.tenant.consentedAt === null ? (
+            /* CSV-trial workspace: a connector can never sync without the
+               Microsoft connection, so don't collect credentials that would
+               sit idle. */
+            <p className="text-sm text-ink-soft">
+              Connectors cross-check seats against your Microsoft 365
+              directory, so{" "}
+              <Link
+                href="/app/connect"
+                className="underline underline-offset-4 hover:text-ink"
+              >
+                connect your tenant
+              </Link>{" "}
+              first.
+            </p>
           ) : spec.kind === "import" ? (
             <div className="flex flex-col gap-3">
               {seatCount > 0 ? (
@@ -130,8 +145,9 @@ export const SaasConnectorPage = async ({
                       <span className="break-all">{conn.orgRef}</span> ·{" "}
                     </>
                   )}
-                  last sync {fmtDate(conn.lastSyncAt)} (
-                  {conn.lastSyncStatus ?? "pending"})
+                  {conn.lastSyncAt
+                    ? `last sync ${fmtDate(conn.lastSyncAt)} (${conn.lastSyncStatus ?? "pending"})`
+                    : "first sync pending"}
                 </div>
                 {conn.lastSyncStatus === "failed" && (
                   <p className="mt-2 max-w-md text-xs text-rust-text">

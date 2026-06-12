@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import { isNotNull } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -8,12 +10,16 @@ import { runSync } from "~/server/sync/runSync";
 
 export const maxDuration = 300;
 
+/** Constant-time bearer check; a length mismatch is false, never a throw. */
+const authorized = (req: NextRequest, secret: string): boolean => {
+  const given = Buffer.from(req.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return given.length === expected.length && timingSafeEqual(given, expected);
+};
+
 /** Nightly sync across all connected tenants. Protected by CRON_SECRET. */
 export const GET = async (req: NextRequest) => {
-  if (
-    !env.CRON_SECRET ||
-    req.headers.get("authorization") !== `Bearer ${env.CRON_SECRET}`
-  ) {
+  if (!env.CRON_SECRET || !authorized(req, env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

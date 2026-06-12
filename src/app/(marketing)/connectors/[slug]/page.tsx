@@ -202,12 +202,12 @@ export default async function ConnectorGuidePage({
           demo first to see the findings this connector produces.
         </p>
         <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <Link
-            href={guide.settingsPath}
+          <a
+            href={`/api/auth/signin?returnTo=${encodeURIComponent(guide.settingsPath)}`}
             className={buttonClass("primary", "w-full sm:w-auto")}
           >
             Open the {guide.name} connector
-          </Link>
+          </a>
           {demoEnabled && (
             <form action="/api/auth/demo" method="post">
               <button className={buttonClass("secondary", "w-full sm:w-auto")}>
@@ -216,6 +216,9 @@ export default async function ConnectorGuidePage({
             </form>
           )}
         </div>
+        <p className="mt-3 text-xs text-ink-faint">
+          Opening the connector signs you in with Microsoft first.
+        </p>
       </section>
 
       <script

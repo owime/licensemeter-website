@@ -52,6 +52,12 @@ export default function MarketingLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="min-h-screen bg-paper">
+      <a
+        href="#content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:border focus:border-ink focus:bg-paper focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink"
+      >
+        Skip to content
+      </a>
       <header className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-6 py-6 sm:gap-x-6">
         <Link
           href="/"
@@ -81,7 +87,9 @@ export default function MarketingLayout({
         </div>
       </header>
 
-      {children}
+      {/* Skip-link target. Each marketing page renders its own <main>, so this
+          wrapper only carries the id and adds no extra landmark. */}
+      <div id="content">{children}</div>
 
       <footer className="border-t border-line bg-card">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">

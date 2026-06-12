@@ -16,10 +16,12 @@ export const unsubscribeUrl = (email: string): string => {
 };
 
 /**
- * Welcome email for a fresh landing signup. Callers gate on the fresh insert
- * (the unique email index makes that the once-ever guarantee); this adds the
- * remaining suppressions and never throws: a failed send must not fail the
- * capture, it alerts ops instead so the founder can follow up personally.
+ * Welcome email for a landing signup. Safe to call on every capture, fresh
+ * or duplicate: the welcomeSentAt stamp is the once-ever guarantee, which
+ * makes a resubmitted email the natural retry after a transient send
+ * failure. Adds the remaining suppressions and never throws: a failed send
+ * must not fail the capture, it alerts ops instead so the founder can
+ * follow up personally.
  */
 export const maybeSendWelcome = async (email: string): Promise<void> => {
   try {

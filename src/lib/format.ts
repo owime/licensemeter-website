@@ -28,6 +28,20 @@ export const fmtDate = (d: Date | string | null): string => {
   }).format(date);
 };
 
+/** fmtDate plus 24h time, for lists where same-day entries must stay apart. */
+export const fmtDateTime = (d: Date | string | null): string => {
+  if (!d) return "-";
+  const date = typeof d === "string" ? new Date(d) : d;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+};
+
 export const fmtAgo = (d: Date | null): string => {
   if (!d) return "never";
   const mins = Math.floor((Date.now() - d.getTime()) / 60000);

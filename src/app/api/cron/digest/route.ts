@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import { and, desc, eq, gte, inArray, isNotNull } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -32,6 +34,13 @@ export const maxDuration = 300;
 /** Only syncs this fresh keep a zero-findings tenant in the all-clear loop. */
 const RECENT_SYNC_MS = 8 * 24 * 60 * 60 * 1000;
 
+/** Constant-time bearer check; a length mismatch is false, never a throw. */
+const authorized = (req: NextRequest, secret: string): boolean => {
+  const given = Buffer.from(req.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return given.length === expected.length && timingSafeEqual(given, expected);
+};
+
 /**
  * Weekly digest to workspace owners/admins. No-op until Resend is configured.
  * Leads with the 7-day delta; tenants with zero open findings get a short
@@ -39,10 +48,7 @@ const RECENT_SYNC_MS = 8 * 24 * 60 * 60 * 1000;
  * like the product stopped working, a churn signal).
  */
 export const GET = async (req: NextRequest) => {
-  if (
-    !env.CRON_SECRET ||
-    req.headers.get("authorization") !== `Bearer ${env.CRON_SECRET}`
-  ) {
+  if (!env.CRON_SECRET || !authorized(req, env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   if (!emailEnabled()) {

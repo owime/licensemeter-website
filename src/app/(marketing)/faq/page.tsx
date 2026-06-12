@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteUrl } from "~/env";
+import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -40,11 +41,11 @@ const FAQS = [
   },
   {
     q: "Are you a verified Microsoft publisher?",
-    a: "The consent dialog shows the publisher status directly, so your admin can verify it independently of this site. See the security overview for details.",
+    a: "Not yet. Publisher verification is in progress; until it lands, the consent dialog shows the app id instead of a verified publisher name. Microsoft displays the current verification status directly in the consent dialog, so your admin can confirm it independently of this site. See the security overview for details.",
   },
   {
     q: "Does connecting really require a Global Administrator?",
-    a: "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's five read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.",
+    a: `Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's ${CONNECTOR_SCOPES.length} read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.`,
   },
   {
     q: "Do you offer a DPA (AVV)?",

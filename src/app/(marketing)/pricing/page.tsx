@@ -40,6 +40,13 @@ const TIERS = [
 
 const BASE = siteUrl();
 
+/* Growth annual cost, computed from the tier price so the payback copy can
+ * never drift from the card. German thousands format, whole euros. */
+const GROWTH_MONTHLY = Number(TIERS.find((t) => t.name === "Growth")!.price);
+const GROWTH_ANNUAL = new Intl.NumberFormat("de-DE").format(
+  GROWTH_MONTHLY * 12,
+);
+
 /* SoftwareApplication with concrete EUR offers: the machine-readable price
  * list answer engines quote instead of guessing. Static content from TIERS;
  * "<" escaped so nothing can terminate the script element. */
@@ -182,8 +189,9 @@ export default function PricingPage() {
             A single Microsoft 365 E3 seat is roughly{" "}
             <span className="tnum font-mono">€ 440</span> a year, a Copilot
             seat about <span className="tnum font-mono">€ 340</span>. The
-            Growth plan costs <span className="tnum font-mono">€ 2.388</span>{" "}
-            a year. Six reclaimed E3 seats cover it. The live demo tenant of{" "}
+            Growth plan costs{" "}
+            <span className="tnum font-mono">€ {GROWTH_ANNUAL}</span> a year.
+            Six reclaimed E3 seats cover it. The live demo tenant of{" "}
             {DEMO_FIGURES.users} people shows{" "}
             <span className="tnum font-mono text-rust-text">
               € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}

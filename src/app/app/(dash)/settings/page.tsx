@@ -9,7 +9,7 @@ import { MemberActions } from "~/components/workspace/MemberActions";
 import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle";
 import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
 import { Button, Card, Pill } from "~/components/ui";
-import { fmtDate } from "~/lib/format";
+import { fmtDate, fmtDateTime } from "~/lib/format";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
 import { setInactiveDays } from "~/server/actions";
 import { db } from "~/server/db";
@@ -142,7 +142,11 @@ export default async function SettingsPage() {
             </div>
             <div>
               <dt className="text-ink-faint">Connected since</dt>
-              <dd className="mt-0.5">{fmtDate(ctx.tenant.consentedAt)}</dd>
+              <dd className="mt-0.5">
+                {!ctx.tenant.consentedAt && !ctx.tenant.isDemo
+                  ? "Trial workspace, not connected yet"
+                  : fmtDate(ctx.tenant.consentedAt)}
+              </dd>
             </div>
             <div>
               <dt className="text-ink-faint">Currency</dt>
@@ -276,7 +280,7 @@ export default async function SettingsPage() {
                     />
                     <span className="font-medium capitalize">{run.status}</span>
                     <span className="text-ink-faint">
-                      {fmtDate(run.startedAt)}
+                      {fmtDateTime(run.startedAt)}
                     </span>
                   </div>
                   <div className="min-w-0 font-mono text-[11px] break-words text-ink-soft">
@@ -319,7 +323,7 @@ export default async function SettingsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <Pill tone="slate">{m.role}</Pill>
-                  {isAdmin && (
+                  {isAdmin && !ctx.tenant.isDemo && (
                     <MemberActions
                       membershipId={m.id}
                       canResend={!m.oid}
@@ -331,11 +335,16 @@ export default async function SettingsPage() {
             ))}
           </ul>
 
-          {isAdmin && (
+          {isAdmin && !ctx.tenant.isDemo && (
             <InviteForm
               allowOwner={isOwner}
               inviteEmailsActive={inviteEmailsActive}
             />
+          )}
+          {ctx.tenant.isDemo && (
+            <p className="mt-3 text-xs text-ink-faint">
+              Members are fixed in the demo workspace.
+            </p>
           )}
         </Card>
 
@@ -392,7 +401,7 @@ export default async function SettingsPage() {
                       </span>
                     </span>
                     <span className="font-mono text-[11px] whitespace-nowrap text-ink-faint">
-                      {fmtDate(entry.createdAt)}
+                      {fmtDateTime(entry.createdAt)}
                     </span>
                   </li>
                 ))}

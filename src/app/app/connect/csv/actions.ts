@@ -159,6 +159,13 @@ export const submitCsvTrial = async (
         "A trial workspace for your organization already exists. Ask the colleague who created it for an invite.",
       );
     }
+    // Replacing the stored data is destructive, so viewers may not re-upload;
+    // first-time creation below still makes the uploader the owner.
+    if (membership.role !== "owner" && membership.role !== "admin") {
+      return fail(
+        "Your role in this workspace is view only. Ask a workspace admin to refresh the data.",
+      );
+    }
     tenantId = existing.id;
     // Replace the previous upload: in a trial workspace every stored user and
     // SKU row came from CSV, so clearing both tables (price book untouched,

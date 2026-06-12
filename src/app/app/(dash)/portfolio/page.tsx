@@ -4,10 +4,16 @@ import { redirect } from "next/navigation";
 
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
 import { Pill } from "~/components/ui";
-import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
+import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
-import { findings, snapshots, syncRuns, tenants } from "~/server/db/schema";
+import {
+  findings,
+  snapshots,
+  syncRuns,
+  tenants,
+  tenantUsers,
+} from "~/server/db/schema";
 
 export const metadata: Metadata = { title: "Portfolio" };
 
@@ -40,7 +46,10 @@ export default async function PortfolioPage() {
 
   const rows = await Promise.all(
     ctx.workspaces.map(async (ws) => {
-      const [latest, lastRun] = await Promise.all([
+      const tenant = tenantRows.find((t) => t.id === ws.id);
+      // CSV/scan trials never get syncRuns rows; show their import date.
+      const isTrial = !tenant?.consentedAt && !ws.isDemo;
+      const [latest, lastRun, importedUser] = await Promise.all([
         db.query.snapshots.findFirst({
           where: eq(snapshots.tenantId, ws.id),
           orderBy: desc(snapshots.day),
@@ -49,13 +58,26 @@ export default async function PortfolioPage() {
           where: eq(syncRuns.tenantId, ws.id),
           orderBy: desc(syncRuns.startedAt),
         }),
+        isTrial
+          ? db.query.tenantUsers.findFirst({
+              where: eq(tenantUsers.tenantId, ws.id),
+              orderBy: desc(tenantUsers.syncedAt),
+            })
+          : Promise.resolve(undefined),
       ]);
-      const tenant = tenantRows.find((t) => t.id === ws.id);
+      const importedAt = importedUser?.syncedAt ?? null;
       return {
         ws,
         currency: tenant?.currency ?? "EUR",
         snapshot: latest,
-        lastRun,
+        sync:
+          lastRun?.status === "failed" ? (
+            <span className="text-rust-text">failed</span>
+          ) : isTrial ? (
+            importedAt ? `imported ${fmtDate(importedAt)}` : "-"
+          ) : (
+            fmtAgo(lastRun?.finishedAt ?? null)
+          ),
         openFindings: findingCounts.find((c) => c.tenantId === ws.id)?.n ?? 0,
       };
     }),
@@ -91,7 +113,7 @@ export default async function PortfolioPage() {
             </tr>
           </thead>
           <tbody>
-            {sorted.map(({ ws, currency, snapshot, lastRun, openFindings }) => (
+            {sorted.map(({ ws, currency, snapshot, sync, openFindings }) => (
               <tr
                 key={ws.id}
                 className="border-b border-line last:border-b-0 hover:bg-paper"
@@ -124,13 +146,7 @@ export default async function PortfolioPage() {
                 <td className="tnum px-4 py-3 text-right font-mono">
                   {fmtNumber(openFindings, currency)}
                 </td>
-                <td className="px-4 py-3 text-ink-soft">
-                  {lastRun?.status === "failed" ? (
-                    <span className="text-rust-text">failed</span>
-                  ) : (
-                    fmtAgo(lastRun?.finishedAt ?? null)
-                  )}
-                </td>
+                <td className="px-4 py-3 text-ink-soft">{sync}</td>
                 <td className="px-4 py-3 text-right">
                   <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
                 </td>
@@ -142,7 +158,7 @@ export default async function PortfolioPage() {
 
       {/* Mobile stacked cards */}
       <ul className="rise rise-2 mt-8 mb-8 flex flex-col gap-3 md:hidden">
-        {sorted.map(({ ws, currency, snapshot, lastRun, openFindings }) => (
+        {sorted.map(({ ws, currency, snapshot, sync, openFindings }) => (
           <li key={ws.id} className="border border-line bg-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
@@ -182,13 +198,7 @@ export default async function PortfolioPage() {
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="font-sans text-xs text-ink-faint">Last sync</dt>
-                <dd className="font-sans">
-                  {lastRun?.status === "failed" ? (
-                    <span className="text-rust-text">failed</span>
-                  ) : (
-                    fmtAgo(lastRun?.finishedAt ?? null)
-                  )}
-                </dd>
+                <dd className="font-sans">{sync}</dd>
               </div>
             </dl>
           </li>

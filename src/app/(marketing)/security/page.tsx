@@ -159,7 +159,7 @@ export default function SecurityPage() {
           Administrator is not sufficient for Graph application permissions,
           a boundary Microsoft sets, not us. Entra ID does let an organization
           delegate this consent narrowly: an app consent policy pinned to
-          exactly these five read-only permissions and to the LicenseMeter
+          exactly these {CONNECTOR_SCOPES.length} read-only permissions and to the LicenseMeter
           connector app, attached to a custom directory role. The one-time
           setup itself requires a Privileged Role Administrator or Global
           Administrator and Microsoft Graph PowerShell (the role permission
@@ -177,14 +177,15 @@ export default function SecurityPage() {
         )}
         <p className="mt-4">
           No role with consent rights at hand today? The{" "}
-          <Link
-            href="/app/connect/csv"
+          <a
+            href="/api/auth/signin?returnTo=%2Fapp%2Fconnect%2Fcsv"
             className="font-medium text-ink underline underline-offset-4 hover:text-rust-text"
           >
             CSV trial
-          </Link>{" "}
+          </a>{" "}
           computes your waste number from two Microsoft 365 admin center
-          exports, with no consent at all.
+          exports, with no consent at all. The link signs you in with
+          Microsoft first.
         </p>
       </Section>
 
@@ -239,7 +240,7 @@ export default function SecurityPage() {
             ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
             [
               "Resend Inc.",
-              "Email delivery: workspace notifications and weekly digest, EU region",
+              "Email delivery: workspace notifications, weekly digest and the signup guide email, EU region",
             ],
           ].map(([name, role]) => (
             <li

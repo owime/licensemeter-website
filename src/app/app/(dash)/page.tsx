@@ -6,7 +6,7 @@ import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
-import { fmtAgo, fmtMoney, fmtNumber } from "~/lib/format";
+import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { ALL_RULES } from "~/lib/rules";
 import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
@@ -17,6 +17,7 @@ import {
   snapshots,
   syncRuns,
   tenantSkus,
+  tenantUsers,
 } from "~/server/db/schema";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -44,8 +45,11 @@ export default async function OverviewPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
   const currency = ctx.tenant.currency;
+  // CSV/scan trials never get syncRuns rows; their freshness signal is the
+  // import time on the user snapshots.
+  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
-  const [skus, prices, openFindings, lastRun] = await Promise.all([
+  const [skus, prices, openFindings, lastRun, importedUser] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
     db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
     db.query.findings.findMany({
@@ -59,13 +63,23 @@ export default async function OverviewPage() {
       where: eq(syncRuns.tenantId, tenantId),
       orderBy: desc(syncRuns.startedAt),
     }),
+    isTrial
+      ? db.query.tenantUsers.findFirst({
+          where: eq(tenantUsers.tenantId, tenantId),
+          orderBy: desc(tenantUsers.syncedAt),
+        })
+      : Promise.resolve(undefined),
   ]);
 
-  const history = await db.query.snapshots.findMany({
-    where: eq(snapshots.tenantId, tenantId),
-    orderBy: snapshots.day,
-    limit: 90,
-  });
+  // Newest 90 days, reversed into ascending order for the chart. Ascending
+  // with a limit would pin the window to the oldest days ever collected.
+  const history = (
+    await db.query.snapshots.findMany({
+      where: eq(snapshots.tenantId, tenantId),
+      orderBy: desc(snapshots.day),
+      limit: 90,
+    })
+  ).reverse();
 
   const priceBySku = new Map(prices.map((p) => [p.skuId, p.monthlyPriceCents]));
   const monthlySpend = skus.reduce(
@@ -92,6 +106,11 @@ export default async function OverviewPage() {
   const renewalDays = daysUntilDate(ctx.tenant.renewalDate, new Date());
   const openCount = openFindings.length;
 
+  // Trial workspaces have no sync button, so do not tell them to run one.
+  const emptyInventory = isTrial
+    ? "No license data yet. Upload a fresh export to update this workspace."
+    : "No license data yet. Run a sync.";
+
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
@@ -100,7 +119,9 @@ export default async function OverviewPage() {
           <p className="mt-1 text-sm text-ink-soft">
             {lastRun?.status === "running"
               ? "Sync running…"
-              : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+              : isTrial
+                ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
+                : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
               <span className="ml-2 text-rust-text">(last sync failed)</span>
             )}
@@ -330,7 +351,7 @@ export default async function OverviewPage() {
               {sortedSkus.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-ink-soft">
-                    No license data yet. Run a sync.
+                    {emptyInventory}
                   </td>
                 </tr>
               )}
@@ -379,7 +400,7 @@ export default async function OverviewPage() {
           })}
           {sortedSkus.length === 0 && (
             <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
-              No license data yet. Run a sync.
+              {emptyInventory}
             </li>
           )}
         </ul>

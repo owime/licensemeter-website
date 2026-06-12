@@ -10,7 +10,8 @@ const ERROR_TEXT: Record<string, string> = {
   not_configured:
     "The connector app registration is not configured on this deployment (CONNECTOR_CLIENT_ID missing).",
   missing_state: "The consent response was missing its state value. Please retry.",
-  invalid_state: "This consent link was already used or is unknown. Please retry.",
+  invalid_state:
+    "That link was already used or has expired. Start again from this page.",
   expired_state: "The consent link expired (15 minutes). Please retry.",
   consent_declined: "Consent was declined in the Microsoft dialog.",
   consent_incomplete: "Microsoft did not confirm the consent. Please retry.",
@@ -25,6 +26,8 @@ const ERROR_TEXT: Record<string, string> = {
     "Your organization already has a connected workspace. Ask an admin there for an invite.",
   scan_trial_invite:
     "A trial workspace for your organization already exists. Ask the colleague who created it for an invite.",
+  scan_trial_role:
+    "This trial workspace already has data, and refreshing it needs an admin role. Ask a workspace admin to refresh it.",
   scan_mismatch:
     "The account that approved the scan does not match your signed-in account. Sign in with the account you want to scan with and retry.",
 };

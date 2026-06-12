@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BrandMark } from "~/components/BrandMark";
 import { NavLinks } from "./NavLinks";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import type { WorkspaceSummary } from "~/server/access";
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Ink top bar + full-height drawer for viewports below lg. */
 export const MobileNav = ({
@@ -27,19 +30,51 @@ export const MobileNav = ({
   activeId: string;
 }) => {
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
-  /* Document-level so Escape closes the drawer regardless of where focus is. */
+  /* While the drawer is open: focus moves into it, Tab cycles within the
+     header (top bar + drawer, so the close button stays reachable), Escape
+     closes, and body scroll is locked. Document-level so Escape works
+     regardless of where focus is. Cleanup restores scroll and returns focus
+     to the burger button. */
   useEffect(() => {
     if (!open) return;
+    const burger = burgerRef.current;
+    drawerRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || !headerRef.current) return;
+      const focusables = Array.from(
+        headerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0]!;
+      const last = focusables[focusables.length - 1]!;
+      const active = document.activeElement;
+      const inside =
+        active instanceof HTMLElement && headerRef.current.contains(active);
+      if (e.shiftKey ? active === first || !inside : active === last || !inside) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
     };
     document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = prevOverflow;
+      burger?.focus();
+    };
   }, [open]);
 
   return (
-    <header className="bg-sidebar sticky top-0 z-40 lg:hidden">
+    <header ref={headerRef} className="bg-sidebar sticky top-0 z-40 lg:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <Link
           href="/app"
@@ -51,6 +86,7 @@ export const MobileNav = ({
           </span>
         </Link>
         <button
+          ref={burgerRef}
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-nav-drawer"
@@ -83,8 +119,10 @@ export const MobileNav = ({
           stays reachable on short viewports. */}
       <div
         id="mobile-nav-drawer"
+        ref={drawerRef}
+        tabIndex={-1}
         hidden={!open}
-        className="border-sidebar-line flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4"
+        className="border-sidebar-line flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4 focus:outline-none"
       >
         <div className="px-4 py-3">
           {workspaces.length > 1 ? (

@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -11,6 +13,13 @@ import { renderWasteReportPdf } from "~/server/report/renderReport";
 
 export const maxDuration = 300;
 
+/** Constant-time bearer check; a length mismatch is false, never a throw. */
+const authorized = (req: NextRequest, secret: string): boolean => {
+  const given = Buffer.from(req.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return given.length === expected.length && timingSafeEqual(given, expected);
+};
+
 /**
  * Monthly PDF waste report to workspace owners/admins, for workspaces that
  * opted in via Settings. Runs on the 1st right after the nightly sync, so
@@ -20,10 +29,7 @@ export const maxDuration = 300;
  * No-op until Resend is configured.
  */
 export const GET = async (req: NextRequest) => {
-  if (
-    !env.CRON_SECRET ||
-    req.headers.get("authorization") !== `Bearer ${env.CRON_SECRET}`
-  ) {
+  if (!env.CRON_SECRET || !authorized(req, env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   if (!emailEnabled()) {

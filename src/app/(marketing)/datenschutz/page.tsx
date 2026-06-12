@@ -89,6 +89,14 @@ export default function DatenschutzPage() {
           Berechtigungen beschränkt.
         </p>
         <p>
+          Verbindet die Organisation zusätzlich optionale Konnektoren,
+          verarbeitet LicenseMeter im selben Auftrag auch folgende Daten:
+          Mitglieder-E-Mail-Adressen und Produktzuweisungen aus Adobe, Zoom,
+          Atlassian und Salesforce, Konsolen-Mitgliederlisten und tägliche
+          API-Kostensummen aus OpenAI und Anthropic sowie per CSV eingefügte
+          Mitgliederlisten aus ChatGPT und Claude.
+        </p>
+        <p>
           Die Daten werden in einer Postgres-Datenbank in der EU (Region
           Frankfurt) gespeichert und beim Trennen des Workspace unverzüglich
           und vollständig gelöscht. Ein Auftragsverarbeitungsvertrag (AVV)
@@ -111,9 +119,11 @@ export default function DatenschutzPage() {
         <p>
           Vercel Inc. (Hosting, EU-Funktionsregion), Supabase Inc. (Datenbank,
           AWS eu-central-1 Frankfurt), Microsoft (Identitätsplattform und
-          Graph API), Resend Inc. (E-Mail-Versand, EU-Region eu-west-1; nur
-          Workspace-Benachrichtigungen an Administratoren). Die jeweils
-          aktuelle Liste ist Bestandteil des AVV.
+          Graph API), Resend Inc. (E-Mail-Versand, EU-Region eu-west-1;
+          Workspace-Benachrichtigungen an Administratoren sowie die in
+          Abschnitt 4a beschriebenen E-Mails an Personen, die ihre Adresse
+          auf der Startseite hinterlassen). Die jeweils aktuelle Liste ist
+          Bestandteil des AVV.
         </p>
       </Section>
 

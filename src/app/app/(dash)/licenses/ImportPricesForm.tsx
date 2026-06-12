@@ -16,7 +16,9 @@ const summary = (result: ImportPricesResult): string => {
   if (result.ok) {
     parts.push(`Applied ${result.applied} ${plural(result.applied, "price")}.`);
   } else {
-    parts.push(result.error ?? "Import failed.");
+    // Every part must be a full sentence so the join reads cleanly.
+    const error = result.error ?? "Import failed.";
+    parts.push(error.endsWith(".") ? error : `${error}.`);
   }
   if (result.skipped.length > 0) {
     const shown = result.skipped.slice(0, 8).join(", ");

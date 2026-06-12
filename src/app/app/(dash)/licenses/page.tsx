@@ -36,6 +36,12 @@ export default async function LicensesPage() {
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
   const currency = ctx.tenant.currency;
+  // Trial workspaces (consentedAt null, never the demo) have no sync button,
+  // so do not tell them to run one.
+  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
+  const emptyMessage = isTrial
+    ? "No license data yet. Upload a fresh export to update this workspace."
+    : "No license data yet. Run a sync.";
 
   const [skus, prices, adobeSeats, saasSeatRows] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, ctx.tenant.id) }),
@@ -155,7 +161,7 @@ export default async function LicensesPage() {
             {sorted.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-ink-soft">
-                  No license data yet. Run a sync.
+                  {emptyMessage}
                 </td>
               </tr>
             )}
@@ -214,7 +220,7 @@ export default async function LicensesPage() {
         })}
         {sorted.length === 0 && (
           <li className="border border-line bg-card px-4 py-10 text-center text-sm text-ink-soft">
-            No license data yet. Run a sync.
+            {emptyMessage}
           </li>
         )}
       </ul>

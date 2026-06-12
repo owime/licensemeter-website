@@ -10,10 +10,16 @@ type RunInfo = {
   error: string | null;
 } | null;
 
+const POLL_INTERVAL_MS = 2500;
+/* Stop after ~3 minutes: a stale ?status=syncing URL with no live run would
+   otherwise poll forever. */
+const MAX_TICKS = Math.floor((3 * 60 * 1000) / POLL_INTERVAL_MS);
+
 /** Polls sync status after admin consent until the first sync lands. */
 export const ConnectPoller = () => {
   const [run, setRun] = useState<RunInfo>(null);
   const [tick, setTick] = useState(0);
+  const expired = tick >= MAX_TICKS;
 
   useEffect(() => {
     let cancelled = false;
@@ -32,15 +38,19 @@ export const ConnectPoller = () => {
       }
     };
     void poll();
-    const id = setInterval(() => setTick((t) => t + 1), 2500);
     return () => {
       cancelled = true;
-      clearInterval(id);
     };
   }, []);
 
   useEffect(() => {
-    if (tick === 0) return;
+    if (expired) return;
+    const id = setInterval(() => setTick((t) => t + 1), POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [expired]);
+
+  useEffect(() => {
+    if (tick === 0 || tick >= MAX_TICKS) return;
     void fetch("/api/sync", { cache: "no-store" })
       .then(async (res) => (res.ok ? ((await res.json()) as { run: RunInfo }) : null))
       .then((body) => {
@@ -62,6 +72,20 @@ export const ConnectPoller = () => {
           <p className="font-medium">The first sync failed.</p>
           <p className="mt-1">
             {run.error ?? "Check the sync history in settings."}
+          </p>
+        </div>
+      ) : expired ? (
+        <div className="text-sm text-ink-soft">
+          <p>This is taking longer than expected.</p>
+          <p className="mt-1">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="cursor-pointer underline underline-offset-4 hover:text-ink"
+            >
+              Refresh this page
+            </button>
+            , or come back in a minute.
           </p>
         </div>
       ) : (
