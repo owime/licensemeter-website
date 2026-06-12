@@ -1,0 +1,59 @@
+name: Guide link check
+
+# Weekly check that the official vendor documentation links embedded in the
+# connector setup guides still resolve. Some vendors (help.openai.com,
+# help.salesforce.com) block non-browser clients with 403 or render via JS, so
+# only hard failures count as broken: 404/410 or no connection at all.
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check vendor doc links in src/lib/connectorGuides.ts
+        run: |
+          broken=""
+          urls=$(grep -oE 'https://[a-zA-Z0-9./?&=_-]+' src/lib/connectorGuides.ts | sort -u)
+          for url in $urls; do
+            # curl -w prints 000 itself on connection failure; `|| true` keeps
+            # the step alive under the runner's bash -e.
+            code=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 30 \
+              --retry 2 --retry-delay 5 \
+              -A "Mozilla/5.0 (compatible; LicenseMeterLinkCheck/1.0; +https://www.licensemeter.com)" \
+              "$url" || true)
+            echo "${code:-000} $url"
+            case "$code" in
+              404|410|000|"") broken="${broken}${code:-000} ${url}"$'\n' ;;
+            esac
+          done
+          if [ -n "$broken" ]; then
+            printf 'Broken links:\n%s' "$broken"
+            {
+              echo "BROKEN<<EOF"
+              printf '%s' "$broken"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+      - name: Open or update the broken-links issue
+        if: failure() && env.BROKEN != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          title="Connector guide vendor links broken"
+          body=$(printf 'The weekly link check found vendor documentation links that no longer resolve:\n\n```\n%s```\n\nFix the href in src/lib/connectorGuides.ts — the step copy is written to stand alone, so only the link needs updating.' "$BROKEN")
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
