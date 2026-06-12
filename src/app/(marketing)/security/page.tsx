@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { siteUrl } from "~/env";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 export const metadata: Metadata = {
@@ -25,6 +26,8 @@ const STORED_DATA = [
   "If you connect Adobe, Zoom, Atlassian or Salesforce (all optional): seat emails, status, product assignments and last-login dates where the provider exposes them; the credentials themselves are stored encrypted (AES-256-GCM) and used read-only",
   "A per-workspace activity log of exports and administrative actions, deleted with the workspace",
 ];
+
+const BASE = siteUrl();
 
 const Section = ({
   id,
@@ -202,6 +205,26 @@ export default function SecurityPage() {
           .
         </p>
       </Section>
+
+      <script
+        type="application/ld+json"
+        // Static breadcrumb; "<" escaped so nothing can terminate the script.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Security",
+                item: `${BASE}/security`,
+              },
+            ],
+          }).replaceAll("<", "\\u003c"),
+        }}
+      />
     </main>
   );
 }

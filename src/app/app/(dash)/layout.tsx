@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { redirect } from "next/navigation";
@@ -8,6 +9,12 @@ import { NavLinks } from "~/components/workspace/NavLinks";
 import { WorkspaceSwitcher } from "~/components/workspace/WorkspaceSwitcher";
 import { requireAccess } from "~/server/access";
 import { clearSessionCookie } from "~/server/auth";
+
+/* Auth already gates these routes; noindex closes the gap robots.txt leaves
+ * (Disallow stops crawling, not indexing of externally linked URLs). */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function WorkspaceLayout({
   children,

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { siteUrl } from "~/env";
+
 export const metadata: Metadata = {
   title: "FAQ",
   description:
@@ -49,6 +51,8 @@ const FAQS = [
     a: "The first scan is free — you see your waste number before paying anything. The subscription covers continuous monitoring: nightly syncs, new findings as people join and leave, exports and remediation scripts.",
   },
 ] as const;
+
+const BASE = siteUrl();
 
 /** Stable anchor per question so answers can be deep-linked. */
 const slugify = (s: string): string =>
@@ -108,12 +112,33 @@ export default function FaqPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: FAQS.map((item) => ({
-              "@type": "Question",
-              name: item.q,
-              acceptedAnswer: { "@type": "Answer", text: item.a },
-            })),
+            "@graph": [
+              {
+                "@type": "FAQPage",
+                mainEntity: FAQS.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: { "@type": "Answer", text: item.a },
+                })),
+              },
+              {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Home",
+                    item: BASE,
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "FAQ",
+                    item: `${BASE}/faq`,
+                  },
+                ],
+              },
+            ],
           }).replaceAll("<", "\\u003c"),
         }}
       />

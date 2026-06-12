@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { siteUrl } from "~/env";
 import { ButtonLink } from "~/components/ui";
+import { SITE_DEFINITION } from "~/lib/site";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -29,6 +31,49 @@ const TIERS = [
     featured: false,
   },
 ] as const;
+
+const BASE = siteUrl();
+
+/* SoftwareApplication with concrete EUR offers — the machine-readable price
+ * list answer engines quote instead of guessing. Static content from TIERS;
+ * "<" escaped so nothing can terminate the script element. */
+const PRICING_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${BASE}/#software`,
+      name: "LicenseMeter",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: BASE,
+      description: SITE_DEFINITION,
+      publisher: { "@id": `${BASE}/#organization` },
+      offers: TIERS.map((tier) => ({
+        "@type": "Offer",
+        name: tier.name,
+        price: tier.price,
+        priceCurrency: "EUR",
+        // Google requires availability or priceValidUntil for price snippets.
+        availability: "https://schema.org/InStock",
+        description: `Per tenant, per month, ${tier.seats}`,
+        url: `${BASE}/pricing`,
+      })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Pricing",
+          item: `${BASE}/pricing`,
+        },
+      ],
+    },
+  ],
+};
 
 const INCLUDED = [
   "All six waste rules with monthly euro impact",
@@ -153,6 +198,13 @@ export default function PricingPage() {
         </Link>
         .
       </p>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(PRICING_LD).replaceAll("<", "\\u003c"),
+        }}
+      />
     </main>
   );
 }

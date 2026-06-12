@@ -4,6 +4,7 @@ import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
 import { SignInButtons } from "~/components/SignInButtons";
 import { Pill } from "~/components/ui";
+import { SITE_DEFINITION } from "~/lib/site";
 
 /* Plain-text names by design: referencing compatibility is nominative use;
  * official logos would need each vendor's permission (see footer notice). */
@@ -84,9 +85,11 @@ const PRICING_TEASER = [
 const trustItemClass =
   "after:mx-6 after:text-line-strong after:content-['/'] last:after:content-none";
 
-/* The ledger card shows the current month — keep rendering per-request even
- * if the marketing layout ever stops touching cookies. */
-export const dynamic = "force-dynamic";
+/* Static with daily revalidation: the only time-sensitive content is the
+ * current month in the ledger-card header, and up to a day of staleness at a
+ * month rollover is acceptable. Keeps the page CDN-cacheable for visitors and
+ * crawlers alike. */
+export const revalidate = 86400;
 
 export default function LandingPage() {
   const entraConfigured = Boolean(env.AUTH_MICROSOFT_ENTRA_ID_ID);
@@ -107,10 +110,10 @@ export default function LandingPage() {
             Find the licenses you pay for but nobody uses.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-            Run a free, read-only waste scan on your Microsoft 365 tenant and
-            see the monthly price of every wasted seat: disabled accounts that
-            still hold licenses, Copilot nobody opened, shelfware you renew out
-            of habit.
+            {/* Definition-shaped first sentence: what answer engines cite. */}
+            {SITE_DEFINITION} Run a free, read-only waste scan and see your
+            number: disabled accounts that still hold licenses, Copilot nobody
+            opened, shelfware you renew out of habit.
           </p>
           <div className="mt-10">
             <SignInButtons

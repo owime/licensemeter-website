@@ -1,8 +1,7 @@
 import Link from "next/link";
 
 import { BrandMark } from "~/components/BrandMark";
-import { ButtonLink } from "~/components/ui";
-import { auth } from "~/server/auth";
+import { HeaderAuthCta } from "~/components/HeaderAuthCta";
 
 const SUPPORT_EMAIL = "support@licensemeter.com";
 
@@ -39,11 +38,14 @@ const FOOTER_COLUMNS = [
   },
 ];
 
-export default async function MarketingLayout({
+/*
+ * No request-time reads here (cookies, headers): the session-dependent header
+ * CTA is resolved client-side by HeaderAuthCta so every marketing route stays
+ * statically rendered and CDN-cacheable.
+ */
+export default function MarketingLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await auth();
-
   return (
     <div className="min-h-screen bg-paper">
       <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-6">
@@ -66,22 +68,7 @@ export default async function MarketingLayout({
               {item.label}
             </Link>
           ))}
-          {session?.user ? (
-            <ButtonLink href="/app" variant="secondary" className="ml-1">
-              Open dashboard
-            </ButtonLink>
-          ) : (
-            /*
-             * Wrapper span carries the responsive visibility: buttonClass
-             * hardcodes inline-flex, which outranks `hidden` in the compiled
-             * stylesheet when both sit on the same element.
-             */
-            <span className="ml-1 hidden sm:inline-flex">
-              <ButtonLink href="/#get-started" variant="secondary">
-                Free waste scan
-              </ButtonLink>
-            </span>
-          )}
+          <HeaderAuthCta />
         </nav>
       </header>
 

@@ -508,3 +508,107 @@ by rm -rf .pglite + mkdir -p .pglite/data (PGlite mkdir is not recursive)
 the dev dataDir, even with the server stopped mid-WAL.
 
 Not committed - working tree left for the user to review.
+
+---
+
+# SEO + GEO implementation pass (2026-06-12)
+
+Source: seo-geo-specialist agent audit of the marketing surface; user: "do it
+all". Production canonical host is https://www.licensemeter.com (APP_BASE_URL
+set on Vercel 2026-06-11 — verify live, do not relink the project).
+
+## Plan
+
+- [x] C1 Verify live robots.txt / sitemap.xml / og:url resolve to
+      https://www.licensemeter.com (env already set; verify only)
+- [x] C2 Organization + WebSite JSON-LD (@graph) in root layout via siteUrl()
+- [x] H1 SoftwareApplication + EUR Offers + BreadcrumbList JSON-LD on /pricing
+- [x] H2 Definitional "LicenseMeter is a ..." sentence in the hero subhead
+      (one canonical sentence reused in org description + llms.txt)
+- [x] H3 noindex on /app/(dash) layout + /app/connect (robots metadata)
+- [x] H4 robots.ts: explicit AI-crawler rules (same policy as *, documented)
+- [x] M2 BreadcrumbList on /faq (into existing script as @graph) + /security
+- [x] M4 Marketing tree static: session-probe endpoint + client HeaderAuthCta
+      replace layout-level auth(); landing force-dynamic -> revalidate 86400
+- [x] L1 /llms.txt route handler (force-static, markdown, absolute URLs)
+- [x] L2 applicationName + category in root metadata
+- [x] M1 twitter.creator @ugurkocde (verified via x.com link on ugurkoc.de);
+      also added to founder sameAs in the Organization entity
+- [x] Bonus: self-referencing canonical via alternates.canonical "./" in the
+      root layout (live site emitted no canonical at all)
+
+## Acceptance criteria
+
+1. Every marketing page emits Organization+WebSite JSON-LD; /pricing adds
+   SoftwareApplication with three EUR offers; /faq emits FAQPage+Breadcrumb;
+   /security emits Breadcrumb — all "<"-escaped, absolute URLs from siteUrl()
+2. Hero contains the definitional sentence; free read-only scan phrasing
+   survives
+3. /app and /app/connect responses carry noindex,nofollow robots meta
+4. robots.txt lists the AI crawlers (GPTBot, ClaudeBot, PerplexityBot,
+   Google-Extended, ...) with allow / and disallow /app /api; sitemap intact
+5. /llms.txt returns 200 text/plain markdown; no claims beyond site copy;
+   German number convention
+6. next build shows every (marketing) route static or ISR (no f); landing
+   revalidate 86400; header CTA swaps via /api/auth/session for signed-in
+7. npm run check green; vitest green
+8. Live prod robots/sitemap verified for C1
+9. Independent code-reviewer agent pass on the diff; findings fixed
+
+## Review (2026-06-12, end of pass)
+
+All plan items implemented. New files: src/lib/site.ts (canonical
+SITE_DEFINITION sentence, single source for hero + Organization JSON-LD +
+llms.txt), src/app/api/auth/session/route.ts (boolean session probe,
+no-store), src/components/HeaderAuthCta.tsx (client CTA swap),
+src/app/llms.txt/route.ts (force-static markdown).
+
+Gates: eslint clean, tsc clean, 56/56 vitest, production build green.
+
+Acceptance criteria:
+1. PASS - JSON-LD runtime-verified via curl on /, /pricing, /faq, /security
+   (Organization+WebSite on every page; SoftwareApplication with three EUR
+   offers incl. availability InStock; FAQPage+Breadcrumb @graph; Breadcrumb).
+2. PASS - hero renders the definitional sentence followed by the free
+   read-only scan phrasing (React comment node between text nodes is
+   invisible to extractors).
+3. PASS - /app emits <meta name="robots" content="noindex, nofollow"/>
+   (verified with a demo session cookie); /app/connect carries the same
+   metadata export.
+4. PASS - robots.txt serves 15 UA groups (wildcard + 14 AI crawlers), same
+   allow / disallow policy, sitemap line intact.
+5. PASS - /llms.txt 200 text/plain markdown; pricing figures match TIERS;
+   no claims beyond existing site copy; German number convention.
+6. PASS - build route table: /, /pricing, /faq, /security, /impressum,
+   /datenschutz, /llms.txt static (landing ISR 1d revalidate); /api/* and
+   /app/* dynamic. Session probe returns {"signedIn":false} anonymous and
+   {"signedIn":true} with the demo cookie.
+7. PASS - npm run check + vitest green (re-run after every fix).
+8. PASS - live prod robots.txt/sitemap.xml/og:image all resolve to
+   https://www.licensemeter.com; APP_BASE_URL on Vercel confirmed correct,
+   nothing changed there. Note: local .env keeps localhost:3001, so locally
+   built JSON-LD shows localhost URLs - correct per environment.
+9. PASS - independent code review (feature-dev:code-reviewer). Its P0
+   ("./" canonical resolves every page to the homepage) was DISPROVEN
+   empirically: .next/server/app/{pricing,faq,security}.html each contain
+   their own self-referencing canonical - Next composes "./" against the
+   current route. Its Offer-availability P1 was accepted and fixed
+   (availability: InStock). Its HeaderAuthCta mobile P1 was a false
+   positive: the original server-rendered header had the identical
+   asymmetry (signed-in "Open dashboard" visible on mobile, signed-out CTA
+   hidden) - behavior preserved by design. Month-staleness P1 accepted as
+   the documented trade-off (illustrative card, max 24h stale at rollover).
+   Its P2 on Person.award rejected: award is a valid schema.org Person
+   property.
+
+Deliberate decisions: no hreflang (single-language marketing site - adding
+it would be wrong); no aggregateRating/review schema (no real reviews yet -
+fabrication risks a manual action); no host directive in robots.txt
+(deprecated); sitemap lastModified omitted (safer than a per-deploy
+new Date()); German legal pages stay out of the sitemap (noindex).
+
+Known follow-up (spawned as background task): marketing copy still says
+"six waste rules" while ALL_RULES.length is 13 - landing h2, connector
+strip blurb, and pricing INCLUDED list need a wording that stays accurate.
+
+Not committed - working tree left for the user to review.
