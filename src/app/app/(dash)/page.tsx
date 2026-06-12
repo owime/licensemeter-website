@@ -2,6 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ButtonAnchor } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
@@ -96,12 +97,7 @@ export default async function OverviewPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <a
-            href="/api/export/report"
-            className="border border-line-strong bg-card px-3.5 py-2 text-xs font-medium tracking-wide uppercase transition hover:border-ink"
-          >
-            PDF report
-          </a>
+          <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
           {hasRole(ctx, "admin") && <SyncNowButton />}
         </div>
       </header>
