@@ -1,5 +1,5 @@
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
-import { escapeHtml } from "~/lib/html";
+import { emailWordmark, escapeHtml } from "~/lib/html";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 /**
@@ -88,7 +88,7 @@ export const welcomeHtml = (args: {
   return `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
   <span style="display:none;max-height:0;overflow:hidden">Fifteen minutes to your number — and everything IT security will ask, ready to forward.</span>
-  <p style="font-size:17px;margin:0 0 28px">License<span style="color:#a8330d">Meter</span></p>
+  ${emailWordmark(args.baseUrl)}
 
   <h1 style="font-size:24px;font-weight:normal;margin:0 0 12px">
     Your first waste scan${domain ? ` for ${escapeHtml(domain)}` : ""}

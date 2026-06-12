@@ -69,6 +69,12 @@ describe("welcomeHtml", () => {
     expect(hostile).toContain("&lt;img&gt;");
   });
 
+  it("renders the brand mark from the canonical origin", () => {
+    expect(html).toContain(
+      'src="https://www.licensemeter.com/brand-mark.png"',
+    );
+  });
+
   it("quotes the demo figure and the read-only promise", () => {
     expect(html).toContain(`€ ${demoEuros(DEMO_FIGURES.monthlyWasteCents)}`);
     expect(html).toContain("No write access, ever.");

@@ -1,5 +1,5 @@
 import { env } from "~/env";
-import { escapeHtml } from "~/lib/html";
+import { emailWordmark, escapeHtml } from "~/lib/html";
 
 /**
  * Outgoing mail via Resend, entirely env-gated: without RESEND_API_KEY and
@@ -54,6 +54,7 @@ export const inviteHtml = (args: {
   appUrl: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  ${emailWordmark(args.appUrl)}
   <h1 style="font-size:22px;font-weight:normal">
     ${escapeHtml(args.inviterName)} invited you to LicenseMeter
   </h1>
@@ -129,6 +130,7 @@ export const digestHtml = (args: {
   aiSpendLine?: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  ${emailWordmark(args.appUrl)}
   <h1 style="font-size:22px;font-weight:normal">License waste — ${escapeHtml(args.tenantName)}</h1>
   ${args.delta ? deltaBlock(args.delta) : ""}
   ${args.aiSpendLine ? lineBlock(args.aiSpendLine) : ""}
@@ -171,6 +173,7 @@ export const allClearHtml = (args: {
   appUrl: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  ${emailWordmark(args.appUrl)}
   <h1 style="font-size:22px;font-weight:normal">All clear — ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#1c1a16;line-height:1.5">
     No open findings. Nothing new leaked this week.
@@ -204,6 +207,7 @@ export const reportHtml = (args: {
   appUrl: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  ${emailWordmark(args.appUrl)}
   <h1 style="font-size:22px;font-weight:normal">Monthly report — ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d">
     Monthly spend ${escapeHtml(args.monthlySpend)} ·
@@ -234,6 +238,7 @@ export const leakAlertHtml = (args: {
   appUrl: string;
 }): string => `
 <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1c1a16">
+  ${emailWordmark(args.appUrl)}
   <h1 style="font-size:22px;font-weight:normal">New offboarding leaks — ${escapeHtml(args.tenantName)}</h1>
   <p style="font-family:Arial,sans-serif;font-size:14px;color:#6b665d;line-height:1.5">
     The last sync found ${args.leakCount} seat${args.leakCount === 1 ? "" : "s"} still paid for
