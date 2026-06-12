@@ -4,6 +4,7 @@ import { env, isDemoMode } from "~/env";
 import { EmailCapture } from "~/components/EmailCapture";
 import { SignInButtons } from "~/components/SignInButtons";
 import { Pill } from "~/components/ui";
+import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 
 /* Plain-text names by design: referencing compatibility is nominative use;
@@ -14,7 +15,7 @@ const CONNECTOR_STRIP = [
     tag: "Core",
     tone: "moss" as const,
     blurb:
-      "The full six-rule scan: licenses, sign-in activity and usage reports.",
+      "The full scan: licenses, sign-in activity and usage reports.",
   },
   {
     name: "Adobe",
@@ -178,7 +179,8 @@ export default function LandingPage() {
             How it works
           </p>
           <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-balance">
-            Six waste rules, every finding priced in euros.
+            {/* Count computed from the engine so the copy cannot go stale. */}
+            {ALL_RULES.length} waste rules, every finding priced in euros.
           </h2>
           <div className="mt-10 grid gap-10 md:grid-cols-3">
             {STEPS.map((step) => (

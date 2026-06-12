@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { siteUrl } from "~/env";
 import { ButtonLink } from "~/components/ui";
+import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 
 export const metadata: Metadata = {
@@ -76,7 +77,8 @@ const PRICING_LD = {
 };
 
 const INCLUDED = [
-  "All six waste rules with monthly euro impact",
+  // Count computed from the engine so the copy cannot go stale.
+  `All ${ALL_RULES.length} waste rules with monthly euro impact`,
   "Unlimited workspace members (finance viewers included)",
   "Nightly sync, manual sync, full sync history",
   "Editable price book with list-price estimates",

@@ -612,3 +612,28 @@ Known follow-up (spawned as background task): marketing copy still says
 strip blurb, and pricing INCLUDED list need a wording that stays accurate.
 
 Not committed - working tree left for the user to review.
+(Committed and pushed as b64e8ef on user request; CI green, prod deploy
+verified live: robots AI groups, llms.txt, JSON-LD, canonical, hero.)
+
+---
+
+# Stale rule-count copy fix (2026-06-12, follow-up task)
+
+- [x] Landing h2 and pricing INCLUDED now compute the count from
+      ALL_RULES.length (renders "13" today, tracks the engine as rules
+      grow) - same source of truth the dashboard overview already uses
+- [x] Connector-strip Microsoft 365 blurb went count-free ("The full
+      scan: licenses, sign-in activity and usage reports") - the honest
+      M365 subset is 8, not worth a fragile prefix-filter for one blurb
+- [x] Deliberately untouched: pricing "six reclaimed E3 seats cover it"
+      (ROI arithmetic, not a rule count) and join.test.ts "all six rules"
+      (describes the original six-rule M365 fixture)
+
+Verified: eslint + tsc clean, 56/56 vitest, production build green
+(nonfatal @react-pdf WASM Aborted() noise as always); rendered
+.next/server/app HTML shows "13 waste rules, every finding priced in
+euros" on the landing page and "All 13 waste rules with monthly euro
+impact" on pricing; zero remaining "six waste rules"/"six-rule" matches
+in either page.
+
+Not committed - working tree left for the user to review.
