@@ -28,8 +28,10 @@ const FOOTER_COLUMNS = [
   {
     title: "Legal",
     links: [
-      { href: "/impressum", label: "Impressum" },
-      { href: "/datenschutz", label: "Datenschutz" },
+      { href: "/impressum", label: "Imprint" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/cookies", label: "Cookie policy" },
       { href: "/security#dpa", label: "DPA (on request)" },
     ],
   },
@@ -51,17 +53,17 @@ export default function MarketingLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="bg-paper min-h-screen">
       <a
         href="#content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:border focus:border-ink focus:bg-paper focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink"
+        className="focus:border-ink focus:bg-paper focus:text-ink sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:border focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
       >
         Skip to content
       </a>
       <header className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-6 py-6 sm:gap-x-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 font-display text-lg tracking-tight sm:text-xl"
+          className="font-display flex items-center gap-2.5 text-lg tracking-tight sm:text-xl"
         >
           <BrandMark size={22} />
           <span>
@@ -76,7 +78,7 @@ export default function MarketingLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="-my-3 py-3 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                className="text-ink-soft hover:text-ink -my-3 py-3 text-sm underline-offset-4 hover:underline"
               >
                 {item.label}
               </Link>
@@ -91,16 +93,16 @@ export default function MarketingLayout({
           wrapper only carries the id and adds no extra landmark. */}
       <div id="content">{children}</div>
 
-      <footer className="border-t border-line bg-card">
+      <footer className="border-line bg-card border-t">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2 font-display text-lg tracking-tight">
+            <div className="font-display flex items-center gap-2 text-lg tracking-tight">
               <BrandMark size={18} />
               <span>
                 License<span className="text-rust-text">Meter</span>
               </span>
             </div>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
+            <p className="text-ink-soft mt-3 max-w-xs text-sm leading-relaxed">
               License waste analytics for Microsoft 365, with Adobe, Zoom,
               Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude
               connectors. Read-only, EU-hosted, built for IT and finance.
@@ -108,7 +110,7 @@ export default function MarketingLayout({
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+              <h3 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
                 {col.title}
               </h3>
               <ul className="mt-3 flex flex-col gap-2">
@@ -117,14 +119,14 @@ export default function MarketingLayout({
                     {link.href.startsWith("/") ? (
                       <Link
                         href={link.href}
-                        className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                        className="text-ink-soft hover:text-ink -my-1 py-1 text-sm underline-offset-4 hover:underline"
                       >
                         {link.label}
                       </Link>
                     ) : (
                       <a
                         href={link.href}
-                        className="-my-1 py-1 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                        className="text-ink-soft hover:text-ink -my-1 py-1 text-sm underline-offset-4 hover:underline"
                       >
                         {link.label}
                       </a>
@@ -135,7 +137,7 @@ export default function MarketingLayout({
             </div>
           ))}
         </div>
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 border-t border-line px-6 py-6 text-xs text-ink-faint">
+        <div className="border-line text-ink-faint mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 border-t px-6 py-6 text-xs">
           <span>LicenseMeter, built by Ugur Koc</span>
           <span>
             Independent tool, not affiliated with Microsoft, Adobe, Zoom,
