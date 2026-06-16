@@ -53,11 +53,11 @@ export default function TermsPage() {
         <p>
           LicenseMeter is an analytics service that surfaces unused and
           oversized software licenses. Once the Customer grants access, the
-          Service connects via read-only permissions to the Customer's Microsoft
-          365 tenant and, optionally, to further source systems (including
-          Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic), evaluates
-          license and activity information, and presents it as analyses, reports
-          and exports.
+          Service connects via read-only permissions to the Customer&rsquo;s
+          Microsoft 365 tenant and, optionally, to further source systems
+          (including Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic),
+          evaluates license and activity information, and presents it as
+          analyses, reports and exports.
         </p>
         <p>
           The Provider owes no particular economic outcome. Analyses and savings
@@ -120,9 +120,9 @@ export default function TermsPage() {
           The Provider strives for high availability of the Service but, absent
           a separate agreement, owes no particular availability (no service
           level). Maintenance, ongoing development and disruptions outside the
-          Provider's control (in particular at third parties such as Microsoft
-          or the connected source systems) may temporarily limit use. Support is
-          provided by email at support@licensemeter.com.
+          Provider&rsquo;s control (in particular at third parties such as
+          Microsoft or the connected source systems) may temporarily limit use.
+          Support is provided by email at support@licensemeter.com.
         </p>
       </Section>
 
@@ -166,9 +166,9 @@ export default function TermsPage() {
           Convention on Contracts for the International Sale of Goods. If the
           Customer is a merchant, a legal entity under public law or a special
           fund under public law, the exclusive place of jurisdiction is the
-          Provider's registered seat. Should individual provisions of these
-          Terms be invalid, the validity of the remaining provisions remains
-          unaffected.
+          Provider&rsquo;s registered seat. Should individual provisions of
+          these Terms be invalid, the validity of the remaining provisions
+          remains unaffected.
         </p>
       </Section>
     </main>

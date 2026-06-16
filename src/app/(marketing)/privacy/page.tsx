@@ -83,8 +83,8 @@ export default function PrivacyPolicyPage() {
       <Section title="4. Product data (processing on your behalf)">
         <p>
           When an organization connects its Microsoft 365 tenant, LicenseMeter
-          processes the following data of the tenant's users on that
-          organization's behalf (Art. 28 GDPR): display name, UPN, account
+          processes the following data of the tenant&rsquo;s users on that
+          organization&rsquo;s behalf (Art. 28 GDPR): display name, UPN, account
           status, user type, creation date, license assignments, last sign-in
           timestamp and the last activity date per service. Mailbox, file or
           message content is never read; access is technically limited to
@@ -128,9 +128,9 @@ export default function PrivacyPolicyPage() {
           To be distinguished from these are the source systems named in section
           4 (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, and the
           lists pasted via CSV from ChatGPT and Claude): LicenseMeter reads data
-          from them, on the organization's behalf, on a read-only basis. They
-          are data sources, not subprocessors of LicenseMeter; no personal data
-          is shared with them beyond the authenticated read request.
+          from them, on the organization&rsquo;s behalf, on a read-only basis.
+          They are data sources, not subprocessors of LicenseMeter; no personal
+          data is shared with them beyond the authenticated read request.
         </p>
       </Section>
 
@@ -138,8 +138,8 @@ export default function PrivacyPolicyPage() {
         <p>
           Account and product data is stored for as long as the workspace is
           connected. On disconnect, all synchronized data is deleted. The
-          hosting provider's server logs are subject to that provider's deletion
-          periods.
+          hosting provider&rsquo;s server logs are subject to that
+          provider&rsquo;s deletion periods.
         </p>
       </Section>
 
