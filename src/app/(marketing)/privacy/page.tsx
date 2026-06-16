@@ -33,9 +33,11 @@ export default function PrivacyPolicyPage() {
 
       <Section title="1. Controller">
         <p>
-          [First and last name]
+          UgurLabs UG (haftungsbeschränkt)
           <br />
           [Street and number], [Postal code, City], Germany
+          <br />
+          Managing Director: Ugur Koc
           <br />
           Email: support@licensemeter.com
         </p>

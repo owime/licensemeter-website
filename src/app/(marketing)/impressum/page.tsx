@@ -6,8 +6,10 @@ export const metadata: Metadata = {
 };
 
 /*
- * TODO before launch (legally required, § 5 DDG):
- * replace every [bracketed] placeholder with the real details.
+ * TODO before launch (legally required, § 5 DDG): a UG (haftungsbeschränkt)
+ * must show a ladungsfähige Anschrift (street address) and the Handelsregister
+ * entry (Registergericht + HRB number). Replace every [bracketed] placeholder
+ * with the real details before going live.
  */
 export default function ImpressumPage() {
   return (
@@ -18,7 +20,7 @@ export default function ImpressumPage() {
         <section>
           <h2 className="text-ink font-medium">Angaben gemäß § 5 DDG</h2>
           <p className="mt-2">
-            [Vor- und Nachname]
+            UgurLabs UG (haftungsbeschränkt)
             <br />
             [Straße und Hausnummer]
             <br />
@@ -29,11 +31,27 @@ export default function ImpressumPage() {
         </section>
 
         <section>
+          <h2 className="text-ink font-medium">Vertreten durch</h2>
+          <p className="mt-2">Ugur Koc (Geschäftsführer)</p>
+        </section>
+
+        <section>
           <h2 className="text-ink font-medium">Kontakt</h2>
           <p className="mt-2">
             E-Mail: support@licensemeter.com
             <br />
             [Telefonnummer, optional]
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-ink font-medium">Registereintrag</h2>
+          <p className="mt-2">
+            Eingetragen im Handelsregister.
+            <br />
+            Registergericht: Amtsgericht [Ort]
+            <br />
+            Registernummer: HRB [Nummer]
           </p>
         </section>
 
@@ -49,7 +67,7 @@ export default function ImpressumPage() {
           <h2 className="text-ink font-medium">
             Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
           </h2>
-          <p className="mt-2">[Vor- und Nachname, Anschrift wie oben]</p>
+          <p className="mt-2">Ugur Koc (Anschrift wie oben)</p>
         </section>
 
         <section>
