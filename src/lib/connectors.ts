@@ -59,7 +59,7 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "Client secret", placeholder: "x7TuVwXyZ0a…", secret: true },
     ],
     setupHint:
-      "A Zoom admin creates a Server-to-Server OAuth app in the Zoom App Marketplace (Develop > Build App) with the user:read:admin scope, then pastes the three values here. Stored encrypted, used read-only.",
+      "A Zoom admin creates a Server-to-Server OAuth app in the Zoom App Marketplace (Develop > Build App) with the user:read:list_users:admin scope, then pastes the three values here. Stored encrypted, used read-only.",
     detects: [
       "Licensed Zoom seats held by accounts that are disabled in Entra ID.",
       "Licensed seats with no matching directory account at all.",

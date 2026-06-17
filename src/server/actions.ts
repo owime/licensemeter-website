@@ -553,7 +553,8 @@ export const connectAdobe = async (
       },
     });
   await audit(ctx, "adobe_connected", { orgId });
-  await runSync(ctx.tenant.id);
+  // Sync after the response, not inline; see connectSaasConnector.
+  after(() => runSync(ctx.tenant.id));
   revalidateApp();
   return ok();
 };
@@ -652,7 +653,11 @@ export const connectSaasConnector = async (
       },
     });
   await audit(ctx, "connector_connected", { provider, orgRef });
-  await runSync(ctx.tenant.id);
+  // Credentials were validated above; the first sync (a full Graph pull plus
+  // every connector) runs after the response rather than blocking it, so the
+  // connect button is not held pending for the whole sync and cannot outlive
+  // the function timeout. The page shows "first sync pending" until it lands.
+  after(() => runSync(ctx.tenant.id));
   revalidateApp();
   return ok();
 };

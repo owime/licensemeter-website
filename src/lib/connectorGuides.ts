@@ -93,7 +93,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Grant the scope",
-        body: "Add the user:read:admin scope. Nothing else is required: LicenseMeter only lists users.",
+        body: "Add the user:read:list_users:admin scope (the granular scope that lists all users). Nothing else is required. Note that the similarly named user:read:user:admin reads only one user at a time and will not authorize the sync.",
       },
       {
         title: "Connect",

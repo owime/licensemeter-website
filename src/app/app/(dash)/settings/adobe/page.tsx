@@ -13,6 +13,8 @@ import { db } from "~/server/db";
 import { adobeConnections, adobeUsers } from "~/server/db/schema";
 
 export const metadata = { title: "Adobe connector" };
+// Connect action syncs in after(); needs the same 300s budget as other sync paths.
+export const maxDuration = 300;
 
 export default async function AdobeConnectorPage() {
   const ctx = await requireAccess("viewer");

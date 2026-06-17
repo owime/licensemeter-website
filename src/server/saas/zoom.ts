@@ -29,8 +29,10 @@ export const mapZoomUsers = (users: ZoomApiUser[]): SaasSeat[] =>
 
 /**
  * Zoom Server-to-Server OAuth app (account-level, created by a Zoom admin).
- * One scope is enough: user:read:admin. last_login_time comes back on the
- * user object itself, so inactivity needs no extra report call.
+ * One scope is enough: user:read:list_users:admin (the granular scope for the
+ * GET /users list endpoint below; classic user:read:admin is deprecated for new
+ * apps). last_login_time comes back on the user object itself, so inactivity
+ * needs no extra report call.
  */
 export class ZoomClient implements SaasClient {
   constructor(

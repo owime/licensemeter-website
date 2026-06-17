@@ -7,6 +7,10 @@ import { consentStates, memberships, tenants } from "~/server/db/schema";
 import { notifyOps } from "~/server/ops";
 import { runSync } from "~/server/sync/runSync";
 
+// The first sync after admin consent runs in after() below and shares this
+// route's budget, so give it the same 300s every other sync path has.
+export const maxDuration = 300;
+
 const STATE_TTL_MS = 15 * 60 * 1000;
 
 const fail = (code: string): never => redirect(`/app/connect?error=${code}`);
