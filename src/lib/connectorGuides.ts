@@ -45,7 +45,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     steps: [
       {
         title: "Create the API project",
-        body: "In the Adobe Developer Console, create or open a project and add the User Management API with OAuth Server-to-Server credentials. This needs a system administrator or developer role in your Adobe organization.",
+        body: "In the Adobe Developer Console, create or open a project and add the User Management API with OAuth Server-to-Server credentials. This requires the Adobe System Administrator role; the Developer role alone cannot create the User Management API integration.",
         doc: {
           label: "Adobe User Management API documentation",
           href: "https://adobe-apiplatform.github.io/umapi-documentation/en/",
@@ -119,7 +119,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     steps: [
       {
         title: "Create an organization API key",
-        body: "In Atlassian Administration (admin.atlassian.com) under Organization settings > API keys, create a key. Only users with the organization admin role can do this.",
+        body: "In Atlassian Administration (admin.atlassian.com) under Organization settings > API keys, create a key. Only users with the organization admin role can do this. If the key offers API scopes, include read:accounts:admin (or create it without scopes). The connector reads managed accounts, so your organization needs at least one verified domain; unverified accounts are not returned.",
         doc: {
           label: "Atlassian organization admin API documentation",
           href: "https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/",
@@ -153,7 +153,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     steps: [
       {
         title: "Create a Connected App",
-        body: "In Setup > App Manager, create a Connected App with OAuth enabled and Enable Client Credentials Flow checked.",
+        body: "In Setup > App Manager, create a Connected App with OAuth enabled and Enable Client Credentials Flow checked. Under Selected OAuth Scopes, add 'Manage user data via APIs (api)' — without it the token issues but the user query is rejected, so the connection validates yet reads nothing.",
         doc: {
           label: "Salesforce: Configure a Connected App for the Client Credentials Flow",
           href: "https://help.salesforce.com/s/articleView?id=xcloud.connected_app_client_credentials_setup.htm&type=5",
@@ -161,7 +161,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "Set a read-only run-as user",
-        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated API-only integration user whose profile can read users and nothing more. LicenseMeter's only query is the user list.",
+        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated integration user with API Enabled and View All Users (read-only) — View All Users is what lets the single query return every active user when User Sharing is on; without it the list comes back empty or partial. LicenseMeter's only query is the user list.",
       },
       {
         title: "Connect",
@@ -224,7 +224,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     steps: [
       {
         title: "Create an Admin API key",
-        body: "An organization admin opens the Claude Console under Settings > Admin keys and provisions a key, which starts with sk-ant-admin. Admin keys exist on organization accounts, not on individual ones.",
+        body: "An organization admin opens the Claude Console (platform.claude.com) under Organization settings > Admin keys and provisions a key, which starts with sk-ant-admin. Admin keys exist on organization accounts, not on individual ones.",
         doc: {
           label: "Anthropic Admin API documentation",
           href: "https://platform.claude.com/docs/en/manage-claude/admin-api",
@@ -261,11 +261,11 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     summary:
       "Match your ChatGPT Enterprise or Business member list against Entra ID with a CSV paste. No credentials, no API.",
     intro:
-      "ChatGPT seats are bought fast and reviewed rarely. Paste the member export from the admin workspace and LicenseMeter prices every seat held by someone who is disabled, gone or inactive.",
+      "ChatGPT seats are bought fast and reviewed rarely. Paste the member list from Workspace settings > Members and LicenseMeter prices every seat held by someone who is disabled, gone or inactive.",
     steps: [
       {
-        title: "Export the member list",
-        body: "In the ChatGPT admin workspace under Members, export or copy the member table including its header row. Workspace owners and admins can access it on Enterprise and Business plans.",
+        title: "Copy the member list",
+        body: "In ChatGPT, open Workspace settings > Members and copy the member table including its header row (select the rows and copy — the Business plan has no member-list export). Workspace owners and admins can do this on Enterprise and Business plans.",
         doc: {
           label: "OpenAI: Managing members in ChatGPT Enterprise",
           href: "https://help.openai.com/en/articles/8266401-managing-members-seat-types-roles-and-access-in-chatgpt-enterprise",

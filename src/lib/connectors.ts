@@ -78,7 +78,7 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "API key", placeholder: "ATCTT3xFfGN0…", secret: true },
     ],
     setupHint:
-      "An organization admin creates an API key under admin.atlassian.com > Settings > API keys and pastes the organization ID plus the key here. Stored encrypted, used read-only: managed users and product access only, nothing from inside Jira or Confluence.",
+      "An organization admin creates an API key under admin.atlassian.com > Organization settings > API keys and pastes the organization ID plus the key here. Your org needs at least one verified domain (only managed accounts are returned). Stored encrypted, used read-only: managed users and product access only, nothing from inside Jira or Confluence.",
     detects: [
       "Jira and Confluence seats held by accounts that are disabled in Entra ID.",
       "Seats with no matching directory account at all.",
@@ -103,7 +103,7 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "Consumer secret", placeholder: "A1B2C3D4E5F6…", secret: true },
     ],
     setupHint:
-      "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and a read-only integration user as the run-as user, then pastes the My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",
+      "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and the 'Manage user data via APIs (api)' OAuth scope, with an integration user that has API Enabled and View All Users as the read-only run-as user, then pastes the My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",
     detects: [
       "Salesforce licenses held by accounts that are disabled in Entra ID. At Salesforce prices, usually the single most expensive leak.",
       "Licenses with no matching directory account at all.",
@@ -141,7 +141,7 @@ export const CONNECTORS: ConnectorSpec[] = [
       { name: "secret", label: "Admin API key", placeholder: "sk-ant-admin…", secret: true },
     ],
     setupHint:
-      "An organization admin creates an Admin API key in the Claude Console under Settings > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",
+      "An organization admin creates an Admin API key in the Claude Console (platform.claude.com) under Organization settings > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",
     detects: [
       "Console members whose Entra ID account is disabled: departed people who may still hold live API keys.",
       "Console members with no matching directory account at all.",
@@ -157,7 +157,7 @@ export const CONNECTORS: ConnectorSpec[] = [
     seatNoun: "ChatGPT seats",
     fields: [],
     setupHint:
-      "In the ChatGPT admin workspace, open Members and export or copy the member table including its header row, then paste it below. The list is matched against Entra ID and stored like any other connector's seats.",
+      "In ChatGPT, open Workspace settings > Members and copy the member table including its header row, then paste it below (the Business plan has no member export; copy the on-screen list). The list is matched against Entra ID and stored like any other connector's seats.",
     detects: [
       "ChatGPT seats held by accounts that are disabled in Entra ID.",
       "Seats with no matching directory account at all.",
