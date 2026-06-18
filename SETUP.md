@@ -59,9 +59,40 @@ unprotected cron route.
 
 ## 4. Database schema
 
-```bash
-DATABASE_URL="postgres://..." npm run db:push
-```
+The deployed app connects as a dedicated least-privilege role
+(`licensemeter_app`, DML only). Schema pushes and the one-time security setup run
+as a privileged role (`postgres`). So you keep two connection strings: an admin
+one for setup, and the app one for runtime.
+
+1. Create the tables, as the privileged role:
+
+   ```bash
+   DATABASE_URL="postgres://postgres:...@db.<ref>.supabase.co:5432/postgres" npm run db:push
+   ```
+
+2. Create the least-privilege app role. Manual and out of repo -- it carries a
+   secret. Use a generated password; this is the password in the app's runtime
+   `DATABASE_URL`:
+
+   ```sql
+   CREATE ROLE licensemeter_app LOGIN PASSWORD '<generated>';
+   ```
+
+3. Lock the database down, as the privileged role, in this order (every script
+   is idempotent -- re-run after adding tables):
+
+   ```bash
+   psql "$ADMIN_DATABASE_URL" -f scripts/db-enable-rls-deny-all.sql
+   psql "$ADMIN_DATABASE_URL" -f scripts/db-app-role-grants-and-policies.sql
+   psql "$ADMIN_DATABASE_URL" -f scripts/db-revoke-public-api-grants.sql
+   ```
+
+   This enables RLS on every table (Supabase Data API deny-all), gives
+   `licensemeter_app` its permissive `app_all` policy, and revokes the default
+   anon/authenticated grants. Tenant isolation is enforced in application code,
+   not by RLS.
+
+4. Point the deployed app's `DATABASE_URL` at `licensemeter_app`, not `postgres`.
 
 ## 5. Deploy
 

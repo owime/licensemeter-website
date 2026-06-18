@@ -18,10 +18,11 @@
 -- Idempotent: safe to re-run. Re-run after adding new tables if the default
 -- privileges below were not in effect when they were created.
 --
--- Prerequisite (manual, out of repo): RLS enabled on every public table, the
--- `licensemeter_app` role created and granted DML, and a per-table policy for
--- it. Applied to production (project licensemeter / tomugclophxlmnzrrcxp) on
--- 2026-06-17.
+-- Prerequisite: the deny-all posture is already in place -- run
+-- db-enable-rls-deny-all.sql then db-app-role-grants-and-policies.sql first. The
+-- `licensemeter_app` role itself is created manually (out of repo: it carries
+-- the DATABASE_URL password). Applied to production
+-- (project licensemeter / tomugclophxlmnzrrcxp) on 2026-06-17.
 
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
 
