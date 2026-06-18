@@ -399,6 +399,60 @@ export const removeMember = async (
   return ok();
 };
 
+/**
+ * Change an existing member's (or pending invite's) role in place: the separate,
+ * guarded path that addMember's "already a member" block deliberately leaves out.
+ * Granting or revoking owner stays owner-only, and you cannot change your own
+ * role. Together these keep at least one owner without counting rows: demoting an
+ * owner requires being a DIFFERENT owner, so the actor always remains one.
+ */
+export const changeMemberRole = async (
+  membershipId: string,
+  newRole: MembershipRole,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) {
+    return fail(
+      "The demo workspace keeps its members fixed. Connect your own tenant to manage people.",
+    );
+  }
+  if (!["viewer", "admin", "owner"].includes(newRole)) {
+    return fail("Invalid role");
+  }
+
+  const target = await db.query.memberships.findFirst({
+    where: and(
+      eq(memberships.id, membershipId),
+      eq(memberships.tenantId, ctx.tenant.id),
+    ),
+  });
+  if (!target) return fail("Member not found");
+  if (target.id === ctx.membership.id) {
+    return fail("You cannot change your own role");
+  }
+  // Granting OR revoking ownership is owner-only (mirrors addMember/removeMember).
+  if (
+    (newRole === "owner" || target.role === "owner") &&
+    ctx.membership.role !== "owner"
+  ) {
+    return fail("Only owners can change the owner role");
+  }
+  if (target.role === newRole) return ok();
+
+  await db
+    .update(memberships)
+    .set({ role: newRole })
+    .where(eq(memberships.id, target.id));
+  await audit(ctx, "member_role_changed", {
+    email: target.email,
+    from: target.role,
+    to: newRole,
+  });
+  revalidateApp();
+  return ok();
+};
+
 /** Per-workspace inactivity threshold (days) for the inactive-users rule. */
 export const setInactiveDays = async (
   formData: FormData,

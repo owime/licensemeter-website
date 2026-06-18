@@ -112,6 +112,7 @@ export type AuditAction =
   | "price_updated"
   | "member_added"
   | "member_removed"
+  | "member_role_changed"
   | "finding_status_changed"
   | "sync_triggered"
   | "currency_changed"

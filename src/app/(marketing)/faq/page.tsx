@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: "Who in our company can see the data?",
-    a: "Only people the workspace owner invites, in the role they assign (owner, admin, or read-only viewer for finance). Signing in with an account from your tenant grants nothing by itself.",
+    a: "Only people the workspace owner invites, in the role they assign. A viewer has read-only access to dashboards and exports (built for finance); an admin can also run syncs, edit prices, change settings and invite people; an owner can additionally manage other owners and disconnect the workspace. Signing in with an account from your tenant grants nothing by itself.",
   },
   {
     q: "Do we need Entra ID P1?",

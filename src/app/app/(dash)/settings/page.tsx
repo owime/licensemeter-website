@@ -8,8 +8,10 @@ import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
 import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle";
 import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
+import { RoleSelect } from "~/components/workspace/RoleSelect";
 import { Button, Card, Pill } from "~/components/ui";
 import { fmtDate, fmtDateTime } from "~/lib/format";
+import { ROLE_DESCRIPTION } from "~/lib/roles";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
 import { setInactiveDays } from "~/server/actions";
 import { db } from "~/server/db";
@@ -322,7 +324,20 @@ export default async function SettingsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <Pill tone="slate">{m.role}</Pill>
+                  {isAdmin &&
+                  !ctx.tenant.isDemo &&
+                  m.id !== ctx.membership.id &&
+                  (m.role !== "owner" || isOwner) ? (
+                    <RoleSelect
+                      membershipId={m.id}
+                      role={m.role}
+                      allowOwner={isOwner}
+                    />
+                  ) : (
+                    <Pill tone="slate" title={ROLE_DESCRIPTION[m.role]}>
+                      {m.role}
+                    </Pill>
+                  )}
                   {isAdmin && !ctx.tenant.isDemo && (
                     <MemberActions
                       membershipId={m.id}

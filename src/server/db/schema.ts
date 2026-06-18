@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -80,6 +81,7 @@ export const memberships = pgTable(
   (t) => [
     uniqueIndex("memberships_tenant_email_idx").on(t.tenantId, t.email),
     index("memberships_oid_idx").on(t.oid),
+    check("memberships_role_check", sql`${t.role} in ('viewer', 'admin', 'owner')`),
   ],
 );
 

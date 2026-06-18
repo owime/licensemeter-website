@@ -1,77 +1,87 @@
-# GA pass: Beta labels out, em dashes out, full product review (2026-06-12/13)
+# Member roles review: follow-up actions (2026-06-18)
 
-Goal: (1) remove every Beta/beta label so all connectors present as GA,
-(2) remove all em dashes from texts and rewrite them warm and human,
-(3) full review of every feature, page, button, link and text with a
-prioritized fix/improve list as the deliverable.
+Review verdict: keep all three roles (viewer/admin/owner). The model is a clean
+read/operate/govern hierarchy (ROLE_RANK in src/server/access.ts), enforcement is
+consistent via requireAccess/apiAccess, and Owner's two unique powers (manage
+owners, delete workspace) are exactly the irreversible/governance ones - correct
+to separate from Admin. No role should be removed.
+
+The actionable gaps are documentation and one missing capability.
 
 ## Plan
 
-- [x] 1. Beta removal (19 hits): pills, licenses headers, landing strip tags,
-       footer, msp, SITE_DEFINITION, runSync comments, README
-- [x] 2. Em dash removal: 349 em dashes + 2 en dashes across ~120 files via
-       4 parallel rewrite agents with disjoint file sets; tests in lockstep
-- [x] 3. Gates: npm run check, npm test (179), npm run build all green;
-       zero "beta" and zero em/en dash greps repo-wide
-- [x] 4. Review fan-out: marketing agent, dashboard agent, server/API agent,
-       live Playwright click-through, prod link health (20 routes 200),
-       prod schema check (tenants.monthly_report present)
-- [x] 5. Follow-up fixes from review, same mandate: four pre-GA copy spots
-       (pricing early-access note, landing capture, welcome email footer,
-       Datenschutz 4a) reworded to billing-not-started honesty (d7cfd44)
-- [x] 6. Findings list compiled and delivered in chat
-- [x] 7. "Fix all of it": 5 parallel agents (auth/security, server-actions,
-       dash-pages, workspace-components, marketing/SEO/ROI) fixed every
-       review item except the founder-only legal placeholders. Gates green:
-       lint clean, 188 tests (was 179), production build, live smoke test
-       (demo member guard, 404, ROI over-cap, signin returnTo, all dash
-       pages 200, zero dash/beta). Local commit pending.
+### P1 - Change a claimed member's role (functional gap)
+Today the only member writes are invite / resend / remove. A claimed member's
+role cannot be changed at all (addMember bails at actions.ts:280 once oid is set).
+This was a deliberate guard ("owner-demotion via re-invite closed"), so the fix is
+a NEW guarded action, not loosening addMember.
 
-## Fixes applied (all P0/P1 + P2 from the review)
+- [ ] Add `changeMemberRole(membershipId, newRole)` server action in src/server/actions.ts
+      - requires apiAccess("admin"); demo workspace blocked; target scoped to tenant
+      - granting owner OR changing an existing owner requires caller is owner
+        (mirror addMember:263 / removeMember:391)
+      - block changing your OWN role (mirror "cannot remove yourself") -> also
+        prevents last-owner self-demotion / workspace orphaning
+      - no-op if role unchanged; audit("member_role_changed", {email, from, to})
+- [ ] UI: role control in the settings member list (extend MemberActions or a
+      small RoleSelect) - visible to admins, owner option only when caller is owner,
+      hidden for self and in demo
+- Acceptance:
+  - admin can promote viewer->admin and demote admin->viewer with no remove/re-invite
+  - only an owner can set or unset the owner role
+  - nobody can change their own role; the last owner cannot be orphaned
+  - every change is audit-logged; demo workspace rejects it
 
-P0: prod sign-out cookie deletion now carries Secure/path via centralized
-expiredSessionCookie/expiredOAuthCookie helpers (session was surviving
-sign-out behind __Host-); demo workspace member actions
-(addMember/removeMember/resendInvite) server-guarded against isDemo +
-hidden in the settings UI (demo was brickable).
-P1: owner-demotion via re-invite closed (claimed members cannot be
-role-overwritten); trend chart now newest-90 desc+reverse (was frozen on
-oldest 90); trial workspaces show connect-first notes instead of dead
-connector forms; viewer cannot re-upload CSV / re-scan trial data;
-updatePrice uses strict parsePriceValue (German thousands no longer
-silently mangled); ROI over-cap shows talk-to-us above 2.500 seats;
-welcome email retries on resubmit; auth CTAs route through
-signin?returnTo so anonymous visitors no longer bounce silently;
-Datenschutz (user) + security page Resend/connector data accuracy.
-P2: branded /not-found; armed-confirm + error surfacing on connector
-disconnects; DangerZone single-button arming keeps focus; MobileNav
-focus trap + scroll lock + focus restore; ConnectPoller gives up after
-~3min; 44px touch targets on findings checkboxes/chips; fmtDateTime in
-sync/activity logs; provider-aware rule labels on the user page (RuleBadge
-deleted); scope=col on table headers; "All active" wording; cron secret
-constant-time compare; remediation strips CR/LF from titles; invite rate
-limit; import status punctuation; sitemap +impressum/datenschutz; llms.txt
-+connectors; OG image lineup; marketing skip link; FAQ publisher-verify
-honesty; CONNECTOR_SCOPES.length not "five"; pricing annual computed.
+### P2 - Document the roles at the point of use (the real weakness)
+Only "Viewer (finance)" is hinted in the UI; Admin and Owner are bare words. The
+FAQ only really explains Viewer.
 
-## Review
+- [ ] InviteForm.tsx: one-line plain-language description per role option
+      (viewer = read-only dashboards + exports; admin = manage data, settings,
+      members, connectors; owner = everything + delete workspace + manage owners)
+- [ ] Same descriptions beside the role control in the member list
+- [ ] FAQ (src/app/(marketing)/faq/page.tsx:32): expand to spell out Admin vs Owner
+- [ ] Optional: short permission matrix in README/docs
+- Acceptance: no role option appears as a bare word; FAQ explains all three tiers
 
-- AC1 PASS: zero user-visible "beta" anywhere (src, docs, README, SETUP).
-- AC2 PASS: zero em/en dashes in src/, docs/, README, SETUP, scripts,
-  .github; copy rewritten as sentences, not hyphen swaps; the one
-  functional em dash (parseMembers NO_DATE, parses pasted admin tables)
-  kept as — escape.
-- AC3 PASS: lint, tsc, 179/179 tests, production build green;
-  SITE_DEFINITION single-sourced (hero = JSON-LD = llms.txt).
-- AC4 PASS: every marketing route, dash route, API route, email template,
-  PDF, and connector guide reviewed by dedicated agents plus a live
-  click-through; prioritized findings delivered (top items: demo workspace
-  can be bricked via ungated member actions; prod sign-out cookie deletion
-  rejected by browsers (__Host- without Secure); Impressum/Datenschutz
-  legal placeholders).
-- AC5 OVERTAKEN: a concurrent session committed and pushed the GA pass as
-  85af351 mid-session; my follow-up copy fixes are local commit d7cfd44,
-  push pending user go-ahead.
-- Environment note: dev server died during the QA click-through and
-  corrupted .pglite; rebuilt (rm -rf .pglite, mkdir -p .pglite/data,
-  db:push), demo reseeded and verified.
+### P3 - DB CHECK constraint on role (defense in depth)
+role is validated in app code only (schema.ts:75); no DB-level constraint.
+
+- [ ] Drizzle migration: CHECK (role IN ('viewer','admin','owner')) on memberships
+- Acceptance: invalid role insert rejected at DB level; existing rows valid; push clean
+
+### Explicitly NOT doing
+- Removing any role - decided against; the three tiers are necessary and
+  industry-standard (read / operate / govern)
+
+## Gates (per tasks/lessons.md)
+- npm run check (lint + tsc), npm test, npm run build all green before pushing
+- escape apostrophes as &rsquo; in any (marketing) / JSX copy touched
+- verify the member-role UI live in the running app (settings) before calling done
+- separate code-reviewer subagent evaluates against the acceptance criteria above
+
+## Review (2026-06-18) - all three shipped
+
+P1 PASS: changeMemberRole added (actions.ts) + RoleSelect in the member list.
+  Guards verified by code-reviewer: admin cannot promote-to/demote owner; cannot
+  change own role; tenant-scoped lookup; demo blocked; newRole validated; audits
+  member_role_changed; same ActionResult shape as siblings.
+P2 PASS: shared src/lib/roles.ts (ROLE_LABEL/ROLE_DESCRIPTION/ROLE_ORDER); invite
+  dropdown now shows a live per-role description; member Pill carries the
+  description as a tooltip; FAQ entry spells out viewer vs admin vs owner.
+P3 PASS: check() on memberships.role; constraint proven in an isolated pglite
+  (valid roles accepted; "superuser"/"Owner"/""/"guest" rejected). Repo deploys
+  via db:push (migration chain already stale from prior push-only changes), so
+  schema.ts is the source of truth - did not add to the broken migration chain.
+  Lands in prod on the next `npm run db:push`.
+
+Gates: next lint clean, tsc clean, 188/188 tests, production build green.
+
+Reviewer false-positive (NOT applied): claimed last-owner demotion can orphan the
+workspace. Disproven - demoting an owner requires being a different owner, so the
+actor always remains an owner (same invariant as removeMember). Added a clarifying
+doc-comment instead of a dead count-check.
+
+Not browser-verified: the member-role UI sits behind Microsoft sign-in on a
+non-demo workspace (the demo hides member management), so it is not reachable from
+the preview without real tenant credentials. Covered by types + build + review.

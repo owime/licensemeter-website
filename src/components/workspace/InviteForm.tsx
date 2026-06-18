@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { Button } from "~/components/ui";
 import { addMember } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
+import { ROLE_DESCRIPTION, ROLE_LABEL, ROLE_ORDER } from "~/lib/roles";
+import type { MembershipRole } from "~/server/types";
 
 type InviteState = (ActionResult & { email?: string }) | null;
 
@@ -28,6 +30,7 @@ export const InviteForm = ({
     },
     null,
   );
+  const [role, setRole] = useState<MembershipRole>("viewer");
 
   return (
     <form
@@ -47,13 +50,16 @@ export const InviteForm = ({
       />
       <select
         name="role"
-        defaultValue="viewer"
+        value={role}
+        onChange={(e) => setRole(e.target.value as MembershipRole)}
         aria-label="Role for the invited member"
         className="border border-line bg-card px-2 py-2 text-sm focus:border-ink"
       >
-        <option value="viewer">Viewer (finance)</option>
-        <option value="admin">Admin</option>
-        {allowOwner && <option value="owner">Owner</option>}
+        {ROLE_ORDER.filter((r) => r !== "owner" || allowOwner).map((r) => (
+          <option key={r} value={r}>
+            {ROLE_LABEL[r]}
+          </option>
+        ))}
       </select>
       <Button variant="primary" disabled={pending} className="px-4 py-2">
         {pending ? "Inviting…" : "Invite"}
@@ -72,6 +78,10 @@ export const InviteForm = ({
           : result.ok
             ? `Invited ${result.email ?? "member"}.`
             : (result.error ?? "Invite failed")}
+      </p>
+      <p className="w-full text-xs text-ink-soft">
+        <span className="font-medium">{ROLE_LABEL[role]}:</span>{" "}
+        {ROLE_DESCRIPTION[role]}
       </p>
       <p className="w-full text-xs text-ink-faint">
         {inviteEmailsActive
