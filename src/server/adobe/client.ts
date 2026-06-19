@@ -7,12 +7,33 @@ export interface AdobeClient {
 
 const IMS_TOKEN_URL = "https://ims-na1.adobelogin.com/ims/token/v3";
 const UMAPI_BASE = "https://usermanagement.adobe.io/v2/usermanagement";
+const GROUP_RATE_LIMIT_RETRY_MS = 60_000;
+const MAX_GROUP_CATALOG_PAGES = 20;
+const MAX_GROUP_PAGE_ATTEMPTS = 3;
+const MAX_GROUP_RATE_LIMIT_WAIT_MS = 240_000;
 
 type UmapiUser = {
   email?: string;
   status?: string;
   groups?: string[];
   type?: string;
+};
+
+type UmapiGroup = {
+  type?: string;
+  groupName?: string;
+};
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+const retryAfterMs = (value: string | null): number => {
+  if (!value) return GROUP_RATE_LIMIT_RETRY_MS;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, Math.ceil(seconds * 1000));
+  const retryAt = Date.parse(value);
+  if (Number.isFinite(retryAt)) return Math.max(0, retryAt - Date.now());
+  return GROUP_RATE_LIMIT_RETRY_MS;
 };
 
 /**
@@ -27,6 +48,7 @@ export class UmapiClient implements AdobeClient {
       orgId: string;
       clientId: string;
       clientSecret: string;
+      sleep?: (ms: number) => Promise<void>;
     },
   ) {}
 
@@ -50,16 +72,75 @@ export class UmapiClient implements AdobeClient {
     return body.access_token;
   }
 
+  private requestHeaders(token: string): Record<string, string> {
+    return {
+      Authorization: `Bearer ${token}`,
+      "X-Api-Key": this.cfg.clientId,
+      Accept: "application/json",
+    };
+  }
+
+  private async fetchGroupPage(
+    token: string,
+    page: number,
+    retryBudget: { remainingMs: number },
+  ): Promise<Response> {
+    for (let attempt = 1; attempt <= MAX_GROUP_PAGE_ATTEMPTS; attempt++) {
+      const res = await fetch(`${UMAPI_BASE}/groups/${this.cfg.orgId}/${page}`, {
+        headers: this.requestHeaders(token),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (res.status !== 429 || attempt === MAX_GROUP_PAGE_ATTEMPTS) {
+        return res;
+      }
+      const waitMs = retryAfterMs(res.headers.get("Retry-After"));
+      if (waitMs > retryBudget.remainingMs) {
+        throw new Error(
+          "Adobe UMAPI groups request exceeded the rate-limit retry budget; try again later",
+        );
+      }
+      retryBudget.remainingMs -= waitMs;
+      await (this.cfg.sleep ?? sleep)(waitMs);
+    }
+    throw new Error("Adobe UMAPI groups request failed (HTTP 429)");
+  }
+
+  private async getProductProfileNames(token: string): Promise<Set<string>> {
+    const names = new Set<string>();
+    const retryBudget = { remainingMs: MAX_GROUP_RATE_LIMIT_WAIT_MS };
+    for (let page = 0; page < MAX_GROUP_CATALOG_PAGES; page++) {
+      const res = await this.fetchGroupPage(token, page, retryBudget);
+      if (!res.ok) {
+        throw new Error(`Adobe UMAPI groups request failed (${res.status})`);
+      }
+      const body = (await res.json()) as {
+        groups?: UmapiGroup[];
+        lastPage?: boolean;
+      };
+      for (const group of body.groups ?? []) {
+        if (group.type === "PRODUCT_PROFILE" && group.groupName) {
+          names.add(group.groupName);
+        }
+      }
+      if (body.lastPage !== false) break;
+      if (page === MAX_GROUP_CATALOG_PAGES - 1) {
+        throw new Error(
+          `Adobe UMAPI group catalog exceeds ${MAX_GROUP_CATALOG_PAGES} pages; cannot safely scan all product profiles within the sync time budget`,
+        );
+      }
+    }
+    return names;
+  }
+
   async getUsers(): Promise<AdobeUser[]> {
     const token = await this.getToken();
+    const productProfileNames = await this.getProductProfileNames(token);
     const users: AdobeUser[] = [];
     for (let page = 0; page < 100; page++) {
-      const res = await fetch(`${UMAPI_BASE}/users/${this.cfg.orgId}/${page}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "X-Api-Key": this.cfg.clientId,
-          Accept: "application/json",
-        },
+      const params = new URLSearchParams({ directOnly: "false" });
+      const url = `${UMAPI_BASE}/users/${this.cfg.orgId}/${page}?${params.toString()}`;
+      const res = await fetch(url, {
+        headers: this.requestHeaders(token),
         signal: AbortSignal.timeout(30_000),
       });
       if (!res.ok) {
@@ -71,10 +152,14 @@ export class UmapiClient implements AdobeClient {
       };
       for (const u of body.users ?? []) {
         if (!u.email) continue;
+        const products = (u.groups ?? []).filter((name) =>
+          productProfileNames.has(name),
+        );
+        if (products.length === 0) continue;
         users.push({
           email: u.email,
           status: u.status ?? "active",
-          products: u.groups ?? [],
+          products,
         });
       }
       if (body.lastPage !== false) break;

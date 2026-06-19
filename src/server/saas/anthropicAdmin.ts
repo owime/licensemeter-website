@@ -12,11 +12,22 @@ type AnthropicCostBucket = {
   /** Bucket start, ISO timestamp (UTC). */
   starting_at?: string;
   results?: {
-    /** Decimal string already in USD cents, e.g. "123.45". */
-    amount?: string;
+    /** Decimal string in the currency's lowest unit, e.g. USD cents. */
+    amount?: string | number;
     description?: string | null;
     currency?: string;
   }[];
+};
+
+export const nextUtcDayBoundary = (date: Date): string => {
+  const boundary = new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate() + 1,
+    ),
+  );
+  return boundary.toISOString();
 };
 
 /**
@@ -36,9 +47,9 @@ export const mapAnthropicUsers = (users: AnthropicApiUser[]): SaasSeat[] =>
 
 /**
  * The cost report buckets by day and groups by description, with amounts as
- * decimal strings already in cents. Several token types share a description,
- * so cent floats accumulate per (day, category) and are rounded once at the
- * end, because rounding each result separately drifts.
+ * decimal strings already in the currency's lowest unit. Several token types
+ * share a description, so cent floats accumulate per (day, category) and are
+ * rounded once at the end, because rounding each result separately drifts.
  */
 export const mapAnthropicCostBuckets = (
   buckets: AnthropicCostBucket[],
@@ -50,7 +61,11 @@ export const mapAnthropicCostBuckets = (
     const byCategory = centsByDay.get(day) ?? new Map<string, number>();
     centsByDay.set(day, byCategory);
     for (const result of bucket.results ?? []) {
-      const cents = Number.parseFloat(result.amount ?? "");
+      const currency = result.currency?.toUpperCase();
+      // Missing currency is accepted as USD for Anthropic cost rows; only an
+      // explicit non-USD value is skipped so currencies are never mixed.
+      if (currency && currency !== "USD") continue;
+      const cents = Number(result.amount);
       if (!Number.isFinite(cents)) continue;
       const category = (result.description ?? "other").slice(0, 120);
       byCategory.set(category, (byCategory.get(category) ?? 0) + cents);
@@ -71,7 +86,7 @@ export const mapAnthropicCostBuckets = (
  * members and the daily cost report, never request content.
  */
 export class AnthropicAdminClient {
-  constructor(private readonly cfg: { apiKey: string }) {}
+  constructor(private readonly cfg: { apiKey: string; now?: () => Date }) {}
 
   private headers(): Record<string, string> {
     return {
@@ -109,10 +124,12 @@ export class AnthropicAdminClient {
 
   async getSpend(sinceDay: string): Promise<AiSpendRow[]> {
     const buckets: AnthropicCostBucket[] = [];
+    const endingAt = nextUtcDayBoundary(this.cfg.now?.() ?? new Date());
     let nextPage = "";
     for (let page = 0; page < 30; page++) {
       const params = new URLSearchParams({
         starting_at: `${sinceDay}T00:00:00Z`,
+        ending_at: endingAt,
         bucket_width: "1d",
         "group_by[]": "description",
         limit: "31",
