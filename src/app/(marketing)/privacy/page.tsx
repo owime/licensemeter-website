@@ -23,9 +23,10 @@ const Section = ({
 );
 
 /*
- * TODO before launch: fill in the [bracketed] controller details, confirm the
- * subprocessor list, and have the final text reviewed (this is a structured
- * draft, not legal advice).
+ * Controller details are filled (UgurLabs UG, Düsseldorf). Before launch:
+ * add Stripe to the subprocessor list once billing goes live (US transfer,
+ * retains invoices for tax law) and have the final text reviewed by a lawyer
+ * (this is a structured draft, not legal advice).
  */
 export default function PrivacyPolicyPage() {
   return (
@@ -37,7 +38,7 @@ export default function PrivacyPolicyPage() {
         <p>
           UgurLabs UG (haftungsbeschränkt)
           <br />
-          [Street and number], [Postal code, City], Germany
+          Fährstraße 217, 40221 Düsseldorf, Germany
           <br />
           Managing Director: Ugur Koc
           <br />
