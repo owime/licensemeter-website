@@ -1,5 +1,6 @@
 import { withAuth } from "@workos-inc/authkit-nextjs";
 
+import { AccountSessionSync } from "~/components/workspace/AccountSessionSync";
 import { AccountWidgets } from "~/components/workspace/AccountWidgets";
 import { authProvider } from "~/env";
 import { requireAccess } from "~/server/access";
@@ -50,6 +51,8 @@ export default async function AccountPage() {
       <div className="rise rise-2">
         <AccountWidgets accessToken={accessToken} />
       </div>
+      {/* Re-seal the session after widget edits so the sidebar name stays current. */}
+      <AccountSessionSync />
     </div>
   );
 }
