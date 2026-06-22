@@ -14,6 +14,7 @@ import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
 import { workspaceHasConnectorOrData } from "~/server/workspaceState";
 import { daysUntilDate } from "~/server/digestDelta";
+import { isShelfwareExempt } from "~/server/waste/engine";
 import {
   findings,
   priceBook,
@@ -103,11 +104,17 @@ export default async function OverviewPage() {
     0,
   );
   const wasteShare = monthlySpend > 0 ? (monthlyWaste / monthlySpend) * 100 : 0;
-  const sortedSkus = [...skus].sort(
-    (a, b) =>
-      b.consumedUnits * (priceBySku.get(b.skuId) ?? 0) -
-      a.consumedUnits * (priceBySku.get(a.skuId) ?? 0),
-  );
+  // The inventory table lists real, purchased SKUs only. Microsoft auto-
+  // provisions free/viral/capacity sentinels (WINDOWS_STORE's 1,000,000 prepaid
+  // units, FLOW_FREE, etc.) into every tenant; they carry no cost and only add
+  // noise here. Same exemption the waste engine and seat-tier gate already use.
+  const sortedSkus = [...skus]
+    .filter((s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled))
+    .sort(
+      (a, b) =>
+        b.consumedUnits * (priceBySku.get(b.skuId) ?? 0) -
+        a.consumedUnits * (priceBySku.get(a.skuId) ?? 0),
+    );
 
   // The price book is already loaded for the spend figures, so list-price
   // detection costs no extra query. Hidden pre-sync (no rows = no figures).
@@ -332,7 +339,9 @@ export default async function OverviewPage() {
             <tbody>
               {sortedSkus.map((s) => {
                 const price = priceBySku.get(s.skuId) ?? 0;
-                const free = s.prepaidEnabled - s.consumedUnits;
+                // Over-assigned SKUs (assigned > purchased) have no spare seats;
+                // show 0 rather than a confusing negative count.
+                const free = Math.max(0, s.prepaidEnabled - s.consumedUnits);
                 return (
                   <tr
                     key={s.skuId}
@@ -383,7 +392,7 @@ export default async function OverviewPage() {
         <ul className="mt-3 flex flex-col gap-3 md:hidden">
           {sortedSkus.map((s) => {
             const price = priceBySku.get(s.skuId) ?? 0;
-            const free = s.prepaidEnabled - s.consumedUnits;
+            const free = Math.max(0, s.prepaidEnabled - s.consumedUnits);
             return (
               <li key={s.skuId} className="border border-line bg-card p-4">
                 <div className="font-medium">

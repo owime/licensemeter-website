@@ -6,6 +6,7 @@ import { audit } from "~/server/audit";
 import { centsToDecimal, csvResponse, toCsv } from "~/server/csv";
 import { db } from "~/server/db";
 import { priceBook, tenantSkus } from "~/server/db/schema";
+import { isShelfwareExempt } from "~/server/waste/engine";
 
 export const GET = async () => {
   const ctx = await apiAccess("viewer");
@@ -19,6 +20,13 @@ export const GET = async () => {
   ]);
   const priceBySku = new Map(prices.map((p) => [p.skuId, p.monthlyPriceCents]));
 
+  // Match the dashboard inventory table exactly: drop Microsoft's free/viral/
+  // capacity sentinels (WINDOWS_STORE, FLOW_FREE, etc.) so the export lists only
+  // the real, purchased SKUs the user sees on screen.
+  const visibleSkus = skus.filter(
+    (s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled),
+  );
+
   const csv = toCsv([
     [
       "SKU",
@@ -30,9 +38,10 @@ export const GET = async () => {
       `Monthly spend (${ctx.tenant.currency})`,
       `Unassigned cost (${ctx.tenant.currency})`,
     ],
-    ...skus.map((s) => {
+    ...visibleSkus.map((s) => {
       const price = priceBySku.get(s.skuId) ?? 0;
-      const available = s.prepaidEnabled - s.consumedUnits;
+      // Clamp to match the table's Unassigned column (no negative counts).
+      const available = Math.max(0, s.prepaidEnabled - s.consumedUnits);
       return [
         s.displayName ?? s.skuPartNumber,
         s.skuPartNumber,
@@ -41,10 +50,10 @@ export const GET = async () => {
         available,
         centsToDecimal(price),
         centsToDecimal(s.consumedUnits * price),
-        centsToDecimal(Math.max(available, 0) * price),
+        centsToDecimal(available * price),
       ];
     }),
   ]);
-  await audit(ctx, "export_licenses_csv", { rows: skus.length });
+  await audit(ctx, "export_licenses_csv", { rows: visibleSkus.length });
   return csvResponse("licensemeter-licenses.csv", csv);
 };

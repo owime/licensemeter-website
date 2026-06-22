@@ -4,6 +4,7 @@ import type { UserLicense } from "~/server/types";
 import {
   analyzeWaste,
   COPILOT_SKU_ID,
+  isShelfwareExempt,
   purchasedSeatsOf,
   type WasteInput,
   type WasteUser,
@@ -360,5 +361,25 @@ describe("purchasedSeatsOf", () => {
 
   it("is zero for an empty tenant", () => {
     expect(purchasedSeatsOf([])).toBe(0);
+  });
+});
+
+describe("isShelfwareExempt (dashboard license inventory filter)", () => {
+  it("hides Microsoft's free/viral/capacity sentinels", () => {
+    expect(isShelfwareExempt("WINDOWS_STORE", 1_000_000)).toBe(true);
+    expect(isShelfwareExempt("FLOW_FREE", 10_000)).toBe(true);
+  });
+
+  it("keeps real purchased SKUs (the rows worth showing)", () => {
+    // Same live 25-user tenant: EMS, Developerpack E5 and the over-assigned
+    // Intune Suite are real licenses and stay in the inventory table.
+    expect(isShelfwareExempt("EMS", 1)).toBe(false);
+    expect(isShelfwareExempt("DEVELOPERPACK_E5", 25)).toBe(false);
+    expect(isShelfwareExempt("Microsoft_Intune_Suite", 0)).toBe(false);
+  });
+
+  it("treats any 5,000+ seat allotment as capacity plumbing", () => {
+    expect(isShelfwareExempt("SOME_FUTURE_VIRAL_SKU", 5_000)).toBe(true);
+    expect(isShelfwareExempt("SOME_FUTURE_VIRAL_SKU", 4_999)).toBe(false);
   });
 });

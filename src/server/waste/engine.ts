@@ -146,7 +146,13 @@ const SHELFWARE_EXEMPT_PART_NUMBERS = new Set([
 /** Capacity-style allotments (10k+ "seats") are licensing plumbing, not purchases. */
 const SHELFWARE_CAPACITY_THRESHOLD = 5000;
 
-const isShelfwareExempt = (
+/**
+ * True for free/viral/capacity SKUs that Microsoft auto-provisions into every
+ * tenant (e.g. WINDOWS_STORE's 1,000,000 prepaid units, FLOW_FREE). These carry
+ * no cost and represent no purchase, so they are excluded from shelfware
+ * findings, the Stripe seat-tier gate, and the dashboard license inventory.
+ */
+export const isShelfwareExempt = (
   skuPartNumber: string,
   prepaidEnabled: number,
 ): boolean =>
