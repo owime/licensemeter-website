@@ -4,12 +4,18 @@ import Link from "next/link";
 
 import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
+import {
+  MetricCards,
+  type BreakdownRow,
+  type MetricCardData,
+} from "~/components/workspace/MetricCards";
 import { OnboardingEmptyState } from "~/components/workspace/OnboardingEmptyState";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
 import { isDemoMode } from "~/env";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
-import { ALL_RULES } from "~/lib/rules";
+import { ALL_RULES, RULE_META } from "~/lib/rules";
+import type { WasteRuleId } from "~/server/types";
 import { requireAccess, hasRole } from "~/server/access";
 import { db } from "~/server/db";
 import { workspaceHasConnectorOrData } from "~/server/workspaceState";
@@ -130,6 +136,162 @@ export default async function OverviewPage() {
     ? "No license data yet. Upload a fresh export to update this workspace."
     : "No license data yet. Run a sync.";
 
+  // Drill-down rows for each metric card. Each breakdown is derived from the
+  // exact same inputs as the headline figure, so the rows always sum to the
+  // number on the card.
+  const assignedSeats = skus.reduce((s, x) => s + x.consumedUnits, 0);
+
+  // Spend by product: zero-cost SKUs (free/viral sentinels) drop out, leaving
+  // only rows that actually contribute to monthly spend.
+  const spendRows: BreakdownRow[] = skus
+    .map((s) => ({
+      sku: s,
+      price: priceBySku.get(s.skuId) ?? 0,
+      cents: s.consumedUnits * (priceBySku.get(s.skuId) ?? 0),
+    }))
+    .filter((r) => r.cents > 0)
+    .sort((a, b) => b.cents - a.cents)
+    .map((r) => ({
+      label: r.sku.displayName ?? r.sku.skuPartNumber,
+      sub: `${fmtNumber(r.sku.consumedUnits, currency)} × ${fmtMoney(
+        r.price,
+        currency,
+      )}`,
+      value: fmtMoney(r.cents, currency),
+    }));
+
+  // Findings grouped by rule, the shared basis for the waste, annualized-waste
+  // and open-findings breakdowns.
+  const byRule = new Map<WasteRuleId, { count: number; cents: number }>();
+  for (const f of openFindings) {
+    const cur = byRule.get(f.rule) ?? { count: 0, cents: 0 };
+    cur.count += 1;
+    cur.cents += f.monthlyImpactCents;
+    byRule.set(f.rule, cur);
+  }
+  const ruleEntries = [...byRule.entries()].sort(
+    (a, b) => b[1].cents - a[1].cents || b[1].count - a[1].count,
+  );
+  const ruleLabel = (r: WasteRuleId) => RULE_META[r]?.label ?? r;
+
+  const wasteRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
+    label: ruleLabel(rule),
+    sub: `${fmtNumber(agg.count, currency)} ${agg.count === 1 ? "finding" : "findings"}`,
+    value: fmtMoney(agg.cents, currency),
+    tone: agg.cents > 0 ? "waste" : "ink",
+  }));
+  const annualRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
+    label: ruleLabel(rule),
+    sub: `${fmtMoney(agg.cents, currency)}/mo × 12`,
+    value: fmtMoney(agg.cents * 12, currency),
+    tone: agg.cents > 0 ? "waste" : "ink",
+  }));
+  const findingRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
+    label: ruleLabel(rule),
+    sub: agg.cents > 0 ? `${fmtMoney(agg.cents, currency)}/mo` : undefined,
+    value: fmtNumber(agg.count, currency),
+  }));
+
+  const listPriceFootnote = listPricesOnly
+    ? "Figures use Microsoft list prices. Set your actual prices on the Licenses page for exact numbers."
+    : undefined;
+
+  const metricCards: MetricCardData[] = [
+    {
+      key: "spend",
+      label: "Monthly license spend",
+      value: fmtMoney(monthlySpend, currency),
+      sub: `${fmtNumber(assignedSeats, currency)} assigned seats`,
+      tone: "ink",
+      explainer:
+        "Assigned seats × the monthly price of each product, summed across your license inventory.",
+      detail: {
+        formula:
+          "For every product we multiply the seats assigned to people by that product's monthly price, then add them up.",
+        source:
+          "Seat counts come from your latest sync; prices come from your price book (your custom price, or the Microsoft list price as a fallback).",
+        columns: ["Product (seats × price)", "Spend / mo"],
+        rows: spendRows,
+        totalLabel: "Total monthly spend",
+        totalValue: fmtMoney(monthlySpend, currency),
+        emptyText: "No priced license data yet.",
+      },
+    },
+    {
+      key: "waste",
+      label: "Monthly waste",
+      value: fmtMoney(monthlyWaste, currency),
+      sub: `${wasteShare.toFixed(1)}% of spend`,
+      tone: "waste",
+      note: listPricesOnly ? (
+        <>
+          Estimated at list prices.{" "}
+          <Link
+            href="/app/licenses"
+            className="underline underline-offset-4 hover:text-ink"
+          >
+            Set your actual prices
+          </Link>
+        </>
+      ) : null,
+      explainer:
+        "The monthly cost of every open finding added together — this is the spend you could reclaim.",
+      detail: {
+        formula:
+          "Each open or acknowledged finding carries the monthly cost of the wasted seat. Monthly waste is the sum of those costs, grouped here by the rule that flagged them.",
+        source:
+          "Findings are raised during sync by the detection rules; resolved findings are excluded. Costs reuse the same prices as monthly spend.",
+        columns: ["Rule", "Impact / mo"],
+        rows: wasteRows,
+        totalLabel: "Total monthly waste",
+        totalValue: fmtMoney(monthlyWaste, currency),
+        emptyText: "No open findings — nothing flagged as waste.",
+        footnote: listPriceFootnote,
+      },
+    },
+    {
+      key: "annual",
+      label: "Annualized waste",
+      value: fmtMoney(monthlyWaste * 12, currency),
+      sub: "if nothing changes",
+      tone: "waste",
+      explainer:
+        "Monthly waste projected over a full year: monthly waste × 12.",
+      detail: {
+        formula:
+          "Monthly waste × 12 months. A projection of what the open findings cost over a year if nothing is reclaimed.",
+        source:
+          "Same findings as monthly waste, each multiplied by twelve.",
+        columns: ["Rule", "Impact / yr"],
+        rows: annualRows,
+        totalLabel: "Total annualized waste",
+        totalValue: fmtMoney(monthlyWaste * 12, currency),
+        emptyText: "No open findings — nothing flagged as waste.",
+        footnote: listPriceFootnote,
+      },
+    },
+    {
+      key: "findings",
+      label: "Open findings",
+      value: fmtNumber(openFindings.length, currency),
+      sub: `across ${ALL_RULES.length} rules`,
+      tone: "ink",
+      explainer:
+        "How many findings are currently open or acknowledged, across all detection rules.",
+      detail: {
+        formula:
+          "A count of every finding whose status is open or acknowledged. Resolved findings drop out of the count.",
+        source: `Findings are raised during sync by ${ALL_RULES.length} detection rules. Each rule flags a distinct kind of license waste.`,
+        columns: ["Rule", "Open"],
+        rows: findingRows,
+        totalLabel: "Total open findings",
+        totalValue: fmtNumber(openFindings.length, currency),
+        emptyText: "No open findings.",
+        footnote: `${ruleEntries.length} of ${ALL_RULES.length} rules currently have open findings.`,
+      },
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
@@ -222,68 +384,7 @@ export default async function OverviewPage() {
         </section>
       )}
 
-      <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: "Monthly license spend",
-            value: fmtMoney(monthlySpend, currency),
-            sub: `${fmtNumber(
-              skus.reduce((s, x) => s + x.consumedUnits, 0),
-              currency,
-            )} assigned seats`,
-            tone: "ink",
-            note: null,
-          },
-          {
-            label: "Monthly waste",
-            value: fmtMoney(monthlyWaste, currency),
-            sub: `${wasteShare.toFixed(1)}% of spend`,
-            tone: "waste",
-            note: listPricesOnly ? (
-              <>
-                Estimated at list prices.{" "}
-                <Link
-                  href="/app/licenses"
-                  className="underline underline-offset-4 hover:text-ink"
-                >
-                  Set your actual prices
-                </Link>
-              </>
-            ) : null,
-          },
-          {
-            label: "Annualized waste",
-            value: fmtMoney(monthlyWaste * 12, currency),
-            sub: "if nothing changes",
-            tone: "waste",
-            note: null,
-          },
-          {
-            label: "Open findings",
-            value: fmtNumber(openFindings.length, currency),
-            sub: `across ${ALL_RULES.length} rules`,
-            tone: "ink",
-            note: null,
-          },
-        ].map((card) => (
-          <div key={card.label} className="bg-card p-5">
-            <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
-              {card.label}
-            </div>
-            <div
-              className={`mt-2 font-display text-3xl tracking-tight ${
-                card.tone === "waste" ? "text-waste-text" : "text-ink"
-              }`}
-            >
-              {card.value}
-            </div>
-            <div className="mt-1 text-xs text-ink-soft">{card.sub}</div>
-            {card.note && (
-              <div className="mt-1 text-xs text-ink-faint">{card.note}</div>
-            )}
-          </div>
-        ))}
-      </section>
+      <MetricCards cards={metricCards} />
 
       {listPricesOnly && (
         <section className="rise rise-2 mt-6">
