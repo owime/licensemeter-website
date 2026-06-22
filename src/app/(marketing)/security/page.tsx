@@ -179,7 +179,7 @@ export default function SecurityPage() {
         <p className="mt-4">
           No role with consent rights at hand today? The{" "}
           <a
-            href="/api/auth/signin?returnTo=%2Fapp%2Fconnect%2Fcsv"
+            href="/auth/sign-in?returnTo=%2Fapp%2Fconnect%2Fcsv"
             className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
             CSV trial
@@ -243,6 +243,10 @@ export default function SecurityPage() {
             ["Vercel Inc.", "Application hosting (EU function region)"],
             ["Supabase Inc.", "Postgres database, EU (Frankfurt)"],
             ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
+            [
+              "WorkOS, Inc.",
+              "Authentication and user identity (AuthKit sign-in), where enabled, US (EU Standard Contractual Clauses)",
+            ],
             [
               "Stripe",
               "Billing and subscription management for paid plans, EU and US (EU Standard Contractual Clauses)",

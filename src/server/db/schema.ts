@@ -35,10 +35,21 @@ export const tenants = pgTable(
   "tenants",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** Entra tenant id (tid claim). */
-    tid: text("tid").notNull(),
+    /**
+     * Entra tenant id (tid claim). Nullable since Phase C: a WorkOS-auth
+     * workspace exists (bills, adds non-Microsoft connectors) before any
+     * Microsoft tenant is connected. Set when an msConnections row is added
+     * (managed callback or BYO save); the Graph auth key, not the workspace key.
+     */
+    tid: text("tid"),
     name: text("name"),
     currency: text("currency").notNull().default("EUR"),
+    /**
+     * WorkOS Organization that owns this workspace, when AUTH_PROVIDER=workos.
+     * Null for entra-mode tenants. Decouples the workspace identity from the
+     * Entra tenant id (tid), which stays the connector / Graph key.
+     */
+    workosOrgId: text("workos_org_id"),
     /** Capabilities discovered during sync; null until first sync. */
     concealedNames: boolean("concealed_names"),
     hasP1: boolean("has_p1"),
@@ -79,7 +90,15 @@ export const tenants = pgTable(
       .defaultNow(),
   },
   (t) => [
-    uniqueIndex("tenants_tid_idx").on(t.tid),
+    // Partial-unique: one workspace per connected Entra tenant, but many
+    // workspaces may have a null tid (not yet connected to Microsoft).
+    uniqueIndex("tenants_tid_idx")
+      .on(t.tid)
+      .where(sql`${t.tid} is not null`),
+    // One workspace per WorkOS Organization (when workos auth is live).
+    uniqueIndex("tenants_workos_org_idx")
+      .on(t.workosOrgId)
+      .where(sql`${t.workosOrgId} is not null`),
     // One Stripe customer per tenant: a mismatched second customer is a DB
     // error, not a silent overwrite.
     uniqueIndex("tenants_stripe_customer_idx")
@@ -91,6 +110,57 @@ export const tenants = pgTable(
 /** A full tenant row, for code that passes tenants around by value. */
 export type TenantRow = typeof tenants.$inferSelect;
 
+/**
+ * One row per workspace that has a Microsoft 365 connection. Decouples the
+ * Microsoft tenant (the Graph data connector) from the workspace identity:
+ *
+ *  - mode='managed': admin-consent to LicenseMeter's central multi-tenant app;
+ *    authenticates with the env CONNECTOR_CLIENT_ID/SECRET keyed by tid. No
+ *    per-workspace credentials are stored.
+ *  - mode='byo': the customer's own Entra app registration. The client secret
+ *    OR the certificate private key (PEM) is stored AES-256-GCM encrypted at
+ *    rest (same AUTH_SECRET-derived helper as adobe/saas connections).
+ *
+ * Both modes feed the same sync pipeline; appClientForTenant branches on mode.
+ */
+export const msConnections = pgTable(
+  "ms_connections",
+  {
+    tenantId: uuid("tenant_id")
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    mode: text("mode").$type<"managed" | "byo">().notNull(),
+    /** Entra tenant id (tid) this connection authenticates against. */
+    tid: text("tid").notNull(),
+    /** BYO only: the customer's app (client) id. Null for managed (uses env). */
+    appClientId: text("app_client_id"),
+    /** BYO only: 'secret' or 'cert'. Null for managed. */
+    credType: text("cred_type").$type<"secret" | "cert">(),
+    /** BYO only: AES-256-GCM of the client secret OR certificate private key. */
+    secretEnc: text("secret_enc"),
+    /** BYO/cert only: certificate thumbprint (hex), needed by MSAL clientCertificate. */
+    certThumbprint: text("cert_thumbprint"),
+    /** BYO/secret only: client-secret expiry, for the pre-expiry warning. */
+    secretExpiresAt: timestamp("secret_expires_at", { withTimezone: true }),
+    /** Last successful test-connection (roles-claim check). */
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
+    /** Last test-connection / app-only auth failure, redacted; null when healthy. */
+    lastVerifyError: text("last_verify_error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("ms_connections_mode_check", sql`${t.mode} in ('managed', 'byo')`),
+    // One Microsoft tenant belongs to at most one workspace: the atomic
+    // backstop behind the application-level steal guard in connectMicrosoftByo.
+    uniqueIndex("ms_connections_tid_idx").on(t.tid),
+  ],
+);
+
+/** A full Microsoft connection row, passed around by value. */
+export type MsConnectionRow = typeof msConnections.$inferSelect;
+
 /** Who may sign in to which tenant workspace, and as what. */
 export const memberships = pgTable(
   "memberships",
@@ -101,6 +171,13 @@ export const memberships = pgTable(
       .references(() => tenants.id, { onDelete: "cascade" }),
     /** Entra object id; null until an invited email signs in for the first time. */
     oid: text("oid"),
+    /**
+     * WorkOS user id; the identity join key when AUTH_PROVIDER=workos. Set when
+     * a WorkOS-authenticated user first opens (or is linked by verified email
+     * to) this membership. Independent of oid so an entra-era membership can be
+     * linked to a WorkOS identity without losing its Entra oid.
+     */
+    workosUserId: text("workos_user_id"),
     email: text("email").notNull(),
     name: text("name"),
     role: text("role").$type<MembershipRole>().notNull().default("viewer"),
@@ -111,16 +188,25 @@ export const memberships = pgTable(
   (t) => [
     uniqueIndex("memberships_tenant_email_idx").on(t.tenantId, t.email),
     index("memberships_oid_idx").on(t.oid),
+    index("memberships_workos_user_idx").on(t.workosUserId),
     check("memberships_role_check", sql`${t.role} in ('viewer', 'admin', 'owner')`),
   ],
 );
 
-/** Short-lived nonces for the admin-consent redirect, bound to the initiating user. */
+/**
+ * Short-lived nonces for the admin-consent redirect, bound to the initiating
+ * user. The initiator identity is provider-specific: entra sign-ins set oid (+
+ * the vestigial home tid); WorkOS sign-ins set workosUserId. Exactly one is
+ * populated, and the callback binds the membership with whichever it finds.
+ */
 export const consentStates = pgTable("consent_states", {
   state: text("state").primaryKey(),
-  oid: text("oid").notNull(),
-  /** The initiator's sign-in tenant; the granted tenant must match it (v1: one workspace per tenant). */
-  tid: text("tid").notNull(),
+  /** Entra object id of the initiator (entra mode). */
+  oid: text("oid"),
+  /** Initiator's Entra home tenant (entra mode); not read on callback. */
+  tid: text("tid"),
+  /** WorkOS user id of the initiator (workos mode). */
+  workosUserId: text("workos_user_id"),
   email: text("email").notNull(),
   name: text("name"),
   createdAt: timestamp("created_at", { withTimezone: true })
