@@ -82,9 +82,12 @@ export default function TermsPage() {
         <p>
           When the Customer connects its tenant or further source systems, the
           Provider processes the data retrieved solely on the instructions and
-          on behalf of the Customer (Art. 28 GDPR). A data processing agreement
-          (DPA) is provided before production use and, in the event of a
-          conflict regarding data processing, prevails over these Terms.
+          on behalf of the Customer (Art. 28 GDPR). A{" "}
+          <a href="/dpa" className="hover:text-ink underline underline-offset-4">
+            data processing agreement (DPA)
+          </a>{" "}
+          is provided before production use and, in the event of a conflict
+          regarding data processing, prevails over these Terms.
           Mailbox, file or message content is not read; access is technically
           limited to read-only permissions.
         </p>

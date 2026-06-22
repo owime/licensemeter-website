@@ -31,7 +31,7 @@ const FOOTER_COLUMNS = [
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
       { href: "/cookies", label: "Cookie policy" },
-      { href: "/security#dpa", label: "DPA (on request)" },
+      { href: "/dpa", label: "Data Processing Agreement" },
     ],
   },
   {

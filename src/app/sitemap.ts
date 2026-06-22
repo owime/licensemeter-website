@@ -4,7 +4,7 @@ import { siteUrl } from "~/env";
 import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 
 /** Legal pages: indexable but low priority, they rarely change. */
-const LOW_PRIORITY = new Set(["/impressum", "/privacy"]);
+const LOW_PRIORITY = new Set(["/impressum", "/privacy", "/dpa"]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...CONNECTOR_GUIDES.map((g) => `/connectors/${g.slug}`),
     "/impressum",
     "/privacy",
+    "/dpa",
   ].map((path) => ({
     url: `${base}${path}`,
     changeFrequency: "weekly",

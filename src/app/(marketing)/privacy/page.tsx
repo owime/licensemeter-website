@@ -23,10 +23,12 @@ const Section = ({
 );
 
 /*
- * Controller details are filled (UgurLabs UG, Düsseldorf). Before launch:
- * add Stripe to the subprocessor list once billing goes live (US transfer,
- * retains invoices for tax law) and have the final text reviewed by a lawyer
- * (this is a structured draft, not legal advice).
+ * Controller details are filled (UgurLabs UG, Düsseldorf). Stripe is now in the
+ * subprocessor list below (billing is live; US transfer under EU SCCs, retains
+ * invoices for statutory tax periods). The definitive list lives in the DPA
+ * (~/lib/dpa); keep this prose in sync with it and with /security. Still to do:
+ * have the final text reviewed by a lawyer (this is a structured draft, not
+ * legal advice).
  */
 export default function PrivacyPolicyPage() {
   return (
@@ -122,10 +124,16 @@ export default function PrivacyPolicyPage() {
         <p>
           Vercel Inc. (hosting, EU function region), Supabase Inc. (database,
           AWS eu-central-1 Frankfurt), Microsoft (identity platform and Graph
-          API), Resend Inc. (email delivery, EU region eu-west-1; workspace
-          notifications to administrators as well as the emails described in
-          section 4a to people who leave their address on the home page). The
-          current list is part of the DPA.
+          API), Stripe (billing and subscription management for paid plans, EU
+          and US under the EU Standard Contractual Clauses; retains invoices for
+          statutory tax periods), Resend Inc. (email delivery, EU region
+          eu-west-1; workspace notifications to administrators as well as the
+          emails described in section 4a to people who leave their address on
+          the home page). The current list is part of the{" "}
+          <a href="/dpa" className="hover:text-ink underline underline-offset-4">
+            DPA
+          </a>
+          .
         </p>
         <p>
           To be distinguished from these are the source systems named in section

@@ -244,6 +244,10 @@ export default function SecurityPage() {
             ["Supabase Inc.", "Postgres database, EU (Frankfurt)"],
             ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
             [
+              "Stripe",
+              "Billing and subscription management for paid plans, EU and US (EU Standard Contractual Clauses)",
+            ],
+            [
               "Resend Inc.",
               "Email delivery: workspace notifications, weekly digest and the signup guide email, EU region",
             ],
@@ -258,7 +262,14 @@ export default function SecurityPage() {
           ))}
         </ul>
         <p className="text-ink-faint mt-3 text-xs">
-          The definitive subprocessor list is part of the DPA.
+          The definitive subprocessor list is part of the{" "}
+          <Link
+            href="/dpa#annex-3"
+            className="hover:text-ink underline underline-offset-4"
+          >
+            DPA
+          </Link>
+          .
         </p>
       </Section>
 
@@ -266,8 +277,15 @@ export default function SecurityPage() {
         <p>
           LicenseMeter processes directory data on your behalf, so a data
           processing agreement under Art. 28 GDPR (AVV) is part of every
-          subscription. Request the current version by email and receive a
-          countersigned copy before you connect production data.
+          subscription. The full text is published on our{" "}
+          <Link
+            href="/dpa"
+            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+          >
+            Data Processing Agreement
+          </Link>{" "}
+          page, where you can download the pre-signed PDF in English or German,
+          add your details and counter-sign it. No need to email and wait.
         </p>
       </Section>
 
