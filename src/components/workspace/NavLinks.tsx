@@ -23,6 +23,7 @@ const ITEMS: NavItem[] = [
     href: "/app/settings",
     label: "Settings",
     children: [
+      { href: "/app/settings/microsoft", label: "Microsoft 365" },
       { href: "/app/settings/adobe", label: "Adobe" },
       { href: "/app/settings/zoom", label: "Zoom" },
       { href: "/app/settings/atlassian", label: "Atlassian" },
