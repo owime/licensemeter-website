@@ -29,7 +29,11 @@ export const PricingTiers = ({
   return (
     <div>
       <div className="flex justify-center">
-        <IntervalToggle interval={interval} onChange={setInterval} />
+        <IntervalToggle
+          interval={interval}
+          onChange={setInterval}
+          annualBadge="2 months free"
+        />
       </div>
 
       <div className="mt-8 grid gap-px border border-line bg-line md:grid-cols-3">

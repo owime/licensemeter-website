@@ -9,10 +9,13 @@ import type { PlanInterval } from "~/server/types";
 export const IntervalToggle = ({
   interval,
   onChange,
+  annualBadge,
   className = "",
 }: {
   interval: PlanInterval;
   onChange: (interval: PlanInterval) => void;
+  /** Optional badge shown on the Annual segment, e.g. "2 months free". */
+  annualBadge?: string;
   className?: string;
 }) => {
   const options: { value: PlanInterval; label: string }[] = [
@@ -27,19 +30,32 @@ export const IntervalToggle = ({
     >
       {options.map((option) => {
         const active = interval === option.value;
+        const badge =
+          option.value === "year" && annualBadge ? annualBadge : null;
         return (
           <button
             key={option.value}
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition ${
               active
                 ? "bg-ink text-canvas"
                 : "text-ink-soft hover:text-ink"
             }`}
           >
             {option.label}
+            {badge && (
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-wide ${
+                  active
+                    ? "bg-brand text-canvas"
+                    : "bg-brand-soft text-brand-deep"
+                }`}
+              >
+                {badge}
+              </span>
+            )}
           </button>
         );
       })}

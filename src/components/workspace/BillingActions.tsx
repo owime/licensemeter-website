@@ -197,7 +197,11 @@ export const BillingActions = ({
             {trialInfo.endsAt} and you can cancel anytime before then.
           </p>
         )}
-        <IntervalToggle interval={interval} onChange={setInterval} />
+        <IntervalToggle
+          interval={interval}
+          onChange={setInterval}
+          annualBadge="2 months free"
+        />
         <div className="grid gap-px border border-line bg-line sm:grid-cols-3">
           {PLANS.map((plan) => {
             const recommended = plan.tier === recommendedTier;
