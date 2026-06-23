@@ -46,11 +46,13 @@ import { parseMembers } from "~/server/saas/parseMembers";
 import { normalizeSalesforceOrgRef } from "~/server/saas/salesforce";
 import { connectorSpec } from "~/lib/connectors";
 import { workspaceLabel } from "~/lib/format";
-import { encryptSecret } from "~/server/crypto";
+import { encryptSecret, secretAad } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
 import { notifyOps } from "~/server/ops";
 import { clientIp, rateLimit } from "~/server/rateLimit";
 import { maybeSendWelcome } from "~/server/welcome";
+import { sendWorkspaceDeleted, workspaceAdminEmails } from "~/server/billingEmail";
+import { teardownTenantWorkosOrg } from "~/server/auth/workos";
 import { billingEnabled, byoConnectorEnabled, siteUrl } from "~/env";
 import { teardownTenantBilling } from "~/server/stripe";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
@@ -628,20 +630,21 @@ export const connectAdobe = async (
     return fail(`Adobe rejected the credentials: ${message.slice(0, 120)}`);
   }
 
+  const adobeAad = secretAad(ctx.tenant.id, "adobe", "clientSecretEnc");
   await db
     .insert(adobeConnections)
     .values({
       tenantId: ctx.tenant.id,
       orgId,
       clientId,
-      clientSecretEnc: encryptSecret(clientSecret),
+      clientSecretEnc: encryptSecret(clientSecret, adobeAad),
     })
     .onConflictDoUpdate({
       target: adobeConnections.tenantId,
       set: {
         orgId,
         clientId,
-        clientSecretEnc: encryptSecret(clientSecret),
+        clientSecretEnc: encryptSecret(clientSecret, adobeAad),
         lastSyncStatus: null,
         lastSyncAt: null,
       },
@@ -728,6 +731,7 @@ export const connectSaasConnector = async (
     );
   }
 
+  const saasAad = secretAad(ctx.tenant.id, provider, "secretEnc");
   await db
     .insert(saasConnections)
     .values({
@@ -735,14 +739,14 @@ export const connectSaasConnector = async (
       provider,
       orgRef,
       clientId,
-      secretEnc: encryptSecret(secret),
+      secretEnc: encryptSecret(secret, saasAad),
     })
     .onConflictDoUpdate({
       target: [saasConnections.tenantId, saasConnections.provider],
       set: {
         orgRef,
         clientId,
-        secretEnc: encryptSecret(secret),
+        secretEnc: encryptSecret(secret, saasAad),
         lastSyncStatus: null,
         lastSyncAt: null,
       },
@@ -872,7 +876,10 @@ export const connectMicrosoftByo = async (
       if (!Number.isNaN(d.getTime())) secretExpiresAt = d;
     }
     cred = { mode: "byo", credType: "secret", tid, clientId: appClientId, secret };
-    secretEnc = encryptSecret(secret);
+    secretEnc = encryptSecret(
+      secret,
+      secretAad(ctx.tenant.id, "microsoft", "secretEnc"),
+    );
   } else {
     const privateKey = read("privateKey");
     const certPem = read("cert");
@@ -898,7 +905,10 @@ export const connectMicrosoftByo = async (
       privateKey,
       thumbprint: certThumbprint,
     };
-    secretEnc = encryptSecret(privateKey);
+    secretEnc = encryptSecret(
+      privateKey,
+      secretAad(ctx.tenant.id, "microsoft", "secretEnc"),
+    );
   }
 
   // Test-connection: acquire an app-only token and inspect its roles claim.
@@ -1176,20 +1186,29 @@ export const captureEmail = async (
   if (email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return fail("Please enter a valid email address");
   }
-  const inserted = await db
+  // On a repeat signup, clear any prior unsubscribe so a fresh sign-up actually
+  // re-subscribes (the unsubscribe page tells users to "sign up again"): without
+  // this, unsubscribedAt stays set and maybeSendWelcome early-returns forever.
+  // The xmax=0 trick distinguishes a genuine INSERT from an UPDATE so the ops
+  // ping still fires only for brand-new addresses.
+  const [row] = await db
     .insert(emailSignups)
     .values({ email, source: "landing" })
-    .onConflictDoNothing()
-    .returning({ id: emailSignups.id });
-  if (inserted.length > 0) {
+    .onConflictDoUpdate({
+      target: emailSignups.email,
+      set: { unsubscribedAt: null },
+    })
+    .returning({ inserted: sql<boolean>`(xmax = 0)` });
+  if (row?.inserted) {
     void notifyOps(`new email signup from the landing page: ${email}`);
   }
   // Duplicates go through the same send path: the welcomeSentAt stamp makes
   // it a no-op once delivered, so resubmitting the form is the natural retry
   // after a transient send failure. Rows captured before the welcome email
-  // existed are only mailed if the person resubmits (intended). after() lets
-  // the form respond immediately while the send still completes before the
-  // serverless function freezes.
+  // existed are only mailed if the person resubmits (intended). Clearing
+  // unsubscribedAt above lets maybeSendWelcome proceed for re-subscribers.
+  // after() lets the form respond immediately while the send still completes
+  // before the serverless function freezes.
   after(() => maybeSendWelcome(email));
   return ok();
 };
@@ -1199,13 +1218,53 @@ export const disconnectTenant = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("owner");
   if (!ctx) return fail("Not allowed");
   if (ctx.tenant.isDemo) return fail("The demo workspace cannot be disconnected");
+
   // Cancel the Stripe subscription and erase the Stripe customer BEFORE the
-  // local delete, while we still hold the ids. Best-effort and non-throwing so
-  // a Stripe outage never blocks the GDPR deletion; the late
-  // customer.subscription.deleted webhook no-ops once the tenant row is gone.
+  // local delete, while we still hold the ids. A failed subscription cancel is
+  // a billing-continuation risk: ABORT so the row reconcileTenantSubscription
+  // needs to retry is not lost and the card stops being charged on retry. A
+  // customer-PII-delete failure stays best-effort (invoices are retained
+  // anyway) and does not block. The late customer.subscription.deleted webhook
+  // no-ops once the tenant row is gone.
   if (billingEnabled()) {
-    await teardownTenantBilling(ctx.tenant);
+    const { subscriptionCancelFailed } = await teardownTenantBilling(ctx.tenant);
+    if (subscriptionCancelFailed) {
+      return fail(
+        "We couldn't cancel your Stripe subscription right now — your workspace was NOT deleted so you won't keep being billed. Please try again in a minute or contact support.",
+      );
+    }
   }
+
+  const actor = ctx.membership.name ?? ctx.membership.email;
+  // Resolve the OTHER admins/owners NOW, while the memberships still exist (they
+  // cascade-delete with the tenant). Exclude the actor — they triggered it. The
+  // send itself is deferred to after() and best-effort: a failure must not block
+  // the deletion.
+  if (emailEnabled()) {
+    const actorEmail = ctx.membership.email.toLowerCase();
+    const others = (await workspaceAdminEmails(ctx.tenant.id)).filter(
+      (email) => email.toLowerCase() !== actorEmail,
+    );
+    const tenant = ctx.tenant;
+    after(() =>
+      sendWorkspaceDeleted(tenant, actor, others).catch(() => null),
+    );
+  }
+
+  // Durable audit: the in-table auditLog row cascade-deletes WITH the tenant
+  // (schema FK onDelete:"cascade"), so an audit() row would be wiped and is
+  // useless here. notifyOps is the durable, off-table signal of the deletion.
+  void notifyOps(
+    `workspace deleted: ${ctx.tenant.id} "${workspaceLabel(ctx.tenant)}" by ${actor}`,
+  );
+
+  // Erase the WorkOS Organization + its IdP/Directory records (GDPR). Only set
+  // under workos auth. Best-effort and non-throwing: unlike a live subscription
+  // there is no ongoing charge, so a WorkOS outage must not block local delete.
+  if (ctx.tenant.workosOrgId) {
+    await teardownTenantWorkosOrg(ctx.tenant.workosOrgId);
+  }
+
   await db.delete(tenants).where(eq(tenants.id, ctx.tenant.id));
   revalidatePath("/", "layout");
   redirect("/");

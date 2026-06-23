@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   entitlementOf,
+  mspEntitlementOf,
   trialDaysLeftAt,
   trialEndsAtFor,
 } from "~/server/entitlement";
@@ -138,6 +139,46 @@ describe("entitlementOf precedence", () => {
     expect(e.trialDaysLeft).toBeGreaterThan(0);
   });
 
+  it("incomplete status past the trial => incomplete (locked, not generic expired)", () => {
+    const e = entitlementOf(
+      tenant({
+        subscriptionStatus: "incomplete",
+        trialStartedAt: new Date("2026-06-11T00:00:00Z"),
+      }),
+      sub(),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "incomplete", active: false, locked: true });
+  });
+
+  it("incomplete_expired status past the trial => incomplete (locked)", () => {
+    const e = entitlementOf(
+      tenant({
+        subscriptionStatus: "incomplete_expired",
+        trialStartedAt: new Date("2026-06-11T00:00:00Z"),
+      }),
+      sub(),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "incomplete", active: false, locked: true });
+  });
+
+  it("incomplete status but still inside the trial => trial access wins", () => {
+    const e = entitlementOf(
+      tenant({
+        subscriptionStatus: "incomplete",
+        trialStartedAt: new Date("2026-06-28T00:00:00Z"),
+      }),
+      sub(),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "trial", active: true, locked: false });
+    expect(e.trialDaysLeft).toBeGreaterThan(0);
+  });
+
   it("no subscription, trial not started (no connector yet) => full access", () => {
     // trialStartedAt is null until the first service is connected; an empty
     // workspace must not burn trial days while the user explores.
@@ -177,5 +218,111 @@ describe("entitlementOf precedence", () => {
       false,
     );
     expect(e.cancelAtPeriodEnd).toBe(true);
+  });
+});
+
+/** Minimal MSP account satisfying the fields mspEntitlementOf reads. */
+const account = (over: Partial<{
+  compedAt: Date | null;
+  subscriptionStatus: SubscriptionStatus | null;
+  paidUntil: Date | null;
+}> = {}) => ({
+  compedAt: null,
+  subscriptionStatus: null,
+  paidUntil: null,
+  ...over,
+});
+
+describe("mspEntitlementOf precedence", () => {
+  const now = new Date("2026-07-01T00:00:00Z");
+
+  it("billing disabled => comped (master flag), no per-tenant trial fields", () => {
+    const e = mspEntitlementOf(account(), now, true);
+    expect(e).toMatchObject({ state: "comped", active: true, locked: false });
+    // MSP-managed workspaces have no per-tenant trial: no countdown, no plan.
+    expect(e.trialDaysLeft).toBe(0);
+    expect(e.plan).toBeNull();
+    expect(e.cancelAtPeriodEnd).toBe(false);
+  });
+
+  it("comped_at grandfathers the account regardless of subscription", () => {
+    const e = mspEntitlementOf(
+      account({ compedAt: new Date("2026-06-21T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "comped", active: true, locked: false });
+  });
+
+  it("active subscription within the paid horizon => paid", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "active", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "paid", active: true, locked: false });
+  });
+
+  it("trialing subscription within the paid horizon => paid", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "trialing", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "paid", active: true, locked: false });
+  });
+
+  it("active status but paid horizon in the past (missed cancel webhook) => expired", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "active", paidUntil: new Date("2026-06-20T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "expired", active: false, locked: true });
+  });
+
+  it("past_due within horizon keeps access (dunning grace)", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "past_due", paidUntil: new Date("2026-07-15T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "past_due", active: true, locked: false });
+  });
+
+  it("past_due past horizon (retries exhausted) => locked", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "past_due", paidUntil: new Date("2026-06-20T00:00:00Z") }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "past_due", active: false, locked: true });
+  });
+
+  it("canceled subscription => expired (locked)", () => {
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "canceled" }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "expired", active: false, locked: true });
+  });
+
+  it("unpaid subscription (dunning exhausted) => expired (locked)", () => {
+    // unpaid is neither an entitled status nor past_due, so it falls through to
+    // the terminal lock just like canceled.
+    const e = mspEntitlementOf(
+      account({ subscriptionStatus: "unpaid" }),
+      now,
+      false,
+    );
+    expect(e).toMatchObject({ state: "expired", active: false, locked: true });
+  });
+
+  it("no subscription at all => expired (no per-tenant trial fallback)", () => {
+    // Unlike a self-serve tenant, an MSP-managed workspace has no trial: a
+    // missing/unsubscribed account locks immediately.
+    const e = mspEntitlementOf(account(), now, false);
+    expect(e).toMatchObject({ state: "expired", active: false, locked: true });
   });
 });

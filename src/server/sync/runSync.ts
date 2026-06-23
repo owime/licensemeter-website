@@ -30,7 +30,7 @@ import {
   SAAS_PROVIDERS,
   type AiSpendClient,
 } from "~/server/saas/registry";
-import { decryptSecret } from "~/server/crypto";
+import { decryptSecret, secretAad } from "~/server/crypto";
 import type { AdobeUser, SaasProvider, SaasSeat } from "~/server/types";
 import { DemoGraphClient } from "~/server/graph/demoGraph";
 import { msGraphClientForTenant } from "~/server/graph/msConnection";
@@ -168,9 +168,16 @@ export const runSync = async (
       : await msGraphClientForTenant(tenant));
 
   // Fail runs stuck in "running" (crashed process) so the lock cannot
-  // deadlock. Six minutes: every sync path runs under maxDuration 300s, so a
-  // running row older than that is dead, and the instant-scan poller should
-  // not show "syncing" for longer than this after a hard kill.
+  // deadlock. The threshold must STRICTLY exceed the worst-case wall-clock of a
+  // healthy run, or a slow-but-live sync gets force-failed while still writing,
+  // letting a second run insert and the two writers prune each other's rows.
+  // Worst case: maxDuration 300s of work + Graph throttle sleeps (up to 4
+  // tries x 30s = 120s per throttled call) + up to 3 x 15s consent-propagation
+  // waits (45s) -> well under 10 min in practice. 20 min leaves generous
+  // headroom above that ceiling while still clearing a truly dead row before
+  // the next nightly cron, and keeps the instant-scan poller from showing
+  // "syncing" indefinitely after a hard kill.
+  const STALE_RUN_MS = 20 * 60 * 1000;
   await db
     .update(syncRuns)
     .set({ status: "failed", error: "stale run", finishedAt: new Date() })
@@ -178,7 +185,7 @@ export const runSync = async (
       and(
         eq(syncRuns.tenantId, tenantId),
         eq(syncRuns.status, "running"),
-        lt(syncRuns.startedAt, new Date(Date.now() - 6 * 60 * 1000)),
+        lt(syncRuns.startedAt, new Date(Date.now() - STALE_RUN_MS)),
       ),
     );
 
@@ -311,7 +318,10 @@ export const runSync = async (
           : new UmapiClient({
               orgId: adobeConn!.orgId,
               clientId: adobeConn!.clientId,
-              clientSecret: decryptSecret(adobeConn!.clientSecretEnc),
+              clientSecret: decryptSecret(
+                adobeConn!.clientSecretEnc,
+                secretAad(adobeConn!.tenantId, "adobe", "clientSecretEnc"),
+              ),
             });
         adobeRows = await adobeClient.getUsers();
         steps.push({ step: "adobeUsers", status: "ok", count: adobeRows.length });
@@ -368,7 +378,10 @@ export const runSync = async (
           : await buildSaasClient(provider, {
               orgRef: conn!.orgRef,
               clientId: conn!.clientId,
-              secret: decryptSecret(conn!.secretEnc),
+              secret: decryptSecret(
+                conn!.secretEnc,
+                secretAad(conn!.tenantId, conn!.provider, "secretEnc"),
+              ),
             });
         const seats = await saasClient.getSeats();
         saasRows.set(provider, seats);

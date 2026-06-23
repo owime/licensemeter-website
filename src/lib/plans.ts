@@ -1,6 +1,14 @@
 import type { PlanInterval, PlanTier } from "~/server/types";
 
 /**
+ * Length of the no-card trial in days. Lives here (client-safe) rather than in
+ * the server entitlement module so marketing copy can derive "${TRIAL_DAYS}-day"
+ * without pulling a server module into the client bundle; entitlement.ts
+ * re-exports it so existing server imports keep working.
+ */
+export const TRIAL_DAYS = 14;
+
+/**
  * Shared, secret-free plan catalog used by the marketing pricing page, the
  * dashboard billing UI, and the server-side price/seat mapping. Prices are in
  * whole euros; annual is 10x monthly (two months free). The Stripe Price ids
@@ -29,6 +37,18 @@ export const PLANS: Plan[] = [
 
 /** Largest self-serve seat count; above this -> contact sales (MSP). */
 export const MAX_SELF_SERVE_SEATS = 2500;
+
+/**
+ * MSP packaging: a flat price per connected client tenant, billed by quantity on
+ * one MSP-account subscription (not per-workspace). Annual is 10x (two months
+ * free), matching the self-serve convention. The flat price holds for normal
+ * SMB-sized client tenants; a client tenant above MSP_LARGE_TENANT_SEATS is a
+ * rare enterprise outlier priced separately (contact us) so one large tenant is
+ * never underpriced at the flat rate.
+ */
+export const MSP_PRICE_EUR = 50;
+export const MSP_PRICE_ANNUAL_EUR = 500;
+export const MSP_LARGE_TENANT_SEATS = 1000;
 
 export const planByTier = (tier: PlanTier): Plan =>
   PLANS.find((p) => p.tier === tier)!;
@@ -81,6 +101,10 @@ export const annualPerMonth = (plan: Plan): number => Math.round(plan.annual / 1
 
 export const priceEurosFor = (tier: PlanTier, interval: PlanInterval): number =>
   interval === "year" ? planByTier(tier).annual : planByTier(tier).monthly;
+
+/** MSP per-tenant unit price in whole euros for an interval (annual = 10x monthly). */
+export const mspPriceEurosFor = (interval: PlanInterval): number =>
+  interval === "year" ? MSP_PRICE_ANNUAL_EUR : MSP_PRICE_EUR;
 
 /** URL/checkout plan token, e.g. "growth:annual". */
 export const planString = (tier: PlanTier, interval: PlanInterval): string =>

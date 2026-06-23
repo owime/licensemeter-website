@@ -8,7 +8,7 @@ import {
   DEMO_FIGURES,
   demoEuros,
 } from "~/lib/demoFigures";
-import { PLANS } from "~/lib/plans";
+import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 import { SUPPORT_MAILTO } from "~/lib/support";
@@ -115,7 +115,7 @@ export default function PricingPage() {
         </p>
       ) : (
         <p className="mt-4 text-sm text-ink-soft">
-          14-day free trial. No credit card required.
+          {TRIAL_DAYS}-day free trial. No credit card required.
         </p>
       )}
 
@@ -136,6 +136,21 @@ export default function PricingPage() {
         </Link>
         .
       </p>
+
+      <div className="mt-6 border border-line bg-card px-6 py-5">
+        <p className="text-sm leading-relaxed text-ink-soft">
+          Running multiple client tenants?{" "}
+          <span className="tnum font-mono">€ {MSP_PRICE_EUR}</span> per tenant,
+          billed across your portfolio.{" "}
+          <Link
+            href="/msp"
+            className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          >
+            See MSP pricing
+          </Link>
+          .
+        </p>
+      </div>
 
       <section className="mt-14 grid gap-10 md:grid-cols-2">
         <div>
@@ -173,7 +188,7 @@ export default function PricingPage() {
             a year.
           </p>
           <p className="mt-3 text-xs text-ink-faint">
-            Every plan starts with a 14-day free trial, no credit card
+            Every plan starts with a {TRIAL_DAYS}-day free trial, no credit card
             required. Connect, see your number, and only subscribe if you keep
             monitoring it month after month.
           </p>

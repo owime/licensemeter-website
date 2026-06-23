@@ -1,3 +1,78 @@
+# Review implementation (2026-06-23) — branch: harden/review-implementation — IN PROGRESS
+
+Implementing the full prioritized task list from the multi-agent review. Dependency-ordered
+waves; verify (typecheck + tests) between waves; commit per wave. Baseline (main): tsc clean,
+228/228 tests. Marketing/strategy content tasks (#2/#3/#16/#17) DEFERRED to the very end.
+
+NOTE — #8 RLS is ALREADY in prod via idempotent scripts/db-*.sql (deny-all + licensemeter_app
+app_all policy, loops every table). The review's "no RLS" flag was outdated (scanned only src/).
+Action: verify coverage + document; NOT rewiring the connection layer to per-tenant GUC RLS.
+
+## Wave 0 — Foundation — DONE (tsc + 234 tests green; db:push applied)
+- [x] #22 unique idx subscriptions.stripeSubscriptionId/Customer; `>=0` checks on 5 money cols
+- [x] #23 `lower(email)` expr index + lower() match in /api/unsubscribe
+- [x] #11 crypto AAD `tenantId:provider:column` on all encrypt/decrypt sites + crypto.test.ts (6 tests)
+- [x] #8 RLS verified: scripts/db-*.sql loop ALL public tables (pg_tables) -> new tables auto-covered; intentional app-layer isolation + deny-all backstop. No code change.
+
+## Wave 1 — Billing integrity & data lifecycle — DONE (tsc + lint + 237 tests green)
+- [x] #5 entitlement `incomplete` state (real branch + tests) -> re-pay CTA in BillingActions/Banner/Paywall
+- [x] #15 collapsed dup portal buttons -> "Manage or cancel subscription"; portal route warns if config id unset
+- [x] #6 teardownTenantBilling returns {subscriptionCancelFailed}; disconnectTenant ABORTS delete on cancel failure
+- [x] #7 teardownTenantWorkosOrg (best-effort); #13 durable notifyOps audit (auditLog cascades)
+- [x] #10 getOrCreateCustomer conditional update + re-read; #25 try/catch -> stripe_unavailable 502 (+client copy)
+- [x] #27 delete warning now active/trialing/past_due; #30 sendWorkspaceDeleted to other admins; #14 fresh signup clears unsubscribedAt; #29 verified MspCard shows on 409
+
+## Wave 2 — Connectors / sync / security — DONE (tsc + lint + 237 tests green)
+- [x] #12 salesforce nextRecordsUrl origin re-check; #26 runSync STALE_RUN_MS 6->20min
+- [x] #24 cronAuth helper (notifyOps on unset secret, secure default) + cron/sync notifyOps parity
+- [x] #20 SaaS connector pages: SyncNowButton + ConnectPoller on first-sync-pending; guide-link consistent
+- [x] P3: getAllPages MAX_PAGES cap; msalApps LRU+TTL; Adobe orgId charset+encodeURIComponent; grantedTid GUID check
+
+## Wave 3 — UX / a11y — DONE (tsc + lint + 237 tests green)
+- [x] #19 remediation export honors ?rule= (was hardcoded 6/13; real bug) -> isWasteRule allow-list
+- [x] #18 SpendChart NOT dead (already rendered in ai-costs/page.tsx) -> only added a11y
+- [x] #28 progressbar on UtilizationBar; sr-only data tables on charts; WorkspaceSwitcher disabled; MobileNav inert; nav aria-labels; faq dl labelledby; sidebar-soft contrast; opacity-faint text fixed; error page danger treatment
+- [x] EmptyState primitive + applied to findings empty states
+
+## Wave 4 — Tests — DONE (tsc + lint + 283 tests + build green)
+- [x] #9 webhook money-path: 17 integration tests (in-mem PGlite + mocked stripe), no prod change
+- [x] verifyEntraIdToken (issuer/aud/alg pinning, jose mocked) + isSameOrigin tests
+- [x] priceIdFor<->planFromPriceId round-trip + parsePlanString rejection cases (34 tests total)
+
+## Wave 5a — Marketing (implemented) — DONE (tsc + lint + 283 tests + build green)
+- [x] #2 hero repositioned around cross-vendor offboarding leak (MS = connection method); demo figures only
+- [x] #3 removed customer-count social-proof stat (deleted marketingStats.ts); trust rests on real signals; no founder
+- [x] #21 finance front door: secondary "upload a license CSV" CTA into the existing zero-consent path
+- [x] AI-connector distinction: "Connect via API" vs "CSV import" pills driven by connectors.ts `kind`
+- [x] TRIAL_DAYS moved to client-safe plans.ts; "14-day" copy derived everywhere in marketing/components
+
+## Wave 5b — MSP packaging (#16) — Phase 1 done + Phase 2 foundation (inert); #17 held
+Decisions: EUR50/tenant flat + >1.000-seat guardrail; Phase 1 + start Phase 2; #17 hold.
+- [x] #16 P1: pricing published on /msp + /pricing (EUR50/tenant, EUR500/yr, >1.000-seat guardrail), from plans.ts constants
+- [x] #16 P2 foundation (INERT, flag-gated via mspEnabled()): mspAccounts table + tenants.mspAccountId;
+      STRIPE_PRICE_MSP_TENANT env; pure mspEntitlementOf + tests; access.ts inherits entitlement when mspAccountId set
+      (single-tenant path byte-identical, verified). 292 tests, tsc/lint/build green.
+- [x] #16 P2 FULLY IMPLEMENTED (2026-06-23): MSP account lifecycle (create/attach/detach, owner-identity gated,
+      one-account-per-owner DB-unique backstop), Stripe quantity subscription (checkout/portal routes + qty sync on
+      attach/detach), webhook MSP branch (mirrors to mspAccounts, tenant path byte-identical), entitlement inheritance,
+      /app/msp portfolio UI + nav. Live Stripe prices created (prod_Ul73xkc5hlFxy8: monthly price_1TlapF…, annual
+      price_1TlapG…); env vars STRIPE_PRICE_MSP_TENANT_MONTHLY/_ANNUAL set locally (set in Vercel prod too).
+      Independent review done; 5 findings fixed (owner-unique, webhook quantity ownership, mspEnabled guards,
+      customer-match before cancel, fresh account read). tsc+lint+303 tests+build green.
+- [ ] #17 expansion: RECOMMENDED an "AI Cost Visibility" add-on (held by owner; on record, not built).
+
+## MSP deploy steps (owner)
+- Set STRIPE_PRICE_MSP_TENANT_MONTHLY + STRIPE_PRICE_MSP_TENANT_ANNUAL in Vercel prod env (the live price ids above).
+- Apply the schema to prod (db:push): mspAccounts new columns + owner-unique indexes + tenants.mspAccountId.
+- The existing Stripe webhook endpoint already handles MSP events on the same URL (discriminated by metadata.mspAccountId) — no new endpoint needed.
+
+## Status: branch harden/review-implementation — 9 commits, all gates green, NOT pushed.
+
+## Final gate
+- [ ] npm run check + test + build; separate code-reviewer pass
+
+---
+
 # Workspace-first onboarding (2026-06-22) — IN PROGRESS
 
 Decouple sign-in from connecting a service. After WorkOS sign-in the user lands
