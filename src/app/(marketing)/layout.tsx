@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandMark } from "~/components/BrandMark";
 import { HeaderAuthCta } from "~/components/HeaderAuthCta";
 import { MarketingMobileNav } from "~/components/MarketingMobileNav";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
+import { SUPPORT_MAILTO } from "~/lib/support";
 
 const NAV = [
   { href: "/pricing", label: "Pricing" },
@@ -22,6 +22,7 @@ const FOOTER_COLUMNS = [
       { href: "/connectors", label: "Connectors" },
       { href: "/security", label: "Security" },
       { href: "/faq", label: "FAQ" },
+      { href: "/status", label: "Status" },
     ],
   },
   {
@@ -37,10 +38,24 @@ const FOOTER_COLUMNS = [
   },
   {
     title: "Contact",
-    links: [
-      { href: SUPPORT_MAILTO, label: SUPPORT_EMAIL },
-      { href: "/trust-center#subprocessors", label: "Subprocessors" },
-    ],
+    links: [{ href: "/trust-center#subprocessors", label: "Subprocessors" }],
+  },
+];
+
+const SOCIAL_LINKS = [
+  {
+    href: "https://github.com/ugurkocde/licensemeter",
+    label: "GitHub",
+    icon: (
+      <path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.04-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6.01 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58A12.01 12.01 0 0 0 24 12.5C24 5.87 18.63.5 12 .5Z" />
+    ),
+  },
+  {
+    href: "https://x.com/ugurkocde",
+    label: "X",
+    icon: (
+      <path d="M18.9 1.5h3.68l-8.04 9.19L24 22.5h-7.4l-5.8-7.58-6.64 7.58H.48l8.6-9.83L0 1.5h7.59l5.24 6.93L18.9 1.5Zm-1.29 18.79h2.04L6.49 3.6H4.3l13.31 16.69Z" />
+    ),
   },
 ];
 
@@ -107,6 +122,31 @@ export default function MarketingLayout({
               Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude
               connectors. Read-only, EU-hosted, built for IT and finance.
             </p>
+            <p className="border-line-strong text-ink-soft bg-canvas mt-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium">
+              <span aria-hidden="true">🇪🇺</span>
+              Hosted in the EU
+            </p>
+            <div className="mt-4 flex items-center gap-2">
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={social.label}
+                  className="border-line-strong text-ink-soft hover:border-brand hover:text-ink focus-visible:ring-brand focus-visible:ring-offset-card bg-canvas inline-flex h-9 w-9 items-center justify-center rounded-lg border transition focus-visible:ring-2 focus-visible:ring-offset-2"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    {social.icon}
+                  </svg>
+                </a>
+              ))}
+            </div>
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
@@ -116,7 +156,7 @@ export default function MarketingLayout({
               {col.title === "Contact" && (
                 <a
                   href={SUPPORT_MAILTO}
-                  className="border-line-strong text-ink hover:border-brand focus-visible:ring-brand mt-4 inline-flex min-h-11 touch-manipulation items-center justify-center rounded-xl border bg-canvas px-4 py-2.5 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+                  className="border-line-strong text-ink hover:border-brand focus-visible:ring-brand bg-canvas focus-visible:ring-offset-card mt-4 inline-flex min-h-11 touch-manipulation items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-offset-2"
                 >
                   Email support
                 </a>
@@ -146,11 +186,13 @@ export default function MarketingLayout({
           ))}
         </div>
         <div className="border-line text-ink-faint mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 border-t px-6 py-6 text-xs">
-          <span>LicenseMeter, operated by UgurLabs UG</span>
+          <span>
+            &copy; {new Date().getFullYear()} LicenseMeter, operated by UgurLabs
+          </span>
           <span>
             Independent tool, not affiliated with Microsoft, Adobe, Zoom,
-            Atlassian, Salesforce, ChatGPT or Claude. All product names are
-            trademarks of their respective owners.
+            Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT or Claude. All
+            product names are trademarks of their respective owners.
           </span>
         </div>
       </footer>

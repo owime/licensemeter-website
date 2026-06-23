@@ -17,6 +17,20 @@ const config = {
   },
   // The floating dev badge sits exactly over the sidebar's sign-out button.
   devIndicators: false,
+  // Serve the status page at status.licensemeter.com/ once the subdomain is
+  // pointed at this project. Other paths on the subdomain fall through to the
+  // normal app; the subdomain is only meant as an entry point to /status.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/",
+          has: [{ type: "host", value: "status.licensemeter.com" }],
+          destination: "/status",
+        },
+      ],
+    };
+  },
   async headers() {
     return [
       {
