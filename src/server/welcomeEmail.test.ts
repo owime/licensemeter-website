@@ -10,8 +10,8 @@ import {
 
 const ARGS = {
   email: "anna@contoso.com",
-  baseUrl: "https://www.licensemeter.com",
-  unsubscribeUrl: "https://www.licensemeter.com/api/unsubscribe?e=abc&t=def",
+  baseUrl: "https://licensemeter.com",
+  unsubscribeUrl: "https://licensemeter.com/api/unsubscribe?e=abc&t=def",
 };
 
 describe("welcomeDomain", () => {
@@ -71,7 +71,7 @@ describe("welcomeHtml", () => {
 
   it("renders the brand mark from the canonical origin", () => {
     expect(html).toContain(
-      'src="https://www.licensemeter.com/brand-mark.png"',
+      'src="https://licensemeter.com/brand-mark.png"',
     );
   });
 
@@ -92,7 +92,7 @@ describe("welcomeHtml", () => {
     // directly: a scan must start from a signed-in browser session.
     expect(html).not.toContain("/api/scan/start");
     const connectLinks = html.match(
-      /href="https:\/\/www\.licensemeter\.com\/app\/connect\?utm_source=welcome_email/g,
+      /href="https:\/\/licensemeter\.com\/app\/connect\?utm_source=welcome_email/g,
     );
     expect(connectLinks).toHaveLength(2);
   });
