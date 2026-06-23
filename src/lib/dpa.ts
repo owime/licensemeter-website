@@ -962,6 +962,19 @@ const DE: DpaDoc = {
 
 export const DPA: Record<DpaLang, DpaDoc> = { en: EN, de: DE };
 
+/**
+ * The canonical sub-processor list (Annex 3) for a given language, flattened so
+ * /trust-center and /security render the exact rows the DPA does, instead of
+ * keeping their own copies. Rows are parallel across languages (same order), so
+ * callers can classify from the English row and display the localized one. Keep
+ * all surfaces sourced from here so the list can never drift.
+ */
+export const subprocessorRows = (lang: DpaLang): DpaSubprocessor[] =>
+  DPA[lang].annexes.find((a) => a.subprocessors)?.subprocessors?.rows ?? [];
+
+/** English sub-processor rows; the canonical list for English-only surfaces. */
+export const SUBPROCESSORS: DpaSubprocessor[] = subprocessorRows("en");
+
 /** Download filename per language, e.g. LicenseMeter-DPA-en.pdf. */
 export const dpaFilename = (lang: DpaLang): string =>
   lang === "de" ? "LicenseMeter-AVV-de.pdf" : "LicenseMeter-DPA-en.pdf";

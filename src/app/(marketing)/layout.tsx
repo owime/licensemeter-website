@@ -8,7 +8,7 @@ import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
 const NAV = [
   { href: "/pricing", label: "Pricing" },
   { href: "/msp", label: "MSP" },
-  { href: "/security", label: "Security" },
+  { href: "/trust-center", label: "Trust Center" },
   { href: "/faq", label: "FAQ" },
 ];
 
@@ -27,6 +27,7 @@ const FOOTER_COLUMNS = [
   {
     title: "Legal",
     links: [
+      { href: "/trust-center", label: "Trust Center" },
       { href: "/impressum", label: "Imprint" },
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
@@ -38,7 +39,7 @@ const FOOTER_COLUMNS = [
     title: "Contact",
     links: [
       { href: SUPPORT_MAILTO, label: SUPPORT_EMAIL },
-      { href: "/security#subprocessors", label: "Subprocessors" },
+      { href: "/trust-center#subprocessors", label: "Subprocessors" },
     ],
   },
 ];

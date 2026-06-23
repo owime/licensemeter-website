@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { env, siteUrl } from "~/env";
+import { SUBPROCESSORS } from "~/lib/dpa";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
 
@@ -239,29 +240,15 @@ export default function SecurityPage() {
 
       <Section id="subprocessors" title="Subprocessors">
         <ul className="border-line bg-card mt-2 border">
-          {[
-            ["Vercel Inc.", "Application hosting (EU function region)"],
-            ["Supabase Inc.", "Postgres database, EU (Frankfurt)"],
-            ["Microsoft", "Identity platform (sign-in, consent) and Graph API"],
-            [
-              "WorkOS, Inc.",
-              "Authentication and user identity (AuthKit sign-in), where enabled, US (EU Standard Contractual Clauses)",
-            ],
-            [
-              "Stripe",
-              "Billing and subscription management for paid plans, EU and US (EU Standard Contractual Clauses)",
-            ],
-            [
-              "Resend Inc.",
-              "Email delivery: workspace notifications, weekly digest and the signup guide email, EU region",
-            ],
-          ].map(([name, role]) => (
+          {SUBPROCESSORS.map((sp) => (
             <li
-              key={name}
-              className="border-line flex flex-col gap-1 border-b px-4 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between"
+              key={sp.name}
+              className="border-line flex flex-col gap-1 border-b px-4 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
             >
-              <span className="text-ink font-medium">{name}</span>
-              <span className="text-xs">{role}</span>
+              <span className="text-ink font-medium">{sp.name}</span>
+              <span className="text-xs sm:text-right">
+                {sp.purpose}. {sp.location}.
+              </span>
             </li>
           ))}
         </ul>

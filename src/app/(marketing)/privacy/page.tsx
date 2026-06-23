@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { SUBPROCESSORS } from "~/lib/dpa";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const metadata: Metadata = {
@@ -23,12 +24,11 @@ const Section = ({
 );
 
 /*
- * Controller details are filled (UgurLabs UG, Düsseldorf). Stripe is now in the
- * subprocessor list below (billing is live; US transfer under EU SCCs, retains
- * invoices for statutory tax periods). The definitive list lives in the DPA
- * (~/lib/dpa); keep this prose in sync with it and with /security. Still to do:
- * have the final text reviewed by a lawyer (this is a structured draft, not
- * legal advice).
+ * Controller details are filled (UgurLabs UG, Düsseldorf). The subprocessor
+ * list in section 5 is rendered from the definitive list in the DPA
+ * (~/lib/dpa SUBPROCESSORS), so it cannot drift from /dpa, /security or
+ * /trust-center. Still to do: have the final text reviewed by a lawyer (this is
+ * a structured draft, not legal advice).
  */
 export default function PrivacyPolicyPage() {
   return (
@@ -122,14 +122,24 @@ export default function PrivacyPolicyPage() {
 
       <Section title="5. Subprocessors">
         <p>
-          Vercel Inc. (hosting, EU function region), Supabase Inc. (database,
-          AWS eu-central-1 Frankfurt), Microsoft (identity platform and Graph
-          API), Stripe (billing and subscription management for paid plans, EU
-          and US under the EU Standard Contractual Clauses; retains invoices for
-          statutory tax periods), Resend Inc. (email delivery, EU region
-          eu-west-1; workspace notifications to administrators as well as the
-          emails described in section 4a to people who leave their address on
-          the home page). The current list is part of the{" "}
+          We engage the following subprocessors to process personal data on your
+          behalf:
+        </p>
+        <ul className="flex flex-col gap-1.5">
+          {SUBPROCESSORS.map((sp) => (
+            <li key={sp.name} className="flex gap-2.5">
+              <span aria-hidden="true" className="text-moss mt-0.5">
+                ·
+              </span>
+              <span>
+                <span className="text-ink">{sp.name}</span> — {sp.purpose},{" "}
+                {sp.location} ({sp.basis}).
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p>
+          The current list is part of the{" "}
           <a href="/dpa" className="hover:text-ink underline underline-offset-4">
             DPA
           </a>
