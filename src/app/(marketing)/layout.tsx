@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { BrandHomeLink } from "~/components/BrandHomeLink";
 import { BrandMark } from "~/components/BrandMark";
 import { HeaderAuthCta } from "~/components/HeaderAuthCta";
 import { MarketingMobileNav } from "~/components/MarketingMobileNav";
+import { siteUrl } from "~/env";
 import { SUPPORT_MAILTO } from "~/lib/support";
 
 const NAV = [
@@ -76,15 +78,15 @@ export default function MarketingLayout({
         Skip to content
       </a>
       <header className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-6 py-6 sm:gap-x-6">
-        <Link
-          href="/"
+        <BrandHomeLink
+          homeUrl={siteUrl()}
           className="font-display flex items-center gap-2.5 text-lg tracking-tight sm:text-xl"
         >
           <BrandMark size={22} />
           <span>
             License<span className="text-brand-text">Meter</span>
           </span>
-        </Link>
+        </BrandHomeLink>
         <div className="flex items-center gap-2 sm:gap-5">
           {/* Inline links above sm; below they live in the burger drawer so
               the header keeps only brand + CTA. */}
