@@ -120,28 +120,22 @@ export default function PricingPage() {
       )}
 
       <p className="mt-4 text-sm text-ink-soft">
-        More than 2.500 seats or managing multiple tenants as an MSP?{" "}
+        More than 2.500 seats in a single tenant?{" "}
         <a
           href={SUPPORT_MAILTO}
           className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
         >
           Talk to us.
-        </a>{" "}
-        The portfolio view, per-client price books and QBR reports are on the{" "}
-        <Link
-          href="/msp"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
-        >
-          MSP page
-        </Link>
-        .
+        </a>
       </p>
 
       <div className="mt-6 border border-line bg-card px-6 py-5">
         <p className="text-sm leading-relaxed text-ink-soft">
-          Running multiple client tenants?{" "}
+          Running Microsoft 365 for multiple client tenants?{" "}
           <span className="tnum font-mono">€ {MSP_PRICE_EUR}</span> per tenant,
-          billed across your portfolio.{" "}
+          billed across your portfolio on one subscription — with a portfolio
+          view sorted by waste, per-client price books and a QBR-ready report
+          for each. Self-serve, no sales call.{" "}
           <Link
             href="/msp"
             className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"

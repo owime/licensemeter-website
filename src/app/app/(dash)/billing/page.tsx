@@ -154,8 +154,8 @@ export default async function BillingPage({
               {overPlan.recommendedTier
                 ? `Move up to ${planByTier(overPlan.recommendedTier).name} with Change plan below — the switch prorates automatically.`
                 : overPlan.state === "over"
-                  ? "Your seat count is past our self-serve bands — talk to us about an MSP plan."
-                  : "You're near the top of our self-serve bands — talk to us about an MSP plan."}
+                  ? "Your seat count is past our self-serve bands — talk to us about enterprise pricing."
+                  : "You're near the top of our self-serve bands — talk to us about enterprise pricing."}
             </p>
           </div>
         )}

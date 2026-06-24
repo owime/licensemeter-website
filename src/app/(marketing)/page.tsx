@@ -14,9 +14,10 @@ import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
-import { PLANS, TRIAL_DAYS } from "~/lib/plans";
+import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
+import { SUPPORT_MAILTO } from "~/lib/support";
 
 const GITHUB_URL = "https://github.com/ugurkocde/licensemeter";
 
@@ -469,13 +470,23 @@ export default async function LandingPage() {
 
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-ink-soft text-sm">
-            Over 2.500 seats, or an MSP managing many tenants?{" "}
+            Running Microsoft 365 for many client tenants?{" "}
             <Link
               href="/msp"
               className="text-brand-text font-medium underline underline-offset-4 hover:opacity-80"
             >
-              Talk to us →
+              € {MSP_PRICE_EUR} per tenant on the MSP plan →
             </Link>
+            <br className="hidden sm:block" />
+            <span className="text-ink-faint">
+              Over 2.500 seats in one tenant?{" "}
+              <a
+                href={SUPPORT_MAILTO}
+                className="font-medium underline underline-offset-4 hover:opacity-80"
+              >
+                Talk to us →
+              </a>
+            </span>
           </p>
           <Link
             href="/pricing"

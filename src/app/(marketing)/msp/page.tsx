@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { isDemoMode, siteUrl } from "~/env";
+import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { buttonClass } from "~/components/ui";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
 import {
@@ -84,29 +84,58 @@ const MSP_LD = {
   ],
 };
 
-const Ctas = ({ demoEnabled }: { demoEnabled: boolean }) => (
+/* CTA hierarchy mirrors the rest of the marketing site: the primary action is
+ * self-serve sign-in (WorkOS AuthKit), landing the MSP on the portfolio page
+ * where they create the account and attach their first client. The live demo is
+ * the lower-commitment fallback; "Talk to us" stays available for the >1.000
+ * seat outliers and security questions. When sign-in is unconfigured we fall
+ * back to contact-sales as the primary. */
+const Ctas = ({
+  demoEnabled,
+  signInOk,
+  startHref,
+}: {
+  demoEnabled: boolean;
+  signInOk: boolean;
+  startHref: string;
+}) => (
   <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+    {signInOk ? (
+      <a href={startHref} className={buttonClass("primary", "w-full sm:w-auto")}>
+        Start free
+      </a>
+    ) : (
+      <a
+        href={SUPPORT_MAILTO}
+        className={buttonClass("primary", "w-full sm:w-auto")}
+      >
+        Talk to us
+      </a>
+    )}
     {demoEnabled && (
       <form action="/api/auth/demo" method="post">
-        <button className={buttonClass("primary", "w-full sm:w-auto")}>
+        <button className={buttonClass("secondary", "w-full sm:w-auto")}>
           Open the live demo
         </button>
       </form>
     )}
-    <a
-      href={SUPPORT_MAILTO}
-      className={buttonClass(
-        demoEnabled ? "secondary" : "primary",
-        "w-full sm:w-auto",
-      )}
-    >
-      Talk to us
-    </a>
+    {signInOk && (
+      <a
+        href={SUPPORT_MAILTO}
+        className="inline-flex min-h-11 items-center justify-center text-sm font-medium text-brand-text underline underline-offset-4 hover:opacity-80 sm:justify-start"
+      >
+        Talk to us
+      </a>
+    )}
   </div>
 );
 
 export default function MspPage() {
   const demoEnabled = isDemoMode();
+  const signInOk = signInEnabled();
+  /* Land on the MSP portfolio: create the account, then attach the first
+   * client. Same returnTo pattern the homepage and pricing cards use. */
+  const startHref = `${signInPath()}?returnTo=${encodeURIComponent("/app/msp")}`;
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
@@ -122,7 +151,18 @@ export default function MspPage() {
         one portfolio, sorted by what each client wastes per month.
       </p>
       <div className="mt-8">
-        <Ctas demoEnabled={demoEnabled} />
+        <Ctas
+          demoEnabled={demoEnabled}
+          signInOk={signInOk}
+          startHref={startHref}
+        />
+        {signInOk && (
+          <p className="mt-3 text-xs text-ink-faint">
+            Sign in, connect your first client read-only, and see their waste
+            number free. No credit card. Add tenants as you go &mdash; €{" "}
+            {MSP_PRICE_EUR} each a month.
+          </p>
+        )}
       </div>
 
       <section className="mt-14">
@@ -226,12 +266,22 @@ export default function MspPage() {
             <span className="tnum font-mono">
               {MSP_LARGE_TENANT_SEATS_LABEL}
             </span>{" "}
-            seats are rare enterprise outliers, priced separately &mdash; talk
-            to us.
+            seats are rare enterprise outliers, priced separately &mdash;{" "}
+            <a
+              href={SUPPORT_MAILTO}
+              className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+            >
+              talk to us
+            </a>
+            .
           </p>
         </div>
         <div className="mt-8">
-          <Ctas demoEnabled={demoEnabled} />
+          <Ctas
+            demoEnabled={demoEnabled}
+            signInOk={signInOk}
+            startHref={startHref}
+          />
         </div>
       </section>
 
@@ -245,7 +295,11 @@ export default function MspPage() {
           consent.
         </p>
         <div className="mt-8">
-          <Ctas demoEnabled={demoEnabled} />
+          <Ctas
+            demoEnabled={demoEnabled}
+            signInOk={signInOk}
+            startHref={startHref}
+          />
         </div>
       </section>
 
