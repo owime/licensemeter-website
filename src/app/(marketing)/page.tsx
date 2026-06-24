@@ -4,7 +4,6 @@ import {
   Check,
   Download,
   Receipt,
-  ShieldCheck,
   Terminal,
 } from "lucide-react";
 
@@ -14,21 +13,8 @@ import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
 import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
-import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
 import { SUPPORT_MAILTO } from "~/lib/support";
-
-const GITHUB_URL = "https://github.com/ugurkocde/licensemeter";
-
-/* The exact read-only Microsoft Graph permissions requested at connect, shown
- * up front to clear the consent objection. Kept in sync with the consent path. */
-const GRAPH_SCOPES = [
-  "User.Read.All",
-  "AuditLog.Read.All",
-  "Reports.Read.All",
-  "LicenseAssignment.Read.All",
-  "ReportSettings.Read.All",
-] as const;
 
 /* Plain-text names by design: referencing compatibility is nominative use;
  * official logos would need each vendor's permission (see footer notice). */
@@ -60,24 +46,6 @@ const VALUE_CARDS = [
   },
 ] as const;
 
-const STEPS = [
-  {
-    n: "01",
-    title: "Connect read-only",
-    body: "One Global Admin grants read-only application permissions. No agent, no write access, about five minutes.",
-  },
-  {
-    n: "02",
-    title: "See every leak, priced",
-    body: `Directory, license assignments, sign-in activity, usage reports and connected-app seats are cross-checked against who still works there. ${ALL_RULES.length} rules price each finding in euros per month.`,
-  },
-  {
-    n: "03",
-    title: "Reclaim with proof",
-    body: "Export the finance CSV or hand IT the generated PowerShell script for the seats you decide to remove.",
-  },
-] as const;
-
 const HERO_TRUST = [
   "Read-only consent, exact scopes shown up front",
   "Never reads mailbox, files or content",
@@ -98,8 +66,8 @@ const BASE = siteUrl();
 
 /* Page-level JSON-LD for SEO/GEO. SoftwareApplication reuses the same @id as
  * the pricing page so answer engines treat them as one entity; offers come
- * straight from PLANS (monthly, EUR). The HowTo mirrors the three connect
- * steps rendered below. "<" escaped so nothing can terminate the script. */
+ * straight from PLANS (monthly, EUR). "<" escaped so nothing can terminate the
+ * script. */
 const HOME_LD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -119,18 +87,6 @@ const HOME_LD = {
         availability: "https://schema.org/InStock",
         description: `Per tenant, per month, ${plan.seats}`,
         url: `${BASE}/pricing`,
-      })),
-    },
-    {
-      "@type": "HowTo",
-      name: "How to find Microsoft 365 license waste with LicenseMeter",
-      description:
-        "Connect Microsoft 365 read-only, see every wasted seat priced in euros, and reclaim it with proof.",
-      step: STEPS.map((step, index) => ({
-        "@type": "HowToStep",
-        position: index + 1,
-        name: step.title,
-        text: step.body,
       })),
     },
   ],
@@ -258,89 +214,6 @@ export default async function LandingPage() {
               </article>
             </Reveal>
           ))}
-        </div>
-      </section>
-
-      {/* 4 — How it works */}
-      <section className="border-line bg-subtle border-y">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:py-24">
-          <div className="lg:sticky lg:top-8">
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
-              A license ledger, not another dashboard.
-            </h2>
-            <p className="text-ink-soft mt-4 leading-relaxed">
-              Built around evidence procurement and IT can both inspect: who owns
-              the seat, why it is waste, what it costs, and how to reclaim it.
-            </p>
-          </div>
-          <div className="grid gap-4">
-            {STEPS.map((step) => (
-              <Reveal key={step.n}>
-                <article className="group border-line bg-card shadow-card hover:shadow-float grid items-start gap-4 rounded-2xl border p-5 transition-shadow duration-200 sm:grid-cols-[auto_1fr]">
-                  <span className="bg-brand-soft text-brand-deep font-display flex size-11 items-center justify-center rounded-full text-lg font-semibold">
-                    {step.n}
-                  </span>
-                  <div>
-                    <h3 className="font-display text-xl font-semibold tracking-tight">
-                      {step.title}
-                    </h3>
-                    <p className="text-ink-soft mt-1.5 text-sm leading-relaxed">
-                      {step.body}
-                    </p>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-
-            {/* Consent objection: the exact read-only Graph scopes, up front. */}
-            <Reveal>
-              <div className="border-line bg-card rounded-2xl border p-5">
-                <div className="flex items-start gap-3">
-                  <span className="bg-brand-soft text-brand-text inline-flex size-9 shrink-0 items-center justify-center rounded-xl">
-                    <ShieldCheck className="size-5" strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium">
-                      Read-only, never content. Disconnect deletes everything.
-                    </p>
-                    <p className="text-ink-soft mt-1.5 text-sm leading-relaxed">
-                      The consent screen requests exactly these Microsoft Graph
-                      permissions, all read-only:
-                    </p>
-                    <ul className="mt-3 flex flex-wrap gap-2">
-                      {GRAPH_SCOPES.map((scope) => (
-                        <li
-                          key={scope}
-                          className="border-line bg-subtle text-ink-soft rounded-full border px-2.5 py-1 font-mono text-xs"
-                        >
-                          {scope}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href="/security"
-                      className="text-brand-text mt-3 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 hover:opacity-80"
-                    >
-                      Security overview →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Open-source scanner as an earlier trust signal. */}
-            <p className="text-ink-soft text-sm">
-              Prefer not to connect yet?{" "}
-              <a
-                href={GITHUB_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="text-brand-text font-medium underline underline-offset-4 hover:opacity-80"
-              >
-                Run our open-source scanner locally →
-              </a>
-            </p>
-          </div>
         </div>
       </section>
 
