@@ -14,6 +14,7 @@ export const SignInButtons = ({
   signInHref,
   demoEnabled,
   showNote = true,
+  primaryLabel = "Sign in",
 }: {
   /** Whether sign-in is configured on this deployment. */
   signInEnabled: boolean;
@@ -21,6 +22,8 @@ export const SignInButtons = ({
   signInHref: string;
   demoEnabled: boolean;
   showNote?: boolean;
+  /** Primary CTA text. Defaults to "Sign in"; the hero echoes the free-scan offer. */
+  primaryLabel?: string;
 }) => (
   <div>
     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -29,7 +32,7 @@ export const SignInButtons = ({
           href={signInHref}
           className={buttonClass("primary", "w-full sm:w-auto")}
         >
-          Sign in
+          {primaryLabel}
         </a>
       ) : (
         <a

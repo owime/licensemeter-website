@@ -170,29 +170,21 @@ export default async function LandingPage() {
                 Departed employees keep their paid seats. You keep paying.
               </h1>
               <p className="text-ink-soft mt-5 max-w-xl text-base leading-relaxed lg:text-lg">
-                Offboarding disables the account, but the Adobe, Zoom, Atlassian,
-                Salesforce, ChatGPT and Claude seats keep billing. LicenseMeter
-                connects to Microsoft 365 read-only and cross-checks every one of
-                those seats against your directory, so the leak surfaces priced in
-                euros.{" "}
+                Offboarding disables the account, but the Adobe, Zoom,
+                Atlassian and Salesforce seats keep billing, and so do your AI
+                tools. LicenseMeter checks every seat against your directory and
+                prices the leak in euros.{" "}
                 <span className="text-brand-text font-semibold">
                   The first scan is free.
                 </span>
               </p>
-              <p className="text-ink-faint mt-4 max-w-xl text-sm leading-relaxed">
-                The live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
-                ex-employees still licensed, {DEMO_FIGURES.crossVendorLeaverCount}{" "}
-                of them still holding seats in connected apps — €{" "}
-                {demoEuros(DEMO_FIGURES.byCategory.leavers)} a month for people who
-                already left. Microsoft 365 is how you connect; the cross-vendor
-                offboarding leak is what you find.
-              </p>
-              <div className="mt-6">
+              <div className="mt-8">
                 <SignInButtons
                   signInEnabled={signInOk}
                   signInHref={signInHref}
                   demoEnabled={demoEnabled}
                   showNote={false}
+                  primaryLabel="Run my free scan"
                 />
                 <p className="text-ink-faint mt-3 text-xs">
                   After the free scan, {TRIAL_DAYS} days of full monitoring,
