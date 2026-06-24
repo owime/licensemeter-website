@@ -83,9 +83,9 @@ export default function PrivacyPolicyPage() {
       <Section title="3. Sign-in">
         <p>
           Sign-in is handled through our authentication provider, WorkOS, Inc.
-          (AuthKit). Depending on the method you choose &mdash; a Microsoft work
-          or school account, Google, Apple, a passkey, a one-time email link, or
-          email and password &mdash; we process the profile data that method
+          (AuthKit). You can sign in with a Microsoft work or school account,
+          Google, Apple, a passkey, a one-time email link, or email and
+          password. Whichever method you choose, we process the profile data it
           returns, in particular your display name and email address, together
           with the identifier WorkOS assigns to your account. Where you sign in
           with a Microsoft account, we additionally receive your Microsoft object
@@ -140,9 +140,9 @@ export default function PrivacyPolicyPage() {
       <Section title="5. Billing data">
         <p>
           If an organization subscribes to a paid plan, our payment processor
-          (Stripe) processes the data needed for billing &mdash; contact and
-          billing details, the selected plan and payment information &mdash; to
-          perform the contract (Art. 6(1)(b) GDPR). We store the subscription
+          (Stripe) processes the data needed to bill it: contact and billing
+          details, the selected plan, and payment information. This is necessary
+          to perform the contract (Art. 6(1)(b) GDPR). We store the subscription
           status and invoice metadata; we do not store full card numbers. Stripe
           retains invoice and transaction data for the period required by
           statutory tax and commercial-law retention duties, even after a
@@ -163,7 +163,7 @@ export default function PrivacyPolicyPage() {
                 ·
               </span>
               <span>
-                <span className="text-ink">{sp.name}</span> — {sp.purpose},{" "}
+                <span className="text-ink">{sp.name}</span>: {sp.purpose},{" "}
                 {sp.location} ({sp.basis}).
               </span>
             </li>
