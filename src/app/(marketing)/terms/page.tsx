@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { TRIAL_DAYS } from "~/lib/plans";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const metadata: Metadata = {
@@ -23,11 +24,14 @@ const Section = ({
 );
 
 /*
- * Provider details are filled. Before launch: confirm the billing terms once
- * invoicing starts, and have the final text reviewed by a lawyer (this is a
- * structured draft, not legal advice). Pricing wording must stay
- * consistent with /pricing and the Privacy Policy "billing not started"
- * framing. German law applies; the English text is provided for the product's
+ * Provider details are filled. Billing is live: the Service runs on a free scan
+ * + TRIAL_DAYS-day trial + paid subscription model (see /pricing, ~/lib/plans),
+ * so section 6 describes the trial and paid plans rather than a pre-billing
+ * "free of charge" phase. Sign-in is WorkOS AuthKit (multi-method); Microsoft
+ * Entra ID is one sign-in option and the tenant data connector. Pricing wording
+ * must stay consistent with /pricing and the Privacy Policy. Still to do: have
+ * the final text reviewed by a lawyer (this is a structured draft, not legal
+ * advice). German law applies; the English text is provided for the product's
  * English-speaking audience.
  */
 export default function TermsPage() {
@@ -57,8 +61,9 @@ export default function TermsPage() {
           oversized software licenses. Once the Customer grants access, the
           Service connects via read-only permissions to the Customer&rsquo;s
           Microsoft 365 tenant and, optionally, to further source systems
-          (including Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic),
-          evaluates license and activity information, and presents it as
+          (including Adobe, Zoom, Atlassian, Salesforce, OpenAI and Anthropic)
+          or to member lists the Customer imports by CSV (ChatGPT, Claude),
+          evaluates license, seat and activity information, and presents it as
           analyses, reports and exports.
         </p>
         <p>
@@ -70,9 +75,16 @@ export default function TermsPage() {
 
       <Section title="3. Registration and access">
         <p>
-          Sign-in is handled through Microsoft Entra ID. The Customer ensures
-          that the individuals acting are authorized to grant the required
-          administrator consent and to connect the tenant. Access credentials
+          Sign-in is handled through our authentication provider (WorkOS
+          AuthKit) and supports several methods, including a Microsoft work or
+          school account, Google, Apple, a passkey, a one-time email link, or
+          email and password. Connecting a Microsoft 365 tenant for analysis is
+          a separate step: the Customer ensures that the individuals acting are
+          authorized to grant the required administrator consent and to connect
+          the tenant. The Customer may use the Provider&rsquo;s managed
+          application or register its own application (&ldquo;bring your
+          own&rdquo;); any credentials supplied for the latter are stored
+          encrypted and used solely for the read-only sync. Access credentials
           must be kept confidential; the Customer is responsible for actions
           taken under its account.
         </p>
@@ -105,18 +117,24 @@ export default function TermsPage() {
 
       <Section title="6. Prices and billing">
         <p>
-          The Service is in a phase in which billing has not yet started; use is
-          currently free of charge. The Provider will announce the start of
-          billing with reasonable advance notice. Paid use only arises after the
-          Customer has expressly selected a paid plan. The prices shown on the{" "}
+          Every workspace starts with a free license scan and a {TRIAL_DAYS}-day
+          trial of the full Service that begins when the first connector is
+          connected; no payment method is required for the trial. Continued use
+          beyond the trial requires a paid subscription, which the Customer
+          selects expressly. Subscriptions are billed per connected Microsoft
+          365 tenant at the plan prices shown on the{" "}
           <a
             href="/pricing"
             className="hover:text-ink underline underline-offset-4"
           >
             pricing page
           </a>{" "}
-          at the time of order then apply; all prices are exclusive of statutory
-          VAT.
+          at the time of order; all prices are net and exclusive of any
+          statutory VAT, which is added where applicable. Billing and payment
+          are handled by our payment processor (Stripe); the Provider does not
+          store full card details. If the Customer does not subscribe, access to
+          the paid functions is restricted after the trial while the workspace
+          itself remains viewable.
         </p>
       </Section>
 
@@ -145,12 +163,13 @@ export default function TermsPage() {
 
       <Section title="9. Term and termination">
         <p>
-          The usage relationship runs for an indefinite period and may be ended
-          by the Customer at any time by disconnecting the workspace. On
-          disconnect, all synchronized data is deleted immediately and in full
-          (see Privacy Policy). Any paid plan is governed by the termination
-          rules agreed there. The right to extraordinary termination for good
-          cause remains unaffected for both parties.
+          The usage relationship runs for an indefinite period. The Customer may
+          end it at any time by disconnecting the workspace; on disconnect, all
+          synchronized data is deleted immediately and in full (see Privacy
+          Policy). A paid subscription can be cancelled at any time and then runs
+          until the end of the current billing period; it is managed through the
+          billing portal. The right to extraordinary termination for good cause
+          remains unaffected for both parties.
         </p>
       </Section>
 

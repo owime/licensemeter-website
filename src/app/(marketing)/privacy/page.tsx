@@ -25,10 +25,14 @@ const Section = ({
 
 /*
  * Controller details are filled (UgurLabs UG, Düsseldorf). The subprocessor
- * list in section 5 is rendered from the definitive list in the DPA
+ * list in section 6 is rendered from the definitive list in the DPA
  * (~/lib/dpa SUBPROCESSORS), so it cannot drift from /dpa, /security or
- * /trust-center. Still to do: have the final text reviewed by a lawyer (this is
- * a structured draft, not legal advice).
+ * /trust-center. Sign-in is WorkOS AuthKit (multi-method; WorkOS is a US
+ * subprocessor on SCCs) with Microsoft as one option; billing is live (Stripe),
+ * so there is a dedicated billing-data section. The landing page no longer
+ * collects visitor emails, so the old "email notification" section was removed.
+ * Still to do: have the final text reviewed by a lawyer (this is a structured
+ * draft, not legal advice).
  */
 export default function PrivacyPolicyPage() {
   return (
@@ -76,12 +80,30 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
-      <Section title="3. Sign-in with Microsoft Entra ID">
+      <Section title="3. Sign-in">
         <p>
-          Sign-in is handled through Microsoft Entra ID (OpenID Connect). We
-          process the profile data Microsoft transmits: display name, email
-          address / UPN, object ID and tenant ID. This data is required to
-          provide the account (Art. 6(1)(b) GDPR).
+          Sign-in is handled through our authentication provider, WorkOS, Inc.
+          (AuthKit). Depending on the method you choose &mdash; a Microsoft work
+          or school account, Google, Apple, a passkey, a one-time email link, or
+          email and password &mdash; we process the profile data that method
+          returns, in particular your display name and email address, together
+          with the identifier WorkOS assigns to your account. Where you sign in
+          with a Microsoft account, we additionally receive your Microsoft object
+          ID and tenant ID. This data is required to provide the account
+          (Art. 6(1)(b) GDPR).
+        </p>
+        <p>
+          WorkOS processes this sign-in data in the United States; the transfer
+          is based on the EU Standard Contractual Clauses (see the subprocessor
+          list below). Sessions are then maintained by a first-party,
+          HTTP-only cookie set by LicenseMeter (see our{" "}
+          <a
+            href="/cookies"
+            className="hover:text-ink underline underline-offset-4"
+          >
+            Cookie Policy
+          </a>
+          ).
         </p>
       </Section>
 
@@ -106,21 +128,30 @@ export default function PrivacyPolicyPage() {
         <p>
           The data is stored in a Postgres database in the EU (Frankfurt region)
           and is deleted immediately and in full when the workspace is
-          disconnected. A data processing agreement (DPA) is provided to each
-          organization before production use.
+          disconnected. Where the organization connects its Microsoft tenant
+          using its own application registration (&ldquo;bring your own&rdquo;),
+          the credentials it supplies are stored encrypted (AES-256-GCM) and used
+          solely for the read-only sync; they are never logged or disclosed. A
+          data processing agreement (DPA) is provided to each organization before
+          production use.
         </p>
       </Section>
 
-      <Section title="4a. Email notification (landing page)">
+      <Section title="5. Billing data">
         <p>
-          If you leave your email address on the home page, we store it in order
-          to send you the requested materials (security overview) and a one-time
-          notice about the start of billing (Art. 6(1)(b) GDPR). There is no
-          automated newsletter. The address is deleted on request at any time.
+          If an organization subscribes to a paid plan, our payment processor
+          (Stripe) processes the data needed for billing &mdash; contact and
+          billing details, the selected plan and payment information &mdash; to
+          perform the contract (Art. 6(1)(b) GDPR). We store the subscription
+          status and invoice metadata; we do not store full card numbers. Stripe
+          retains invoice and transaction data for the period required by
+          statutory tax and commercial-law retention duties, even after a
+          workspace is disconnected. Stripe is listed among the subprocessors
+          below.
         </p>
       </Section>
 
-      <Section title="5. Subprocessors">
+      <Section title="6. Subprocessors">
         <p>
           We engage the following subprocessors to process personal data on your
           behalf:
@@ -155,16 +186,19 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
-      <Section title="6. Retention">
+      <Section title="7. Retention">
         <p>
           Account and product data is stored for as long as the workspace is
-          connected. On disconnect, all synchronized data is deleted. The
-          hosting provider&rsquo;s server logs are subject to that
-          provider&rsquo;s deletion periods.
+          connected. On disconnect, all synchronized data is deleted; remaining
+          copies in routine encrypted backups are overwritten within the backup
+          rotation window (currently around seven days). Invoice and transaction
+          data is retained by the payment processor for the statutory periods
+          described in section 5. The hosting provider&rsquo;s server logs are
+          subject to that provider&rsquo;s deletion periods.
         </p>
       </Section>
 
-      <Section title="7. Your rights">
+      <Section title="8. Your rights">
         <p>
           You have the right of access (Art. 15), rectification (Art. 16),
           erasure (Art. 17), restriction of processing (Art. 18), data
@@ -175,7 +209,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
-      <Section title="8. Contact">
+      <Section title="9. Contact">
         <p>Privacy questions: {SUPPORT_EMAIL}</p>
       </Section>
     </main>
