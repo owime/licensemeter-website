@@ -2,7 +2,8 @@ import Link from "next/link";
 import {
   Calculator,
   Check,
-  FileSpreadsheet,
+  Download,
+  Receipt,
   ShieldCheck,
   Terminal,
 } from "lucide-react";
@@ -12,7 +13,6 @@ import { SignInButtons } from "~/components/SignInButtons";
 import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
-import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
 import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
 import { ALL_RULES } from "~/lib/rules";
 import { SITE_DEFINITION } from "~/lib/site";
@@ -45,20 +45,18 @@ const CONNECTORS = [
 const VALUE_CARDS = [
   {
     Icon: Calculator,
-    title: "Procurement sees the number",
-    body: `The sample tenant shows € ${demoEuros(
-      DEMO_FIGURES.monthlyWasteCents,
-    )}/mo of recoverable spend before anyone exports a report.`,
+    title: "Every seat, priced",
+    body: "Each wasted seat carries a euro-per-month figure, summed to one recoverable total. Not a vanity score.",
   },
   {
-    Icon: ShieldCheck,
-    title: "IT keeps control",
-    body: "Read-only access, the consent path shown up front, and remediation that stays in your tenant. No agent, no write access.",
+    Icon: Receipt,
+    title: "Evidence, per seat",
+    body: "Who owns it, which app, why it's waste, and since when. Proof procurement and IT can both act on.",
   },
   {
-    Icon: FileSpreadsheet,
-    title: "Finance gets proof",
-    body: "Every finding carries a monthly euro impact, a category and an export path. Evidence, not a generic dashboard score.",
+    Icon: Download,
+    title: "Reclaim, don't just report",
+    body: "Export a finance CSV or a ready-to-run PowerShell script to remove the seats you choose.",
   },
 ] as const;
 
@@ -138,9 +136,8 @@ const HOME_LD = {
   ],
 };
 
-/* Static with daily revalidation: the only time-sensitive content is the
- * current month inside the hero ledger card, and up to a day of staleness at a
- * month rollover is acceptable. Keeps the page CDN-cacheable. */
+/* Fully static marketing page; daily revalidation is a safe default that keeps
+ * it CDN-cacheable while letting copy/pricing edits propagate within a day. */
 export const revalidate = 86400;
 
 export default async function LandingPage() {
@@ -148,12 +145,6 @@ export default async function LandingPage() {
   const signInHref = signInPath();
   const demoEnabled = isDemoMode();
   const trialHref = signInOk ? signInHref : "#get-started";
-  /* Finance/CFO front door: route into sign-in, then straight to the existing
-   * zero-consent CSV trial. Same returnTo pattern the pricing cards use. */
-  const csvTrialHref = signInOk
-    ? `${signInHref}?returnTo=${encodeURIComponent("/app/connect/csv")}`
-    : "#get-started";
-  const month = new Date().toLocaleString("en-US", { month: "long" });
 
   return (
     <main>
@@ -164,18 +155,17 @@ export default async function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="rise rise-1">
               <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
-                The seats that leave when people do
+                Subscription waste, priced in euros
               </p>
               <h1 className="font-display mt-4 text-4xl leading-[1.05] font-semibold tracking-tight text-balance md:text-5xl xl:text-[4rem]">
-                Departed employees keep their paid seats. You keep paying.
+                You&rsquo;re paying for subscriptions nobody uses.
               </h1>
               <p className="text-ink-soft mt-5 max-w-xl text-base leading-relaxed lg:text-lg">
-                Offboarding disables the account, but the Adobe, Zoom,
-                Atlassian and Salesforce seats keep billing, and so do your AI
-                tools. LicenseMeter checks every seat against your directory and
-                prices the leak in euros.{" "}
+                Adobe, Microsoft, Atlassian and your AI tools quietly bill for
+                seats that left, sit idle, or were never opened. LicenseMeter
+                checks every seat against your directory and shows the waste{" "}
                 <span className="text-brand-text font-semibold">
-                  The first scan is free.
+                  in euros, in one view.
                 </span>
               </p>
               <div className="mt-8">
@@ -190,25 +180,11 @@ export default async function LandingPage() {
                   After the free scan, {TRIAL_DAYS} days of full monitoring,
                   free. No credit card, read-only access.
                 </p>
-                <p className="text-ink-soft mt-4 text-sm leading-relaxed">
-                  No Microsoft admin access?{" "}
-                  <a
-                    href={csvTrialHref}
-                    className="text-brand-text font-medium underline underline-offset-4 hover:opacity-80"
-                  >
-                    Upload a license CSV and see priced waste →
-                  </a>
-                  <br />
-                  <span className="text-ink-faint text-xs">
-                    For finance and procurement: two admin-center exports, no
-                    admin consent.
-                  </span>
-                </p>
               </div>
             </div>
 
             <div id="sample-tenant" className="rise rise-3 scroll-mt-8">
-              <HeroVisual month={month} />
+              <HeroVisual />
             </div>
           </div>
         </div>
@@ -255,10 +231,6 @@ export default async function LandingPage() {
                 See all connectors →
               </Link>
             </div>
-            <p className="text-ink-faint mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed">
-              All product names are trademarks of their respective owners.
-              LicenseMeter is not affiliated with or endorsed by them.
-            </p>
           </div>
         </div>
       </section>
@@ -267,7 +239,7 @@ export default async function LandingPage() {
       <section className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
         <div className="max-w-2xl">
           <h2 className="font-display text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
-            Proof procurement, IT and finance can all act on.
+            A bill you can actually cut.
           </h2>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-3">

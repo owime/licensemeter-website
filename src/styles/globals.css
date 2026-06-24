@@ -93,6 +93,16 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Hero waste total: a negative, danger-red figure with a soft static glow so
+ * it instantly reads as money bleeding out. No animation, so it is inherently
+ * reduced-motion-safe. */
+.waste-total {
+  color: var(--color-danger);
+  text-shadow:
+    0 0 16px rgba(220, 38, 38, 0.35),
+    0 0 2px rgba(220, 38, 38, 0.25);
+}
+
 /* Soft brand glow, replaces the old enterprise grid behind hero / CTA bands. */
 .brand-radial {
   background:

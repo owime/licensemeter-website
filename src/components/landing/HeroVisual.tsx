@@ -79,7 +79,7 @@ const clamp = (n: number, lo: number, hi: number) =>
  * Static demo figures, so SSR renders the final state (good for crawlers/no-JS);
  * the scan only runs client-side and is skipped under prefers-reduced-motion.
  */
-export const HeroVisual = ({ month }: { month: string }) => {
+export const HeroVisual = () => {
   // Init at the finished state so SSR + reduced-motion show the real numbers.
   const [totalCents, setTotalCents] = useState<number>(FINAL_CENTS);
   const [completed, setCompleted] = useState(STEPS);
@@ -128,14 +128,9 @@ export const HeroVisual = ({ month }: { month: string }) => {
     <div className="border-line bg-card shadow-hero relative overflow-hidden rounded-3xl border">
       <div className="grid lg:grid-cols-[1fr_0.72fr]">
         <div className="px-4 py-5 sm:px-6">
-          <div>
-            <p className="text-ink-faint text-[11px] font-medium tracking-[0.12em] uppercase">
-              Waste ledger · {month}
-            </p>
-            <div className="font-display text-waste-text tnum mt-2 text-4xl tracking-tight whitespace-nowrap sm:text-5xl">
-              € {demoEuros(totalCents)}
-              <span className="text-ink-faint text-base font-normal">/mo</span>
-            </div>
+          <div className="font-display waste-total tnum text-4xl tracking-tight whitespace-nowrap sm:text-5xl">
+            −€ {demoEuros(totalCents)}
+            <span className="text-ink-faint text-base font-normal">/mo</span>
           </div>
 
           <ul className="mt-5 space-y-3">
@@ -227,10 +222,6 @@ export const HeroVisual = ({ month }: { month: string }) => {
             </p>
           </div>
         </aside>
-      </div>
-
-      <div className="border-line text-ink-faint border-t px-4 py-3 text-center text-xs sm:px-6">
-        Your scan returns this ledger, with your tenant&rsquo;s real numbers.
       </div>
     </div>
   );
