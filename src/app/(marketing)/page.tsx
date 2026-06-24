@@ -195,8 +195,8 @@ export default async function LandingPage() {
                   showNote={false}
                 />
                 <p className="text-ink-faint mt-3 text-xs">
-                  Start free with a {TRIAL_DAYS}-day trial. No credit card,
-                  read-only access.
+                  After the free scan, {TRIAL_DAYS} days of full monitoring,
+                  free. No credit card, read-only access.
                 </p>
                 <p className="text-ink-soft mt-4 text-sm leading-relaxed">
                   No Microsoft admin access?{" "}
