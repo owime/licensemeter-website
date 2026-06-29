@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { ButtonLink, buttonClass } from "~/components/ui";
+import { ButtonAnchor, ButtonLink } from "~/components/ui";
 import { env } from "~/env";
 import { connectErrorText } from "~/lib/connectErrors";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
@@ -26,12 +26,16 @@ export default async function ConnectPage({
 }) {
   const session = await requireSession();
   const ctx = await getAccessContext();
-  // Has a workspace -> use the in-app connector page (consistent with all other
-  // connectors). Only the no-workspace fallback renders below.
-  if (ctx) redirect("/app/settings/microsoft");
-
   const sp = await searchParams;
   const error = typeof sp.error === "string" ? sp.error : null;
+  // Has a workspace -> use the in-app connector page (consistent with all other
+  // connectors), preserving any error so it isn't lost in the redirect. Only the
+  // no-workspace fallback renders below.
+  if (ctx) {
+    redirect(
+      `/app/settings/microsoft${error ? `?error=${encodeURIComponent(error)}` : ""}`,
+    );
+  }
   const connectorConfigured = Boolean(env.CONNECTOR_CLIENT_ID);
   const scanConfigured = Boolean(env.AUTH_MICROSOFT_ENTRA_ID_ID);
 
@@ -46,7 +50,10 @@ export default async function ConnectPage({
       </h1>
 
       {error && (
-        <div className="mt-6 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text">
+        <div
+          role="alert"
+          className="mt-6 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text"
+        >
           {connectErrorText(error)}
         </div>
       )}
@@ -77,9 +84,9 @@ export default async function ConnectPage({
 
       <div className="mt-8 flex flex-wrap items-center gap-4">
         {connectorConfigured ? (
-          <a href="/api/connect/start" className={buttonClass("primary")}>
+          <ButtonAnchor href="/api/connect/start" variant="primary">
             Grant admin consent
-          </a>
+          </ButtonAnchor>
         ) : (
           <span className="text-sm text-ink-soft">
             One-click managed consent is not enabled on this deployment. Use the
@@ -100,9 +107,7 @@ export default async function ConnectPage({
             signed in. No standing access, no stored tokens.
           </p>
           <div className="mt-3">
-            <a href="/api/scan/start" className={buttonClass("secondary")}>
-              Run an instant scan
-            </a>
+            <ButtonAnchor href="/api/scan/start">Run an instant scan</ButtonAnchor>
           </div>
         </div>
       )}
