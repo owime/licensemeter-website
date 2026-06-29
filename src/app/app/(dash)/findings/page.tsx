@@ -348,59 +348,81 @@ export default async function FindingsPage({
         </div>
       </FindingsBulkForm>
 
-      {/* Mobile stacked cards */}
-      <ul className="rise rise-3 mt-5 mb-8 flex flex-col gap-3 md:hidden">
-        {pageRows.map((f) => {
-          const detail = f.detail as { upn?: string };
-          return (
-            <li key={f.id} className="border border-line bg-card p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <FindingChip rule={f.rule} detail={f.detail} />
-                <StatusPill status={f.status} />
-              </div>
-              <div className="mt-2 text-sm font-medium">
-                {f.graphUserId ? (
-                  <Link
-                    href={`/app/users/${f.graphUserId}`}
-                    className="underline-offset-4 hover:underline"
-                  >
-                    {f.title}
-                  </Link>
-                ) : (
-                  f.title
-                )}
-              </div>
-              {detail.upn && (
-                <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
-                  {detail.upn}
-                </div>
-              )}
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="text-xs text-ink-soft">
-                  First seen {fmtDate(f.firstSeenAt)}
-                </span>
-                <span className="tnum font-mono text-sm font-medium text-waste-text">
-                  {f.monthlyImpactCents > 0
-                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                    : "-"}
-                </span>
-              </div>
-              {canAct && !showResolved && (
-                <div className="mt-3 border-t border-line pt-3">
-                  <AckButton finding={f} standalone />
-                </div>
-              )}
-            </li>
-          );
-        })}
-        {rowCount === 0 && (
-          <li className="border border-line bg-card">
-            <EmptyState icon={empty.icon} heading={empty.heading}>
-              {empty.subtext}
-            </EmptyState>
-          </li>
+      {/* Mobile stacked cards — own bulk form so multi-select works on phones. */}
+      <FindingsBulkForm
+        action={bulkSetFindingStatus}
+        showBar={canAct && !showResolved && rowCount > 0}
+        className="rise rise-3 mt-5 mb-8 md:hidden"
+      >
+        {canAct && !showResolved && rowCount > 0 && (
+          <div className="mb-2 flex items-center gap-2 text-sm text-ink-soft">
+            <SelectAllFindings />
+            <span>Select all on this page</span>
+          </div>
         )}
-      </ul>
+        <ul className="flex flex-col gap-3">
+          {pageRows.map((f) => {
+            const detail = f.detail as { upn?: string };
+            return (
+              <li key={f.id} className="border border-line bg-card p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {canAct && !showResolved && (
+                    <CheckboxHitArea>
+                      <input
+                        type="checkbox"
+                        name="id"
+                        value={f.id}
+                        aria-label={`Select ${f.title}`}
+                      />
+                    </CheckboxHitArea>
+                  )}
+                  <FindingChip rule={f.rule} detail={f.detail} />
+                  <StatusPill status={f.status} />
+                </div>
+                <div className="mt-2 text-sm font-medium">
+                  {f.graphUserId ? (
+                    <Link
+                      href={`/app/users/${f.graphUserId}`}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {f.title}
+                    </Link>
+                  ) : (
+                    f.title
+                  )}
+                </div>
+                {detail.upn && (
+                  <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
+                    {detail.upn}
+                  </div>
+                )}
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs text-ink-soft">
+                    First seen {fmtDate(f.firstSeenAt)}
+                  </span>
+                  <span className="tnum font-mono text-sm font-medium text-waste-text">
+                    {f.monthlyImpactCents > 0
+                      ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                      : "-"}
+                  </span>
+                </div>
+                {canAct && !showResolved && (
+                  <div className="mt-3 border-t border-line pt-3">
+                    <AckButton finding={f} />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {rowCount === 0 && (
+            <li className="border border-line bg-card">
+              <EmptyState icon={empty.icon} heading={empty.heading}>
+                {empty.subtext}
+              </EmptyState>
+            </li>
+          )}
+        </ul>
+      </FindingsBulkForm>
 
       {rowCount > PAGE_SIZE && (
         <nav
