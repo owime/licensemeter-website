@@ -41,6 +41,8 @@ export default async function AiCostsPage() {
         gte(aiSpendDaily.day, dayAgo(90)),
       ),
       orderBy: aiSpendDaily.day,
+      // Only the fields the page reduces over; skip ids/timestamps.
+      columns: { provider: true, day: true, category: true, amountCents: true },
     }),
     db.query.saasConnections.findMany({
       where: and(

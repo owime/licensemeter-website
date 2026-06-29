@@ -50,8 +50,16 @@ export default async function LicensesPage() {
   const [skus, prices, adobeSeats, saasSeatRows] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, ctx.tenant.id) }),
     db.query.priceBook.findMany({ where: eq(priceBook.tenantId, ctx.tenant.id) }),
-    db.query.adobeUsers.findMany({ where: eq(adobeUsers.tenantId, ctx.tenant.id) }),
-    db.query.saasSeats.findMany({ where: eq(saasSeats.tenantId, ctx.tenant.id) }),
+    // Only the product arrays are needed to tally seat counts; don't pull the
+    // full per-user rows.
+    db.query.adobeUsers.findMany({
+      where: eq(adobeUsers.tenantId, ctx.tenant.id),
+      columns: { products: true },
+    }),
+    db.query.saasSeats.findMany({
+      where: eq(saasSeats.tenantId, ctx.tenant.id),
+      columns: { provider: true, products: true },
+    }),
   ]);
   const priceRows = new Map(prices.map((p) => [p.skuId, p]));
 
