@@ -35,6 +35,9 @@ export type CsvTrialResult = { ok: boolean; error?: string };
 const fail = (error: string): CsvTrialResult => ({ ok: false, error });
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+// Upper bound on parsed users: the 5 MB file cap already limits input, but this
+// guards runAnalysis from a pathological export before it does heavy work.
+const MAX_USER_ROWS = 200_000;
 
 const chunk = <T>(arr: T[], size: number): T[][] => {
   const out: T[][] = [];
@@ -111,6 +114,11 @@ export const submitCsvTrial = async (
   const directoryRows = directoryParsed.rows;
   if (directoryRows.length === 0) {
     return fail("The user export contains no users.");
+  }
+  if (directoryRows.length > MAX_USER_ROWS) {
+    return fail(
+      "The user export is unusually large. Connect the read-only sync for tenants this size.",
+    );
   }
 
   let usageRows: UsageRow[] = [];

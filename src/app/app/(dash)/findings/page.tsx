@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { CircleCheck, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -75,34 +75,64 @@ export default async function FindingsPage({
   const showResolved = sp.show === "resolved";
   const isAdmin = hasRole(ctx, "admin");
   const locked = !ctx.entitlement.active;
+  // Acknowledge/bulk/export require an active entitlement; the list itself stays
+  // readable when locked so Overview links here don't dead-end on a paywall.
+  const canAct = isAdmin && !locked;
   const currency = ctx.tenant.currency;
 
-  const allRows = await db.query.findings.findMany({
-    where: eq(findings.tenantId, ctx.tenant.id),
-    orderBy: desc(findings.monthlyImpactCents),
-  });
-
-  const activeRows = allRows.filter((f) => f.status !== "resolved");
-  const rows = (showResolved ? allRows.filter((f) => f.status === "resolved") : activeRows).filter(
-    (f) => !ruleParam || f.rule === ruleParam,
+  // Status + rule filtering, counts and pagination all run in Postgres so a
+  // large tenant never streams every finding into the page. Active findings are
+  // open or acknowledged; resolved is a separate view.
+  const statusFilter = showResolved
+    ? eq(findings.status, "resolved")
+    : inArray(findings.status, ["open", "acknowledged"]);
+  const listWhere = and(
+    eq(findings.tenantId, ctx.tenant.id),
+    statusFilter,
+    ruleParam ? eq(findings.rule, ruleParam) : undefined,
   );
 
-  const totalByRule = new Map<string, { count: number; impact: number }>();
-  for (const f of activeRows) {
-    const agg = totalByRule.get(f.rule) ?? { count: 0, impact: 0 };
-    agg.count += 1;
-    agg.impact += f.monthlyImpactCents;
-    totalByRule.set(f.rule, agg);
-  }
-  const shownImpact = rows.reduce((s, f) => s + f.monthlyImpactCents, 0);
+  // Per-rule active counts drive the filter chips (which always link to the
+  // active view), and the headline total/impact for the current filtered set.
+  const [activeAgg, totals] = await Promise.all([
+    db
+      .select({ rule: findings.rule, count: sql<number>`count(*)::int` })
+      .from(findings)
+      .where(
+        and(
+          eq(findings.tenantId, ctx.tenant.id),
+          inArray(findings.status, ["open", "acknowledged"]),
+        ),
+      )
+      .groupBy(findings.rule),
+    db
+      .select({
+        total: sql<number>`count(*)::int`,
+        impact: sql<number>`coalesce(sum(${findings.monthlyImpactCents}), 0)::int`,
+      })
+      .from(findings)
+      .where(listWhere)
+      .then((r) => r[0] ?? { total: 0, impact: 0 }),
+  ]);
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const totalByRule = new Map<string, { count: number }>();
+  for (const r of activeAgg) totalByRule.set(r.rule, { count: r.count });
+  const activeTotal = activeAgg.reduce((s, r) => s + r.count, 0);
+  const rowCount = totals.total;
+  const shownImpact = totals.impact;
+
+  const totalPages = Math.max(1, Math.ceil(rowCount / PAGE_SIZE));
   const pageRaw = typeof sp.page === "string" ? parseInt(sp.page, 10) : 1;
   const page = Math.min(
     Math.max(Number.isFinite(pageRaw) ? pageRaw : 1, 1),
     totalPages,
   );
-  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageRows = await db.query.findings.findMany({
+    where: listWhere,
+    orderBy: desc(findings.monthlyImpactCents),
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
 
   const filterHref = (rule: string | null, resolved = false, pageNo = 1) => {
     const params = new URLSearchParams();
@@ -137,8 +167,8 @@ export default async function FindingsPage({
           <h1 className="font-display text-3xl tracking-tight">Findings</h1>
           <p className="mt-1 text-sm text-ink-soft">
             {showResolved
-              ? `${rows.length} resolved findings`
-              : `${rows.length} findings worth ${fmtMoney(shownImpact, currency)}/mo`}
+              ? `${rowCount} resolved findings`
+              : `${rowCount} findings worth ${fmtMoney(shownImpact, currency)}/mo`}
           </p>
         </div>
         {!locked && (
@@ -166,8 +196,6 @@ export default async function FindingsPage({
         </div>
       )}
 
-      {!locked && (
-        <>
       <nav aria-label="Finding filters" className="rise rise-2 mt-8 flex flex-wrap gap-2">
         <Link
           href={filterHref(null)}
@@ -178,7 +206,7 @@ export default async function FindingsPage({
               : "border border-line bg-card text-ink-soft hover:border-ink"
           }`}
         >
-          All active ({activeRows.length})
+          All active ({activeTotal})
         </Link>
         {visibleRules.map((rule) => {
           const agg = totalByRule.get(rule);
@@ -215,13 +243,18 @@ export default async function FindingsPage({
       {/* Desktop table (one form: row checkboxes + bulk action) */}
       <FindingsBulkForm
         action={bulkSetFindingStatus}
-        showBar={isAdmin && !showResolved && rows.length > 0}
+        showBar={canAct && !showResolved && rowCount > 0}
       >
         <div className="overflow-x-auto border border-line bg-card">
         <table className="w-full text-sm">
+          <caption className="sr-only">
+            {showResolved
+              ? `${rowCount} resolved findings`
+              : `${rowCount} active findings worth ${fmtMoney(shownImpact, currency)} per month${ruleParam ? `, filtered to ${RULE_META[ruleParam].label}` : ""}`}
+          </caption>
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-              {isAdmin && !showResolved && (
+              {canAct && !showResolved && (
                 <th scope="col" className="w-8 px-3 py-3">
                   <SelectAllFindings />
                 </th>
@@ -233,7 +266,7 @@ export default async function FindingsPage({
               </th>
               <th scope="col" className="px-4 py-3 font-medium">First seen</th>
               <th scope="col" className="px-4 py-3 font-medium">Status</th>
-              {isAdmin && !showResolved && (
+              {canAct && !showResolved && (
                 <th scope="col" className="px-4 py-3 text-right font-medium">
                   Action
                 </th>
@@ -248,7 +281,7 @@ export default async function FindingsPage({
                   key={f.id}
                   className="border-b border-line align-top last:border-b-0 hover:bg-canvas"
                 >
-                  {isAdmin && !showResolved && (
+                  {canAct && !showResolved && (
                     <td className="px-3 py-3">
                       <CheckboxHitArea>
                         <input
@@ -293,7 +326,7 @@ export default async function FindingsPage({
                   <td className="px-4 py-3">
                     <StatusPill status={f.status} />
                   </td>
-                  {isAdmin && !showResolved && (
+                  {canAct && !showResolved && (
                     <td className="px-4 py-3 text-right">
                       <AckButton finding={f} />
                     </td>
@@ -301,9 +334,9 @@ export default async function FindingsPage({
                 </tr>
               );
             })}
-            {rows.length === 0 && (
+            {rowCount === 0 && (
               <tr>
-                <td colSpan={isAdmin && !showResolved ? 7 : 5}>
+                <td colSpan={canAct && !showResolved ? 7 : 5}>
                   <EmptyState icon={empty.icon} heading={empty.heading}>
                     {empty.subtext}
                   </EmptyState>
@@ -315,57 +348,90 @@ export default async function FindingsPage({
         </div>
       </FindingsBulkForm>
 
-      {/* Mobile stacked cards */}
-      <ul className="rise rise-3 mt-5 mb-8 flex flex-col gap-3 md:hidden">
-        {pageRows.map((f) => {
-          const detail = f.detail as { upn?: string };
-          return (
-            <li key={f.id} className="border border-line bg-card p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <FindingChip rule={f.rule} detail={f.detail} />
-                <StatusPill status={f.status} />
-              </div>
-              <div className="mt-2 text-sm font-medium">{f.title}</div>
-              {detail.upn && (
-                <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
-                  {detail.upn}
-                </div>
-              )}
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="text-xs text-ink-soft">
-                  First seen {fmtDate(f.firstSeenAt)}
-                </span>
-                <span className="tnum font-mono text-sm font-medium text-waste-text">
-                  {f.monthlyImpactCents > 0
-                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                    : "-"}
-                </span>
-              </div>
-              {isAdmin && !showResolved && (
-                <div className="mt-3 border-t border-line pt-3">
-                  <AckButton finding={f} standalone />
-                </div>
-              )}
-            </li>
-          );
-        })}
-        {rows.length === 0 && (
-          <li className="border border-line bg-card">
-            <EmptyState icon={empty.icon} heading={empty.heading}>
-              {empty.subtext}
-            </EmptyState>
-          </li>
+      {/* Mobile stacked cards — own bulk form so multi-select works on phones. */}
+      <FindingsBulkForm
+        action={bulkSetFindingStatus}
+        showBar={canAct && !showResolved && rowCount > 0}
+        className="rise rise-3 mt-5 mb-8 md:hidden"
+      >
+        {canAct && !showResolved && rowCount > 0 && (
+          <div className="mb-2 flex items-center gap-2 text-sm text-ink-soft">
+            <SelectAllFindings />
+            <span>Select all on this page</span>
+          </div>
         )}
-      </ul>
+        <ul className="flex flex-col gap-3">
+          {pageRows.map((f) => {
+            const detail = f.detail as { upn?: string };
+            return (
+              <li key={f.id} className="border border-line bg-card p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {canAct && !showResolved && (
+                    <CheckboxHitArea>
+                      <input
+                        type="checkbox"
+                        name="id"
+                        value={f.id}
+                        aria-label={`Select ${f.title}`}
+                      />
+                    </CheckboxHitArea>
+                  )}
+                  <FindingChip rule={f.rule} detail={f.detail} />
+                  <StatusPill status={f.status} />
+                </div>
+                <div className="mt-2 text-sm font-medium">
+                  {f.graphUserId ? (
+                    <Link
+                      href={`/app/users/${f.graphUserId}`}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {f.title}
+                    </Link>
+                  ) : (
+                    f.title
+                  )}
+                </div>
+                {detail.upn && (
+                  <div className="mt-0.5 font-mono text-[11px] text-ink-faint">
+                    {detail.upn}
+                  </div>
+                )}
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs text-ink-soft">
+                    First seen {fmtDate(f.firstSeenAt)}
+                  </span>
+                  <span className="tnum font-mono text-sm font-medium text-waste-text">
+                    {f.monthlyImpactCents > 0
+                      ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                      : "-"}
+                  </span>
+                </div>
+                {canAct && !showResolved && (
+                  <div className="mt-3 border-t border-line pt-3">
+                    <AckButton finding={f} />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {rowCount === 0 && (
+            <li className="border border-line bg-card">
+              <EmptyState icon={empty.icon} heading={empty.heading}>
+                {empty.subtext}
+              </EmptyState>
+            </li>
+          )}
+        </ul>
+      </FindingsBulkForm>
 
-      {rows.length > PAGE_SIZE && (
+      {rowCount > PAGE_SIZE && (
         <nav
           aria-label="Findings pages"
           className="-mt-4 mb-8 flex flex-wrap items-center justify-between gap-3"
         >
           <span className="tnum text-xs text-ink-soft">
             Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-            {Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
+            {Math.min(page * PAGE_SIZE, rowCount)} of {rowCount}
           </span>
           <div className="flex items-center gap-2">
             {page > 1 && (
@@ -380,8 +446,6 @@ export default async function FindingsPage({
             )}
           </div>
         </nav>
-      )}
-        </>
       )}
     </div>
   );

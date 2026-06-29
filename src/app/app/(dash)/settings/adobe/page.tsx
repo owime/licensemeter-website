@@ -33,6 +33,22 @@ export default async function AdobeConnectorPage() {
       .then((r) => r[0]?.n ?? 0),
   ]);
 
+  const microsoftDisconnected =
+    !ctx.tenant.isDemo && ctx.tenant.consentedAt === null;
+  const reconnectNotice = microsoftDisconnected ? (
+    <p className="border border-gold-soft bg-gold-soft/40 p-3 text-xs text-gold-text">
+      Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
+      seats against your directory or run new syncs.{" "}
+      <Link
+        href="/app/settings/microsoft"
+        className="underline underline-offset-4 hover:text-ink"
+      >
+        Reconnect Microsoft
+      </Link>{" "}
+      to resume.
+    </p>
+  ) : null;
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
       <header className="rise rise-1">
@@ -52,7 +68,8 @@ export default async function AdobeConnectorPage() {
             className="underline-offset-4 hover:text-ink hover:underline"
           >
             Connectors
-          </Link>
+          </Link>{" "}
+          / <span aria-current="page" className="text-ink-soft">Adobe</span>
         </nav>
         <h1 className="mt-2 font-display text-3xl tracking-tight">
           Adobe connector
@@ -67,10 +84,11 @@ export default async function AdobeConnectorPage() {
               against the directory. On a real workspace this uses your Adobe
               Admin Console credentials.
             </p>
-          ) : ctx.tenant.consentedAt === null ? (
-            /* CSV-trial workspace: a connector can never sync without the
-               Microsoft connection, so don't collect credentials that would
-               sit idle. */
+          ) : microsoftDisconnected && !adobeConn ? (
+            /* CSV-trial / disconnected workspace with no Adobe connection yet:
+               a connector can never sync without Microsoft, so don't collect
+               credentials that would sit idle. An existing connection falls
+               through to its card with a reconnect notice instead. */
             <p className="text-sm text-ink-soft">
               Connectors cross-check seats against your Microsoft 365
               directory, so{" "}
@@ -84,6 +102,7 @@ export default async function AdobeConnectorPage() {
             </p>
           ) : adobeConn ? (
             <div className="flex flex-col gap-4">
+              {reconnectNotice}
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm">
                   <div className="font-medium">
@@ -95,17 +114,38 @@ export default async function AdobeConnectorPage() {
                       ? `last sync ${fmtDate(adobeConn.lastSyncAt)} (${adobeConn.lastSyncStatus ?? "pending"})`
                       : "first sync pending"}
                   </div>
+                  {adobeConn.lastSyncStatus === "failed" && (
+                    <p className="mt-2 max-w-md text-xs text-danger-text">
+                      The last sync could not reach Adobe. Findings are based on
+                      the previous snapshot. If the credentials were changed or
+                      revoked, update them below or reconnect with fresh values.
+                    </p>
+                  )}
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-3">
-                    <SyncNowButton />
+                    {!microsoftDisconnected && <SyncNowButton />}
                     <AdobeDisconnectButton />
                   </div>
                 )}
               </div>
+              {/* Rotate credentials without a destructive disconnect: connectAdobe
+                  upserts the row, so resubmitting replaces the stored secret. */}
+              {isAdmin && !microsoftDisconnected && (
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline">
+                    Update credentials
+                  </summary>
+                  <div className="mt-3">
+                    <AdobeConnectForm />
+                  </div>
+                </details>
+              )}
               {/* First sync hasn't landed yet: poll until it does, matching the
                   Microsoft connector's post-connect experience. */}
-              {!adobeConn.lastSyncAt && <ConnectPoller />}
+              {!adobeConn.lastSyncAt && !microsoftDisconnected && (
+                <ConnectPoller redirectTo="/app/settings/adobe" />
+              )}
             </div>
           ) : isAdmin ? (
             <div className="flex flex-col gap-3">

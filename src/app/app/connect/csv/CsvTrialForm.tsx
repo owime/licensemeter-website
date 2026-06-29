@@ -21,7 +21,11 @@ export const CsvTrialForm = () => {
   );
 
   return (
-    <form action={formAction} className="mt-8 flex flex-col gap-6">
+    <form
+      action={formAction}
+      aria-busy={pending || undefined}
+      className="mt-8 flex flex-col gap-6"
+    >
       <div className="flex flex-col gap-2">
         <label htmlFor="csv-trial-directory" className="text-sm font-medium">
           User export <span className="text-brand-text">(required)</span>
@@ -31,6 +35,7 @@ export const CsvTrialForm = () => {
           name="directory"
           type="file"
           required
+          disabled={pending}
           accept=".csv,text/csv"
           className={inputClass}
         />
@@ -48,6 +53,7 @@ export const CsvTrialForm = () => {
           id="csv-trial-usage"
           name="usage"
           type="file"
+          disabled={pending}
           accept=".csv,text/csv"
           className={inputClass}
         />
@@ -66,6 +72,7 @@ export const CsvTrialForm = () => {
           name="orgName"
           type="text"
           maxLength={200}
+          disabled={pending}
           placeholder="Defaults to your UPN domain"
           className={inputClass}
         />

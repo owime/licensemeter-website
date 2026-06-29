@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ButtonLink, Card } from "~/components/ui";
 import { SpendChart } from "~/components/workspace/SpendChart";
+import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { CONNECTOR_LABELS } from "~/lib/connectors";
 import { fmtAgo, fmtDate, fmtMoney } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
@@ -40,6 +41,8 @@ export default async function AiCostsPage() {
         gte(aiSpendDaily.day, dayAgo(90)),
       ),
       orderBy: aiSpendDaily.day,
+      // Only the fields the page reduces over; skip ids/timestamps.
+      columns: { provider: true, day: true, category: true, amountCents: true },
     }),
     db.query.saasConnections.findMany({
       where: and(
@@ -73,7 +76,7 @@ export default async function AiCostsPage() {
       .filter((r) => r.provider === provider && inWindow(r.day))
       .reduce((sum, r) => sum + r.amountCents, 0);
 
-  const statCards = providers.flatMap((p) => [
+  const perProviderCards = providers.flatMap((p) => [
     {
       label: `${CONNECTOR_LABELS[p]} this month`,
       value: fmtMoney(totalFor(p, (d) => d.startsWith(monthPrefix)), "USD"),
@@ -85,6 +88,45 @@ export default async function AiCostsPage() {
       sub: "rolling window",
     },
   ]);
+
+  // Combined headline totals across every connected provider, so the page
+  // answers "what do we spend on AI?" without summing the cards by hand. Only
+  // shown when more than one provider is connected (otherwise it duplicates the
+  // single provider's cards).
+  const totalCards =
+    providers.length > 1
+      ? [
+          {
+            label: "Total AI spend this month",
+            value: fmtMoney(
+              providers.reduce(
+                (s, p) => s + totalFor(p, (d) => d.startsWith(monthPrefix)),
+                0,
+              ),
+              "USD",
+            ),
+            sub: "all providers, calendar month",
+          },
+          {
+            label: "Total AI spend last 30 days",
+            value: fmtMoney(
+              providers.reduce((s, p) => s + totalFor(p, (d) => d >= cutoff30), 0),
+              "USD",
+            ),
+            sub: "all providers, rolling window",
+          },
+        ]
+      : [];
+  const statCards = [...totalCards, ...perProviderCards];
+
+  // Surface a partial sync (some steps degraded) like the Overview header does.
+  const degradedSteps =
+    lastRun?.steps.filter(
+      (s) => s.status === "warning" || s.status === "failed",
+    ).length ?? 0;
+  // Admins on a connected (non-trial) workspace get a manual sync, matching the
+  // Overview header.
+  const canSync = isAdmin && Boolean(ctx.tenant.consentedAt);
 
   // One chart series per provider: spend summed across categories per day.
   const series = providers.map((p) => ({
@@ -122,18 +164,30 @@ export default async function AiCostsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <header className="rise rise-1">
-        <h1 className="font-display text-3xl tracking-tight">AI costs</h1>
-        <p className="mt-1 text-sm text-ink-soft">
-          {lastRun?.status === "running"
-            ? "Sync running…"
-            : isTrial
-              ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
-              : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
-          {lastRun?.status === "failed" && (
-            <span className="ml-2 text-danger-text">(last sync failed)</span>
-          )}
-        </p>
+      <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl tracking-tight">AI costs</h1>
+          <p className="mt-1 text-sm text-ink-soft">
+            {lastRun?.status === "running"
+              ? "Sync running…"
+              : isTrial
+                ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
+                : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+            {lastRun?.status === "failed" && (
+              <span className="ml-2 text-danger-text">(last sync failed)</span>
+            )}
+            {lastRun?.status === "partial" && (
+              <span className="ml-2 text-gold-text">
+                (completed with warnings
+                {degradedSteps > 0
+                  ? ` · ${degradedSteps} ${degradedSteps === 1 ? "step" : "steps"} degraded`
+                  : ""}
+                )
+              </span>
+            )}
+          </p>
+        </div>
+        {canSync && rows.length > 0 && <SyncNowButton />}
       </header>
 
       {rows.length === 0 && aiConns.length === 0 ? (
@@ -193,10 +247,32 @@ export default async function AiCostsPage() {
       ) : rows.length === 0 ? (
         <section className="rise rise-2 mt-8">
           <Card title="Connection">
-            <p className="text-sm text-ink-soft">
-              Connected. The first sync brings in the provider&apos;s cost
-              history.
-            </p>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-ink-soft">
+                Connected. The first sync brings in each provider&apos;s cost
+                history.
+              </p>
+              <ul className="flex flex-col gap-1 text-sm">
+                {aiConns.map((c) => (
+                  <li
+                    key={c.provider}
+                    className="flex flex-wrap items-center justify-between gap-2 text-ink-soft"
+                  >
+                    <Link
+                      href={`/app/settings/${c.provider}`}
+                      className="font-medium text-ink underline-offset-4 hover:underline"
+                    >
+                      {CONNECTOR_LABELS[c.provider] ?? c.provider}
+                    </Link>
+                    <span className="text-xs text-ink-faint">
+                      {c.lastSyncAt
+                        ? `last sync ${fmtDate(c.lastSyncAt)} (${c.lastSyncStatus ?? "pending"})`
+                        : "first sync pending"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </Card>
         </section>
       ) : (
@@ -207,7 +283,7 @@ export default async function AiCostsPage() {
                 <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
                   {card.label}
                 </div>
-                <div className="mt-2 font-display text-3xl tracking-tight">
+                <div className="tnum mt-2 font-display text-3xl tracking-tight">
                   {card.value}
                 </div>
                 <div className="mt-1 text-xs text-ink-soft">{card.sub}</div>
@@ -221,13 +297,17 @@ export default async function AiCostsPage() {
             <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
               Top cost categories
             </h2>
-            <div className="mt-3 overflow-x-auto border border-line bg-card">
+            {/* Desktop table */}
+            <div className="mt-3 hidden overflow-x-auto border border-line bg-card md:block">
               <table className="w-full text-sm">
+                <caption className="sr-only">
+                  Top AI cost categories over the last 30 days, billed in USD.
+                </caption>
                 <thead>
                   <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Provider</th>
-                    <th className="px-4 py-3 text-right font-medium">
+                    <th scope="col" className="px-4 py-3 font-medium">Category</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Provider</th>
+                    <th scope="col" className="px-4 py-3 text-right font-medium">
                       Last 30 days
                     </th>
                   </tr>
@@ -269,6 +349,39 @@ export default async function AiCostsPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile stacked cards */}
+            <ul className="mt-3 flex flex-col gap-3 md:hidden">
+              {topCategories.map((c) => (
+                <li
+                  key={`${c.provider}:${c.category}`}
+                  className="flex items-center justify-between gap-3 border border-line bg-card p-4"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{c.category}</div>
+                    <div className="text-xs text-ink-soft">
+                      {CONNECTOR_LABELS[c.provider]}
+                    </div>
+                  </div>
+                  <span className="tnum shrink-0 font-mono text-sm">
+                    {fmtMoney(c.cents, "USD")}
+                  </span>
+                </li>
+              ))}
+              {otherCents > 0 && (
+                <li className="flex items-center justify-between gap-3 border border-line bg-card p-4">
+                  <span className="text-ink-soft">Other</span>
+                  <span className="tnum shrink-0 font-mono text-sm">
+                    {fmtMoney(otherCents, "USD")}
+                  </span>
+                </li>
+              )}
+              {topCategories.length === 0 && (
+                <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
+                  No spend in the last 30 days.
+                </li>
+              )}
+            </ul>
           </section>
         </>
       )}

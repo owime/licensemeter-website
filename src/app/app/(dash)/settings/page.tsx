@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
 import { DangerZone } from "~/components/workspace/DangerZone";
+import { InactiveDaysForm } from "~/components/workspace/InactiveDaysForm";
 import { InviteForm } from "~/components/workspace/InviteForm";
 import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
@@ -10,11 +11,10 @@ import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle"
 import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
 import { TrialRemindersToggle } from "~/components/workspace/TrialRemindersToggle";
 import { RoleSelect } from "~/components/workspace/RoleSelect";
-import { Button, Card, Pill } from "~/components/ui";
+import { Card, Pill } from "~/components/ui";
 import { fmtDate, fmtDateTime, workspaceLabel } from "~/lib/format";
 import { ROLE_DESCRIPTION } from "~/lib/roles";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
-import { setInactiveDays } from "~/server/actions";
 import { db } from "~/server/db";
 import {
   adobeConnections,
@@ -43,6 +43,7 @@ const Capability = ({
 }) => (
   <div className="flex items-start gap-3 py-2">
     <span
+      aria-hidden="true"
       className={`mt-1 inline-block size-2 shrink-0 rounded-full ${
         ok === null ? "bg-line-strong" : ok ? "bg-moss" : "bg-gold"
       }`}
@@ -65,6 +66,9 @@ export default async function SettingsPage() {
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
   const isOwner = hasRole(ctx, "owner");
+  // Workspace settings are read-only in the shared demo: an admin role there is
+  // granted to every visitor, so editable controls would mutate shared state.
+  const canEdit = isAdmin && !ctx.tenant.isDemo;
   const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
   const [members, runs, activity, msConn, adobeConn, saasConns, importedSeats] =
@@ -152,7 +156,9 @@ export default async function SettingsPage() {
             </div>
             <div>
               <dt className="text-ink-faint">Tenant ID</dt>
-              <dd className="mt-0.5 font-mono text-xs">{ctx.tenant.tid}</dd>
+              <dd className="mt-0.5 font-mono text-xs">
+                {ctx.tenant.tid ?? "Not connected to Microsoft yet"}
+              </dd>
             </div>
             <div>
               <dt className="text-ink-faint">Connected since</dt>
@@ -165,7 +171,7 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Currency</dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
+                {canEdit ? (
                   <CurrencySelect value={ctx.tenant.currency} />
                 ) : (
                   ctx.tenant.currency
@@ -175,30 +181,8 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Inactivity threshold</dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
-                  <form
-                    action={async (formData) => {
-                      "use server";
-                      await setInactiveDays(formData);
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <select
-                      name="days"
-                      defaultValue={String(ctx.tenant.inactiveDays)}
-                      aria-label="Inactivity threshold in days"
-                      className="border border-line bg-card px-2 py-1.5 text-sm focus:border-ink"
-                    >
-                      {[30, 60, 90, 120, 180].map((d) => (
-                        <option key={d} value={d}>
-                          {d} days
-                        </option>
-                      ))}
-                    </select>
-                    <Button variant="micro" className="py-1.5">
-                      Save
-                    </Button>
-                  </form>
+                {canEdit ? (
+                  <InactiveDaysForm value={ctx.tenant.inactiveDays} />
                 ) : (
                   `${ctx.tenant.inactiveDays} days`
                 )}
@@ -209,7 +193,7 @@ export default async function SettingsPage() {
                 Microsoft agreement renewal date
               </dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
+                {canEdit ? (
                   <RenewalDateForm initial={ctx.tenant.renewalDate} />
                 ) : (
                   fmtDate(ctx.tenant.renewalDate)
@@ -219,7 +203,7 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Leak alert emails</dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
+                {canEdit ? (
                   <LeakAlertsToggle initial={ctx.tenant.leakAlerts} />
                 ) : ctx.tenant.leakAlerts ? (
                   "On"
@@ -231,7 +215,7 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Monthly PDF report</dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
+                {canEdit ? (
                   <MonthlyReportToggle initial={ctx.tenant.monthlyReport} />
                 ) : ctx.tenant.monthlyReport ? (
                   "On"
@@ -243,7 +227,7 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Trial reminder emails</dt>
               <dd className="mt-0.5">
-                {isAdmin ? (
+                {canEdit ? (
                   <TrialRemindersToggle initial={ctx.tenant.trialReminders} />
                 ) : ctx.tenant.trialReminders ? (
                   "On"
@@ -286,6 +270,7 @@ export default async function SettingsPage() {
           {runs.length === 0 ? (
             <p className="text-sm text-ink-soft">No syncs yet.</p>
           ) : (
+            <>
             <ul className="flex flex-col gap-2">
               {runs.map((run) => (
                 <li
@@ -294,6 +279,7 @@ export default async function SettingsPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
+                      aria-hidden="true"
                       className={`inline-block size-2 rounded-full ${
                         run.status === "success"
                           ? "bg-moss"
@@ -322,6 +308,15 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-3 text-right">
+              <Link
+                href="/app/settings/sync-history"
+                className="text-xs font-medium text-ink underline-offset-4 hover:text-brand-text hover:underline"
+              >
+                View all runs →
+              </Link>
+            </div>
+            </>
           )}
         </Card>
 
@@ -398,7 +393,9 @@ export default async function SettingsPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{row.label}</span>
-                    <span className="text-ink-soft">{row.status}</span>
+                    <Pill tone={row.connected ? "good" : "outline"}>
+                      {row.status}
+                    </Pill>
                   </div>
                   <Link
                     href={row.href}

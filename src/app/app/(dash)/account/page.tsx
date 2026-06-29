@@ -1,7 +1,9 @@
 import { withAuth } from "@workos-inc/authkit-nextjs";
 
+import { signOutAction } from "~/app/auth/actions";
 import { AccountSessionSync } from "~/components/workspace/AccountSessionSync";
 import { AccountWidgets } from "~/components/workspace/AccountWidgets";
+import { Button, ButtonLink } from "~/components/ui";
 import { authProvider } from "~/env";
 import { requireAccess } from "~/server/access";
 
@@ -18,11 +20,15 @@ export default async function AccountPage() {
 
   if (authProvider() !== "workos") {
     return (
-      <div className="mx-auto max-w-3xl">
-        <h1 className="font-display text-3xl tracking-tight">Account</h1>
-        <p className="text-ink-soft mt-2 text-sm">
-          Your profile and password are managed by your identity provider.
-        </p>
+      <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-8">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">Account</h1>
+          <p className="text-ink-soft mt-1 text-sm">
+            Your profile, password and sign-in security are managed by Microsoft
+            Entra ID. Update them in your Microsoft account — changes apply across
+            every workspace you belong to.
+          </p>
+        </header>
       </div>
     );
   }
@@ -30,11 +36,20 @@ export default async function AccountPage() {
   const { user, accessToken } = await withAuth();
   if (!user || !accessToken) {
     return (
-      <div className="mx-auto max-w-3xl">
-        <h1 className="font-display text-3xl tracking-tight">Account</h1>
-        <p className="text-ink-soft mt-2 text-sm">
-          Could not load your account. Try signing out and back in.
-        </p>
+      <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-8">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">Account</h1>
+          <p className="text-ink-soft mt-1 text-sm">
+            We couldn&rsquo;t load your account details. Signing out and back in
+            usually fixes this.
+          </p>
+        </header>
+        <div className="rise rise-2 flex flex-wrap items-center gap-3">
+          <form action={signOutAction}>
+            <Button variant="primary">Sign out</Button>
+          </form>
+          <ButtonLink href="/">Back to home</ButtonLink>
+        </div>
       </div>
     );
   }
