@@ -29,6 +29,10 @@ const seedDemoWorkspace = async (): Promise<void> => {
   });
 
   if (!tenant) {
+    // No conflict target: tenants_tid_idx is a partial unique index
+    // (WHERE tid IS NOT NULL), which Postgres will not accept as an ON CONFLICT
+    // arbiter. A bare DO NOTHING swallows the tid race harmlessly — the only
+    // unique column this insert sets — matching scan.ts / csv upload.
     const inserted = await db
       .insert(tenants)
       .values({
@@ -37,7 +41,7 @@ const seedDemoWorkspace = async (): Promise<void> => {
         isDemo: true,
         consentedAt: new Date(),
       })
-      .onConflictDoNothing({ target: tenants.tid })
+      .onConflictDoNothing()
       .returning();
     tenant =
       inserted[0] ??
