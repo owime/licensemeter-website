@@ -7,7 +7,7 @@ import {
   MicrosoftDisconnectButton,
 } from "~/components/workspace/MicrosoftConnectForm";
 import { byoConnectorEnabled, env } from "~/env";
-import { ButtonLink, Card, buttonClass } from "~/components/ui";
+import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { connectErrorText } from "~/lib/connectErrors";
 import { MICROSOFT_CONNECTOR } from "~/lib/connectors";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
@@ -56,9 +56,9 @@ const SetupOptions = ({
       <ScopeList />
       {connectorConfigured ? (
         <div>
-          <a href="/api/connect/start" className={buttonClass("primary")}>
+          <ButtonAnchor href="/api/connect/start" variant="primary">
             Grant admin consent
-          </a>
+          </ButtonAnchor>
         </div>
       ) : (
         <p className="text-sm text-ink-soft">
@@ -104,9 +104,7 @@ const SetupOptions = ({
           above.
         </p>
         <div className="mt-3">
-          <a href="/api/scan/start" className={buttonClass("secondary")}>
-            Run an instant scan
-          </a>
+          <ButtonAnchor href="/api/scan/start">Run an instant scan</ButtonAnchor>
         </div>
       </div>
     )}
@@ -162,7 +160,8 @@ export default async function MicrosoftConnectorPage({
             className="underline-offset-4 hover:text-ink hover:underline"
           >
             Connectors
-          </Link>
+          </Link>{" "}
+          / <span aria-current="page" className="text-ink-soft">Microsoft 365</span>
         </nav>
         <h1 className="mt-2 font-display text-3xl tracking-tight">
           Microsoft 365 connector
@@ -170,8 +169,17 @@ export default async function MicrosoftConnectorPage({
       </header>
 
       {error && (
-        <div className="rise rise-2 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text">
-          {connectErrorText(error)}
+        <div
+          role="alert"
+          className="rise rise-2 flex flex-wrap items-center justify-between gap-3 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text"
+        >
+          <span>{connectErrorText(error)}</span>
+          <Link
+            href="/app/settings/microsoft"
+            className="shrink-0 text-xs font-medium underline underline-offset-4 hover:text-ink"
+          >
+            Dismiss
+          </Link>
         </div>
       )}
 
