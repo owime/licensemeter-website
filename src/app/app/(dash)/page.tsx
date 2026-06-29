@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
+import { InventoryTable } from "~/components/workspace/InventoryTable";
 import {
   MetricCards,
   type BreakdownRow,
@@ -32,33 +33,6 @@ import {
 
 export const metadata: Metadata = { title: "Overview" };
 
-type SkuRow = typeof tenantSkus.$inferSelect;
-
-const UtilizationBar = ({ sku }: { sku: SkuRow }) => {
-  const util =
-    sku.prepaidEnabled > 0
-      ? Math.min((sku.consumedUnits / sku.prepaidEnabled) * 100, 100)
-      : 0;
-  const rounded = Math.round(util);
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="h-1.5 w-24 bg-line"
-        role="progressbar"
-        aria-valuenow={rounded}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${sku.displayName ?? sku.skuPartNumber} seat utilization`}
-      >
-        <div className="h-1.5 bg-ink-soft" style={{ width: `${util}%` }} />
-      </div>
-      <span className="tnum font-mono text-xs text-ink-soft">
-        {util.toFixed(0)}%
-      </span>
-    </div>
-  );
-};
-
 export default async function OverviewPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
@@ -76,59 +50,85 @@ export default async function OverviewPage() {
   // import time on the user snapshots.
   const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
-  const [skus, prices, openFindings, lastRun, importedUser] = await Promise.all([
-    db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
-    db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
-    db.query.findings.findMany({
-      where: and(
-        eq(findings.tenantId, tenantId),
-        inArray(findings.status, ["open", "acknowledged"]),
-      ),
-      orderBy: desc(findings.monthlyImpactCents),
-    }),
-    db.query.syncRuns.findFirst({
-      where: eq(syncRuns.tenantId, tenantId),
-      orderBy: desc(syncRuns.startedAt),
-    }),
-    isTrial
-      ? db.query.tenantUsers.findFirst({
-          where: eq(tenantUsers.tenantId, tenantId),
-          orderBy: desc(tenantUsers.syncedAt),
-        })
-      : Promise.resolve(undefined),
-  ]);
+  const openFindingsWhere = and(
+    eq(findings.tenantId, tenantId),
+    inArray(findings.status, ["open", "acknowledged"]),
+  );
 
-  // Newest 90 days, reversed into ascending order for the chart. Ascending
-  // with a limit would pin the window to the oldest days ever collected.
-  const history = (
-    await db.query.snapshots.findMany({
-      where: eq(snapshots.tenantId, tenantId),
-      orderBy: desc(snapshots.day),
-      limit: 90,
-    })
-  ).reverse();
+  const [skus, prices, topFindings, ruleAgg, lastRun, importedUser, historyDesc] =
+    await Promise.all([
+      db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
+      db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
+      // Only the rows the dashboard actually renders ("Largest open findings").
+      // Headline figures come from the grouped aggregate below, so a large
+      // tenant never streams every finding row into the page.
+      db.query.findings.findMany({
+        where: openFindingsWhere,
+        orderBy: desc(findings.monthlyImpactCents),
+        limit: 6,
+      }),
+      // Per-rule count + impact, summed in Postgres. Drives the metric cards
+      // and every breakdown table without loading individual finding rows.
+      db
+        .select({
+          rule: findings.rule,
+          count: sql<number>`count(*)::int`,
+          cents: sql<number>`coalesce(sum(${findings.monthlyImpactCents}), 0)::int`,
+        })
+        .from(findings)
+        .where(openFindingsWhere)
+        .groupBy(findings.rule),
+      db.query.syncRuns.findFirst({
+        where: eq(syncRuns.tenantId, tenantId),
+        orderBy: desc(syncRuns.startedAt),
+      }),
+      isTrial
+        ? db.query.tenantUsers.findFirst({
+            where: eq(tenantUsers.tenantId, tenantId),
+            orderBy: desc(tenantUsers.syncedAt),
+          })
+        : Promise.resolve(undefined),
+      // Newest 90 days, reversed below into ascending order for the chart.
+      // Ascending with a limit would pin the window to the oldest days ever
+      // collected.
+      db.query.snapshots.findMany({
+        where: eq(snapshots.tenantId, tenantId),
+        orderBy: desc(snapshots.day),
+        limit: 90,
+      }),
+    ]);
+
+  const history = [...historyDesc].reverse();
 
   const priceBySku = new Map(prices.map((p) => [p.skuId, p.monthlyPriceCents]));
-  const monthlySpend = skus.reduce(
+
+  // Real, purchased SKUs only. Microsoft auto-provisions free/viral/capacity
+  // sentinels (WINDOWS_STORE's 1,000,000 prepaid units, FLOW_FREE, etc.) into
+  // every tenant; they carry no cost and only add noise. Excluding them here —
+  // the same exemption the waste engine and seat-tier gate already use — keeps
+  // the spend total, the assigned-seat count and the inventory table all
+  // reconciled to one set of SKUs.
+  const realSkus = skus.filter(
+    (s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled),
+  );
+
+  const monthlySpend = realSkus.reduce(
     (sum, s) => sum + s.consumedUnits * (priceBySku.get(s.skuId) ?? 0),
     0,
   );
-  const monthlyWaste = openFindings.reduce(
-    (sum, f) => sum + f.monthlyImpactCents,
-    0,
-  );
+  const monthlyWaste = ruleAgg.reduce((sum, r) => sum + r.cents, 0);
   const wasteShare = monthlySpend > 0 ? (monthlyWaste / monthlySpend) * 100 : 0;
-  // The inventory table lists real, purchased SKUs only. Microsoft auto-
-  // provisions free/viral/capacity sentinels (WINDOWS_STORE's 1,000,000 prepaid
-  // units, FLOW_FREE, etc.) into every tenant; they carry no cost and only add
-  // noise here. Same exemption the waste engine and seat-tier gate already use.
-  const sortedSkus = [...skus]
-    .filter((s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled))
-    .sort(
-      (a, b) =>
-        b.consumedUnits * (priceBySku.get(b.skuId) ?? 0) -
-        a.consumedUnits * (priceBySku.get(a.skuId) ?? 0),
-    );
+
+  // Inventory rows for the dashboard table, sorted client-side (default: spend
+  // descending). Pre-shaped here so the client component stays serializable.
+  const inventoryRows = realSkus.map((s) => ({
+    skuId: s.skuId,
+    name: s.displayName ?? s.skuPartNumber,
+    partNumber: s.skuPartNumber,
+    purchased: s.prepaidEnabled,
+    assigned: s.consumedUnits,
+    spendCents: s.consumedUnits * (priceBySku.get(s.skuId) ?? 0),
+  }));
 
   // The price book is already loaded for the spend figures, so list-price
   // detection costs no extra query. Hidden pre-sync (no rows = no figures).
@@ -137,7 +137,15 @@ export default async function OverviewPage() {
 
   // Days until the Microsoft agreement renewal; null when no date is set.
   const renewalDays = daysUntilDate(ctx.tenant.renewalDate, new Date());
-  const openCount = openFindings.length;
+  const openCount = ruleAgg.reduce((sum, r) => sum + r.count, 0);
+
+  // A partial sync finished but some steps degraded to warnings/failures (e.g.
+  // a usage report was unavailable). Surface the count so admins know figures
+  // may be incomplete without digging into the sync log.
+  const degradedSteps =
+    lastRun?.steps.filter(
+      (s) => s.status === "warning" || s.status === "failed",
+    ).length ?? 0;
 
   // Trial workspaces have no sync button, so do not tell them to run one.
   const emptyInventory = isTrial
@@ -147,11 +155,11 @@ export default async function OverviewPage() {
   // Drill-down rows for each metric card. Each breakdown is derived from the
   // exact same inputs as the headline figure, so the rows always sum to the
   // number on the card.
-  const assignedSeats = skus.reduce((s, x) => s + x.consumedUnits, 0);
+  const assignedSeats = realSkus.reduce((s, x) => s + x.consumedUnits, 0);
 
   // Spend by product: zero-cost SKUs (free/viral sentinels) drop out, leaving
   // only rows that actually contribute to monthly spend.
-  const spendRows: BreakdownRow[] = skus
+  const spendRows: BreakdownRow[] = realSkus
     .map((s) => ({
       sku: s,
       price: priceBySku.get(s.skuId) ?? 0,
@@ -171,11 +179,8 @@ export default async function OverviewPage() {
   // Findings grouped by rule, the shared basis for the waste, annualized-waste
   // and open-findings breakdowns.
   const byRule = new Map<WasteRuleId, { count: number; cents: number }>();
-  for (const f of openFindings) {
-    const cur = byRule.get(f.rule) ?? { count: 0, cents: 0 };
-    cur.count += 1;
-    cur.cents += f.monthlyImpactCents;
-    byRule.set(f.rule, cur);
+  for (const r of ruleAgg) {
+    byRule.set(r.rule, { count: r.count, cents: r.cents });
   }
   const ruleEntries = [...byRule.entries()].sort(
     (a, b) => b[1].cents - a[1].cents || b[1].count - a[1].count,
@@ -281,7 +286,7 @@ export default async function OverviewPage() {
     {
       key: "findings",
       label: "Open findings",
-      value: fmtNumber(openFindings.length, currency),
+      value: fmtNumber(openCount, currency),
       sub: `across ${ALL_RULES.length} rules`,
       tone: "ink",
       explainer:
@@ -293,7 +298,7 @@ export default async function OverviewPage() {
         columns: ["Rule", "Open"],
         rows: findingRows,
         totalLabel: "Total open findings",
-        totalValue: fmtNumber(openFindings.length, currency),
+        totalValue: fmtNumber(openCount, currency),
         emptyText: "No open findings.",
         footnote: `${ruleEntries.length} of ${ALL_RULES.length} rules currently have open findings.`,
       },
@@ -313,6 +318,17 @@ export default async function OverviewPage() {
                 : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
               <span className="ml-2 text-danger-text">(last sync failed)</span>
+            )}
+            {lastRun?.status === "partial" && (
+              <span className="ml-2 text-gold-text">
+                (completed with warnings
+                {degradedSteps > 0
+                  ? ` · ${fmtNumber(degradedSteps, currency)} ${
+                      degradedSteps === 1 ? "step" : "steps"
+                    } degraded`
+                  : ""}
+                )
+              </span>
             )}
           </p>
         </div>
@@ -417,132 +433,12 @@ export default async function OverviewPage() {
         }))}
       />
 
-      <section className="rise rise-3 mt-10">
-        <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
-            License inventory
-          </h2>
-          {!locked && (
-            <a
-              href="/api/export/licenses"
-              className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
-            >
-              Export CSV
-            </a>
-          )}
-        </div>
-
-        {/* Desktop table */}
-        <div className="mt-3 hidden overflow-x-auto border border-line bg-card md:block">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 text-right font-medium">Purchased</th>
-                <th className="px-4 py-3 text-right font-medium">Assigned</th>
-                <th className="px-4 py-3 text-right font-medium">Unassigned</th>
-                <th className="px-4 py-3 font-medium">Utilization</th>
-                <th className="px-4 py-3 text-right font-medium">Spend / mo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedSkus.map((s) => {
-                const price = priceBySku.get(s.skuId) ?? 0;
-                // Over-assigned SKUs (assigned > purchased) have no spare seats;
-                // show 0 rather than a confusing negative count.
-                const free = Math.max(0, s.prepaidEnabled - s.consumedUnits);
-                return (
-                  <tr
-                    key={s.skuId}
-                    className="border-b border-line last:border-b-0 hover:bg-canvas"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium">
-                        {s.displayName ?? s.skuPartNumber}
-                      </div>
-                      <div className="font-mono text-[11px] text-ink-faint">
-                        {s.skuPartNumber}
-                      </div>
-                    </td>
-                    <td className="tnum px-4 py-3 text-right font-mono">
-                      {fmtNumber(s.prepaidEnabled, currency)}
-                    </td>
-                    <td className="tnum px-4 py-3 text-right font-mono">
-                      {fmtNumber(s.consumedUnits, currency)}
-                    </td>
-                    <td
-                      className={`tnum px-4 py-3 text-right font-mono ${
-                        free > 0 ? "font-medium text-waste-text" : "text-ink-faint"
-                      }`}
-                    >
-                      {fmtNumber(free, currency)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <UtilizationBar sku={s} />
-                    </td>
-                    <td className="tnum px-4 py-3 text-right font-mono">
-                      {fmtMoney(s.consumedUnits * price, currency)}
-                    </td>
-                  </tr>
-                );
-              })}
-              {sortedSkus.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-ink-soft">
-                    {emptyInventory}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile stacked cards */}
-        <ul className="mt-3 flex flex-col gap-3 md:hidden">
-          {sortedSkus.map((s) => {
-            const price = priceBySku.get(s.skuId) ?? 0;
-            const free = Math.max(0, s.prepaidEnabled - s.consumedUnits);
-            return (
-              <li key={s.skuId} className="border border-line bg-card p-4">
-                <div className="font-medium">
-                  {s.displayName ?? s.skuPartNumber}
-                </div>
-                <div className="font-mono text-[11px] text-ink-faint">
-                  {s.skuPartNumber}
-                </div>
-                <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
-                  <div className="flex justify-between gap-2">
-                    <dt className="font-sans text-xs text-ink-faint">Purchased</dt>
-                    <dd>{fmtNumber(s.prepaidEnabled, currency)}</dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="font-sans text-xs text-ink-faint">Assigned</dt>
-                    <dd>{fmtNumber(s.consumedUnits, currency)}</dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="font-sans text-xs text-ink-faint">Unassigned</dt>
-                    <dd className={free > 0 ? "font-medium text-waste-text" : ""}>
-                      {fmtNumber(free, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
-                    <dd>{fmtMoney(s.consumedUnits * price, currency)}</dd>
-                  </div>
-                </dl>
-                <div className="mt-3">
-                  <UtilizationBar sku={s} />
-                </div>
-              </li>
-            );
-          })}
-          {sortedSkus.length === 0 && (
-            <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
-              {emptyInventory}
-            </li>
-          )}
-        </ul>
-      </section>
+      <InventoryTable
+        rows={inventoryRows}
+        currency={currency}
+        locked={locked}
+        emptyText={emptyInventory}
+      />
 
       <section className="rise rise-4 mt-10 mb-8">
         <div className="flex items-baseline justify-between gap-4">
@@ -557,23 +453,31 @@ export default async function OverviewPage() {
           </Link>
         </div>
         <ul className="mt-3 border border-line bg-card">
-          {openFindings.slice(0, 6).map((f) => (
-            <li
-              key={f.id}
-              className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 last:border-b-0"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <FindingChip rule={f.rule} detail={f.detail} />
-                <span className="truncate text-sm">{f.title}</span>
-              </div>
-              <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
-                {f.monthlyImpactCents > 0
-                  ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                  : "-"}
-              </span>
+          {topFindings.map((f) => (
+            <li key={f.id} className="border-b border-line last:border-b-0">
+              <Link
+                href={
+                  f.graphUserId
+                    ? `/app/users/${f.graphUserId}`
+                    : `/app/findings?rule=${f.rule}`
+                }
+                className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 hover:bg-canvas"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <FindingChip rule={f.rule} detail={f.detail} />
+                  <span className="truncate text-sm underline-offset-4 group-hover:underline">
+                    {f.title}
+                  </span>
+                </div>
+                <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
+                  {f.monthlyImpactCents > 0
+                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                    : "-"}
+                </span>
+              </Link>
             </li>
           ))}
-          {openFindings.length === 0 && (
+          {topFindings.length === 0 && (
             <li className="px-4 py-8 text-center text-sm text-ink-soft">
               No open findings. Either the tenant is spotless or the first sync
               has not finished yet.
