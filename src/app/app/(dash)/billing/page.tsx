@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import Link from "next/link";
 
 import { BillingActions } from "~/components/workspace/BillingActions";
 import { Card, Pill } from "~/components/ui";
@@ -19,7 +20,10 @@ import { subscriptions } from "~/server/db/schema";
 import { entitlementOf } from "~/server/entitlement";
 import { knownSeats } from "~/server/stripe";
 
-export const metadata = { robots: { index: false, follow: false } };
+export const metadata = {
+  title: "Billing",
+  robots: { index: false, follow: false },
+};
 
 const STATE_LABEL: Record<string, string> = {
   trial: "Trial",
@@ -71,16 +75,47 @@ export default async function BillingPage({
     );
   }
 
-  const sub = await db.query.subscriptions.findFirst({
-    where: eq(subscriptions.tenantId, ctx.tenant.id),
-  });
+  // MSP-attached workspaces are billed through the portfolio owner's account,
+  // not self-serve here — point them there instead of a plan picker that would
+  // start a parallel subscription.
+  if (ctx.tenant.mspAccountId) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">Billing</h1>
+        </header>
+        <div className="rise rise-2">
+          <Card title="Billed via your MSP portfolio">
+            <p className="text-sm text-ink-soft">
+              This workspace is part of an MSP portfolio and is billed through the
+              portfolio owner&rsquo;s account. Manage the subscription from the{" "}
+              <Link
+                href="/app/msp"
+                className="underline underline-offset-4 hover:text-ink"
+              >
+                MSP portfolio
+              </Link>
+              .
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // sub and seats are independent reads; entitlement derives from sub afterwards.
+  const [sub, seats] = await Promise.all([
+    db.query.subscriptions.findFirst({
+      where: eq(subscriptions.tenantId, ctx.tenant.id),
+    }),
+    knownSeats(ctx.tenant.id),
+  ]);
   const entitlement = entitlementOf(
     ctx.tenant,
     sub ?? null,
     new Date(),
     !billingEnabled(),
   );
-  const seats = await knownSeats(ctx.tenant.id);
 
   // A subscribed tenant that outgrows its band gets a change-plan nudge (never
   // an auto-charge); the action is the existing Change plan button below.
@@ -111,6 +146,19 @@ export default async function BillingPage({
     plan && sub?.interval
       ? priceEurosFor(plan.tier, sub.interval) * 100
       : null;
+  // Stripe trialing maps to entitlement "paid"; surface it as a trial so the
+  // pill doesn't read "Active" next to a "first charge" date.
+  const trialing = sub?.status === "trialing";
+  const pillLabel = trialing
+    ? "Trial (card on file)"
+    : (STATE_LABEL[entitlement.state] ?? entitlement.state);
+  const pillTone: PillTone = trialing
+    ? "brand"
+    : (STATE_TONE[entitlement.state] ?? "slate");
+  // Only present the plan as current while the subscription is live; a lapsed
+  // (expired/incomplete/canceled) row is shown as a former plan, not active.
+  const planIsCurrent = Boolean(plan) && manageable;
+  const billingConfigured = billingEnabled();
 
   // Dated line: trial countdown, cancellation, or renewal.
   let datedLine: string | null = null;
@@ -141,6 +189,7 @@ export default async function BillingPage({
       <div className="rise rise-2 flex flex-col gap-6">
         {overPlan && (
           <div
+            role="alert"
             className={`rounded-2xl px-5 py-4 text-sm ${
               overPlan.state === "over"
                 ? "bg-danger-soft text-danger-text"
@@ -162,14 +211,15 @@ export default async function BillingPage({
         <Card title="Status">
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3">
-              <Pill tone={STATE_TONE[entitlement.state] ?? "slate"}>
-                {STATE_LABEL[entitlement.state] ?? entitlement.state}
-              </Pill>
+              <Pill tone={pillTone}>{pillLabel}</Pill>
               {plan && (
                 <span className="text-sm">
+                  {!planIsCurrent && (
+                    <span className="text-ink-faint">Former plan: </span>
+                  )}
                   <span className="font-medium">{plan.name}</span>{" "}
                   <span className="text-ink-soft">{intervalLabel}</span>
-                  {priceCents !== null && (
+                  {priceCents !== null && planIsCurrent && (
                     <span className="text-ink-soft">
                       {" · "}
                       {fmtMoney(priceCents, "EUR")}/
@@ -182,21 +232,34 @@ export default async function BillingPage({
             {datedLine && (
               <p className="text-sm text-ink-soft">{datedLine}</p>
             )}
+            {entitlement.state === "past_due" && (
+              <p className="text-sm text-danger-text">
+                Your last payment failed. Update your card below to keep exports
+                and nightly sync before access pauses.
+              </p>
+            )}
             <p className="text-sm text-ink-faint">{seatBand}</p>
           </div>
         </Card>
 
         <Card title="Plan">
-          <BillingActions
-            isOwner={isOwner}
-            state={entitlement.state}
-            manageable={manageable}
-            overSelfServe={overSelfServe}
-            recommendedTier={recommendedTier}
-            trialInfo={trialInfo}
-            planParam={planParam}
-            checkoutParam={checkoutParam}
-          />
+          {billingConfigured ? (
+            <BillingActions
+              isOwner={isOwner}
+              state={entitlement.state}
+              manageable={manageable}
+              overSelfServe={overSelfServe}
+              recommendedTier={recommendedTier}
+              trialInfo={trialInfo}
+              planParam={planParam}
+              checkoutParam={isOwner ? checkoutParam : undefined}
+            />
+          ) : (
+            <p className="text-sm text-ink-soft">
+              Billing is not configured on this deployment, so every workspace
+              keeps full access — there is nothing to pay for right now.
+            </p>
+          )}
         </Card>
       </div>
     </div>
