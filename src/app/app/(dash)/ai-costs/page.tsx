@@ -260,7 +260,7 @@ export default async function AiCostsPage() {
                       href={`/app/settings/${c.provider}`}
                       className="font-medium text-ink underline-offset-4 hover:underline"
                     >
-                      {CONNECTOR_LABELS[c.provider as SaasProvider] ?? c.provider}
+                      {CONNECTOR_LABELS[c.provider] ?? c.provider}
                     </Link>
                     <span className="text-xs text-ink-faint">
                       {c.lastSyncAt
