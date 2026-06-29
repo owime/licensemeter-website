@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Drawer } from "./Drawer";
 
@@ -41,22 +41,43 @@ export type MetricCardData = {
   };
 };
 
-const InfoIcon = ({ explainer }: { explainer: string }) => (
-  <span className="group/info relative inline-flex">
-    <span
-      aria-hidden="true"
-      className="text-ink-faint group-hover/info:text-ink flex size-4 items-center justify-center rounded-full border border-current text-[10px] leading-none font-semibold transition"
-    >
-      i
+/**
+ * Focusable "i" that reveals its explainer on hover and on keyboard focus, and
+ * opens the full breakdown on click. It is a real <button> (not a span nested
+ * inside the card button) so keyboard users can reach the tooltip, and the
+ * explainer is wired up via aria-describedby.
+ */
+const InfoButton = ({
+  explainer,
+  label,
+  onOpen,
+}: {
+  explainer: string;
+  label: string;
+  onOpen: () => void;
+}) => {
+  const tipId = useId();
+  return (
+    <span className="group/info relative inline-flex">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`${label}: what this means`}
+        aria-describedby={tipId}
+        className="text-ink-faint hover:text-ink focus-visible:text-ink flex size-4 items-center justify-center rounded-full border border-current text-[10px] leading-none font-semibold transition"
+      >
+        <span aria-hidden="true">i</span>
+      </button>
+      <span
+        id={tipId}
+        role="tooltip"
+        className="border-line bg-ink-panel text-canvas pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 shadow-float transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+      >
+        {explainer}
+      </span>
     </span>
-    <span
-      role="tooltip"
-      className="border-line bg-ink-panel text-canvas pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 shadow-float transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
-    >
-      {explainer}
-    </span>
-  </span>
-);
+  );
+};
 
 export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -67,18 +88,22 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
       <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <div key={card.key} className="bg-card p-5">
-            <button
-              type="button"
-              onClick={() => setOpenKey(card.key)}
-              aria-haspopup="dialog"
-              aria-label={`${card.label}: show how this is calculated`}
-              className="group/card flex w-full items-center justify-between gap-2 text-left"
-            >
-              <span className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+            <div className="flex w-full items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setOpenKey(card.key)}
+                aria-haspopup="dialog"
+                aria-label={`${card.label}: show how this is calculated`}
+                className="text-left text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase underline-offset-4 hover:text-ink hover:underline"
+              >
                 {card.label}
-              </span>
-              <InfoIcon explainer={card.explainer} />
-            </button>
+              </button>
+              <InfoButton
+                explainer={card.explainer}
+                label={card.label}
+                onOpen={() => setOpenKey(card.key)}
+              />
+            </div>
             <button
               type="button"
               onClick={() => setOpenKey(card.key)}
