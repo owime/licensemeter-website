@@ -270,6 +270,7 @@ export default async function SettingsPage() {
           {runs.length === 0 ? (
             <p className="text-sm text-ink-soft">No syncs yet.</p>
           ) : (
+            <>
             <ul className="flex flex-col gap-2">
               {runs.map((run) => (
                 <li
@@ -307,6 +308,15 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-3 text-right">
+              <Link
+                href="/app/settings/sync-history"
+                className="text-xs font-medium text-ink underline-offset-4 hover:text-brand-text hover:underline"
+              >
+                View all runs →
+              </Link>
+            </div>
+            </>
           )}
         </Card>
 
