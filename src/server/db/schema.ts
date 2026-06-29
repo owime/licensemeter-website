@@ -430,6 +430,8 @@ export const findings = pgTable(
   (t) => [
     uniqueIndex("findings_tenant_dedupe_idx").on(t.tenantId, t.dedupeKey),
     index("findings_tenant_status_idx").on(t.tenantId, t.status),
+    // Backs the user-detail page, which lists findings for one user.
+    index("findings_tenant_user_idx").on(t.tenantId, t.graphUserId),
     check("findings_monthly_impact_nonneg", sql`${t.monthlyImpactCents} >= 0`),
   ],
 );

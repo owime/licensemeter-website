@@ -1,8 +1,10 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
+import { CircleCheck, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { EmptyState } from "~/components/workspace/EmptyState";
 import { FindingChip } from "~/components/workspace/FindingChip";
 import { Pill } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
@@ -37,6 +39,10 @@ export default async function UserDetailPage({
   });
   if (!user) notFound();
 
+  // Only price the SKUs this user actually holds, rather than loading the whole
+  // tenant price book to look up a handful of ids.
+  const userSkuIds = user.licenses.map((l) => l.skuId);
+
   const [userFindings, prices] = await Promise.all([
     db.query.findings.findMany({
       where: and(
@@ -44,10 +50,17 @@ export default async function UserDetailPage({
         eq(findings.graphUserId, id),
       ),
       orderBy: desc(findings.monthlyImpactCents),
+      // A user's findings are bounded by the rule set, but cap defensively.
+      limit: 100,
     }),
-    db.query.priceBook.findMany({
-      where: eq(priceBook.tenantId, ctx.tenant.id),
-    }),
+    userSkuIds.length > 0
+      ? db.query.priceBook.findMany({
+          where: and(
+            eq(priceBook.tenantId, ctx.tenant.id),
+            inArray(priceBook.skuId, userSkuIds),
+          ),
+        })
+      : Promise.resolve([]),
   ]);
   const priceBySku = new Map(prices.map((p) => [p.skuId, p.monthlyPriceCents]));
   const monthlyCost = user.licenses.reduce(
@@ -95,7 +108,7 @@ export default async function UserDetailPage({
             <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
               {c.label}
             </div>
-            <div className="mt-2 font-display text-2xl tracking-tight">
+            <div className="tnum mt-2 font-display text-2xl tracking-tight">
               {c.value}
             </div>
           </div>
@@ -115,7 +128,10 @@ export default async function UserDetailPage({
               <div>
                 <span className="font-medium">{skuDisplayName(l.skuId)}</span>
                 {l.assignedByGroup && (
-                  <span className="ml-2 text-xs text-ink-faint">
+                  <span
+                    className="ml-2 text-xs text-ink-faint"
+                    title={`Assigned via group ${l.assignedByGroup}`}
+                  >
                     via group {l.assignedByGroup.slice(0, 8)}…
                   </span>
                 )}
@@ -131,8 +147,8 @@ export default async function UserDetailPage({
             </li>
           ))}
           {user.licenses.length === 0 && (
-            <li className="px-4 py-6 text-center text-sm text-ink-soft">
-              No licenses assigned.
+            <li>
+              <EmptyState icon={KeyRound} heading="No licenses assigned." />
             </li>
           )}
         </ul>
@@ -169,35 +185,39 @@ export default async function UserDetailPage({
         </h2>
         <ul className="mt-3 border border-line bg-card">
           {userFindings.map((f) => (
-            <li
-              key={f.id}
-              className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 last:border-b-0"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <FindingChip rule={f.rule} detail={f.detail} />
-                <span className="truncate text-sm">{f.title}</span>
-                <Pill
-                  tone={
-                    f.status === "open"
-                      ? "brand"
-                      : f.status === "acknowledged"
-                        ? "outline"
-                        : "moss"
-                  }
-                >
-                  {f.status}
-                </Pill>
-              </div>
-              <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
-                {f.monthlyImpactCents > 0
-                  ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
-                  : "-"}
-              </span>
+            <li key={f.id} className="border-b border-line last:border-b-0">
+              <Link
+                href={`/app/findings?rule=${f.rule}`}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-canvas"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <FindingChip rule={f.rule} detail={f.detail} />
+                  <span className="truncate text-sm underline-offset-4 group-hover:underline">
+                    {f.title}
+                  </span>
+                  <Pill
+                    tone={
+                      f.status === "open"
+                        ? "brand"
+                        : f.status === "acknowledged"
+                          ? "outline"
+                          : "moss"
+                    }
+                  >
+                    {f.status}
+                  </Pill>
+                </div>
+                <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
+                  {f.monthlyImpactCents > 0
+                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                    : "-"}
+                </span>
+              </Link>
             </li>
           ))}
           {userFindings.length === 0 && (
-            <li className="px-4 py-6 text-center text-sm text-ink-soft">
-              No findings for this user.
+            <li>
+              <EmptyState icon={CircleCheck} heading="No findings for this user." />
             </li>
           )}
         </ul>
