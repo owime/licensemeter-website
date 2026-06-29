@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -27,7 +27,10 @@ export default async function PortfolioPage() {
 
   const ids = ctx.workspaces.map((w) => w.id);
 
-  const [tenantRows, findingCounts] = await Promise.all([
+  // All per-workspace data is fetched set-based (one query each, distinct-on the
+  // latest row per tenant) rather than three queries per workspace — the old
+  // shape was ~3N round-trips for an MSP with N clients.
+  const [tenantRows, findingCounts, snaps, runs, imports] = await Promise.all([
     db.query.tenants.findMany({ where: inArray(tenants.id, ids) }),
     db
       .select({
@@ -42,52 +45,85 @@ export default async function PortfolioPage() {
         ),
       )
       .groupBy(findings.tenantId),
+    db
+      .selectDistinctOn([snapshots.tenantId], {
+        tenantId: snapshots.tenantId,
+        seats: snapshots.purchasedSeats,
+        spendCents: snapshots.totalMonthlySpendCents,
+        wasteCents: snapshots.totalMonthlyWasteCents,
+      })
+      .from(snapshots)
+      .where(inArray(snapshots.tenantId, ids))
+      .orderBy(snapshots.tenantId, desc(snapshots.day)),
+    db
+      .selectDistinctOn([syncRuns.tenantId], {
+        tenantId: syncRuns.tenantId,
+        status: syncRuns.status,
+        finishedAt: syncRuns.finishedAt,
+      })
+      .from(syncRuns)
+      .where(inArray(syncRuns.tenantId, ids))
+      .orderBy(syncRuns.tenantId, desc(syncRuns.startedAt)),
+    db
+      .selectDistinctOn([tenantUsers.tenantId], {
+        tenantId: tenantUsers.tenantId,
+        syncedAt: tenantUsers.syncedAt,
+      })
+      .from(tenantUsers)
+      .where(inArray(tenantUsers.tenantId, ids))
+      .orderBy(tenantUsers.tenantId, desc(tenantUsers.syncedAt)),
   ]);
 
-  const rows = await Promise.all(
-    ctx.workspaces.map(async (ws) => {
-      const tenant = tenantRows.find((t) => t.id === ws.id);
-      // CSV/scan trials never get syncRuns rows; show their import date.
-      const isTrial = !tenant?.consentedAt && !ws.isDemo;
-      const [latest, lastRun, importedUser] = await Promise.all([
-        db.query.snapshots.findFirst({
-          where: eq(snapshots.tenantId, ws.id),
-          orderBy: desc(snapshots.day),
-        }),
-        db.query.syncRuns.findFirst({
-          where: eq(syncRuns.tenantId, ws.id),
-          orderBy: desc(syncRuns.startedAt),
-        }),
-        isTrial
-          ? db.query.tenantUsers.findFirst({
-              where: eq(tenantUsers.tenantId, ws.id),
-              orderBy: desc(tenantUsers.syncedAt),
-            })
-          : Promise.resolve(undefined),
-      ]);
-      const importedAt = importedUser?.syncedAt ?? null;
-      return {
-        ws,
-        currency: tenant?.currency ?? "EUR",
-        snapshot: latest,
-        sync:
-          lastRun?.status === "failed" ? (
-            <span className="text-danger-text">failed</span>
-          ) : isTrial ? (
-            importedAt ? `imported ${fmtDate(importedAt)}` : "-"
-          ) : (
-            fmtAgo(lastRun?.finishedAt ?? null)
-          ),
-        openFindings: findingCounts.find((c) => c.tenantId === ws.id)?.n ?? 0,
-      };
-    }),
-  );
+  const tenantById = new Map(tenantRows.map((t) => [t.id, t]));
+  const findingsById = new Map(findingCounts.map((c) => [c.tenantId, c.n]));
+  const snapById = new Map(snaps.map((s) => [s.tenantId, s]));
+  const runById = new Map(runs.map((r) => [r.tenantId, r]));
+  const importById = new Map(imports.map((i) => [i.tenantId, i.syncedAt]));
+
+  const rows = ctx.workspaces.map((ws) => {
+    const tenant = tenantById.get(ws.id);
+    // CSV/scan trials never get syncRuns rows; show their import date.
+    const isTrial = !tenant?.consentedAt && !ws.isDemo;
+    const lastRun = runById.get(ws.id);
+    const importedAt = isTrial ? (importById.get(ws.id) ?? null) : null;
+    const syncFailed = lastRun?.status === "failed";
+    // Plain data, not JSX, so the row stays serializable; the cell decides tone.
+    const syncText = syncFailed
+      ? "failed"
+      : isTrial
+        ? importedAt
+          ? `imported ${fmtDate(importedAt)}`
+          : "-"
+        : fmtAgo(lastRun?.finishedAt ?? null);
+    return {
+      ws,
+      currency: tenant?.currency ?? "EUR",
+      snapshot: snapById.get(ws.id),
+      isTrial,
+      syncFailed,
+      syncText,
+      openFindings: findingsById.get(ws.id) ?? 0,
+    };
+  });
 
   const sorted = rows.sort(
-    (a, b) =>
-      (b.snapshot?.totalMonthlyWasteCents ?? 0) -
-      (a.snapshot?.totalMonthlyWasteCents ?? 0),
+    (a, b) => (b.snapshot?.wasteCents ?? 0) - (a.snapshot?.wasteCents ?? 0),
   );
+
+  // Portfolio totals: finding counts are currency-agnostic; spend/waste only add
+  // up when every workspace with data shares one currency.
+  const withSnap = sorted.filter((r) => r.snapshot);
+  const currencies = new Set(withSnap.map((r) => r.currency));
+  const portfolioCurrency =
+    currencies.size === 1 ? [...currencies][0]! : null;
+  const totals = withSnap.reduce(
+    (acc, r) => ({
+      spendCents: acc.spendCents + (r.snapshot?.spendCents ?? 0),
+      wasteCents: acc.wasteCents + (r.snapshot?.wasteCents ?? 0),
+    }),
+    { spendCents: 0, wasteCents: 0 },
+  );
+  const totalFindings = rows.reduce((s, r) => s + r.openFindings, 0);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -98,30 +134,116 @@ export default async function PortfolioPage() {
         </p>
       </header>
 
+      {withSnap.length > 0 && (
+        <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              label: "Monthly spend",
+              value: portfolioCurrency
+                ? fmtMoney(totals.spendCents, portfolioCurrency)
+                : "Mixed currencies",
+            },
+            {
+              label: "Monthly waste",
+              value: portfolioCurrency
+                ? fmtMoney(totals.wasteCents, portfolioCurrency)
+                : "Mixed currencies",
+              waste: true,
+            },
+            { label: "Open findings", value: fmtNumber(totalFindings) },
+          ].map((c) => (
+            <div key={c.label} className="bg-card p-5">
+              <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+                {c.label}
+              </div>
+              <div
+                className={`tnum mt-2 font-display text-2xl tracking-tight ${
+                  c.waste ? "text-waste-text" : ""
+                }`}
+              >
+                {c.value}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* Desktop table */}
       <div className="rise rise-2 mt-8 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
         <table className="w-full text-sm">
+          <caption className="sr-only">
+            Workspaces you can open with seats, spend, waste, open findings and
+            sync status.
+          </caption>
           <thead>
             <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-              <th className="px-4 py-3 font-medium">Workspace</th>
-              <th className="px-4 py-3 text-right font-medium">Seats</th>
-              <th className="px-4 py-3 text-right font-medium">Spend / mo</th>
-              <th className="px-4 py-3 text-right font-medium">Waste / mo</th>
-              <th className="px-4 py-3 text-right font-medium">Findings</th>
-              <th className="px-4 py-3 font-medium">Last sync</th>
-              <th className="px-4 py-3 text-right font-medium" aria-label="Open" />
+              <th scope="col" className="px-4 py-3 font-medium">Workspace</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Seats</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Spend / mo</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Waste / mo</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Findings</th>
+              <th scope="col" className="px-4 py-3 font-medium">Last sync</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium" aria-label="Open" />
             </tr>
           </thead>
           <tbody>
-            {sorted.map(({ ws, currency, snapshot, sync, openFindings }) => (
-              <tr
-                key={ws.id}
-                className="border-b border-line last:border-b-0 hover:bg-canvas"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
+            {sorted.map(
+              ({ ws, currency, snapshot, isTrial, syncFailed, syncText, openFindings }) => (
+                <tr
+                  key={ws.id}
+                  className="border-b border-line last:border-b-0 hover:bg-canvas"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{ws.name}</span>
+                      {ws.isDemo && <Pill tone="slate">demo</Pill>}
+                      {isTrial && <Pill tone="gold">trial</Pill>}
+                      {ws.id === ctx.tenant.id && (
+                        <span className="text-xs text-ink-faint">(current)</span>
+                      )}
+                    </div>
+                    <div className="text-[11px] tracking-wider text-ink-faint uppercase">
+                      {ws.role}
+                    </div>
+                  </td>
+                  <td className="tnum px-4 py-3 text-right font-mono">
+                    {snapshot ? fmtNumber(snapshot.seats, currency) : "-"}
+                  </td>
+                  <td className="tnum px-4 py-3 text-right font-mono">
+                    {snapshot ? fmtMoney(snapshot.spendCents, currency) : "-"}
+                  </td>
+                  <td className="tnum px-4 py-3 text-right font-mono font-medium text-waste-text">
+                    {snapshot ? fmtMoney(snapshot.wasteCents, currency) : "-"}
+                  </td>
+                  <td className="tnum px-4 py-3 text-right font-mono">
+                    {fmtNumber(openFindings)}
+                  </td>
+                  <td
+                    className={`px-4 py-3 ${syncFailed ? "text-danger-text" : "text-ink-soft"}`}
+                  >
+                    {syncText}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
+                  </td>
+                </tr>
+              ),
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile stacked cards */}
+      <ul className="rise rise-2 mt-8 mb-8 flex flex-col gap-3 md:hidden">
+        {sorted.map(
+          ({ ws, currency, snapshot, isTrial, syncFailed, syncText, openFindings }) => (
+            <li key={ws.id} className="border border-line bg-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{ws.name}</span>
                     {ws.isDemo && <Pill tone="slate">demo</Pill>}
+                    {isTrial && <Pill tone="gold">trial</Pill>}
                     {ws.id === ctx.tenant.id && (
                       <span className="text-xs text-ink-faint">(current)</span>
                     )}
@@ -129,80 +251,40 @@ export default async function PortfolioPage() {
                   <div className="text-[11px] tracking-wider text-ink-faint uppercase">
                     {ws.role}
                   </div>
-                </td>
-                <td className="tnum px-4 py-3 text-right font-mono">
-                  {snapshot ? fmtNumber(snapshot.assignedSeats, currency) : "-"}
-                </td>
-                <td className="tnum px-4 py-3 text-right font-mono">
-                  {snapshot
-                    ? fmtMoney(snapshot.totalMonthlySpendCents, currency)
-                    : "-"}
-                </td>
-                <td className="tnum px-4 py-3 text-right font-mono font-medium text-waste-text">
-                  {snapshot
-                    ? fmtMoney(snapshot.totalMonthlyWasteCents, currency)
-                    : "-"}
-                </td>
-                <td className="tnum px-4 py-3 text-right font-mono">
-                  {fmtNumber(openFindings, currency)}
-                </td>
-                <td className="px-4 py-3 text-ink-soft">{sync}</td>
-                <td className="px-4 py-3 text-right">
-                  <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile stacked cards */}
-      <ul className="rise rise-2 mt-8 mb-8 flex flex-col gap-3 md:hidden">
-        {sorted.map(({ ws, currency, snapshot, sync, openFindings }) => (
-          <li key={ws.id} className="border border-line bg-card p-4">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{ws.name}</span>
-                  {ws.isDemo && <Pill tone="slate">demo</Pill>}
-                  {ws.id === ctx.tenant.id && (
-                    <span className="text-xs text-ink-faint">(current)</span>
-                  )}
                 </div>
-                <div className="text-[11px] tracking-wider text-ink-faint uppercase">
-                  {ws.role}
+                <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
+              </div>
+              <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Seats</dt>
+                  <dd>{snapshot ? fmtNumber(snapshot.seats, currency) : "-"}</dd>
                 </div>
-              </div>
-              <OpenWorkspaceButton tenantId={ws.id} name={ws.name} />
-            </div>
-            <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
-              <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs text-ink-faint">Waste/mo</dt>
-                <dd className="font-medium text-waste-text">
-                  {snapshot
-                    ? fmtMoney(snapshot.totalMonthlyWasteCents, currency)
-                    : "-"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
-                <dd>
-                  {snapshot
-                    ? fmtMoney(snapshot.totalMonthlySpendCents, currency)
-                    : "-"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs text-ink-faint">Findings</dt>
-                <dd>{fmtNumber(openFindings, currency)}</dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs text-ink-faint">Last sync</dt>
-                <dd className="font-sans">{sync}</dd>
-              </div>
-            </dl>
-          </li>
-        ))}
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Findings</dt>
+                  <dd>{fmtNumber(openFindings)}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                  <dd>{snapshot ? fmtMoney(snapshot.spendCents, currency) : "-"}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Waste/mo</dt>
+                  <dd className="font-medium text-waste-text">
+                    {snapshot ? fmtMoney(snapshot.wasteCents, currency) : "-"}
+                  </dd>
+                </div>
+                <div className="col-span-2 flex justify-between gap-2">
+                  <dt className="font-sans text-xs text-ink-faint">Last sync</dt>
+                  <dd
+                    className={`font-sans ${syncFailed ? "text-danger-text" : ""}`}
+                  >
+                    {syncText}
+                  </dd>
+                </div>
+              </dl>
+            </li>
+          ),
+        )}
       </ul>
     </div>
   );
