@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CircleCheck, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { EmptyState } from "~/components/workspace/EmptyState";
 import { FindingChip } from "~/components/workspace/FindingChip";
@@ -13,7 +14,31 @@ import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { findings, priceBook, tenantUsers } from "~/server/db/schema";
 
-export const metadata: Metadata = { title: "User detail" };
+/**
+ * Access check + tenant-scoped user lookup, memoized for the request so
+ * generateMetadata and the page share one auth resolution and one query
+ * (React cache dedupes within a single render pass).
+ */
+const loadUser = cache(async (id: string) => {
+  const ctx = await requireAccess("viewer");
+  const user = await db.query.tenantUsers.findFirst({
+    where: and(
+      eq(tenantUsers.tenantId, ctx.tenant.id),
+      eq(tenantUsers.graphId, id),
+    ),
+  });
+  return { ctx, user };
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const { user } = await loadUser(id);
+  return { title: user ? (user.displayName ?? user.upn) : "User detail" };
+}
 
 const ACTIVITY_LABELS: Record<string, string> = {
   exchange: "Exchange",
@@ -28,15 +53,8 @@ export default async function UserDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const ctx = await requireAccess("viewer");
   const { id } = await params;
-
-  const user = await db.query.tenantUsers.findFirst({
-    where: and(
-      eq(tenantUsers.tenantId, ctx.tenant.id),
-      eq(tenantUsers.graphId, id),
-    ),
-  });
+  const { ctx, user } = await loadUser(id);
   if (!user) notFound();
 
   // Only price the SKUs this user actually holds, rather than loading the whole
