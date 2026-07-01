@@ -6,6 +6,7 @@ import type { PillTone } from "~/components/ui";
 import { MspBillingActions } from "~/components/workspace/MspBillingActions";
 import { MspCreateForm } from "~/components/workspace/MspCreateForm";
 import { MspPortfolioActions } from "~/components/workspace/MspPortfolioActions";
+import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
 import { fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import {
   MSP_LARGE_TENANT_SEATS,
@@ -57,9 +58,6 @@ const MANAGEABLE: ReadonlySet<SubscriptionStatus> = new Set([
   "past_due",
 ]);
 
-/** German thousands separators, whole euros, matching the rest of the site. */
-const fmtEuros = (n: number): string => new Intl.NumberFormat("de-DE").format(n);
-
 const LARGE_TENANT_LABEL = fmtNumber(MSP_LARGE_TENANT_SEATS, "EUR");
 
 export default async function MspPage({
@@ -74,11 +72,13 @@ export default async function MspPage({
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
         <header className="rise rise-1">
-          <h1 className="font-display text-3xl tracking-tight">MSP portfolio</h1>
+          <h1 className="font-display text-3xl tracking-tight">
+            MSP portfolio
+          </h1>
         </header>
         <div className="rise rise-2">
           <Card title="Not available">
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               MSP billing is not configured on this deployment, so portfolio
               accounts cannot be created here. If you expected it, contact the
               person who runs this deployment.
@@ -88,21 +88,45 @@ export default async function MspPage({
       </div>
     );
   }
+  // The demo session can't own an MSP account (createMspAccount rejects demo
+  // identities), so don't show a create form that would only fail server-side.
+  const ctx = await requireAccess("viewer");
+  if (ctx.tenant.isDemo) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">
+            MSP portfolio
+          </h1>
+        </header>
+        <div className="rise rise-2">
+          <Card title="Not available in the demo">
+            <p className="text-ink-soft text-sm">
+              MSP portfolios bind real client tenants you own onto one
+              subscription. Sign in to a real workspace to create one.
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
   // MSP ownership itself is identity-based and cross-tenant, but creating or
   // billing an account from here requires a workspace owner (matching the
   // billing page); the server actions re-verify.
-  const ctx = await requireAccess("viewer");
   const isOwner = hasRole(ctx, "owner");
   const account = await currentMspAccount();
   const sp = await searchParams;
-  const checkoutParam = typeof sp.checkout === "string" ? sp.checkout : undefined;
+  const checkoutParam =
+    typeof sp.checkout === "string" ? sp.checkout : undefined;
 
   if (!account) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
         <header className="rise rise-1">
-          <h1 className="font-display text-3xl tracking-tight">MSP portfolio</h1>
-          <p className="mt-1 text-sm text-ink-soft">
+          <h1 className="font-display text-3xl tracking-tight">
+            MSP portfolio
+          </h1>
+          <p className="text-ink-soft mt-1 text-sm">
             One workspace per client tenant. One waste ledger across them all.
           </p>
         </header>
@@ -110,21 +134,22 @@ export default async function MspPage({
         <div className="rise rise-2">
           <Card title="Create your MSP account">
             <div className="flex flex-col gap-4">
-              <p className="text-sm leading-relaxed text-ink-soft">
+              <p className="text-ink-soft text-sm leading-relaxed">
                 An MSP account binds the client workspaces you own into a single
                 portfolio, billed by quantity on one subscription. You attach a
                 client tenant and it inherits entitlement from the account —{" "}
-                <span className="font-medium text-ink">
-                  € {fmtEuros(MSP_PRICE_EUR)}
+                <span className="text-ink font-medium">
+                  € {fmtNumber(MSP_PRICE_EUR, "EUR")}
                 </span>{" "}
                 per attached client tenant a month, or €{" "}
-                {fmtEuros(MSP_PRICE_ANNUAL_EUR)} a year (two months free). Client
-                tenants over {LARGE_TENANT_LABEL} seats are priced separately.
+                {fmtNumber(MSP_PRICE_ANNUAL_EUR, "EUR")} a year (two months
+                free). Client tenants over {LARGE_TENANT_LABEL} seats are priced
+                separately.
               </p>
               {isOwner ? (
                 <MspCreateForm action={createMspAccount} />
               ) : (
-                <p className="text-sm text-ink-soft">
+                <p className="text-ink-soft text-sm">
                   Creating an MSP account requires a workspace owner.
                 </p>
               )}
@@ -144,20 +169,35 @@ export default async function MspPage({
     return (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1);
   });
 
+  // Portfolio QBR totals across attached tenants. Spend/waste only add up within
+  // one currency, so they're shown only when every attached tenant shares one;
+  // finding counts are currency-agnostic and always summed.
+  const attachedRows = rows.filter((r) => r.attached && r.summary);
+  const attachedCurrencies = new Set(attachedRows.map((r) => r.currency));
+  const portfolioCurrency =
+    attachedCurrencies.size === 1 ? [...attachedCurrencies][0]! : null;
+  const portfolioTotals = attachedRows.reduce(
+    (acc, r) => ({
+      spendCents: acc.spendCents + (r.summary?.spendCents ?? 0),
+      wasteCents: acc.wasteCents + (r.summary?.wasteCents ?? 0),
+      openFindings: acc.openFindings + (r.summary?.openFindings ?? 0),
+    }),
+    { spendCents: 0, wasteCents: 0, openFindings: 0 },
+  );
+
   const status = account.subscriptionStatus;
   const subscribed = Boolean(account.stripeSubscriptionId);
   const manageable = subscribed && status !== null && MANAGEABLE.has(status);
   const attachedCount = rows.filter((r) => r.attached).length;
   const interval = account.interval;
-  const unitPrice =
-    interval === "year" ? MSP_PRICE_ANNUAL_EUR : MSP_PRICE_EUR;
+  const unitPrice = interval === "year" ? MSP_PRICE_ANNUAL_EUR : MSP_PRICE_EUR;
   const intervalSuffix = interval === "year" ? "yr" : "mo";
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <header className="rise rise-1">
         <h1 className="font-display text-3xl tracking-tight">MSP portfolio</h1>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="text-ink-soft mt-1 text-sm">
           {account.name ??
             "Every client tenant you own, billed on one subscription."}
         </p>
@@ -176,7 +216,7 @@ export default async function MspPage({
                     {interval && (
                       <span className="text-sm">
                         <span className="font-medium">
-                          € {fmtEuros(unitPrice)}
+                          € {fmtNumber(unitPrice, "EUR")}
                         </span>{" "}
                         <span className="text-ink-soft">
                           / tenant / {intervalSuffix}
@@ -188,22 +228,22 @@ export default async function MspPage({
                   <Pill tone="slate">Not subscribed yet</Pill>
                 )}
               </div>
-              <p className="text-sm text-ink-soft">
+              <p className="text-ink-soft text-sm">
                 {attachedCount === 1
                   ? "1 attached tenant"
                   : `${attachedCount} attached tenants`}{" "}
                 {subscribed ? "billed on this subscription." : "ready to bill."}
               </p>
               {account.cancelAtPeriodEnd && account.currentPeriodEnd ? (
-                <p className="text-sm text-ink-soft">
+                <p className="text-ink-soft text-sm">
                   Cancels on {fmtDate(account.currentPeriodEnd)}
                 </p>
               ) : status === "trialing" && account.currentPeriodEnd ? (
-                <p className="text-sm text-ink-soft">
+                <p className="text-ink-soft text-sm">
                   Free trial — first charge {fmtDate(account.currentPeriodEnd)}
                 </p>
               ) : subscribed && account.currentPeriodEnd ? (
-                <p className="text-sm text-ink-soft">
+                <p className="text-ink-soft text-sm">
                   Renews on {fmtDate(account.currentPeriodEnd)}
                 </p>
               ) : null}
@@ -214,7 +254,7 @@ export default async function MspPage({
                 checkoutParam={checkoutParam}
               />
             ) : (
-              <p className="text-sm text-ink-soft">
+              <p className="text-ink-soft text-sm">
                 Billing is managed by a workspace owner.
               </p>
             )}
@@ -222,31 +262,95 @@ export default async function MspPage({
         </Card>
       </div>
 
+      {attachedRows.length > 0 && (
+        <section className="rise rise-3 border-line bg-line grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              label: "Attached tenants",
+              value: fmtNumber(attachedRows.length, "EUR"),
+            },
+            {
+              label: "Open findings",
+              value: fmtNumber(portfolioTotals.openFindings, "EUR"),
+            },
+            {
+              label: "Monthly spend",
+              value: portfolioCurrency
+                ? fmtMoney(portfolioTotals.spendCents, portfolioCurrency)
+                : "Mixed currencies",
+            },
+            {
+              label: "Monthly waste",
+              value: portfolioCurrency
+                ? fmtMoney(portfolioTotals.wasteCents, portfolioCurrency)
+                : "Mixed currencies",
+              waste: true,
+            },
+          ].map((c) => (
+            <div key={c.label} className="bg-card p-5">
+              <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
+                {c.label}
+              </div>
+              <div
+                className={`tnum font-display mt-2 text-2xl tracking-tight ${
+                  c.waste ? "text-waste-text" : ""
+                }`}
+              >
+                {c.value}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       <div className="rise rise-3">
         <Card title="Portfolio">
           {rows.length === 0 ? (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               You don&rsquo;t own any client workspaces yet. Connect a client
               tenant, then attach it here to bill it on this account.
             </p>
           ) : (
-            <div className="-mx-5 -my-4 overflow-x-auto">
+            <div className="-mx-5 -my-4 hidden overflow-x-auto md:block">
               <table className="w-full text-sm">
+                <caption className="sr-only">
+                  Client workspaces in this portfolio with seats, spend, waste
+                  and open findings.
+                </caption>
                 <thead>
-                  <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-                    <th className="px-5 py-3 font-medium">Workspace</th>
-                    <th className="px-4 py-3 text-right font-medium">Seats</th>
-                    <th className="px-4 py-3 text-right font-medium">
+                  <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
+                    <th scope="col" className="px-5 py-3 font-medium">
+                      Workspace
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right font-medium"
+                    >
+                      Seats
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right font-medium"
+                    >
                       Spend / mo
                     </th>
-                    <th className="px-4 py-3 text-right font-medium">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right font-medium"
+                    >
                       Waste / mo
                     </th>
-                    <th className="px-4 py-3 text-right font-medium">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right font-medium"
+                    >
                       Findings
                     </th>
-                    <th className="px-5 py-3 text-right font-medium">
-                      <span className="sr-only">Action</span>
+                    <th
+                      scope="col"
+                      className="px-5 py-3 text-right font-medium"
+                    >
+                      <span className="sr-only">Actions</span>
                     </th>
                   </tr>
                 </thead>
@@ -257,43 +361,49 @@ export default async function MspPage({
                     return (
                       <tr
                         key={row.tenantId}
-                        className="border-b border-line last:border-b-0"
+                        className="border-line border-b last:border-b-0"
                       >
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{row.name}</span>
-                            {row.attached && (
-                              <Pill tone="brand">Attached</Pill>
-                            )}
+                            {row.attached && <Pill tone="brand">Attached</Pill>}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right tnum">
+                        <td className="tnum px-4 py-3 text-right font-mono">
                           {row.hasSync
                             ? fmtNumber(row.seats, row.currency)
                             : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right tnum">
+                        <td className="tnum px-4 py-3 text-right font-mono">
                           {row.summary
                             ? fmtMoney(row.summary.spendCents, row.currency)
                             : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right tnum text-waste-text">
+                        <td className="tnum text-waste-text px-4 py-3 text-right font-mono">
                           {row.summary
                             ? fmtMoney(row.summary.wasteCents, row.currency)
                             : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right tnum">
-                          {row.summary ? row.summary.openFindings : "-"}
+                        <td className="tnum px-4 py-3 text-right font-mono">
+                          {row.summary
+                            ? fmtNumber(row.summary.openFindings, row.currency)
+                            : "-"}
                         </td>
-                        <td className="px-5 py-3 text-right">
-                          <MspPortfolioActions
-                            tenantId={row.tenantId}
-                            attached={row.attached}
-                            blocked={blocked}
-                            blockedReason={`Over ${LARGE_TENANT_LABEL} seats - priced separately, contact us`}
-                            attachAction={attachWorkspace}
-                            detachAction={detachWorkspace}
-                          />
+                        <td className="px-5 py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <OpenWorkspaceButton
+                              tenantId={row.tenantId}
+                              name={row.name}
+                            />
+                            <MspPortfolioActions
+                              tenantId={row.tenantId}
+                              attached={row.attached}
+                              blocked={blocked}
+                              blockedReason={`Over ${LARGE_TENANT_LABEL} seats - priced separately, contact us`}
+                              attachAction={attachWorkspace}
+                              detachAction={detachWorkspace}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -301,6 +411,82 @@ export default async function MspPage({
                 </tbody>
               </table>
             </div>
+          )}
+
+          {rows.length > 0 && (
+            <ul className="-mx-1 mt-1 flex flex-col gap-3 md:hidden">
+              {rows.map((row) => {
+                const blocked =
+                  row.hasSync && row.seats > MSP_LARGE_TENANT_SEATS;
+                return (
+                  <li
+                    key={row.tenantId}
+                    className="border-line bg-card border p-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{row.name}</span>
+                      {row.attached && <Pill tone="brand">Attached</Pill>}
+                    </div>
+                    <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-ink-faint font-sans text-xs">
+                          Seats
+                        </dt>
+                        <dd>
+                          {row.hasSync
+                            ? fmtNumber(row.seats, row.currency)
+                            : "-"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-ink-faint font-sans text-xs">
+                          Findings
+                        </dt>
+                        <dd>
+                          {row.summary
+                            ? fmtNumber(row.summary.openFindings, row.currency)
+                            : "-"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-ink-faint font-sans text-xs">
+                          Spend/mo
+                        </dt>
+                        <dd>
+                          {row.summary
+                            ? fmtMoney(row.summary.spendCents, row.currency)
+                            : "-"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-ink-faint font-sans text-xs">
+                          Waste/mo
+                        </dt>
+                        <dd className="text-waste-text">
+                          {row.summary
+                            ? fmtMoney(row.summary.wasteCents, row.currency)
+                            : "-"}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="border-line mt-3 flex items-center justify-end gap-2 border-t pt-3">
+                      <OpenWorkspaceButton
+                        tenantId={row.tenantId}
+                        name={row.name}
+                      />
+                      <MspPortfolioActions
+                        tenantId={row.tenantId}
+                        attached={row.attached}
+                        blocked={blocked}
+                        blockedReason={`Over ${LARGE_TENANT_LABEL} seats - priced separately, contact us`}
+                        attachAction={attachWorkspace}
+                        detachAction={detachWorkspace}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </Card>
       </div>

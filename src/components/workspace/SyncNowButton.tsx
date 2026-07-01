@@ -24,6 +24,7 @@ export const SyncNowButton = () => {
       <Button
         variant="secondary"
         disabled={pending}
+        title="Runs a full workspace sync across every connected service, not just this one."
         onClick={() =>
           startTransition(async () => {
             setError(null);

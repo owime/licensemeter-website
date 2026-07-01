@@ -40,10 +40,13 @@ export const FindingsBulkForm = ({
   action,
   showBar,
   children,
+  className = "rise rise-3 mt-5 mb-8 hidden md:block",
 }: {
   action: (formData: FormData) => Promise<ActionResult>;
   showBar: boolean;
   children: React.ReactNode;
+  /** Visibility/spacing wrapper; defaults to the desktop-only table form. */
+  className?: string;
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [{ count, total }, setSelection] = useState({ count: 0, total: 0 });
@@ -77,7 +80,7 @@ export const FindingsBulkForm = ({
         ref={formRef}
         action={formAction}
         onChange={recount}
-        className="rise rise-3 mt-5 mb-8 hidden md:block"
+        className={className}
       >
         {showBar && (
           <div className="mb-2 flex items-center justify-end gap-3">

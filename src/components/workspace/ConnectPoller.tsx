@@ -15,8 +15,11 @@ const POLL_INTERVAL_MS = 2500;
    otherwise poll forever. */
 const MAX_TICKS = Math.floor((3 * 60 * 1000) / POLL_INTERVAL_MS);
 
-/** Polls sync status after admin consent until the first sync lands. */
-export const ConnectPoller = () => {
+/** Polls sync status after admin consent until the first sync lands. The
+ * destination defaults to the dashboard (the Microsoft onboarding flow wants
+ * the user to land on their results); connector settings pages pass their own
+ * route so the admin stays in context after adding a connector. */
+export const ConnectPoller = ({ redirectTo = "/app" }: { redirectTo?: string }) => {
   const [run, setRun] = useState<RunInfo>(null);
   const [tick, setTick] = useState(0);
   const expired = tick >= MAX_TICKS;
@@ -31,7 +34,7 @@ export const ConnectPoller = () => {
         if (cancelled) return;
         setRun(body.run);
         if (body.run?.status === "success" || body.run?.status === "partial") {
-          window.location.href = "/app";
+          window.location.href = redirectTo;
         }
       } catch {
         // transient network error; keep polling
@@ -41,7 +44,7 @@ export const ConnectPoller = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [redirectTo]);
 
   useEffect(() => {
     if (expired) return;
@@ -57,11 +60,11 @@ export const ConnectPoller = () => {
         if (!body) return;
         setRun(body.run);
         if (body.run?.status === "success" || body.run?.status === "partial") {
-          window.location.href = "/app";
+          window.location.href = redirectTo;
         }
       })
       .catch(() => undefined);
-  }, [tick]);
+  }, [tick, redirectTo]);
 
   /* One persistent live region from first render; its content swaps between
      the running line and the failure box so the change is announced. */

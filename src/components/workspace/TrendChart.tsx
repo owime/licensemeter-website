@@ -42,7 +42,21 @@ export const TrendChart = ({
   points: TrendPoint[];
   currency: string;
 }) => {
-  if (points.length < 3) return null;
+  // A line needs at least three daily snapshots to be meaningful. Rather than
+  // vanish on a fresh workspace, show a short placeholder so the section stays
+  // visible and sets the expectation that trends fill in over time.
+  if (points.length < 3) {
+    return (
+      <section className="rise rise-3 mt-10">
+        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          Trend
+        </h2>
+        <div className="mt-3 border border-dashed border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
+          Spend and waste trends appear here after a few daily syncs.
+        </div>
+      </section>
+    );
+  }
 
   const max = Math.max(...points.map((p) => p.spendCents), 1);
   const spendPath = buildPath(points, (p) => p.spendCents, max);

@@ -1,12 +1,15 @@
 import Link from "next/link";
 
-import { requireSession } from "~/server/access";
+import { getAccessContext, requireSession } from "~/server/access";
 import { CsvTrialForm } from "./CsvTrialForm";
 
 export const metadata = {
   title: "CSV trial",
   robots: { index: false, follow: false },
 };
+// The submit action parses, bulk-writes and runs the rules engine before
+// redirecting; give it the same budget as the other sync paths.
+export const maxDuration = 300;
 
 /**
  * Zero-consent entry point: any signed-in user turns two admin-center exports
@@ -16,6 +19,10 @@ export const metadata = {
  */
 export default async function CsvTrialPage() {
   const session = await requireSession();
+  // Users without a workspace can't reach /app/settings/* (it bounces to
+  // /app/connect); point them there instead so the link doesn't dead-end.
+  const ctx = await getAccessContext();
+  const connectHref = ctx ? "/app/settings/microsoft" : "/app/connect";
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
@@ -52,7 +59,7 @@ export default async function CsvTrialPage() {
       <p className="mt-8 text-xs text-ink-faint">
         Have consent rights?{" "}
         <Link
-          href="/app/settings/microsoft"
+          href={connectHref}
           className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
         >
           Connect the read-only sync instead

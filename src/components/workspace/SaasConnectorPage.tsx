@@ -60,6 +60,28 @@ export const SaasConnectorPage = async ({
      when the spec actually collects one. */
   const showOrgRef = spec.fields.some((f) => f.name === "orgRef");
 
+  // An import connector "exists" once seats are imported; an API connector once
+  // a credentials row exists. Used so a previously-connected service stays
+  // manageable even if Microsoft was later disconnected.
+  const hasConnector = spec.kind === "import" ? seatCount > 0 : Boolean(conn);
+  const microsoftDisconnected = !ctx.tenant.isDemo && ctx.tenant.consentedAt === null;
+
+  // Shown above an existing connection when Microsoft is gone: the connector
+  // can no longer cross-check seats or sync until the tenant is reconnected.
+  const reconnectNotice = microsoftDisconnected ? (
+    <p className="border border-gold-soft bg-gold-soft/40 p-3 text-xs text-gold-text">
+      Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
+      seats against your directory or run new syncs.{" "}
+      <Link
+        href="/app/settings/microsoft"
+        className="underline underline-offset-4 hover:text-ink"
+      >
+        Reconnect Microsoft
+      </Link>{" "}
+      to resume.
+    </p>
+  ) : null;
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
       <header className="rise rise-1">
@@ -79,7 +101,8 @@ export const SaasConnectorPage = async ({
             className="underline-offset-4 hover:text-ink hover:underline"
           >
             Connectors
-          </Link>
+          </Link>{" "}
+          / <span aria-current="page" className="text-ink-soft">{spec.label}</span>
         </nav>
         <h1 className="mt-2 font-display text-3xl tracking-tight">
           {spec.label} connector
@@ -96,10 +119,12 @@ export const SaasConnectorPage = async ({
                 ? `On a real workspace an admin pastes the member export from ${spec.label} here.`
                 : `On a real workspace this uses credentials your ${spec.label} admin creates.`}
             </p>
-          ) : ctx.tenant.consentedAt === null ? (
-            /* CSV-trial workspace: a connector can never sync without the
-               Microsoft connection, so don't collect credentials that would
-               sit idle. */
+          ) : microsoftDisconnected && !hasConnector ? (
+            /* CSV-trial / disconnected workspace with nothing imported yet: a
+               connector can never sync without the Microsoft connection, so
+               don't collect credentials that would sit idle. An existing
+               connector falls through to its normal card with a reconnect
+               notice instead, so it stays manageable. */
             <p className="text-sm text-ink-soft">
               Connectors cross-check seats against your Microsoft 365
               directory, so{" "}
@@ -113,6 +138,7 @@ export const SaasConnectorPage = async ({
             </p>
           ) : spec.kind === "import" ? (
             <div className="flex flex-col gap-3">
+              {reconnectNotice}
               {seatCount > 0 ? (
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="text-sm">
@@ -137,6 +163,7 @@ export const SaasConnectorPage = async ({
             </div>
           ) : conn ? (
             <div className="flex flex-col gap-4">
+              {reconnectNotice}
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm">
                   <div className="font-medium">
@@ -163,14 +190,30 @@ export const SaasConnectorPage = async ({
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-3">
-                    <SyncNowButton />
+                    {!microsoftDisconnected && <SyncNowButton />}
                     <SaasDisconnectButton spec={spec} />
                   </div>
                 )}
               </div>
+              {/* Rotate credentials without a destructive disconnect: the
+                  connect action upserts the row, so resubmitting replaces the
+                  stored secret in place. */}
+              {isAdmin && !microsoftDisconnected && (
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline">
+                    Update credentials
+                  </summary>
+                  <div className="mt-3">
+                    <SaasConnectForm spec={spec} />
+                  </div>
+                </details>
+              )}
               {/* First sync hasn't landed yet: poll until it does, matching the
-                  Microsoft connector's post-connect experience. */}
-              {!conn.lastSyncAt && <ConnectPoller />}
+                  Microsoft connector's post-connect experience. Stay on this
+                  settings page rather than bouncing to the dashboard. */}
+              {!conn.lastSyncAt && !microsoftDisconnected && (
+                <ConnectPoller redirectTo={`/app/settings/${provider}`} />
+              )}
             </div>
           ) : isAdmin ? (
             <div className="flex flex-col gap-3">

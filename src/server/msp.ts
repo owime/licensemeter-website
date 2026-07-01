@@ -197,57 +197,40 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
       .map((r) => r.tenant.id),
   );
 
-  // Summaries only for attached workspaces (the QBR numbers the table shows for
-  // billed clients). Latest snapshot per tenant + open/acknowledged finding
-  // counts, both set-based.
-  const attachedList = [...attachedIds];
-  const [snaps, findingCounts] =
-    attachedList.length > 0
-      ? await Promise.all([
-          // Latest snapshot per attached tenant: distinct-on the most recent day.
-          db
-            .selectDistinctOn([snapshots.tenantId], {
-              tenantId: snapshots.tenantId,
-              spendCents: snapshots.totalMonthlySpendCents,
-              wasteCents: snapshots.totalMonthlyWasteCents,
-              purchasedSeats: snapshots.purchasedSeats,
-            })
-            .from(snapshots)
-            .where(inArray(snapshots.tenantId, attachedList))
-            .orderBy(snapshots.tenantId, desc(snapshots.day)),
-          db
-            .select({
-              tenantId: findings.tenantId,
-              n: sql<number>`count(*)::int`,
-            })
-            .from(findings)
-            .where(
-              and(
-                inArray(findings.tenantId, attachedList),
-                inArray(findings.status, ["open", "acknowledged"]),
-              ),
-            )
-            .groupBy(findings.tenantId),
-        ])
-      : [[], []];
+  // Latest snapshot + open/acknowledged finding counts per owned tenant
+  // (attached or not), both set-based. Unattached rows surface their numbers
+  // too, so an MSP can see what a client costs before deciding to attach it.
+  const [snaps, findingCounts] = await Promise.all([
+    db
+      .selectDistinctOn([snapshots.tenantId], {
+        tenantId: snapshots.tenantId,
+        spendCents: snapshots.totalMonthlySpendCents,
+        wasteCents: snapshots.totalMonthlyWasteCents,
+        purchasedSeats: snapshots.purchasedSeats,
+      })
+      .from(snapshots)
+      .where(inArray(snapshots.tenantId, ids))
+      .orderBy(snapshots.tenantId, desc(snapshots.day)),
+    db
+      .select({
+        tenantId: findings.tenantId,
+        n: sql<number>`count(*)::int`,
+      })
+      .from(findings)
+      .where(
+        and(
+          inArray(findings.tenantId, ids),
+          inArray(findings.status, ["open", "acknowledged"]),
+        ),
+      )
+      .groupBy(findings.tenantId),
+  ]);
 
   const snapByTenant = new Map(snaps.map((s) => [s.tenantId, s]));
   const findingsByTenant = new Map(findingCounts.map((c) => [c.tenantId, c.n]));
-
-  // Purchased seats for the full set (attached + unattached) from the latest
-  // snapshot, so the attach guardrail and the table both read the same number
-  // without an extra per-row query.
-  const seatSnaps = await db
-    .selectDistinctOn([snapshots.tenantId], {
-      tenantId: snapshots.tenantId,
-      purchasedSeats: snapshots.purchasedSeats,
-    })
-    .from(snapshots)
-    .where(inArray(snapshots.tenantId, ids))
-    .orderBy(snapshots.tenantId, desc(snapshots.day));
-  const seatByTenant = new Map(
-    seatSnaps.map((s) => [s.tenantId, s.purchasedSeats]),
-  );
+  // Purchased seats come from the same snapshot, so the attach guardrail and the
+  // table read one number without an extra per-row query.
+  const seatByTenant = new Map(snaps.map((s) => [s.tenantId, s.purchasedSeats]));
 
   return owned
     .map((r) => {
@@ -262,16 +245,13 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
         seats: seatByTenant.get(t.id) ?? 0,
         hasSync,
         currency: t.currency,
-        summary:
-          attached && snap
-            ? {
-                spendCents: snap.spendCents,
-                wasteCents: snap.wasteCents,
-                openFindings: findingsByTenant.get(t.id) ?? 0,
-              }
-            : attached
-              ? { spendCents: 0, wasteCents: 0, openFindings: findingsByTenant.get(t.id) ?? 0 }
-              : null,
+        summary: snap
+          ? {
+              spendCents: snap.spendCents,
+              wasteCents: snap.wasteCents,
+              openFindings: findingsByTenant.get(t.id) ?? 0,
+            }
+          : null,
       };
     })
     .sort((a, b) => (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1));
