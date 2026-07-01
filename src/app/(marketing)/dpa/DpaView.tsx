@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 
 import { ButtonAnchor } from "~/components/ui";
 import {
@@ -12,10 +10,10 @@ import {
 } from "~/lib/dpa";
 
 /**
- * Renders the DPA / AVV from the single source of truth in ~/lib/dpa. The
- * language toggle switches both the on-page text and the PDF the download
- * button fetches, so the page stays statically rendered (no request-time data).
- * English is the default so the SSR HTML is the English canonical text.
+ * Renders the DPA / AVV from the single source of truth in ~/lib/dpa. Each
+ * language is a real, server-rendered URL (/dpa and /de/dpa); the language
+ * toggle links between them so crawlers see both versions, and the download
+ * button fetches the PDF matching the page language.
  */
 
 const Blocks = ({ blocks }: { blocks: DpaBlock[] }) => (
@@ -117,13 +115,7 @@ const Annex = ({ annex, label }: { annex: DpaAnnex; label: string }) => {
   );
 };
 
-const SignParty = ({
-  label,
-  lines,
-}: {
-  label: string;
-  lines: string[];
-}) => (
+const SignParty = ({ label, lines }: { label: string; lines: string[] }) => (
   <div className="border-line bg-card border p-4">
     <p className="text-ink-faint text-xs font-medium tracking-[0.14em] uppercase">
       {label}
@@ -201,16 +193,15 @@ const Doc = ({ doc }: { doc: DpaDoc }) => (
   </>
 );
 
-export const DpaView = () => {
-  const [lang, setLang] = useState<DpaLang>("en");
+export const DpaView = ({ lang }: { lang: DpaLang }) => {
   const doc = DPA[lang];
-  const langs: { id: DpaLang; label: string }[] = [
-    { id: "en", label: "English" },
-    { id: "de", label: "Deutsch" },
+  const langs: { id: DpaLang; label: string; href: string }[] = [
+    { id: "en", label: "English", href: "/dpa" },
+    { id: "de", label: "Deutsch", href: "/de/dpa" },
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
+    <main lang={lang} className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         {doc.ui.eyebrow}
       </p>
@@ -229,11 +220,10 @@ export const DpaView = () => {
           className="border-line-strong bg-card inline-flex rounded-xl border p-1"
         >
           {langs.map((l) => (
-            <button
+            <Link
               key={l.id}
-              type="button"
-              onClick={() => setLang(l.id)}
-              aria-pressed={lang === l.id}
+              href={l.href}
+              aria-current={lang === l.id ? "page" : undefined}
               className={`min-h-9 cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
                 lang === l.id
                   ? "bg-brand-strong text-white"
@@ -241,7 +231,7 @@ export const DpaView = () => {
               }`}
             >
               {l.label}
-            </button>
+            </Link>
           ))}
         </div>
         <ButtonAnchor

@@ -3,8 +3,8 @@ import type { DpaLang } from "~/lib/dpa";
 /**
  * Bilingual content for the Trust Center, mirroring the single-source-of-truth
  * pattern in ~/lib/dpa: one typed structure per language so the EN x DE
- * surfaces can never drift. English is the canonical, SSR-rendered language;
- * German is available via the in-page toggle. The subprocessor rows are NOT
+ * surfaces can never drift. Each language is server-rendered at its own URL
+ * (/trust-center and /de/trust-center). The subprocessor rows are NOT
  * duplicated here, they are read from ~/lib/dpa (subprocessorRows) so the table
  * stays sourced from the binding agreement.
  */
@@ -28,7 +28,14 @@ export type TrustContent = {
     transferLabel: string;
     euLabel: string;
     usLabel: string;
-    note: { pre: string; bold: string; mid: string; linkText: string; href: string; post: string };
+    note: {
+      pre: string;
+      bold: string;
+      mid: string;
+      linkText: string;
+      href: string;
+      post: string;
+    };
   };
   access: { title: string; body: string; linked: LinkedText };
   security: { title: string; body: string; linked: LinkedText };
@@ -163,7 +170,7 @@ const EN: TrustContent = {
         href: "/cookies",
         label: "Cookie policy",
         detail:
-          "The three functional cookies we set, why, and how long they live. No tracking cookies.",
+          "The functional cookies we set, why, and how long they live. No tracking cookies.",
       },
       {
         href: "/faq",
@@ -181,9 +188,9 @@ const EN: TrustContent = {
 
 const DE: TrustContent = {
   eyebrow: "Trust Center",
-  h1: "Alles, was Ihr Sicherheitsteam braucht – an einem Ort.",
+  h1: "Alles, was Ihr Sicherheitsteam braucht - an einem Ort.",
   intro:
-    "LicenseMeter liest Lizenz- und Verzeichnis-Metadaten aus Ihrem Microsoft-365-Tenant – Vertrauen ist deshalb das eigentliche Produkt. Diese Seite fasst zusammen, wie wir auf Daten zugreifen, wo sie liegen, wer sie verarbeitet und welche Dokumente das belegen. Alle Angaben stammen aus denselben Vereinbarungen, die wir mit Ihnen schließen.",
+    "LicenseMeter liest Lizenz- und Verzeichnis-Metadaten aus Ihrem Microsoft-365-Tenant - Vertrauen ist deshalb das eigentliche Produkt. Diese Seite fasst zusammen, wie wir auf Daten zugreifen, wo sie liegen, wer sie verarbeitet und welche Dokumente das belegen. Alle Angaben stammen aus denselben Vereinbarungen, die wir mit Ihnen schließen.",
   toggleLabel: "Sprache wählen",
   atAGlance: {
     title: "Auf einen Blick",
@@ -206,7 +213,7 @@ const DE: TrustContent = {
       {
         label: "DSGVO-AVV, vorunterzeichnet",
         detail:
-          "Ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO gehört zu jedem Abonnement – herunterladbar und vorunterzeichnet.",
+          "Ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO gehört zu jedem Abonnement - herunterladbar und vorunterzeichnet.",
       },
       {
         label: "Durchgängig verschlüsselt",
@@ -233,13 +240,13 @@ const DE: TrustContent = {
       bold: "Datenquellen, keine Unterauftragsverarbeiter",
       mid: ": Wir lesen in Ihrem Auftrag aus ihnen und geben keine personenbezogenen Daten an sie weiter, die über die authentifizierte Leseanfrage hinausgehen. Die maßgebliche Liste ist ",
       linkText: "Anhang 3 des AVV",
-      href: "/dpa#annex-3",
+      href: "/de/dpa#annex-3",
       post: ".",
     },
   },
   access: {
     title: "So funktioniert der Zugriff",
-    body: "Ein globaler Administrator erteilt die Einwilligung einmalig über den standardmäßigen Administrator-Einwilligungsdialog von Microsoft – für Anwendungsberechtigungen, die ausnahmslos nur lesend sind. Es gibt kein Dienstkonto, keinen Agenten und kein Postfach-Plugin in Ihrem Tenant, und Sie können die Anwendung in Entra ID jederzeit unabhängig von uns widerrufen. Nutzungsberichte werden nur als Zählwerte und Datum der letzten Aktivität verarbeitet: Metadaten, niemals Inhalte.",
+    body: "Ein globaler Administrator erteilt die Einwilligung einmalig über den standardmäßigen Administrator-Einwilligungsdialog von Microsoft - für Anwendungsberechtigungen, die ausnahmslos nur lesend sind. Es gibt kein Dienstkonto, keinen Agenten und kein Postfach-Plugin in Ihrem Tenant, und Sie können die Anwendung in Entra ID jederzeit unabhängig von uns widerrufen. Nutzungsberichte werden nur als Zählwerte und Datum der letzten Aktivität verarbeitet: Metadaten, niemals Inhalte.",
     linked: {
       pre: "Die ",
       linkText: "Sicherheitsübersicht",
@@ -253,7 +260,7 @@ const DE: TrustContent = {
     linked: {
       pre: "Die vollständigen technischen und organisatorischen Maßnahmen finden Sie in ",
       linkText: "Anhang 2 des AVV",
-      href: "/dpa#annex-2",
+      href: "/de/dpa#annex-2",
       post: ".",
     },
   },
@@ -283,7 +290,7 @@ const DE: TrustContent = {
           "Genau, was gewährt und gespeichert wird und wie Sie sich trennen. Nur-Lese-Berechtigungen, delegierte Einwilligung, Löschung.",
       },
       {
-        href: "/dpa",
+        href: "/de/dpa",
         label: "Auftragsverarbeitungsvertrag",
         detail:
           "AVV nach Art. 28 DSGVO, vorunterzeichnet. Download auf Deutsch oder Englisch mit vollständigem Unterauftragsverarbeiter-Anhang und TOM.",
@@ -304,7 +311,7 @@ const DE: TrustContent = {
         href: "/cookies",
         label: "Cookie-Richtlinie",
         detail:
-          "Die drei funktionalen Cookies, die wir setzen, warum und wie lange sie gelten. Keine Tracking-Cookies.",
+          "Die funktionalen Cookies, die wir setzen, warum und wie lange sie gelten. Keine Tracking-Cookies.",
       },
       {
         href: "/faq",

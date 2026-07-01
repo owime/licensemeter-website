@@ -3,22 +3,21 @@ import type { Metadata } from "next";
 import { siteUrl } from "~/env";
 import { DPA } from "~/lib/dpa";
 
-import { DpaView } from "./DpaView";
+import { DpaView } from "../../dpa/DpaView";
 
 /*
- * Unlike the other legal pages (privacy/terms/cookies are noindex), the DPA is
- * an indexable trust/sales asset like /security: enterprise buyers search for
- * "LicenseMeter DPA". English is the x-default; the German version is
- * server-rendered at /de/dpa and cross-referenced via hreflang.
+ * German edition of /dpa: same single source of truth in ~/lib/dpa, but
+ * server-rendered in German so crawlers can index it. English stays the
+ * x-default; hreflang cross-references the two language URLs.
  *
  * Reminder: the DPA text is a structured Art. 28 draft, not legal advice - see
  * the header of ~/lib/dpa. Have counsel review before relying on it.
  */
 export const metadata: Metadata = {
-  title: "Data Processing Agreement (DPA / AVV)",
-  description: DPA.en.metaDescription,
+  title: "Auftragsverarbeitungsvertrag (AVV / DPA)",
+  description: DPA.de.metaDescription,
   alternates: {
-    canonical: "/dpa",
+    canonical: "/de/dpa",
     languages: {
       en: "/dpa",
       de: "/de/dpa",
@@ -29,10 +28,10 @@ export const metadata: Metadata = {
 
 const BASE = siteUrl();
 
-export default function DpaPage() {
+export default function DpaPageDe() {
   return (
     <>
-      <DpaView lang="en" />
+      <DpaView lang="de" />
       <script
         type="application/ld+json"
         // Static breadcrumb; "<" escaped so nothing can terminate the script.
@@ -41,12 +40,17 @@ export default function DpaPage() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Startseite",
+                item: BASE,
+              },
               {
                 "@type": "ListItem",
                 position: 2,
-                name: "Data Processing Agreement",
-                item: `${BASE}/dpa`,
+                name: "Auftragsverarbeitungsvertrag",
+                item: `${BASE}/de/dpa`,
               },
             ],
           }).replaceAll("<", "\\u003c"),

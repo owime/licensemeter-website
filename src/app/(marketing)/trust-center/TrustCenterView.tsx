@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 
 import { Pill } from "~/components/ui";
 import { type DpaLang, subprocessorRows } from "~/lib/dpa";
@@ -11,8 +8,9 @@ import { TRUST_CONTENT } from "./content";
 
 /**
  * Renders the Trust Center from the bilingual structure in ./content and the
- * sub-processor rows from ~/lib/dpa. The language toggle switches the on-page
- * text only; English is the default so the SSR HTML is the English canonical.
+ * sub-processor rows from ~/lib/dpa. Each language is a real, server-rendered
+ * URL (/trust-center and /de/trust-center); the language toggle links between
+ * them so crawlers see both versions.
  */
 
 /**
@@ -40,17 +38,16 @@ const Section = ({
   </section>
 );
 
-export const TrustCenterView = () => {
-  const [lang, setLang] = useState<DpaLang>("en");
+export const TrustCenterView = ({ lang }: { lang: DpaLang }) => {
   const c = TRUST_CONTENT[lang];
   const rows = subprocessorRows(lang);
-  const langs: { id: DpaLang; label: string }[] = [
-    { id: "en", label: "English" },
-    { id: "de", label: "Deutsch" },
+  const langs: { id: DpaLang; label: string; href: string }[] = [
+    { id: "en", label: "English", href: "/trust-center" },
+    { id: "de", label: "Deutsch", href: "/de/trust-center" },
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
+    <main lang={lang} className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         {c.eyebrow}
       </p>
@@ -68,11 +65,10 @@ export const TrustCenterView = () => {
           className="border-line-strong bg-card inline-flex rounded-xl border p-1"
         >
           {langs.map((l) => (
-            <button
+            <Link
               key={l.id}
-              type="button"
-              onClick={() => setLang(l.id)}
-              aria-pressed={lang === l.id}
+              href={l.href}
+              aria-current={lang === l.id ? "page" : undefined}
               className={`min-h-9 cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
                 lang === l.id
                   ? "bg-brand-strong text-white"
@@ -80,7 +76,7 @@ export const TrustCenterView = () => {
               }`}
             >
               {l.label}
-            </button>
+            </Link>
           ))}
         </div>
       </div>

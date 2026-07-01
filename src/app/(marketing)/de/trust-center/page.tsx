@@ -2,20 +2,19 @@ import type { Metadata } from "next";
 
 import { siteUrl } from "~/env";
 
-import { TrustCenterView } from "./TrustCenterView";
+import { TrustCenterView } from "../../trust-center/TrustCenterView";
 
 /*
- * Indexable trust/sales asset like /security and /dpa. English is the
- * x-default; the German version is server-rendered at /de/trust-center and
- * cross-referenced via hreflang. The page itself stays server-side so it can
- * carry metadata and the static JSON-LD breadcrumb without request-time data.
+ * German edition of /trust-center: same bilingual content source, but
+ * server-rendered in German so crawlers can index it. English stays the
+ * x-default; hreflang cross-references the two language URLs.
  */
 export const metadata: Metadata = {
   title: "Trust Center",
   description:
-    "One place for how LicenseMeter handles your data: read-only access, EU data residency, named subprocessors with their processing locations, encryption, retention and the pre-signed GDPR DPA.",
+    "Wie LicenseMeter mit Ihren Daten umgeht, an einem Ort: Nur-Lese-Zugriff, EU-Datenhaltung, benannte Unterauftragsverarbeiter mit Verarbeitungsorten, Verschlüsselung, Aufbewahrung und der vorunterzeichnete DSGVO-AVV.",
   alternates: {
-    canonical: "/trust-center",
+    canonical: "/de/trust-center",
     languages: {
       en: "/trust-center",
       de: "/de/trust-center",
@@ -26,10 +25,10 @@ export const metadata: Metadata = {
 
 const BASE = siteUrl();
 
-export default function TrustCenterPage() {
+export default function TrustCenterPageDe() {
   return (
     <>
-      <TrustCenterView lang="en" />
+      <TrustCenterView lang="de" />
       <script
         type="application/ld+json"
         // Static breadcrumb; "<" escaped so nothing can terminate the script.
@@ -38,12 +37,17 @@ export default function TrustCenterPage() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Startseite",
+                item: BASE,
+              },
               {
                 "@type": "ListItem",
                 position: 2,
                 name: "Trust Center",
-                item: `${BASE}/trust-center`,
+                item: `${BASE}/de/trust-center`,
               },
             ],
           }).replaceAll("<", "\\u003c"),
