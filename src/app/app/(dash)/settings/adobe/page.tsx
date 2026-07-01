@@ -95,6 +95,13 @@ export default async function AdobeConnectorPage() {
                       ? `last sync ${fmtDate(adobeConn.lastSyncAt)} (${adobeConn.lastSyncStatus ?? "pending"})`
                       : "first sync pending"}
                   </div>
+                  {adobeConn.lastSyncStatus === "failed" && (
+                    <p className="mt-2 max-w-md text-xs text-danger-text">
+                      The last sync could not reach Adobe. Findings are based
+                      on the previous snapshot. If the credentials were changed
+                      or revoked, disconnect and reconnect with fresh values.
+                    </p>
+                  )}
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-3">

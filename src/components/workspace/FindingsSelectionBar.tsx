@@ -96,8 +96,18 @@ export const FindingsBulkForm = ({
             <span className="tnum text-xs text-ink-soft">
               {count} selected
             </span>
-            <input type="hidden" name="status" value="acknowledged" />
+            {/* The submitter's name/value picks the target status. */}
             <button
+              name="status"
+              value="open"
+              disabled={pending || count === 0}
+              className={buttonClass("micro")}
+            >
+              Reopen selected
+            </button>
+            <button
+              name="status"
+              value="acknowledged"
               disabled={pending || count === 0}
               className={buttonClass("micro")}
             >

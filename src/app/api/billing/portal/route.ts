@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { appBaseUrl, billingEnabled, env } from "~/env";
 import { apiAccess } from "~/server/access";
 import { audit } from "~/server/audit";
+import { isSameOrigin } from "~/server/auth/origin";
 import { notifyOps } from "~/server/ops";
 import { stripe } from "~/server/stripe";
 
@@ -15,9 +16,12 @@ export const dynamic = "force-dynamic";
  * VAT invoices, cancel at period end, switch plan/interval. Owner-gated; the
  * customer comes from the resolved tenant, never the request.
  */
-export const POST = async () => {
+export const POST = async (req: Request) => {
   if (!billingEnabled()) {
     return NextResponse.json({ error: "billing_disabled" }, { status: 503 });
+  }
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const ctx = await apiAccess("owner");
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

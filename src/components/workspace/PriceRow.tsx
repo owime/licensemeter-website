@@ -19,9 +19,18 @@ export const PriceEditor = ({
   currency: string;
 }) => {
   const [value, setValue] = useState(initial);
+  const [lastInitial, setLastInitial] = useState(initial);
   const [state, setState] = useState<"idle" | "saved" | "error">("idle");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+
+  /* Re-sync if the server-confirmed price changes underneath us (e.g. the
+     canonical "14.90" after saving "14.9"), so Save stays disabled. */
+  if (lastInitial !== initial) {
+    setLastInitial(initial);
+    setValue(initial);
+  }
+
   const dirty = value !== initial;
 
   return (

@@ -38,11 +38,7 @@ const Monogram = ({ name }: { name: string }) => (
   </span>
 );
 
-export const OnboardingEmptyState = ({
-  demoEnabled,
-}: {
-  demoEnabled: boolean;
-}) => (
+export const OnboardingEmptyState = () => (
   <div className="mx-auto max-w-3xl py-6">
     <header className="rise rise-1">
       <p className="text-brand-text text-xs font-medium tracking-[0.14em] uppercase">
@@ -110,17 +106,13 @@ export const OnboardingEmptyState = ({
       >
         Start with a CSV upload
       </Link>
-      {demoEnabled && (
-        <>
-          <span className="text-ink-faint">·</span>
-          <Link
-            href="/app/settings/microsoft"
-            className="font-medium text-ink underline-offset-4 hover:underline"
-          >
-            See the read-only permissions first
-          </Link>
-        </>
-      )}
+      <span className="text-ink-faint">·</span>
+      <Link
+        href="/security"
+        className="font-medium text-ink underline-offset-4 hover:underline"
+      >
+        See the read-only permissions first
+      </Link>
     </div>
   </div>
 );

@@ -1,7 +1,9 @@
 import { withAuth } from "@workos-inc/authkit-nextjs";
+import Link from "next/link";
 
 import { AccountSessionSync } from "~/components/workspace/AccountSessionSync";
 import { AccountWidgets } from "~/components/workspace/AccountWidgets";
+import { Card } from "~/components/ui";
 import { authProvider } from "~/env";
 import { requireAccess } from "~/server/access";
 
@@ -14,7 +16,35 @@ export const metadata = { title: "Account" };
  */
 export default async function AccountPage() {
   // Same gate as the rest of /app (also keeps the sidebar/layout consistent).
-  await requireAccess("viewer");
+  const ctx = await requireAccess("viewer");
+
+  // A demo session has no WorkOS session behind it, so there is no profile to
+  // manage; explain that instead of falling into the withAuth() error path.
+  if (ctx.tenant.isDemo) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">Account</h1>
+        </header>
+        <div className="rise rise-2">
+          <Card title="Demo workspace">
+            <p className="text-ink-soft text-sm">
+              This is the demo workspace, so there is no personal account to
+              manage here. Name, password and sign-in security apply to real
+              sign-ins.{" "}
+              <Link
+                href="/app"
+                className="hover:text-ink underline underline-offset-4"
+              >
+                Back to the overview
+              </Link>
+              .
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (authProvider() !== "workos") {
     return (

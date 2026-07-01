@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { mspEnabled } from "~/env";
 import { Card, Pill } from "~/components/ui";
@@ -13,6 +12,7 @@ import {
   MSP_PRICE_ANNUAL_EUR,
   MSP_PRICE_EUR,
 } from "~/lib/plans";
+import { hasRole, requireAccess } from "~/server/access";
 import {
   attachWorkspace,
   createMspAccount,
@@ -68,9 +68,31 @@ export default async function MspPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // The nav link is already gated on mspEnabled(), but the route is directly
-  // reachable by URL — close that gap so the create/attach pathway (which can
-  // cancel a tenant's own subscription) is unreachable when MSP is unconfigured.
-  if (!mspEnabled()) redirect("/app");
+  // reachable by URL (marketing /msp links here). Explain the flag-off state
+  // instead of redirecting; the create/attach pathway stays unreachable.
+  if (!mspEnabled()) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">MSP portfolio</h1>
+        </header>
+        <div className="rise rise-2">
+          <Card title="Not available">
+            <p className="text-sm text-ink-soft">
+              MSP billing is not configured on this deployment, so portfolio
+              accounts cannot be created here. If you expected it, contact the
+              person who runs this deployment.
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+  // MSP ownership itself is identity-based and cross-tenant, but creating or
+  // billing an account from here requires a workspace owner (matching the
+  // billing page); the server actions re-verify.
+  const ctx = await requireAccess("viewer");
+  const isOwner = hasRole(ctx, "owner");
   const account = await currentMspAccount();
   const sp = await searchParams;
   const checkoutParam = typeof sp.checkout === "string" ? sp.checkout : undefined;
@@ -99,7 +121,13 @@ export default async function MspPage({
                 {fmtEuros(MSP_PRICE_ANNUAL_EUR)} a year (two months free). Client
                 tenants over {LARGE_TENANT_LABEL} seats are priced separately.
               </p>
-              <MspCreateForm action={createMspAccount} />
+              {isOwner ? (
+                <MspCreateForm action={createMspAccount} />
+              ) : (
+                <p className="text-sm text-ink-soft">
+                  Creating an MSP account requires a workspace owner.
+                </p>
+              )}
             </div>
           </Card>
         </div>
@@ -180,10 +208,16 @@ export default async function MspPage({
                 </p>
               ) : null}
             </div>
-            <MspBillingActions
-              manageable={manageable}
-              checkoutParam={checkoutParam}
-            />
+            {isOwner ? (
+              <MspBillingActions
+                manageable={manageable}
+                checkoutParam={checkoutParam}
+              />
+            ) : (
+              <p className="text-sm text-ink-soft">
+                Billing is managed by a workspace owner.
+              </p>
+            )}
           </div>
         </Card>
       </div>

@@ -5,6 +5,7 @@ import { appBaseUrl, billingEnabled, taxEnabled } from "~/env";
 import { MAX_SELF_SERVE_SEATS, parsePlanString } from "~/lib/plans";
 import { apiAccess } from "~/server/access";
 import { audit } from "~/server/audit";
+import { isSameOrigin } from "~/server/auth/origin";
 import { entitlementOf } from "~/server/entitlement";
 import { notifyOps } from "~/server/ops";
 import { getOrCreateCustomer, knownSeats, priceIdFor, stripe } from "~/server/stripe";
@@ -28,6 +29,9 @@ const MIN_TRIAL_PRESERVE_MS = 48 * 60 * 60 * 1000;
 export const POST = async (req: NextRequest) => {
   if (!billingEnabled()) {
     return NextResponse.json({ error: "billing_disabled" }, { status: 503 });
+  }
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const ctx = await apiAccess("owner");
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

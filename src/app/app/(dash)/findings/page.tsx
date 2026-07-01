@@ -12,13 +12,14 @@ import {
   SelectAllFindings,
 } from "~/components/workspace/FindingsSelectionBar";
 import { PaywallCard } from "~/components/workspace/PaywallCard";
+import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
 import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
 import { ALL_RULES, isWasteRule, RULE_META } from "~/lib/rules";
 import { hasRole, requireAccess } from "~/server/access";
 import { bulkSetFindingStatus, setFindingStatus } from "~/server/actions";
 import { db } from "~/server/db";
-import { findings } from "~/server/db/schema";
+import { findings, priceBook } from "~/server/db/schema";
 import type { FindingStatus } from "~/server/types";
 
 export const metadata: Metadata = { title: "Findings" };
@@ -77,18 +78,31 @@ export default async function FindingsPage({
   const locked = !ctx.entitlement.active;
   const currency = ctx.tenant.currency;
 
-  const allRows = await db.query.findings.findMany({
-    where: eq(findings.tenantId, ctx.tenant.id),
-    orderBy: desc(findings.monthlyImpactCents),
-  });
+  const [allRows, prices] = await Promise.all([
+    db.query.findings.findMany({
+      where: eq(findings.tenantId, ctx.tenant.id),
+      orderBy: desc(findings.monthlyImpactCents),
+    }),
+    db.query.priceBook.findMany({
+      where: eq(priceBook.tenantId, ctx.tenant.id),
+    }),
+  ]);
+
+  // Same gate as the Overview nudge: hidden pre-sync (no rows = no figures)
+  // and once any custom price exists.
+  const listPricesOnly =
+    prices.length > 0 && !prices.some((p) => p.source === "custom");
 
   const activeRows = allRows.filter((f) => f.status !== "resolved");
-  const rows = (showResolved ? allRows.filter((f) => f.status === "resolved") : activeRows).filter(
-    (f) => !ruleParam || f.rule === ruleParam,
-  );
+  // Rows matching the selected status view; the rule filter narrows within it,
+  // so the pill counts below always describe the view being looked at.
+  const statusRows = showResolved
+    ? allRows.filter((f) => f.status === "resolved")
+    : activeRows;
+  const rows = statusRows.filter((f) => !ruleParam || f.rule === ruleParam);
 
   const totalByRule = new Map<string, { count: number; impact: number }>();
-  for (const f of activeRows) {
+  for (const f of statusRows) {
     const agg = totalByRule.get(f.rule) ?? { count: 0, impact: 0 };
     agg.count += 1;
     agg.impact += f.monthlyImpactCents;
@@ -185,12 +199,10 @@ export default async function FindingsPage({
           return (
             <Link
               key={rule}
-              href={filterHref(rule)}
-              aria-current={
-                ruleParam === rule && !showResolved ? "true" : undefined
-              }
+              href={filterHref(rule, showResolved)}
+              aria-current={ruleParam === rule ? "true" : undefined}
               className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
-                ruleParam === rule && !showResolved
+                ruleParam === rule
                   ? "bg-ink text-canvas"
                   : "border border-line bg-card text-ink-soft hover:border-ink"
               }`}
@@ -380,6 +392,12 @@ export default async function FindingsPage({
             )}
           </div>
         </nav>
+      )}
+
+      {listPricesOnly && (
+        <section className="rise rise-3 mb-8">
+          <PriceAccuracyCard />
+        </section>
       )}
         </>
       )}

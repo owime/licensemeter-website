@@ -10,9 +10,9 @@ import {
   type MetricCardData,
 } from "~/components/workspace/MetricCards";
 import { OnboardingEmptyState } from "~/components/workspace/OnboardingEmptyState";
+import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
-import { isDemoMode } from "~/env";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { ALL_RULES, RULE_META } from "~/lib/rules";
 import type { WasteRuleId } from "~/server/types";
@@ -67,7 +67,7 @@ export default async function OverviewPage() {
   // lands on the dashboard but sees the onboarding empty state (nudge to connect
   // a first service) instead of a dashboard of zeros. Demo always has data.
   if (!ctx.tenant.isDemo && !(await workspaceHasConnectorOrData(tenantId))) {
-    return <OnboardingEmptyState demoEnabled={isDemoMode()} />;
+    return <OnboardingEmptyState />;
   }
   const currency = ctx.tenant.currency;
   // Soft-locked workspaces keep the read-only dashboard but lose exports/sync.
@@ -396,15 +396,7 @@ export default async function OverviewPage() {
 
       {listPricesOnly && (
         <section className="rise rise-2 mt-6">
-          <Card title="Price accuracy">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="max-w-2xl text-sm text-ink-soft">
-                Your waste figures use Microsoft list prices. Enter what you
-                actually pay for accurate numbers.
-              </p>
-              <ButtonLink href="/app/licenses">Set your prices</ButtonLink>
-            </div>
-          </Card>
+          <PriceAccuracyCard />
         </section>
       )}
 

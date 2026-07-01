@@ -10,6 +10,7 @@ import { adobePriceKey } from "~/server/adobe/analyze";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { saasPriceKey } from "~/server/saas/analyze";
+import { isShelfwareExempt } from "~/server/waste/engine";
 import {
   adobeUsers,
   priceBook,
@@ -76,11 +77,15 @@ export default async function LicensesPage() {
       ].sort((a, b) => a[0].localeCompare(b[0])),
     }))
     .filter((section) => section.products.length > 0);
-  const sorted = [...skus].sort((a, b) =>
-    (a.displayName ?? a.skuPartNumber).localeCompare(
-      b.displayName ?? b.skuPartNumber,
-    ),
-  );
+  // Free/viral sentinel SKUs (WINDOWS_STORE, FLOW_FREE, …) carry no cost and
+  // only add noise; same exemption the Overview inventory and CSV export use.
+  const sorted = [...skus]
+    .filter((s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled))
+    .sort((a, b) =>
+      (a.displayName ?? a.skuPartNumber).localeCompare(
+        b.displayName ?? b.skuPartNumber,
+      ),
+    );
 
   return (
     <div className="mx-auto max-w-5xl">

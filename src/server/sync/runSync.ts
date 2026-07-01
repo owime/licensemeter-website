@@ -46,6 +46,7 @@ import {
 import { emailEnabled, leakAlertHtml, sendEmail } from "~/server/email";
 import { pickLeakFindings } from "~/server/leakAlerts";
 import { notifyOps } from "~/server/ops";
+import { aiSpendSinceDay } from "~/server/sync/aiSpendWindow";
 import { joinSignals } from "~/server/sync/join";
 import type { SyncRunStatus, SyncStep, WasteRuleId } from "~/server/types";
 import {
@@ -78,17 +79,13 @@ export type SyncResult = {
   steps: SyncStep[];
 };
 
-const dayString = (d: Date): string => d.toISOString().slice(0, 10);
-
-const dayMinus = (day: string, days: number): string =>
-  dayString(new Date(Date.parse(`${day}T00:00:00Z`) - days * 24 * 60 * 60 * 1000));
-
 /**
  * Pull daily cost rows for an AI connector and upsert them. The first sync
  * backfills as far as the provider exposes (OpenAI 180 days, Anthropic ~90);
  * later syncs re-pull from seven days before the newest stored day so
- * late-settling costs heal. Failures become a warning step and never disturb
- * the member analysis already collected for the provider.
+ * late-settling costs heal (window sizing lives in aiSpendWindow.ts). Failures
+ * become a warning step and never disturb the member analysis already
+ * collected for the provider.
  */
 const syncAiSpend = async (
   tenantId: string,
@@ -108,9 +105,7 @@ const syncAiSpend = async (
           eq(aiSpendDaily.provider, provider),
         ),
       );
-    const sinceDay = latest?.day
-      ? dayMinus(latest.day, 7)
-      : dayMinus(dayString(now), provider === "openai" ? 180 : 90);
+    const sinceDay = aiSpendSinceDay(latest?.day ?? null, provider, now);
     const rows = await client.getSpend(sinceDay);
     for (const batch of chunk(rows, 250)) {
       await db

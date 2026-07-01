@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { appBaseUrl, env, mspEnabled } from "~/env";
+import { isSameOrigin } from "~/server/auth/origin";
 import { currentMspAccount } from "~/server/msp";
 import { notifyOps } from "~/server/ops";
 import { stripe } from "~/server/stripe";
@@ -15,9 +16,12 @@ export const dynamic = "force-dynamic";
  * resolved MSP account (currentMspAccount — null for signed-out/demo), never the
  * request. Mirrors the self-serve portal route.
  */
-export const POST = async () => {
+export const POST = async (req: Request) => {
   if (!mspEnabled()) {
     return NextResponse.json({ error: "msp_disabled" }, { status: 503 });
+  }
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   // Owner-gated: resolve the MSP account this signed-in non-demo user owns.

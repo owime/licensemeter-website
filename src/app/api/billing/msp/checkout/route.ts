@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 
 import { appBaseUrl, mspEnabled, taxEnabled } from "~/env";
 import { auth } from "~/server/auth";
+import { isSameOrigin } from "~/server/auth/origin";
 import { db } from "~/server/db";
 import { tenants } from "~/server/db/schema";
 import { currentMspAccount } from "~/server/msp";
@@ -28,6 +29,9 @@ export const dynamic = "force-dynamic";
 export const POST = async (req: NextRequest) => {
   if (!mspEnabled()) {
     return NextResponse.json({ error: "msp_disabled" }, { status: 503 });
+  }
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   // Owner-gated: resolve the MSP account this signed-in non-demo user owns.

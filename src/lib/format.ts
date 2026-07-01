@@ -54,7 +54,8 @@ export const fmtDateTime = (d: Date | string | null): string => {
 
 export const fmtAgo = (d: Date | null): string => {
   if (!d) return "never";
-  const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+  // Clamp future timestamps (clock skew) to "just now" instead of a negative.
+  const mins = Math.max(0, Math.floor((Date.now() - d.getTime()) / 60000));
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins} min ago`;
   const hours = Math.floor(mins / 60);

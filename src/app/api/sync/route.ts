@@ -3,8 +3,11 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { apiAccess } from "~/server/access";
+import { audit } from "~/server/audit";
+import { isSameOrigin } from "~/server/auth/origin";
 import { db } from "~/server/db";
 import { syncRuns } from "~/server/db/schema";
+import { rateLimit } from "~/server/rateLimit";
 import { runSync } from "~/server/sync/runSync";
 
 export const maxDuration = 300;
@@ -32,11 +35,22 @@ export const GET = async () => {
   });
 };
 
-/** Manual "Sync now". */
-export const POST = async () => {
+/** Manual "Sync now". Mirrors the triggerSync server action's guards. */
+export const POST = async (req: Request) => {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
   const ctx = await apiAccess("admin");
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!ctx.entitlement.active)
+    return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
+  // runSync holds its own concurrency lock; this only blunts hammering the
+  // endpoint with costly Graph pulls.
+  if (!rateLimit(`sync:${ctx.tenant.id}`, 3, 10 * 60 * 1000)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
 
+  await audit(ctx, "sync_triggered", {});
   const result = await runSync(ctx.tenant.id);
   revalidatePath("/app", "layout");
   return NextResponse.json(result);
