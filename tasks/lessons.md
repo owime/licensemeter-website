@@ -32,3 +32,13 @@ migrate references in parallel (subagents partitioned by area), then delete the
 aliases last and `rg` for any survivors. Old accent `rust` had to split 3 ways by
 meaning: brand (accents/CTAs/links/focus), waste (€/leak figures), danger
 (delete/disconnect/errors). Note `rg rust` matches `trust`/`entrust` — filter them.
+
+## Never run `next build` while the dev server is running (2026-07-01)
+**Mistake:** Ran `npm run build` in the background while the preview dev server
+was serving the same checkout. Both write to `.next/`, so the build clobbered the
+dev manifests and every page 500ed (ENOENT app-build-manifest.json) - looked like
+a code regression but was pure tooling.
+
+**Rule:** Stop the preview server before `npm run build`, or verify via the dev
+server only and build afterwards. If pages suddenly 500 with ENOENT under
+`.next/`, restart the dev server before debugging code.

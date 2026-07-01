@@ -1,3 +1,168 @@
+# App page-by-page review (2026-07-01) - DONE (uncommitted, awaiting owner commit)
+
+Owner asked for an individual review of every page under /app (and auth pages),
+beyond the earlier code-level dashboard review. Method: 3 agents, each reviewing
+its pages BOTH in source and live-rendered in the demo workspace (dev server
+localhost:63633, curl + demo session).
+
+## Acceptance criteria
+- [x] Every page reviewed with a per-page verdict: overview, findings, licenses,
+      users/[id], ai-costs, shell/nav; settings + 9 connector pages; account,
+      billing, msp, portfolio, connect, connect/csv, auth/sign-in + callback
+- [x] Confirmed P1/P2 findings fixed (BP1, CP1, SP1, BP2, BP3) and P3s too
+      (BP4, CP2, CP3, SP2 parity test); all 9 items shipped
+- [x] check + test + build green after fixes (315 tests); reviewer evaluation of the
+      fix diff: all 9 criteria pass, zero findings
+
+## Review section (result)
+- 1 P1: /app/account permanently broken for demo visitors (dead-end error with advice that
+  can never work) - the worst possible page for a prospect evaluating via demo. Fixed with a
+  demo-workspace card (billing-page pattern); live-verified.
+- 4 P2 fixed: findings rule pills now compose with the Resolved view; Adobe failed-sync
+  callout parity; onboarding permissions link now goes to /security for everyone; /app/msp
+  owner-gated like billing.
+- 4 P3 fixed: /app/msp flag-off explanatory card instead of silent redirect; licenses page
+  filters shelfware-exempt sentinel SKUs like Overview; neutral loading skeleton; new
+  CONNECTORS<->CONNECTOR_GUIDES parity test.
+- Everything else verdict clean across all 22 pages (role gating, demo guards, entitlement
+  states, plans figures, returnTo allowlist, attach/detach guards, guide links).
+
+## Findings
+
+### Settings + 9 connector pages (agent done; source-level, live curl unavailable to it)
+- [ ] SP1 (P2): adobe/page.tsx:94-97 lacks the failed-sync callout SaasConnectorPage.tsx:155-162
+      shows for every other connector; port the lastSyncStatus === "failed" block
+- [ ] SP2 (test): assert every SaasProvider has both a CONNECTORS and CONNECTOR_GUIDES entry
+- Rest verdict: clean (role gating mirrors server, demo guards consistent, guide links resolve,
+  DangerZone copy matches actual teardown behavior)
+
+### Core data pages + shell (agent done; source-level)
+- [ ] CP1 (P2): findings/page.tsx rule pills computed from activeRows only; shown during
+      show=resolved with wrong counts, and filterHref(rule) drops show=resolved (silent view
+      exit). Fix: preserve showResolved in filterHref + recount pills from current status set,
+      or hide pills in resolved view.
+- [ ] CP2 (P3): licenses/page.tsx does not filter isShelfwareExempt SKUs; Overview does.
+      Apply same filter (or document why not).
+- [ ] CP3 (P3 polish): shared (dash)/loading.tsx is Overview-shaped for all routes; make neutral.
+- Verdict: overview, licenses (post-fix), users/[id], ai-costs, shell/nav all clean.
+
+### Account/billing/msp/connect/auth (agent done; BP1+CP1 live-confirmed by orchestrator)
+- [ ] BP1 (P1): /app/account permanently broken for demo users (withAuth() null user; error
+      copy suggests re-sign-in which never helps). Fix: demo-aware branch like billing/page.tsx.
+- [ ] BP2 (P2): OnboardingEmptyState "See the read-only permissions first" duplicates the
+      Microsoft tile href, gated on deployment-wide demoEnabled. Point at /security or remove.
+- [ ] BP3 (P2): /app/msp shows create-form + billing actions to viewers/admins; billing page
+      gates on owner. Server re-verifies (not a security hole) but UI should gate like billing.
+- [ ] BP4 (P3): MspCard CTA chain dead-ends when mspEnabled() false (/app/msp silent redirect
+      to /app). Show explanatory card instead of silent redirect.
+- Verdict: plans figures consistent, entitlement state machine coherent, returnTo allowlist
+  solid, portfolio attach/detach guarded, connect + csv pages clean.
+
+## Fix wave (implementation)
+- [ ] BP1, CP1, SP1, BP2, BP3 (bugs/P2) + CP2, CP3, BP4, SP2 (P3/polish/test)
+
+---
+
+# Growth features wave (2026-07-01) - DONE (uncommitted, awaiting owner commit)
+
+Owner asked to build all three deferred recommendations.
+
+## Acceptance criteria
+- [x] /de/trust-center and /de/dpa server-render German content; hreflang alternates on all
+      four pages (en/de/x-default); language switch navigates between URLs; German metadata
+      (views simplified to server components; verified live: canonical + reciprocal alternates)
+- [x] /roi standalone calculator page (restored RoiCalculator + roiMath + tests from git
+      history) with SEO copy and CTA; /compare/powershell-audit comparison page grounded in
+      real product capabilities; both linked from footer
+- [x] Founder/MVP trust strip visible on home + security pages (text-only, no invented assets)
+- [x] sitemap.ts + llms.txt updated for all new routes (/de/dpa low priority)
+- [x] check + test + build green (311 tests, 80 static pages); independent reviewer pass:
+      3 findings (dead #sample-tenant anchor on new pages, DE trust-center linking EN /dpa,
+      breadcrumb referencing nonexistent /compare) - all three fixed and verified live in the
+      dev server; all other criteria passed explicitly
+
+## File ownership (parallel agents)
+- Agent G: trust-center/*, dpa/*, new de/ routes. No sitemap/layout edits.
+- Agent R: roi/, compare/, restored src/components/RoiCalculator+roiMath, (marketing)/layout.tsx footer
+- Agent F: (marketing)/page.tsx + security/page.tsx only
+- Orchestrator: sitemap.ts, llms.txt, gates, final review
+
+---
+
+# Full review pass 2 (2026-07-01) - DONE (uncommitted, awaiting owner commit)
+
+Goal: completely review the codebase and all pages; fix bugs; improve what exists;
+add high-value features. Prior review (2026-06-23) already implemented and merged.
+
+## Acceptance criteria
+- [x] Every area reviewed by a dedicated agent: server core, API routes, dashboard app,
+      marketing pages, lib/config/schema
+- [x] All confirmed P1/P2 bugs found by review are fixed
+- [x] Top improvement/feature items implemented (selected by impact)
+- [x] npm run check (lint + tsc), npm run test, npm run build all green (299/299 tests)
+- [x] Separate code-reviewer evaluation pass on the final diff finds no new P1/P2 issues
+      (all 12 criteria passed explicitly)
+
+## Review section (result)
+- Backend was clean: server core, API routes, lib/schema/config agents found zero P1/P2 bugs
+  (prior 2026-06-23 hardening held). Dashboard: 1 P2 (PriceEditor). Marketing: 2 P1 content
+  defects + P2/P3 stack. Everything actionable was fixed; see Wave F list above.
+- Shipped: wos-session cookie disclosure, connector-list parity (home/msp/llms.txt),
+  VAT copy fix, sitemap/noindex fix, dead-anchor fix, dash sweep, signInPath consistency,
+  PriceEditor re-sync fix, fmtAgo clamp, /api/sync paywall+ratelimit+origin+audit,
+  same-origin on 4 billing POSTs, bulk Reopen on findings, PriceAccuracyCard on findings,
+  AI-spend 90-day gap healing (+2 new test files, 299 total).
+- Renewal-card deep link (D3) intentionally NOT done: card figure spans all rules, a ?rule=
+  filter would contradict the displayed number.
+- Owner follow-ups: impressum HRB number (required before launch, DDG s.5); consider
+  German-indexable /de trust-center+DPA with hreflang, comparison//roi content pages,
+  founder/MVP trust strip on home+security.
+- NOT committed (per repo workflow, owner commits).
+
+## Plan
+- [x] Baseline: check + test green on main (lint clean, tsc clean, 291/291 tests)
+- [x] Wave R (parallel reviews): 5 agents done. Server core, API, lib/config: clean.
+      Dashboard: 1 P2. Marketing: 2 P1 + several P2/P3.
+- [x] Consolidate findings into fix list (P1 bugs, P2 correctness, P3 polish, features)
+- [ ] Wave F (2 parallel impl agents, RUNNING):
+      Agent M: cookies wos-session (M1) + spacing (M8), homepage connectors+JSON-LD (M2/M11),
+      dead #request-scan anchor (M3), sitemap + noindex (M4), VAT copy (M5), dash sweep (M6),
+      llms.txt count/pages (M9), MSP AI consoles (M10), signInPath consistency (M12)
+      Agent B: PriceEditor dirty-state bug (D1), fmtAgo clamp (L1), /api/sync entitlement+
+      rateLimit+origin+audit (A1/A2), isSameOrigin on billing POSTs (A3), bulk Reopen (D2),
+      renewal deep link (D3), findings price nudge (D4), AI-spend gap healing (S1)
+- SKIPPED (owner input needed): impressum HRB number (M7) - required before launch per DDG s.5
+- DEFERRED (recommendations, not built): German-indexable /de pages + hreflang; comparison/ROI
+  content pages; founder/MVP trust strip; msConnections CHECK constraint (L3); sync-vs-disconnect
+  integration test (S2); drizzle/*.sql cleanup (L2)
+- [ ] Final gate: check + test + build + independent code-reviewer pass
+- [ ] Document review section here
+
+## Findings
+
+### API routes (agent done) - no P1/P2 bugs; improvements:
+- [ ] A1 (P2-ish): POST /api/sync has no entitlement gate (expired trial can trigger costly Graph sync; exports gate 402). Confirm intent or gate it.
+- [ ] A2: rateLimit() on POST /api/sync and /api/billing/checkout (auth/demo already has it)
+- [ ] A3: apply isSameOrigin to all state-changing POSTs (billing checkout/portal/msp, sync) for consistency (SameSite=Lax already covers practical CSRF)
+
+### Server core (agent done) - no P1/P2 bugs; improvements:
+- [ ] S1: syncAiSpend fixed 7-day backfill window leaves a gap after >7-day provider outage; widen lookback when gap exceeds window
+- [ ] S2: integration test for sync mid-flight vs tenant disconnect/delete (test-only)
+- [ ] S3: msalApps cache + rateLimit buckets are per-instance in-memory (fine on Vercel today; note only)
+
+### Dashboard app (agent done)
+- [ ] D1 (P2 BUG): PriceEditor in src/components/workspace/PriceRow.tsx never re-syncs local value after save + router.refresh(); typing "14.9" leaves dirty=true vs canonical "14.90" -> Save re-enables while "Saved" shows. Fix: key={initial} at call sites in licenses/page.tsx (RenewalDateForm pattern) or re-sync-on-render.
+- [ ] D2: bulk "Reopen selected" action on findings table (only Acknowledge exists)
+- [ ] D3: renewal card on Overview should deep-link findings with ?rule= preset
+- [ ] D4: "Set your actual prices" nudge missing on Findings page (present on Overview/Licenses)
+
+### Lib/schema/config (agent done) - no P1/P2 bugs; improvements:
+- [ ] L1: fmtAgo (src/lib/format.ts:55) no negative-duration guard; clamp to 0 ("just now")
+- [ ] L2: stale drizzle/*.sql migration files predate current schema and mislead contributors (db:push is real workflow); delete or document as inert
+- [ ] L3: msConnections mode='byo' column invariant not DB-enforced (single write path today; low urgency)
+
+---
+
 # Review implementation (2026-06-23) — branch: harden/review-implementation — IN PROGRESS
 
 Implementing the full prioritized task list from the multi-agent review. Dependency-ordered
