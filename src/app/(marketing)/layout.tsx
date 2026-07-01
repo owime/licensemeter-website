@@ -20,8 +20,10 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/#get-started", label: "Start free" },
       { href: "/pricing", label: "Pricing" },
+      { href: "/roi", label: "ROI calculator" },
       { href: "/msp", label: "For MSPs" },
       { href: "/connectors", label: "Connectors" },
+      { href: "/compare/powershell-audit", label: "vs PowerShell audit" },
       { href: "/security", label: "Security" },
       { href: "/faq", label: "FAQ" },
       { href: "/status", label: "Status" },
