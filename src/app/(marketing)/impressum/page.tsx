@@ -4,7 +4,6 @@ import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const metadata: Metadata = {
   title: "Impressum",
-  robots: { index: false },
 };
 
 /*

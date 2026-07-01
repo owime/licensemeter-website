@@ -25,7 +25,8 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Their Global Administrator (or Privileged Role Administrator) consents",
+    title:
+      "Their Global Administrator (or Privileged Role Administrator) consents",
     body: "The client's admin completes Microsoft's standard admin-consent dialog: read-only application permissions, recorded in their audit log.",
   },
   {
@@ -101,7 +102,10 @@ const Ctas = ({
 }) => (
   <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
     {signInOk ? (
-      <a href={startHref} className={buttonClass("primary", "w-full sm:w-auto")}>
+      <a
+        href={startHref}
+        className={buttonClass("primary", "w-full sm:w-auto")}
+      >
         Start free
       </a>
     ) : (
@@ -122,7 +126,7 @@ const Ctas = ({
     {signInOk && (
       <a
         href={SUPPORT_MAILTO}
-        className="inline-flex min-h-11 items-center justify-center text-sm font-medium text-brand-text underline underline-offset-4 hover:opacity-80 sm:justify-start"
+        className="text-brand-text inline-flex min-h-11 items-center justify-center text-sm font-medium underline underline-offset-4 hover:opacity-80 sm:justify-start"
       >
         Talk to us
       </a>
@@ -139,16 +143,16 @@ export default function MspPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
-      <p className="text-xs font-medium tracking-[0.2em] text-brand-text uppercase">
+      <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         For managed service providers
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
         Every client tenant. One waste ledger.
       </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
         You run Microsoft 365 for five, twenty, fifty clients. LicenseMeter
-        gives every client tenant its own read-only workspace, and gives you
-        one portfolio, sorted by what each client wastes per month.
+        gives every client tenant its own read-only workspace, and gives you one
+        portfolio, sorted by what each client wastes per month.
       </p>
       <div className="mt-8">
         <Ctas
@@ -157,9 +161,9 @@ export default function MspPage() {
           startHref={startHref}
         />
         {signInOk && (
-          <p className="mt-3 text-xs text-ink-faint">
+          <p className="text-ink-faint mt-3 text-xs">
             Sign in, connect your first client read-only, and see their waste
-            number free. No credit card. Add tenants as you go &mdash; €{" "}
+            number free. No credit card. Add tenants as you go - €{" "}
             {MSP_PRICE_EUR} each a month.
           </p>
         )}
@@ -172,11 +176,11 @@ export default function MspPage() {
         <div className="mt-8 grid gap-10 md:grid-cols-3">
           {STEPS.map((step) => (
             <div key={step.n}>
-              <div className="font-mono text-xs text-brand-text">{step.n}</div>
-              <h3 className="mt-3 font-display text-xl tracking-tight">
+              <div className="text-brand-text font-mono text-xs">{step.n}</div>
+              <h3 className="font-display mt-3 text-xl tracking-tight">
                 {step.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              <p className="text-ink-soft mt-3 text-sm leading-relaxed">
                 {step.body}
               </p>
             </div>
@@ -184,30 +188,30 @@ export default function MspPage() {
         </div>
       </section>
 
-      <section className="mt-14 border border-line bg-card px-6 py-6">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+      <section className="border-line bg-card mt-14 border px-6 py-6">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           The finding your clients pay you to catch
         </h2>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-soft">
+        <p className="text-ink-soft mt-3 max-w-3xl text-sm leading-relaxed">
           Offboarding is where client money leaks. LicenseMeter cross-checks
-          every Adobe, Zoom, Atlassian, Salesforce, ChatGPT and Claude seat
-          against the client&rsquo;s directory, so the account you
-          disabled months ago surfaces with the paid seats it still holds. The
-          live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
+          every Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT
+          and Claude seat against the client&rsquo;s directory, so the account
+          you disabled months ago surfaces with the paid seats it still holds.
+          The live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
           ex-employees still licensed, {DEMO_FIGURES.crossVendorLeaverCount} of
           them in connected apps. That&rsquo;s{" "}
-          <span className="tnum font-mono text-waste-text">
+          <span className="tnum text-waste-text font-mono">
             € {demoEuros(DEMO_FIGURES.byCategory.leavers)}
           </span>{" "}
           a month for people who already left.
         </p>
       </section>
 
-      <section className="mt-14 grid gap-px border border-line bg-line sm:grid-cols-2">
+      <section className="border-line bg-line mt-14 grid gap-px border sm:grid-cols-2">
         {FEATURES.map((f) => (
           <div key={f.title} className="bg-card px-6 py-6">
             <h2 className="font-display text-xl tracking-tight">{f.title}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+            <p className="text-ink-soft mt-3 text-sm leading-relaxed">
               {f.body}
             </p>
           </div>
@@ -218,19 +222,21 @@ export default function MspPage() {
         <h2 className="font-display text-2xl tracking-tight">
           Built to pass your client&rsquo;s security review.
         </h2>
-        <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-soft">
+        <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm">
           {TRUST_ITEMS.map((item) => (
             <li key={item} className="flex gap-3">
-              <span aria-hidden="true" className="mt-0.5 text-moss">·</span>
+              <span aria-hidden="true" className="text-moss mt-0.5">
+                ·
+              </span>
               {item}
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-sm text-ink-soft">
+        <p className="text-ink-soft mt-4 text-sm">
           The{" "}
           <Link
             href="/security"
-            className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
             security overview
           </Link>{" "}
@@ -243,33 +249,32 @@ export default function MspPage() {
         <h2 className="font-display text-2xl tracking-tight">
           Simple, predictable per-tenant pricing.
         </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
+        <p className="text-ink-soft mt-3 max-w-2xl text-sm leading-relaxed">
           One flat price for each connected client tenant, billed across your
           whole portfolio on a single subscription. No seat math for normal
           client tenants, no surprises between QBRs.
         </p>
-        <div className="mt-8 border border-line bg-card px-6 py-6">
+        <div className="border-line bg-card mt-8 border px-6 py-6">
           <p className="font-display text-3xl tracking-tight">
             <span className="tnum font-mono">€ {MSP_PRICE_EUR}</span>{" "}
-            <span className="text-lg text-ink-soft">
+            <span className="text-ink-soft text-lg">
               per connected client tenant / month
             </span>
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            Or{" "}
-            <span className="tnum font-mono">€ {MSP_PRICE_ANNUAL_EUR}</span> per
-            tenant a year &mdash; two months free. Billed by quantity across
-            your whole portfolio, not per workspace.
+          <p className="text-ink-soft mt-3 text-sm leading-relaxed">
+            Or <span className="tnum font-mono">€ {MSP_PRICE_ANNUAL_EUR}</span>{" "}
+            per tenant a year - two months free. Billed by quantity across your
+            whole portfolio, not per workspace.
           </p>
-          <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
+          <p className="border-line text-ink-soft mt-4 border-t pt-4 text-sm leading-relaxed">
             Client tenants over{" "}
             <span className="tnum font-mono">
               {MSP_LARGE_TENANT_SEATS_LABEL}
             </span>{" "}
-            seats are rare enterprise outliers, priced separately &mdash;{" "}
+            seats are rare enterprise outliers, priced separately -{" "}
             <a
               href={SUPPORT_MAILTO}
-              className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+              className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
             >
               talk to us
             </a>
@@ -285,11 +290,11 @@ export default function MspPage() {
         </div>
       </section>
 
-      <section className="mt-14 border-t border-line pt-10">
+      <section className="border-line mt-14 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
           Bring your worst tenant.
         </h2>
-        <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
+        <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
           Walk through the demo workspace first, then connect the client you
           suspect most. The first scan is free, read-only, and takes one
           consent.

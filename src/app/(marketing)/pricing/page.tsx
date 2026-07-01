@@ -92,53 +92,56 @@ const INCLUDED = [
 export default function PricingPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
-      <p className="text-xs font-medium tracking-[0.2em] text-brand-text uppercase">
+      <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         Pricing
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
         Flat per tenant. Sized by seats, not by your waste.
       </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
         Every plan starts the same way: connect read-only and see your waste
-        number for free. The subscription is for acting on it month after
-        month. Licenses leak every time someone joins, moves or leaves.
+        number for free. The subscription is for acting on it month after month.
+        Licenses leak every time someone joins, moves or leaves.
       </p>
 
       <div className="mt-12">
-        <PricingTiers signInEnabled={signInEnabled()} signInHref={signInPath()} />
+        <PricingTiers
+          signInEnabled={signInEnabled()}
+          signInHref={signInPath()}
+        />
       </div>
 
       {taxEnabled() ? (
-        <p className="mt-4 text-sm text-ink-soft">
-          Prices include applicable VAT. EU businesses with a valid VAT ID are
-          reverse-charged at checkout.
+        <p className="text-ink-soft mt-4 text-sm">
+          Prices exclude VAT; it is added at checkout where applicable. EU
+          businesses with a valid VAT ID are reverse-charged.
         </p>
       ) : (
-        <p className="mt-4 text-sm text-ink-soft">
+        <p className="text-ink-soft mt-4 text-sm">
           {TRIAL_DAYS}-day free trial. No credit card required.
         </p>
       )}
 
-      <p className="mt-4 text-sm text-ink-soft">
+      <p className="text-ink-soft mt-4 text-sm">
         More than 2.500 seats in a single tenant?{" "}
         <a
           href={SUPPORT_MAILTO}
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Talk to us.
         </a>
       </p>
 
-      <div className="mt-6 border border-line bg-card px-6 py-5">
-        <p className="text-sm leading-relaxed text-ink-soft">
+      <div className="border-line bg-card mt-6 border px-6 py-5">
+        <p className="text-ink-soft text-sm leading-relaxed">
           Running Microsoft 365 for multiple client tenants?{" "}
           <span className="tnum font-mono">€ {MSP_PRICE_EUR}</span> per tenant,
-          billed across your portfolio on one subscription — with a portfolio
+          billed across your portfolio on one subscription - with a portfolio
           view sorted by waste, per-client price books and a QBR-ready report
           for each. Self-serve, no sales call.{" "}
           <Link
             href="/msp"
-            className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
             See MSP pricing
           </Link>
@@ -151,37 +154,38 @@ export default function PricingPage() {
           <h2 className="font-display text-2xl tracking-tight">
             Every plan includes
           </h2>
-          <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-soft">
+          <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm">
             {INCLUDED.map((item) => (
               <li key={item} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-moss">·</span>
+                <span aria-hidden="true" className="text-moss mt-0.5">
+                  ·
+                </span>
                 {item}
               </li>
             ))}
           </ul>
         </div>
-        <div className="border border-line bg-card px-6 py-6">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <div className="border-line bg-card border px-6 py-6">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             Does it pay for itself?
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+          <p className="text-ink-soft mt-3 text-sm leading-relaxed">
             A single Microsoft 365 E3 seat is roughly{" "}
-            <span className="tnum font-mono">€ 440</span> a year, a Copilot
-            seat about <span className="tnum font-mono">€ 340</span>. The
-            Growth plan costs{" "}
-            <span className="tnum font-mono">€ {GROWTH_ANNUAL}</span> a year.
-            Six reclaimed E3 seats cover it. The live demo tenant of{" "}
+            <span className="tnum font-mono">€ 440</span> a year, a Copilot seat
+            about <span className="tnum font-mono">€ 340</span>. The Growth plan
+            costs <span className="tnum font-mono">€ {GROWTH_ANNUAL}</span> a
+            year. Six reclaimed E3 seats cover it. The live demo tenant of{" "}
             {DEMO_FIGURES.users} people shows{" "}
-            <span className="tnum font-mono text-waste-text">
+            <span className="tnum text-waste-text font-mono">
               € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}
             </span>{" "}
             a month recoverable, about{" "}
-            <span className="tnum font-mono text-waste-text">
+            <span className="tnum text-waste-text font-mono">
               € {DEMO_ANNUAL_WASTE_ROUNDED}
             </span>{" "}
             a year.
           </p>
-          <p className="mt-3 text-xs text-ink-faint">
+          <p className="text-ink-faint mt-3 text-xs">
             Every plan starts with a {TRIAL_DAYS}-day free trial, no credit card
             required. Connect, see your number, and only subscribe if you keep
             monitoring it month after month.
@@ -189,18 +193,18 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <p className="mt-12 text-sm text-ink-soft">
+      <p className="text-ink-soft mt-12 text-sm">
         Questions about scopes or data handling first? Read the{" "}
         <Link
           href="/security"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           security overview
         </Link>{" "}
         or the{" "}
         <Link
           href="/faq"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           FAQ
         </Link>

@@ -57,7 +57,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       },
       {
         title: "BYO manual route (portal)",
-        body: "If you cannot run the script: in Entra ID > App registrations, create an app (single tenant). Under API permissions add the exact application permissions LicenseMeter lists on the connector page (all read-only), then Grant admin consent. Under Certificates & secrets create a client secret (or upload a certificate). Paste the tenant ID, client ID and the secret (or the certificate private key and certificate, both PEM) into the connector's Advanced section. The least-privilege rationale: every permission is *.Read.All and scoped to directory, license and usage-report reads only — no write scopes, no mail or file content.",
+        body: "If you cannot run the script: in Entra ID > App registrations, create an app (single tenant). Under API permissions add the exact application permissions LicenseMeter lists on the connector page (all read-only), then Grant admin consent. Under Certificates & secrets create a client secret (or upload a certificate). Paste the tenant ID, client ID and the secret (or the certificate private key and certificate, both PEM) into the connector's Advanced section. The least-privilege rationale: every permission is *.Read.All and scoped to directory, license and usage-report reads only - no write scopes, no mail or file content.",
         doc: {
           label: "Grant admin consent to an application",
           href: "https://learn.microsoft.com/entra/identity/enterprise-apps/grant-admin-consent",
@@ -200,15 +200,16 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     steps: [
       {
         title: "Create a Connected App",
-        body: "In Setup > App Manager, create a Connected App with OAuth enabled and Enable Client Credentials Flow checked. Under Selected OAuth Scopes, add 'Manage user data via APIs (api)' — without it the token issues but the user query is rejected, so the connection validates yet reads nothing.",
+        body: "In Setup > App Manager, create a Connected App with OAuth enabled and Enable Client Credentials Flow checked. Under Selected OAuth Scopes, add 'Manage user data via APIs (api)' - without it the token issues but the user query is rejected, so the connection validates yet reads nothing.",
         doc: {
-          label: "Salesforce: Configure a Connected App for the Client Credentials Flow",
+          label:
+            "Salesforce: Configure a Connected App for the Client Credentials Flow",
           href: "https://help.salesforce.com/s/articleView?id=xcloud.connected_app_client_credentials_setup.htm&type=5",
         },
       },
       {
         title: "Set a read-only run-as user",
-        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated integration user with API Enabled and View All Users (read-only) — View All Users is what lets the single query return every active user when User Sharing is on; without it the list comes back empty or partial. LicenseMeter's only query is the user list.",
+        body: "Under Manage > Edit Policies > Client Credentials Flow, set the execution user. Use a dedicated integration user with API Enabled and View All Users (read-only) - View All Users is what lets the single query return every active user when User Sharing is on; without it the list comes back empty or partial. LicenseMeter's only query is the user list.",
       },
       {
         title: "Connect",
@@ -219,7 +220,9 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "The user list: email, name, active flag and license type",
       "Last login per user",
     ],
-    neverReads: ["CRM records: no accounts, contacts, opportunities or reports"],
+    neverReads: [
+      "CRM records: no accounts, contacts, opportunities or reports",
+    ],
     detects: detectsOf("salesforce"),
     settingsPath: "/app/settings/salesforce",
   },

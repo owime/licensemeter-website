@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { env, siteUrl } from "~/env";
+import { env, signInPath, siteUrl } from "~/env";
 import { SUBPROCESSORS } from "~/lib/dpa";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
@@ -180,7 +180,7 @@ export default function SecurityPage() {
         <p className="mt-4">
           No role with consent rights at hand today? The{" "}
           <a
-            href="/auth/sign-in?returnTo=%2Fapp%2Fconnect%2Fcsv"
+            href={`${signInPath()}?returnTo=${encodeURIComponent("/app/connect/csv")}`}
             className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
             CSV trial
@@ -290,6 +290,31 @@ export default function SecurityPage() {
           displays the verification status directly in the consent dialog, so
           your admin can always confirm the current state independently of this
           page.
+        </p>
+      </Section>
+
+      <Section title="Who builds LicenseMeter">
+        <p>
+          LicenseMeter is built and maintained by{" "}
+          <a
+            href="https://ugurkoc.de"
+            target="_blank"
+            rel="noreferrer"
+            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+          >
+            Ugur Koc
+          </a>
+          , Microsoft MVP for Intune and Security Copilot. The operating company
+          is UgurLabs UG (haftungsbeschränkt) in Düsseldorf, Germany, the same
+          legal entity named in the{" "}
+          <Link
+            href="/impressum"
+            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+          >
+            Imprint
+          </Link>{" "}
+          and in every DPA, and the read-only design principles documented on
+          this page apply to the entire product.
         </p>
       </Section>
 

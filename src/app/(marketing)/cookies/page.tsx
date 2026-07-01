@@ -75,8 +75,25 @@ export default function CookiesPage() {
             </thead>
             <tbody className="text-ink-soft">
               <tr className="border-line border-b">
+                <td className="text-ink px-4 py-2 font-mono">wos-session</td>
+                <td className="px-4 py-2">
+                  Keeps you signed in to the application (HTTP-only). Set by our
+                  authentication provider WorkOS when you sign in; contains a
+                  sealed, encrypted session.
+                </td>
+                <td className="px-4 py-2">
+                  While you stay signed in (browser limit: 400 days); the
+                  session inside is short-lived and refreshed as you use the
+                  app.
+                </td>
+              </tr>
+              <tr className="border-line border-b">
                 <td className="text-ink px-4 py-2 font-mono">lm_session</td>
-                <td className="px-4 py-2">Keeps you signed in (HTTP-only).</td>
+                <td className="px-4 py-2">
+                  Keeps you signed in for the demo workspace and, where
+                  Microsoft sign-in is used directly, for the application
+                  (HTTP-only).
+                </td>
                 <td className="px-4 py-2">30 days</td>
               </tr>
               <tr className="border-line border-b">
@@ -98,8 +115,9 @@ export default function CookiesPage() {
           </table>
         </div>
         <p className="text-ink-faint text-xs">
-          In production the session cookies carry the <code>__Host-</code>{" "}
-          prefix for added security (e.g. <code>__Host-lm_session</code>).
+          In production the LicenseMeter session cookies carry the{" "}
+          <code>__Host-</code> prefix for added security (e.g.{" "}
+          <code>__Host-lm_session</code>).
         </p>
       </Section>
 
@@ -136,7 +154,7 @@ export default function CookiesPage() {
       <Section title="7. Changes to this Cookie Policy">
         <p>
           We update this Cookie Policy when the cookies we use change. The
-          version published on this page applies. Questions: please email
+          version published on this page applies. Questions: please email{" "}
           {SUPPORT_EMAIL}.
         </p>
       </Section>

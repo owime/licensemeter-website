@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { isDemoMode, siteUrl } from "~/env";
+import { isDemoMode, signInPath, siteUrl } from "~/env";
 import { buttonClass, Pill } from "~/components/ui";
 import { CONNECTOR_GUIDES, connectorGuide } from "~/lib/connectorGuides";
 
@@ -62,11 +62,11 @@ export default async function ConnectorGuidePage({
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <nav
         aria-label="Breadcrumb"
-        className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+        className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
       >
         <Link
           href="/connectors"
-          className="underline-offset-4 hover:text-ink hover:underline"
+          className="hover:text-ink underline-offset-4 hover:underline"
         >
           Connectors
         </Link>{" "}
@@ -84,13 +84,13 @@ export default async function ConnectorGuidePage({
         </Pill>
       </div>
       {guide.kind === "import" && (
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-faint">
+        <p className="text-ink-faint mt-3 max-w-2xl text-sm leading-relaxed">
           This is a CSV import, not an API connection: {guide.name} has no
           members API to read, so you paste an exported member list and
           LicenseMeter matches it against your directory. Re-import to refresh.
         </p>
       )}
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
         {guide.intro}
       </p>
 
@@ -103,7 +103,7 @@ export default async function ConnectorGuidePage({
             <li key={step.title} className="flex gap-5">
               <span
                 aria-hidden="true"
-                className="font-mono text-xs text-brand-text"
+                className="text-brand-text font-mono text-xs"
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
@@ -111,7 +111,7 @@ export default async function ConnectorGuidePage({
                 <h3 className="font-display text-xl tracking-tight">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                <p className="text-ink-soft mt-2 text-sm leading-relaxed">
                   {step.body}
                 </p>
                 {step.doc && (
@@ -120,7 +120,7 @@ export default async function ConnectorGuidePage({
                       href={step.doc.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+                      className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
                     >
                       {step.doc.label}
                     </a>{" "}
@@ -140,10 +140,10 @@ export default async function ConnectorGuidePage({
           <h2 className="font-display text-2xl tracking-tight">
             What it finds.
           </h2>
-          <ul className="mt-4 flex flex-col gap-2 text-sm leading-relaxed text-ink-soft">
+          <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.detects.map((line) => (
               <li key={line} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-brand-text">
+                <span aria-hidden="true" className="text-brand-text mt-0.5">
                   ·
                 </span>
                 {line}
@@ -153,15 +153,15 @@ export default async function ConnectorGuidePage({
         </section>
       )}
 
-      <section className="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2">
+      <section className="border-line bg-line mt-12 grid gap-px border sm:grid-cols-2">
         <div className="bg-card px-6 py-6">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             What LicenseMeter reads
           </h2>
-          <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed text-ink-soft">
+          <ul className="text-ink-soft mt-3 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.reads.map((line) => (
               <li key={line} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-moss">
+                <span aria-hidden="true" className="text-moss mt-0.5">
                   ·
                 </span>
                 {line}
@@ -170,13 +170,13 @@ export default async function ConnectorGuidePage({
           </ul>
         </div>
         <div className="bg-card px-6 py-6">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             What it never reads
           </h2>
-          <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed text-ink-soft">
+          <ul className="text-ink-soft mt-3 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.neverReads.map((line) => (
               <li key={line} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-brand-text">
+                <span aria-hidden="true" className="text-brand-text mt-0.5">
                   ·
                 </span>
                 {line}
@@ -186,31 +186,31 @@ export default async function ConnectorGuidePage({
         </div>
       </section>
 
-      <p className="mt-8 text-sm leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-8 text-sm leading-relaxed">
         {guide.kind === "api"
           ? "Credentials are validated against the vendor before anything is stored, encrypted at rest (AES-256-GCM), used read-only and deleted the moment you disconnect."
           : "Nothing leaves the pasted table: the member list is stored like any other connector seat snapshot and deleted the moment you clear it."}{" "}
         Data lives in the EU (Postgres, Frankfurt). The{" "}
         <Link
           href="/security"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           security overview
         </Link>{" "}
         covers the full picture.
       </p>
 
-      <section className="mt-12 border-t border-line pt-10">
+      <section className="border-line mt-12 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
           Ready in a few minutes.
         </h2>
-        <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
+        <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
           Open the connector page in your workspace, or walk through the live
           demo first to see the findings this connector produces.
         </p>
         <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <a
-            href={`/auth/sign-in?returnTo=${encodeURIComponent(guide.settingsPath)}`}
+            href={`${signInPath()}?returnTo=${encodeURIComponent(guide.settingsPath)}`}
             className={buttonClass("primary", "w-full sm:w-auto")}
           >
             Open the {guide.name} connector
@@ -223,7 +223,7 @@ export default async function ConnectorGuidePage({
             </form>
           )}
         </div>
-        <p className="mt-3 text-xs text-ink-faint">
+        <p className="text-ink-faint mt-3 text-xs">
           Opening the connector signs you in with Microsoft first.
         </p>
       </section>

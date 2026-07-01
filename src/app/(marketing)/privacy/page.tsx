@@ -5,7 +5,6 @@ import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  robots: { index: false },
 };
 
 const Section = ({
@@ -88,15 +87,15 @@ export default function PrivacyPolicyPage() {
           password. Whichever method you choose, we process the profile data it
           returns, in particular your display name and email address, together
           with the identifier WorkOS assigns to your account. Where you sign in
-          with a Microsoft account, we additionally receive your Microsoft object
-          ID and tenant ID. This data is required to provide the account
+          with a Microsoft account, we additionally receive your Microsoft
+          object ID and tenant ID. This data is required to provide the account
           (Art. 6(1)(b) GDPR).
         </p>
         <p>
           WorkOS processes this sign-in data in the United States; the transfer
           is based on the EU Standard Contractual Clauses (see the subprocessor
-          list below). Sessions are then maintained by a first-party,
-          HTTP-only cookie set by LicenseMeter (see our{" "}
+          list below). Sessions are then maintained by a first-party, HTTP-only
+          cookie set by LicenseMeter (see our{" "}
           <a
             href="/cookies"
             className="hover:text-ink underline underline-offset-4"
@@ -130,10 +129,10 @@ export default function PrivacyPolicyPage() {
           and is deleted immediately and in full when the workspace is
           disconnected. Where the organization connects its Microsoft tenant
           using its own application registration (&ldquo;bring your own&rdquo;),
-          the credentials it supplies are stored encrypted (AES-256-GCM) and used
-          solely for the read-only sync; they are never logged or disclosed. A
-          data processing agreement (DPA) is provided to each organization before
-          production use.
+          the credentials it supplies are stored encrypted (AES-256-GCM) and
+          used solely for the read-only sync; they are never logged or
+          disclosed. A data processing agreement (DPA) is provided to each
+          organization before production use.
         </p>
       </Section>
 
@@ -171,7 +170,10 @@ export default function PrivacyPolicyPage() {
         </ul>
         <p>
           The current list is part of the{" "}
-          <a href="/dpa" className="hover:text-ink underline underline-offset-4">
+          <a
+            href="/dpa"
+            className="hover:text-ink underline underline-offset-4"
+          >
             DPA
           </a>
           .

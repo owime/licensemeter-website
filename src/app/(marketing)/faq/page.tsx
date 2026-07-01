@@ -59,7 +59,7 @@ const FAQS = [
   },
   {
     q: "We are an MSP. Can we manage several client tenants?",
-    a: `Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Pricing is € ${MSP_PRICE_EUR} per connected client tenant a month, billed by quantity across your portfolio on one subscription — self-serve, no sales call. See the MSP page for details.`,
+    a: `Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Pricing is € ${MSP_PRICE_EUR} per connected client tenant a month, billed by quantity across your portfolio on one subscription - self-serve, no sales call. See the MSP page for details.`,
   },
 ] as const;
 
@@ -75,41 +75,46 @@ const slugify = (s: string): string =>
 export default function FaqPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
-      <p className="text-xs font-medium tracking-[0.2em] text-brand-text uppercase">
+      <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         FAQ
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
         The questions that come before consent.
       </h1>
 
-      <h2 id="faq-list-heading" className="sr-only">Questions</h2>
-      <dl aria-labelledby="faq-list-heading" className="mt-10 border border-line bg-card">
+      <h2 id="faq-list-heading" className="sr-only">
+        Questions
+      </h2>
+      <dl
+        aria-labelledby="faq-list-heading"
+        className="border-line bg-card mt-10 border"
+      >
         {FAQS.map((item) => (
           <div
             key={item.q}
             id={slugify(item.q)}
-            className="scroll-mt-24 border-b border-line px-6 py-5 last:border-b-0"
+            className="border-line scroll-mt-24 border-b px-6 py-5 last:border-b-0"
           >
-            <dt className="font-medium text-ink">{item.q}</dt>
-            <dd className="mt-2 text-sm leading-relaxed text-ink-soft">
+            <dt className="text-ink font-medium">{item.q}</dt>
+            <dd className="text-ink-soft mt-2 text-sm leading-relaxed">
               {item.a}
             </dd>
           </div>
         ))}
       </dl>
 
-      <p className="mt-8 text-sm text-ink-soft">
+      <p className="text-ink-soft mt-8 text-sm">
         Anything missing?{" "}
         <a
           href={SUPPORT_MAILTO}
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Ask directly
         </a>{" "}
         or read the{" "}
         <Link
           href="/security"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           security overview
         </Link>

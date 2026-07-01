@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  Calculator,
-  Check,
-  Download,
-  Receipt,
-  Terminal,
-} from "lucide-react";
+import { Calculator, Check, Download, Receipt, Terminal } from "lucide-react";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
@@ -24,6 +18,8 @@ const CONNECTORS = [
   "Zoom",
   "Atlassian",
   "Salesforce",
+  "OpenAI",
+  "Anthropic",
   "ChatGPT",
   "Claude",
 ] as const;
@@ -54,7 +50,7 @@ const HERO_TRUST = [
 ] as const;
 
 const INCLUDED = [
-  "Every connector: Microsoft 365, Adobe, Zoom, Atlassian, Salesforce, ChatGPT, Claude",
+  "Every connector: Microsoft 365, Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT, Claude",
   "All waste rules, priced in euros per month",
   "Nightly sync, full history and offboarding-leak alerts",
   "CSV + PowerShell exports and board-ready PDF reports",
@@ -79,6 +75,7 @@ const HOME_LD = {
       operatingSystem: "Web",
       url: BASE,
       description: SITE_DEFINITION,
+      publisher: { "@id": `${BASE}/#organization` },
       offers: PLANS.map((plan) => ({
         "@type": "Offer",
         name: plan.name,
@@ -232,7 +229,8 @@ export default async function LandingPage() {
           </p>
           <div className="bg-brand-soft text-brand-deep mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <Check className="size-4 shrink-0" />
-            Every plan starts with a {TRIAL_DAYS}-day free trial, no card required
+            Every plan starts with a {TRIAL_DAYS}-day free trial, no card
+            required
           </div>
         </div>
 
@@ -269,7 +267,7 @@ export default async function LandingPage() {
                   "mt-5 w-full",
                 )}
               >
-                Start free — no card
+                Start free - no card
               </a>
               <p className="text-ink-faint mt-3 text-xs">
                 First scan free, then free for {TRIAL_DAYS} days, then €{" "}
@@ -348,6 +346,25 @@ export default async function LandingPage() {
             Get it on GitHub →
           </a>
         </div>
+      </section>
+
+      {/* Founder trust strip: the last thing read before the consent ask. */}
+      <section className="mx-auto max-w-6xl px-6 pb-14">
+        <Reveal>
+          <p className="text-ink-soft mx-auto max-w-2xl text-center text-sm leading-relaxed">
+            LicenseMeter is built and maintained by{" "}
+            <a
+              href="https://ugurkoc.de"
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-text font-medium underline underline-offset-4 hover:opacity-80"
+            >
+              Ugur Koc
+            </a>
+            , Microsoft MVP for Intune and Security Copilot, and operated by
+            UgurLabs UG (haftungsbeschränkt), a German company in Düsseldorf.
+          </p>
+        </Reveal>
       </section>
 
       {/* Final CTA band */}

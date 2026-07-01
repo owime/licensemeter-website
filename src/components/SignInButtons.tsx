@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { buttonClass } from "~/components/ui";
 import { TRIAL_DAYS } from "~/lib/plans";
 
@@ -35,12 +37,12 @@ export const SignInButtons = ({
           {primaryLabel}
         </a>
       ) : (
-        <a
-          href="#request-scan"
+        <Link
+          href="/#get-started"
           className={buttonClass("primary", "w-full sm:w-auto")}
         >
           Request scan access
-        </a>
+        </Link>
       )}
       {demoEnabled && (
         <form action="/api/auth/demo" method="post">
@@ -50,12 +52,12 @@ export const SignInButtons = ({
         </form>
       )}
       {!demoEnabled && (
-        <a
-          href="#sample-tenant"
+        <Link
+          href="/#sample-tenant"
           className={buttonClass("secondary", "w-full sm:w-auto")}
         >
           Open the sample tenant
-        </a>
+        </Link>
       )}
     </div>
     {showNote && (
