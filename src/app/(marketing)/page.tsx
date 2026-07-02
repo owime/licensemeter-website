@@ -195,10 +195,6 @@ export default async function LandingPage() {
           <h2 className="font-display text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
             See it in action.
           </h2>
-          <p className="text-ink-soft mt-4 text-base leading-relaxed">
-            Ten-second tours of the sample tenant. Pick a feature to watch it
-            work.
-          </p>
         </div>
         <div className="mt-10">
           <FeatureShowcase />
