@@ -1,4 +1,7 @@
-# Hardening + content wave (2026-07-02) - IN PROGRESS
+# Hardening + content wave (2026-07-02) - DONE (pushed 34757b0..ec8a4e4; live-verified)
+# ms_connections_mode_columns_check applied to prod Supabase (project tomugclophxlmnzrrcxp)
+# via MCP migration add_ms_connections_mode_columns_check on 2026-07-02; verified in
+# pg_constraint; 2 existing rows, 0 violations pre-apply. No owner DB action remaining.
 
 Owner asked to: clean up stale drizzle/*.sql; add msConnections mode CHECK; add
 sync-vs-disconnect integration test; build per-rule waste explainer pages, more
