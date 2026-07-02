@@ -20,13 +20,22 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/#get-started", label: "Start free" },
       { href: "/pricing", label: "Pricing" },
-      { href: "/roi", label: "ROI calculator" },
       { href: "/msp", label: "For MSPs" },
       { href: "/connectors", label: "Connectors" },
-      { href: "/compare/powershell-audit", label: "vs PowerShell audit" },
       { href: "/security", label: "Security" },
       { href: "/faq", label: "FAQ" },
       { href: "/status", label: "Status" },
+    ],
+  },
+  {
+    title: "Learn",
+    links: [
+      { href: "/waste", label: "Waste patterns" },
+      { href: "/sample-report", label: "Sample report" },
+      { href: "/roi", label: "ROI calculator" },
+      { href: "/compare/powershell-audit", label: "vs PowerShell audit" },
+      { href: "/compare/m365-admin-center", label: "vs M365 admin center" },
+      { href: "/compare/excel-license-tracking", label: "vs Excel tracking" },
     ],
   },
   {
@@ -113,7 +122,7 @@ export default function MarketingLayout({
       <div id="content">{children}</div>
 
       <footer className="border-line bg-card border-t">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <div className="font-display flex items-center gap-2 text-lg tracking-tight">
               <BrandMark size={18} />

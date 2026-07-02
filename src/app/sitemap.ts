@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { siteUrl } from "~/env";
+import { WASTE_EXPLAINERS } from "~/app/(marketing)/waste/content";
 import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 
 /** Legal pages: indexable but low priority, they rarely change. */
@@ -13,7 +14,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/pricing",
     "/msp",
     "/roi",
+    "/sample-report",
     "/compare/powershell-audit",
+    "/compare/m365-admin-center",
+    "/compare/excel-license-tracking",
+    "/waste",
+    ...WASTE_EXPLAINERS.map((e) => `/waste/${e.slug}`),
     "/security",
     "/trust-center",
     "/de/trust-center",

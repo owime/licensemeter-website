@@ -1,3 +1,27 @@
+# Hardening + content wave (2026-07-02) - IN PROGRESS
+
+Owner asked to: clean up stale drizzle/*.sql; add msConnections mode CHECK; add
+sync-vs-disconnect integration test; build per-rule waste explainer pages, more
+comparison pages, and a case-study-style page (built honestly as a labeled demo
+walkthrough; a real case study needs a real customer).
+
+## Acceptance criteria
+- [ ] drizzle/ generated SQL removed; docs state db:push is the migration workflow
+- [ ] CHECK constraint: msConnections mode='byo' implies credential cols set,
+      'managed' implies null; db:push applied locally; prod step documented
+- [ ] Prod deploy: run npm run db:push against prod (DATABASE_URL set) to add
+      ms_connections_mode_columns_check; additive only - all write paths
+      (connectMicrosoftByo in actions.ts, managed callback, backfill script)
+      already satisfy the invariant, so existing rows pass
+- [ ] Integration test: disconnect/delete tenant while a sync run is mid-flight
+- [ ] 6 waste-rule explainer pages grounded in lib/rules.ts + README
+- [ ] 2 new comparison pages (M365 admin center, Excel tracking) - honest, grounded
+- [ ] Demo-walkthrough report page, clearly labeled synthetic
+- [ ] New pages wired into sitemap, llms.txt, footer
+- [ ] check + test + build green; evaluation pass; commit + push
+
+---
+
 # App page-by-page review (2026-07-01) - DONE (uncommitted, awaiting owner commit)
 
 Owner asked for an individual review of every page under /app (and auth pages),

@@ -27,7 +27,11 @@ Operated by UgurLabs UG and maintained by Ugur Koc, Microsoft MVP for Intune and
 - [Pricing](${base}/pricing): flat per-tenant tiers and what every plan includes
 - [For MSPs](${base}/msp): portfolio view across client tenants, consultant consent flow, per-client price books and QBR-ready reports
 - [ROI calculator](${base}/roi): estimate the monthly license waste for a tenant by seat count and per-seat cost, computed entirely in the browser
+- [Waste patterns](${base}/waste): explainer per detection rule (disabled accounts still licensed, never active, inactive 90+ days, unassigned seats, unused Copilot, licensed guests) with manual PowerShell detection and how LicenseMeter automates it
+- [Sample report](${base}/sample-report): what a first scan surfaces, walked through on the synthetic demo tenant (clearly labeled; not a customer story)
 - [vs PowerShell audit](${base}/compare/powershell-audit): honest comparison of a manual Get-MgUser/Get-MgSubscribedSku audit with continuous joined-signal detection
+- [vs the M365 admin center](${base}/compare/m365-admin-center): what the admin center covers and what it does not (per-seat euro figures, joined activity, offboarding-leak detection)
+- [vs Excel tracking](${base}/compare/excel-license-tracking): why license spreadsheets go stale and what live sync plus activity-joined findings add
 - [Security](${base}/security): granted scopes, stored data, residency, subprocessors, DPA
 - [Trust Center](${base}/trust-center): how data is accessed, where it lives, who processes it, and the documents behind it (German version at ${base}/de/trust-center)
 - [DPA](${base}/dpa): pre-signed Art. 28 GDPR data processing agreement, downloadable in English and German (German version at ${base}/de/dpa)
