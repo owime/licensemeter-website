@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
+import { DemoClip } from "~/components/landing/DemoClip";
 import { SignInButtons } from "~/components/SignInButtons";
 import { TRIAL_DAYS } from "~/lib/plans";
 
@@ -131,6 +132,13 @@ export default async function WasteExplainerPage({
             {p}
           </p>
         ))}
+        <DemoClip
+          src="/videos/feature-findings.mp4"
+          poster="/videos/feature-findings.jpg"
+          label="Product demo: filtering and acknowledging findings"
+          caption="The findings list in the demo workspace: filter by rule, select the affected seats, acknowledge in bulk."
+          className="mt-6"
+        />
       </section>
 
       <section className="border-line bg-card mt-12 border px-6 py-6">

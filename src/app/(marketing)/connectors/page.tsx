@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteUrl } from "~/env";
+import { DemoClip } from "~/components/landing/DemoClip";
 import { Pill } from "~/components/ui";
 import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 
@@ -50,6 +51,14 @@ export default function ConnectorsIndexPage() {
         cross-check, read-only, with a step-by-step guide and the official
         vendor documentation linked.
       </p>
+
+      <DemoClip
+        src="/videos/feature-connectors.mp4"
+        poster="/videos/feature-connectors.jpg"
+        label="Product demo: connecting the Atlassian connector"
+        caption="Connecting Atlassian in the demo workspace: read-only credentials in, first sync done, seats in the directory cross-check."
+        className="mt-10 max-w-3xl"
+      />
 
       <section className="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2">
         <h2 className="sr-only">Setup guides</h2>
