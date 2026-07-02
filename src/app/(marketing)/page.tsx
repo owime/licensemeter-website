@@ -3,6 +3,7 @@ import { Calculator, Check, Download, Receipt, Terminal } from "lucide-react";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
+import { FeatureShowcase } from "~/components/landing/FeatureShowcase";
 import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
@@ -185,6 +186,22 @@ export default async function LandingPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Product tour */}
+      <section id="product-tour" className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
+        <div className="max-w-2xl">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
+            See it in action.
+          </h2>
+          <p className="text-ink-soft mt-4 text-base leading-relaxed">
+            Ten-second tours of the sample tenant. Pick a feature to watch it
+            work.
+          </p>
+        </div>
+        <div className="mt-10">
+          <FeatureShowcase />
         </div>
       </section>
 
