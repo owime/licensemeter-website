@@ -111,8 +111,8 @@ renewal `4000 0000 0000 0341`.
 4. Update the privacy policy / DPA / subprocessor list to name Stripe (US
    transfer; Stripe retains invoices for tax-law retention even after customer
    deletion).
-5. The production Supabase schema is already migrated
-   (`drizzle/0006_billing.sql`) and the pre-existing live tenant is grandfathered
+5. The production Supabase schema is already migrated (billing tables deployed
+   via `npm run db:push`) and the pre-existing live tenant is grandfathered
    via `comped_at`, so it never locks.
 
 > Tax note: charging/showing VAT before VAT registration is not permitted

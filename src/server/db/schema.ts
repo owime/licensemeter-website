@@ -265,6 +265,13 @@ export const msConnections = pgTable(
   },
   (t) => [
     check("ms_connections_mode_check", sql`${t.mode} in ('managed', 'byo')`),
+    // Dual-mode column invariant, mirrored from the write paths: byo stores its
+    // own credential triplet; managed authenticates via the env app and stores
+    // none of it.
+    check(
+      "ms_connections_mode_columns_check",
+      sql`(${t.mode} = 'byo' and ${t.appClientId} is not null and ${t.credType} is not null and ${t.secretEnc} is not null) or (${t.mode} = 'managed' and ${t.appClientId} is null and ${t.credType} is null and ${t.secretEnc} is null)`,
+    ),
     // One Microsoft tenant belongs to at most one workspace: the atomic
     // backstop behind the application-level steal guard in connectMicrosoftByo.
     uniqueIndex("ms_connections_tid_idx").on(t.tid),

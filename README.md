@@ -60,6 +60,10 @@ npm run test           # vitest
 npm run check          # eslint + tsc
 ```
 
+Schema changes deploy with `npm run db:push` (drizzle-kit push), locally and in
+production alike; there is no migrations directory. The `scripts/db-*.sql`
+files are the idempotent RLS/grants scripts run separately against production.
+
 ## Connecting real tenants
 
 See [SETUP.md](SETUP.md): create the two app registrations with
