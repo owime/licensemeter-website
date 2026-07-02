@@ -957,3 +957,47 @@ revert needed (the new column/table are additive and unused by the entra path).
    but the entra path never requires either; no destructive migration to undo. If
    a hard revert is ever required, drop `ms_connections` and re-add NOT NULL on
    `tenants.tid` only after confirming every tenant has a tid.
+
+# Betriebsrat / works-council readiness, tranche 1 (2026-07-02)
+
+Context: German-market feedback flagged employee-monitoring concerns (BetrVG s. 87(1)(6),
+GDPR data minimization). Assessment found the legal layer strong but no purpose-limitation
+commitment, no German security page, and no product-side aggregate mode. This tranche
+delivers the three concrete pieces agreed with the owner.
+
+## Deliverables
+- [x] D1 DPA purpose-limitation clause: add to src/lib/dpa.ts (EN + DE) a commitment that
+      data is processed solely for license/cost optimization and never used or provided to
+      evaluate individual employees' performance or behavior. Bump DPA version to 1.2,
+      effective 2 July 2026. Flag for counsel review (existing draft convention).
+- [x] D2 German security page at /de/security: refactor /security into the established
+      bilingual pattern (content.ts + View + slim pages, like /trust-center), German
+      server-rendered edition, hreflang alternates both ways, sitemap entry, and point
+      German trust-center links at /de/security.
+- [x] D3 Privacy mode spec at docs/privacy-mode.md: workspace-level aggregate-only mode
+      (no names/UPNs stored, aggregate findings, identity-free exports, server-side
+      enforcement, audited toggle), independent of Microsoft's report concealment.
+
+## Acceptance criteria
+- [x] A1 DPA renders v1.2 with the new clause on /dpa and /de/dpa web + PDF (same source),
+      wording parallel in EN and DE, no renumbering of existing clauses or anchors.
+- [x] A2 /de/security serves fully German content (except the PowerShell script, which
+      stays English-commented code), /security is byte-equivalent in content to before the
+      refactor (same sections, scopes table, script, links), both pages cross-reference
+      via hreflang and a visible language toggle, /de/security is in sitemap.ts.
+- [x] A3 Spec covers: motivation, current concealment-dependent behavior, setting +
+      enforcement points (sync, findings, UI, exports), toggle governance + audit,
+      data model changes, migration of existing named data, acceptance criteria.
+- [x] A4 npm run check (lint + tsc) passes; no em-dashes or emojis in produced text.
+- [x] A5 Separate code-reviewer agent evaluates the diff against A1-A4.
+
+## Review (2026-07-02)
+All three deliverables done and verified. npm run check passes; /security, /de/security,
+/dpa and /de/dpa verified in the browser (v1.2 clause present EN+DE, hreflang matches the
+trust-center precedent, /de/security in sitemap, German trust-center links updated).
+Independent code-reviewer agent confirmed A1-A4 and found one factual error in the spec
+(activitySignal fallback is "none" + usageAggregate, not "aggregate"), which was fixed.
+DPA v1.2 wording still needs counsel review before being held out as executed (existing
+draft convention). Follow-ups (not in this tranche): implement Privacy mode per
+docs/privacy-mode.md, German works-council briefing page, wording sweep replacing
+"monitoring" on hero/comparison copy, role-based shielding + retention limits.

@@ -92,9 +92,12 @@ export type DpaDoc = {
 
 // 1.1: added WorkOS as a sub-processor (AuthKit sign-in) and the BYO
 // encrypted-credential custody statement to Annex 3.
-const VERSION = "1.1";
-const EFFECTIVE_EN = "22 June 2026";
-const EFFECTIVE_DE = "22. Juni 2026";
+// 1.2: added the purpose-limitation commitment (no use of the data to evaluate
+// individual employees' performance or behavior) to Clause 1 and Annex 1, for
+// works-council (BetrVG) and Art. 5(1)(b) GDPR assessments.
+const VERSION = "1.2";
+const EFFECTIVE_EN = "2 July 2026";
+const EFFECTIVE_DE = "2. Juli 2026";
 
 /* ------------------------------------------------------------------ English */
 
@@ -156,6 +159,10 @@ const EN: DpaDoc = {
         {
           kind: "p",
           text: "The Processor processes personal data exclusively within the European Union / European Economic Area, save for the transfers described in Section 12. The Processor does not process the data for its own purposes.",
+        },
+        {
+          kind: "p",
+          text: "The personal data is processed exclusively for the purpose described in Annex 1: identifying unused, oversized and misaligned license assignments and their cost. The Processor does not use the personal data to monitor or evaluate the performance or behavior of individual employees of the Controller, does not create profiles for such purposes, and does not provide the Service as a tool for performance or behavior monitoring. Activity metadata is processed solely to determine whether a paid license seat is used, unused or oversized.",
         },
       ],
     },
@@ -343,7 +350,7 @@ const EN: DpaDoc = {
             },
             {
               term: "Nature and purpose",
-              def: "Read-only collection, storage, aggregation and analysis of license, directory and activity metadata, solely to provide the Service to the Controller.",
+              def: "Read-only collection, storage, aggregation and analysis of license, directory and activity metadata, solely to provide the Service to the Controller. The data is not used to monitor or evaluate the performance or behavior of individual employees (see Section 1).",
             },
             {
               term: "Duration",
@@ -589,6 +596,10 @@ const DE: DpaDoc = {
           kind: "p",
           text: "Der Auftragsverarbeiter verarbeitet die personenbezogenen Daten ausschließlich innerhalb der Europäischen Union / des Europäischen Wirtschaftsraums, abgesehen von den in Ziffer 12 beschriebenen Übermittlungen. Eine Verarbeitung zu eigenen Zwecken erfolgt nicht.",
         },
+        {
+          kind: "p",
+          text: "Die personenbezogenen Daten werden ausschließlich zu dem in Anlage 1 beschriebenen Zweck verarbeitet: der Ermittlung ungenutzter, überdimensionierter und fehlerhaft zugewiesener Lizenzen und der damit verbundenen Kosten. Der Auftragsverarbeiter verwendet die personenbezogenen Daten nicht zur Überwachung oder Bewertung der Leistung oder des Verhaltens einzelner Beschäftigter des Verantwortlichen, erstellt keine Profile zu solchen Zwecken und stellt den Dienst nicht als Instrument zur Leistungs- oder Verhaltenskontrolle bereit. Aktivitätsmetadaten werden allein verarbeitet, um festzustellen, ob ein bezahlter Lizenzplatz genutzt, ungenutzt oder überdimensioniert ist.",
+        },
       ],
     },
     {
@@ -775,7 +786,7 @@ const DE: DpaDoc = {
             },
             {
               term: "Art und Zweck",
-              def: "Ausschließlich lesende Erhebung, Speicherung, Aggregation und Analyse von Lizenz-, Verzeichnis- und Aktivitätsmetadaten, allein zur Erbringung des Dienstes für den Verantwortlichen.",
+              def: "Ausschließlich lesende Erhebung, Speicherung, Aggregation und Analyse von Lizenz-, Verzeichnis- und Aktivitätsmetadaten, allein zur Erbringung des Dienstes für den Verantwortlichen. Die Daten werden nicht zur Überwachung oder Bewertung der Leistung oder des Verhaltens einzelner Beschäftigter verwendet (siehe Ziffer 1).",
             },
             {
               term: "Dauer",

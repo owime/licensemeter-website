@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/waste",
     ...WASTE_EXPLAINERS.map((e) => `/waste/${e.slug}`),
     "/security",
+    "/de/security",
     "/trust-center",
     "/de/trust-center",
     "/faq",

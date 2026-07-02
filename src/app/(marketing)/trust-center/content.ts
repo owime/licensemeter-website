@@ -250,7 +250,7 @@ const DE: TrustContent = {
     linked: {
       pre: "Die ",
       linkText: "Sicherheitsübersicht",
-      href: "/security",
+      href: "/de/security",
       post: " listet jede angeforderte Berechtigung auf, was gespeichert wird und wie sich die Einwilligung ohne dauerhafte Rechte als globaler Administrator delegieren lässt.",
     },
   },
@@ -284,7 +284,7 @@ const DE: TrustContent = {
     title: "Dokumente",
     items: [
       {
-        href: "/security",
+        href: "/de/security",
         label: "Sicherheitsübersicht",
         detail:
           "Genau, was gewährt und gespeichert wird und wie Sie sich trennen. Nur-Lese-Berechtigungen, delegierte Einwilligung, Löschung.",
