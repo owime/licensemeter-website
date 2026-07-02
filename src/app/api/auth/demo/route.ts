@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "~/env";
 import { isSameOrigin } from "~/server/auth/origin";
 import { notifyOps } from "~/server/ops";
-import { rateLimit } from "~/server/rateLimit";
+import { clientIp, rateLimitDurable } from "~/server/rateLimit";
 import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "~/server/demo/constants";
 import {
   createSessionToken,
@@ -19,11 +19,8 @@ export const POST = async (req: Request) => {
   if (!isSameOrigin(req)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const ip =
-    req.headers.get("x-real-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
-  if (!rateLimit(`demo:${ip}`, 20, 60 * 60 * 1000)) {
+  const ip = clientIp(req.headers);
+  if (!(await rateLimitDurable(`demo:${ip}`, 20, 60 * 60 * 1000))) {
     return NextResponse.json({ error: "rate limited" }, { status: 429 });
   }
   // Lead signal for the founder; hourly cooldown so curious clicking
