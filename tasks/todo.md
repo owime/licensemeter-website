@@ -51,8 +51,9 @@ exposure plus defense-in-depth hardening. Codex CLI implements F1-F11; a reviewe
       added. PROD: run npm run db:push (adds rate_limits); prod RLS script loops all public tables so
       the app_all policy auto-covers it on next run.
 - [x] F14 Demo workspace write-guards: added isDemo guards to setFindingStatus, bulkSetFindingStatus,
-      updatePrice, importPrices, setInactiveDays, setRenewalDate, setLeakAlerts, setMonthlyReport,
-      setTrialReminders, setCurrency, triggerSync (shared DEMO_READONLY message).
+      updatePrice, importPrices, setInactiveDays, saveVendorRenewal, deleteVendorRenewal,
+      setLeakAlerts, setMonthlyReport, setTrialReminders, setCurrency, triggerSync (shared
+      DEMO_READONLY message).
 - [ ] F15 Domain-JIT auto-join audit event (access.ts joins on email-domain match with no audit entry).
 
 ## Acceptance criteria
@@ -263,14 +264,14 @@ add high-value features. Prior review (2026-06-23) already implemented and merge
 - [ ] S3: msalApps cache + rateLimit buckets are per-instance in-memory (fine on Vercel today; note only)
 
 ### Dashboard app (agent done)
-- [ ] D1 (P2 BUG): PriceEditor in src/components/workspace/PriceRow.tsx never re-syncs local value after save + router.refresh(); typing "14.9" leaves dirty=true vs canonical "14.90" -> Save re-enables while "Saved" shows. Fix: key={initial} at call sites in licenses/page.tsx (RenewalDateForm pattern) or re-sync-on-render.
+- [x] D1: PriceEditor re-syncs its local value from the canonical server value after refresh.
 - [ ] D2: bulk "Reopen selected" action on findings table (only Acknowledge exists)
 - [ ] D3: renewal card on Overview should deep-link findings with ?rule= preset
-- [ ] D4: "Set your actual prices" nudge missing on Findings page (present on Overview/Licenses)
+- [x] D4: Findings uses the shared price-coverage card and contract-price nudge.
 
 ### Lib/schema/config (agent done) - no P1/P2 bugs; improvements:
 - [ ] L1: fmtAgo (src/lib/format.ts:55) no negative-duration guard; clamp to 0 ("just now")
-- [ ] L2: stale drizzle/*.sql migration files predate current schema and mislead contributors (db:push is real workflow); delete or document as inert
+- [x] L2: stale Drizzle SQL files removed; README documents db:push as the schema workflow.
 - [ ] L3: msConnections mode='byo' column invariant not DB-enforced (single write path today; low urgency)
 
 ---

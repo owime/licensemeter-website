@@ -4,8 +4,7 @@ import {
   computeAiSpendDelta,
   computeDigestDelta,
   daysUntilDate,
-  daysUntilRenewal,
-  renewalPhrase,
+  renewalDigestLine,
   type DeltaFindingRow,
 } from "~/server/digestDelta";
 
@@ -120,52 +119,93 @@ describe("computeDigestDelta", () => {
   });
 });
 
-describe("daysUntilRenewal", () => {
-  it("returns null when the renewal date is unset", () => {
-    expect(daysUntilRenewal(null, NOW)).toBeNull();
-  });
-
-  it("returns null for a past date", () => {
-    expect(daysUntilRenewal("2026-06-11", NOW)).toBeNull();
-    expect(daysUntilRenewal("2024-01-01", NOW)).toBeNull();
-  });
-
-  it("returns 0 for today regardless of the time of day", () => {
-    expect(daysUntilRenewal("2026-06-12", NOW)).toBe(0);
-  });
-
-  it("includes exactly 90 days out", () => {
-    expect(daysUntilRenewal("2026-09-10", NOW)).toBe(90);
-  });
-
-  it("returns null beyond the 90-day window", () => {
-    expect(daysUntilRenewal("2026-09-11", NOW)).toBeNull();
-    expect(daysUntilRenewal("2030-01-01", NOW)).toBeNull();
-  });
-
-  it("counts whole calendar days", () => {
-    expect(daysUntilRenewal("2026-06-13", NOW)).toBe(1);
-    expect(daysUntilRenewal("2026-07-12", NOW)).toBe(30);
-  });
-
-  it("returns null for a malformed date string", () => {
-    expect(daysUntilRenewal("not-a-date", NOW)).toBeNull();
-  });
-});
-
 describe("daysUntilDate", () => {
   it("returns negative days for past dates, null for unset and malformed", () => {
     expect(daysUntilDate("2026-06-10", NOW)).toBe(-2);
     expect(daysUntilDate(null, NOW)).toBeNull();
     expect(daysUntilDate("not-a-date", NOW)).toBeNull();
+    expect(daysUntilDate("2026-02-31", NOW)).toBeNull();
   });
 });
 
-describe("renewalPhrase", () => {
-  it("handles today, one day, and many days", () => {
-    expect(renewalPhrase(0)).toBe("Renewal today");
-    expect(renewalPhrase(1)).toBe("Renewal in 1 day");
-    expect(renewalPhrase(45)).toBe("Renewal in 45 days");
+describe("renewalDigestLine", () => {
+  it("surfaces a cancellation deadline before the renewal itself enters the window", () => {
+    expect(
+      renewalDigestLine(
+        [
+          {
+            vendor: "Microsoft",
+            contractName: "Enterprise Agreement",
+            renewalDate: "2026-10-10",
+            noticeDays: 120,
+          },
+        ],
+        NOW,
+      ),
+    ).toBe(
+      "Microsoft — Enterprise Agreement: cancellation notice deadline is today; renewal in 120 days",
+    );
+  });
+
+  it("chooses the most urgent notice deadline across vendors", () => {
+    expect(
+      renewalDigestLine(
+        [
+          {
+            vendor: "Adobe",
+            contractName: "Creative Cloud",
+            renewalDate: "2026-08-11",
+            noticeDays: 14,
+          },
+          {
+            vendor: "Atlassian",
+            contractName: "Cloud Enterprise",
+            renewalDate: "2026-09-10",
+            noticeDays: 89,
+          },
+        ],
+        NOW,
+      ),
+    ).toBe(
+      "Atlassian — Cloud Enterprise: cancellation notice deadline is in 1 day; renewal in 90 days",
+    );
+  });
+
+  it("reports overdue notice deadlines and ignores past or distant contracts", () => {
+    expect(
+      renewalDigestLine(
+        [
+          {
+            vendor: "Zoom",
+            contractName: "Zoom Workplace",
+            renewalDate: "2026-07-12",
+            noticeDays: 35,
+          },
+          {
+            vendor: "Past",
+            contractName: "Expired",
+            renewalDate: "2026-06-11",
+            noticeDays: 30,
+          },
+        ],
+        NOW,
+      ),
+    ).toBe(
+      "Zoom Workplace: cancellation notice deadline passed 5 days ago; renewal in 30 days",
+    );
+    expect(
+      renewalDigestLine(
+        [
+          {
+            vendor: "GitHub",
+            contractName: "Enterprise",
+            renewalDate: "2027-01-01",
+            noticeDays: 30,
+          },
+        ],
+        NOW,
+      ),
+    ).toBeNull();
   });
 });
 

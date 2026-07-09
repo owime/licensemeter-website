@@ -11,13 +11,13 @@ import {
   snapshots,
   syncRuns,
   tenants,
+  vendorRenewals,
 } from "~/server/db/schema";
 import {
   computeAiSpendDelta,
   computeDigestDelta,
-  daysUntilRenewal,
   DELTA_WINDOW_MS,
-  renewalPhrase,
+  renewalDigestLine,
 } from "~/server/digestDelta";
 import {
   allClearHtml,
@@ -59,7 +59,7 @@ export const GET = async (req: NextRequest) => {
 
   for (const tenant of allTenants) {
     try {
-      const [admins, open, resolvedRecent, latest, aiSpendRows] =
+      const [admins, open, resolvedRecent, latest, aiSpendRows, renewals] =
         await Promise.all([
           db.query.memberships.findMany({
             where: and(
@@ -104,13 +104,25 @@ export const GET = async (req: NextRequest) => {
             ),
             columns: { day: true, amountCents: true },
           }),
+          db.query.vendorRenewals.findMany({
+            where: and(
+              eq(vendorRenewals.tenantId, tenant.id),
+              gte(vendorRenewals.renewalDate, now.toISOString().slice(0, 10)),
+            ),
+            columns: {
+              vendor: true,
+              contractName: true,
+              renewalDate: true,
+              noticeDays: true,
+            },
+          }),
         ]);
 
       const to = admins.map((m) => m.email).filter(Boolean);
       if (to.length === 0) continue;
 
       const delta = computeDigestDelta([...open, ...resolvedRecent], now);
-      const renewalDays = daysUntilRenewal(tenant.renewalDate, now);
+      const renewalLine = renewalDigestLine(renewals, now);
       // AI API spend is metered in USD by the providers and never converted,
       // so the line is formatted in USD regardless of the workspace currency.
       let aiSpendLine: string | undefined;
@@ -151,10 +163,9 @@ export const GET = async (req: NextRequest) => {
             tenantName,
             resolvedCount: delta.resolvedCount,
             resolvedImpact: fmtMoney(delta.resolvedCents, tenant.currency),
-            renewalLine:
-              renewalDays === null
-                ? undefined
-                : `${renewalPhrase(renewalDays)}. You go in clean.`,
+            renewalLine: renewalLine
+              ? `${renewalLine}. You go in clean.`
+              : undefined,
             aiSpendLine,
             appUrl: siteUrl(),
           }),
@@ -200,10 +211,9 @@ export const GET = async (req: NextRequest) => {
             resolvedCount: delta.resolvedCount,
             resolvedImpact: fmtMoney(delta.resolvedCents, tenant.currency),
           },
-          renewalLine:
-            renewalDays === null
-              ? undefined
-              : `${renewalPhrase(renewalDays)}, with ${open.length} open finding${open.length === 1 ? "" : "s"} worth ${fmtMoney(openCents, tenant.currency)}/mo to reclaim before you re-commit.`,
+          renewalLine: renewalLine
+            ? `${renewalLine}, with ${open.length} open finding${open.length === 1 ? "" : "s"} worth ${fmtMoney(openCents, tenant.currency)}/mo to reclaim before you re-commit.`
+            : undefined,
           aiSpendLine,
           appUrl: siteUrl(),
         }),

@@ -20,8 +20,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "db:push": "drizzle-kit push",
-    "db:backfill-renewals": "tsx scripts/backfill-vendor-renewals.ts"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@azure/msal-node": "^5.2.4",

@@ -194,16 +194,7 @@ export default async function OverviewPage() {
     }),
   );
 
-  const nextRenewal =
-    upcomingRenewals[0] ??
-    (ctx.tenant.renewalDate
-      ? {
-          vendor: "Microsoft 365",
-          contractName: "Microsoft agreement",
-          renewalDate: ctx.tenant.renewalDate,
-          noticeDays: 0,
-        }
-      : null);
+  const nextRenewal = upcomingRenewals[0] ?? null;
   const renewalDays = daysUntilDate(
     nextRenewal?.renewalDate ?? null,
     new Date(),

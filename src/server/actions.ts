@@ -50,6 +50,7 @@ import { connectorSpec } from "~/lib/connectors";
 import { isSupportedCurrency } from "~/lib/currency";
 import { rateBetween } from "~/lib/exchangeRates";
 import { workspaceLabel } from "~/lib/format";
+import { isValidIsoDate } from "~/lib/isoDate";
 import { encryptSecret, secretAad } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
 import { notifyOps } from "~/server/ops";
@@ -153,8 +154,6 @@ const field = (formData: FormData, name: string, max: number): string => {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 };
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
 const parseAnnualValue = (raw: string): number | null => {
   const normalized = raw.replace(",", ".");
   if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return null;
@@ -187,7 +186,8 @@ export const updateFindingWorkflow = async (
   const dueDate = field(formData, "dueDate", 10);
   const workflowNote = field(formData, "workflowNote", 2_000);
   const ticketUrl = field(formData, "ticketUrl", 500);
-  if (dueDate && !ISO_DATE.test(dueDate)) return fail("Enter a valid due date");
+  if (dueDate && !isValidIsoDate(dueDate))
+    return fail("Enter a valid due date");
   if (ticketUrl) {
     try {
       const parsed = new URL(ticketUrl);
@@ -252,7 +252,7 @@ export const saveVendorRenewal = async (
   const notes = field(formData, "notes", 2_000);
   if (!vendor) return fail("Enter a vendor");
   if (!contractName) return fail("Enter a contract name");
-  if (!ISO_DATE.test(renewalDate)) return fail("Enter a valid renewal date");
+  if (!isValidIsoDate(renewalDate)) return fail("Enter a valid renewal date");
   const noticeDays = Number.parseInt(noticeDaysRaw || "30", 10);
   if (!Number.isInteger(noticeDays) || noticeDays < 0 || noticeDays > 365) {
     return fail("Notice period must be between 0 and 365 days");
@@ -280,15 +280,6 @@ export const saveVendorRenewal = async (
     notes: notes || null,
     updatedAt: new Date(),
   };
-  const previous = id
-    ? await db.query.vendorRenewals.findFirst({
-        where: and(
-          eq(vendorRenewals.id, id),
-          eq(vendorRenewals.tenantId, ctx.tenant.id),
-        ),
-        columns: { vendor: true },
-      })
-    : null;
   if (id) {
     const changed = await db
       .update(vendorRenewals)
@@ -313,17 +304,6 @@ export const saveVendorRenewal = async (
       renewalDate,
     });
   }
-  if (vendor.toLowerCase() === "microsoft 365") {
-    await db
-      .update(tenants)
-      .set({ renewalDate })
-      .where(eq(tenants.id, ctx.tenant.id));
-  } else if (previous?.vendor.toLowerCase() === "microsoft 365") {
-    await db
-      .update(tenants)
-      .set({ renewalDate: null })
-      .where(eq(tenants.id, ctx.tenant.id));
-  }
   revalidateApp();
   return ok();
 };
@@ -344,12 +324,6 @@ export const deleteVendorRenewal = async (
     )
     .returning({ id: vendorRenewals.id, vendor: vendorRenewals.vendor });
   if (!deleted) return fail("Renewal not found");
-  if (deleted.vendor.toLowerCase() === "microsoft 365") {
-    await db
-      .update(tenants)
-      .set({ renewalDate: null })
-      .where(eq(tenants.id, ctx.tenant.id));
-  }
   await audit(ctx, "renewal_deleted", { id, vendor: deleted.vendor });
   revalidateApp();
   return ok();
@@ -741,38 +715,6 @@ export const setInactiveDays = async (
   return ok();
 };
 
-/** Microsoft agreement renewal date; an empty submit clears it. */
-export const setRenewalDate = async (
-  formData: FormData,
-): Promise<ActionResult> => {
-  const ctx = await apiAccess("admin");
-  if (!ctx) return fail("Not allowed");
-  if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
-  const raw = formData.get("date");
-  const value = typeof raw === "string" ? raw.trim() : "";
-  if (value !== "") {
-    // Date.parse rejects impossible components in ISO date strings.
-    const year = Number(value.slice(0, 4));
-    if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
-      Number.isNaN(Date.parse(value)) ||
-      year < 2000 ||
-      year > 2100
-    ) {
-      return fail("Invalid date");
-    }
-  }
-  await db
-    .update(tenants)
-    .set({ renewalDate: value === "" ? null : value })
-    .where(eq(tenants.id, ctx.tenant.id));
-  await audit(ctx, "renewal_date_changed", {
-    renewalDate: value === "" ? null : value,
-  });
-  revalidateApp();
-  return ok();
-};
-
 /** Email alerts when a sync finds new offboarding leaks. */
 export const setLeakAlerts = async (
   enabled: boolean,
@@ -910,6 +852,7 @@ export const setCurrency = async (
       const convertedImpact = sql<number>`round(${findings.monthlyImpactCents}::numeric * ${rate})::integer`;
       const convertedSpend = sql<number>`round(${snapshots.totalMonthlySpendCents}::numeric * ${rate})::integer`;
       const convertedWaste = sql<number>`round(${snapshots.totalMonthlyWasteCents}::numeric * ${rate})::integer`;
+      const convertedAnnualValue = sql<number>`round(${vendorRenewals.annualValueCents}::numeric * ${rate})::integer`;
 
       await tx
         .update(priceBook)
@@ -926,6 +869,10 @@ export const setCurrency = async (
           totalMonthlyWasteCents: convertedWaste,
         })
         .where(eq(snapshots.tenantId, ctx.tenant.id));
+      await tx
+        .update(vendorRenewals)
+        .set({ annualValueCents: convertedAnnualValue, updatedAt: new Date() })
+        .where(eq(vendorRenewals.tenantId, ctx.tenant.id));
       await tx
         .update(tenants)
         .set({

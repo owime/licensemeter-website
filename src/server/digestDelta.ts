@@ -1,4 +1,5 @@
 import type { FindingStatus } from "~/server/types";
+import { isValidIsoDate } from "~/lib/isoDate";
 
 /**
  * Pure helpers behind the weekly digest's "what changed" framing: the 7-day
@@ -77,7 +78,7 @@ export const daysUntilDate = (
   dateStr: string | null,
   now: Date,
 ): number | null => {
-  if (!dateStr) return null;
+  if (!dateStr || !isValidIsoDate(dateStr)) return null;
   const target = Date.parse(`${dateStr}T00:00:00Z`);
   if (Number.isNaN(target)) return null;
   const today = Date.UTC(
@@ -88,28 +89,68 @@ export const daysUntilDate = (
   return Math.round((target - today) / DAY_MS);
 };
 
-/**
- * Whole days until the tenant's renewal date. Returns null when unset,
- * malformed, already past, or further out than `windowDays` (boundary
- * inclusive: exactly `windowDays` away still returns a number).
- */
-export const daysUntilRenewal = (
-  renewalDate: string | null,
-  now: Date,
-  windowDays = 90,
-): number | null => {
-  const days = daysUntilDate(renewalDate, now);
-  if (days === null || days < 0 || days > windowDays) return null;
-  return days;
+export type DigestRenewalRow = {
+  vendor: string;
+  contractName: string;
+  renewalDate: string;
+  noticeDays: number;
 };
 
-/** "Renewal today" / "Renewal in 1 day" / "Renewal in N days". */
-export const renewalPhrase = (days: number): string =>
-  days === 0
-    ? "Renewal today"
-    : days === 1
-      ? "Renewal in 1 day"
-      : `Renewal in ${days} days`;
+const upcomingTiming = (days: number): string =>
+  days === 0 ? "today" : days === 1 ? "in 1 day" : `in ${days} days`;
+
+const deadlineTiming = (days: number): string => {
+  if (days >= 0) return `is ${upcomingTiming(days)}`;
+  const overdue = Math.abs(days);
+  return `passed ${overdue} ${overdue === 1 ? "day" : "days"} ago`;
+};
+
+/**
+ * Picks the most urgent upcoming contract by cancellation deadline, not merely
+ * by renewal date. This prevents a long notice period from being surfaced only
+ * after the customer can no longer cancel. Returns null while every actionable
+ * date remains outside the digest window.
+ */
+export const renewalDigestLine = (
+  renewals: DigestRenewalRow[],
+  now: Date,
+  windowDays = 90,
+): string | null => {
+  const candidates = renewals
+    .map((renewal) => {
+      const renewalDays = daysUntilDate(renewal.renewalDate, now);
+      const noticeDays = Math.max(0, renewal.noticeDays);
+      return renewalDays === null
+        ? null
+        : {
+            renewal,
+            renewalDays,
+            noticeDays,
+            actionDays: renewalDays - noticeDays,
+          };
+    })
+    .filter(
+      (candidate): candidate is NonNullable<typeof candidate> =>
+        candidate !== null &&
+        candidate.renewalDays >= 0 &&
+        candidate.actionDays <= windowDays,
+    )
+    .sort(
+      (a, b) => a.actionDays - b.actionDays || a.renewalDays - b.renewalDays,
+    );
+  const next = candidates[0];
+  if (!next) return null;
+
+  const vendor = next.renewal.vendor.trim();
+  const contract = next.renewal.contractName.trim();
+  const label = contract.toLowerCase().includes(vendor.toLowerCase())
+    ? contract
+    : `${vendor} — ${contract}`;
+  const renewalTiming = upcomingTiming(next.renewalDays);
+  return next.noticeDays > 0
+    ? `${label}: cancellation notice deadline ${deadlineTiming(next.actionDays)}; renewal ${renewalTiming}`
+    : `${label} renewal ${renewalTiming}`;
+};
 
 export type AiSpendDay = { day: string; amountCents: number };
 

@@ -163,7 +163,6 @@ export type AuditAction =
   | "prices_imported"
   | "seats_imported"
   | "seats_import_cleared"
-  | "renewal_date_changed"
   | "renewal_created"
   | "renewal_updated"
   | "renewal_deleted"

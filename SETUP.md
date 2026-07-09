@@ -43,14 +43,14 @@ or add the localhost redirect URIs to the same apps.
 
 Set these locally in `.env` and in Vercel (Production + Preview):
 
-| Variable | Value |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection string (EU region) |
-| `AUTH_SECRET` | `openssl rand -base64 32` |
-| `AUTH_MICROSOFT_ENTRA_ID_ID` / `_SECRET` | from the setup script |
-| `CONNECTOR_CLIENT_ID` / `_SECRET` | from the setup script |
-| `CRON_SECRET` | random string (16+ chars); Vercel Cron sends it as a Bearer token |
-| `APP_BASE_URL` | public URL, e.g. `https://app.licensemeter.example` |
+| Variable                                 | Value                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| `DATABASE_URL`                           | Postgres connection string (EU region)                            |
+| `AUTH_SECRET`                            | `openssl rand -base64 32`                                         |
+| `AUTH_MICROSOFT_ENTRA_ID_ID` / `_SECRET` | from the setup script                                             |
+| `CONNECTOR_CLIENT_ID` / `_SECRET`        | from the setup script                                             |
+| `CRON_SECRET`                            | random string (16+ chars); Vercel Cron sends it as a Bearer token |
+| `APP_BASE_URL`                           | public URL, e.g. `https://app.licensemeter.example`               |
 
 `CRON_SECRET` and `APP_BASE_URL` are validated at build time on Vercel. A
 deploy without them fails instead of shipping a broken consent flow or an
@@ -85,12 +85,14 @@ one for setup, and the app one for runtime.
    psql "$ADMIN_DATABASE_URL" -f scripts/db-enable-rls-deny-all.sql
    psql "$ADMIN_DATABASE_URL" -f scripts/db-app-role-grants-and-policies.sql
    psql "$ADMIN_DATABASE_URL" -f scripts/db-revoke-public-api-grants.sql
+   psql "$ADMIN_DATABASE_URL" -f scripts/db-audit-posture.sql
    ```
 
    This enables RLS on every table (Supabase Data API deny-all), gives
    `licensemeter_app` its permissive `app_all` policy, and revokes the default
    anon/authenticated grants. Tenant isolation is enforced in application code,
-   not by RLS.
+   not by RLS. The final read-only audit fails if a future schema change leaves
+   an RLS, grant, app-policy, or foreign-key-index gap.
 
 4. Point the deployed app's `DATABASE_URL` at `licensemeter_app`, not `postgres`.
 
@@ -130,10 +132,10 @@ set, otherwise the route answers 401.
 
 ## Troubleshooting
 
-| Symptom | Cause / fix |
-| --- | --- |
-| Consent dialog warns about unverified publisher | Complete publisher verification (see prerequisites) |
-| `tenant_mismatch` error after consent | The consenting admin belongs to a different tenant than the signed-in user; sign in with an account from the tenant being connected |
-| Sync step `signInActivity: skipped` | Customer tenant has no Entra P1/P2 (expected fallback) |
-| Findings show aggregate counts only | Report concealment is on; see tenant-side notes |
-| `/api/cron/sync` returns 401 | `CRON_SECRET` missing or not sent as `Authorization: Bearer <secret>` |
+| Symptom                                         | Cause / fix                                                                                                                         |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Consent dialog warns about unverified publisher | Complete publisher verification (see prerequisites)                                                                                 |
+| `tenant_mismatch` error after consent           | The consenting admin belongs to a different tenant than the signed-in user; sign in with an account from the tenant being connected |
+| Sync step `signInActivity: skipped`             | Customer tenant has no Entra P1/P2 (expected fallback)                                                                              |
+| Findings show aggregate counts only             | Report concealment is on; see tenant-side notes                                                                                     |
+| `/api/cron/sync` returns 401                    | `CRON_SECRET` missing or not sent as `Authorization: Bearer <secret>`                                                               |

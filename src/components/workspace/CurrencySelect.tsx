@@ -81,8 +81,9 @@ export const CurrencySelect = ({ value }: { value: string }) => {
         )}
       </div>
       <p className="text-ink-faint text-xs leading-relaxed">
-        Changing currency converts prices, findings and trend history using the
-        latest ECB reference rate. Review negotiated prices afterwards.
+        Changing currency converts prices, findings, trend history and renewal
+        contract values using the latest ECB reference rate. Review negotiated
+        prices afterwards.
       </p>
       <p
         role="status"
