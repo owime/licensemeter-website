@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Calculator, Check, Download, Receipt, Terminal } from "lucide-react";
+import {
+  Calculator,
+  Check,
+  Code2,
+  Download,
+  FileCheck2,
+  Receipt,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
@@ -8,7 +18,8 @@ import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
 import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
-import { SITE_DEFINITION } from "~/lib/site";
+import { DEMO_FIGURES } from "~/lib/demoFigures";
+import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
 import { SUPPORT_MAILTO } from "~/lib/support";
 
 /* Plain-text names by design: referencing compatibility is nominative use;
@@ -59,7 +70,50 @@ const INCLUDED = [
   "EU-hosted, read-only, disconnect deletes everything",
 ] as const;
 
+const PROOF = [
+  {
+    Icon: FileCheck2,
+    title: "Browse the worked example",
+    body: `Every figure is recomputed from the same tested, ${DEMO_FIGURES.users}-user synthetic tenant used by the live demo. No customer-data theatre.`,
+    href: "/sample-report",
+    cta: "Inspect the sample report →",
+  },
+  {
+    Icon: Code2,
+    title: "Audit the local scanner",
+    body: "Run the Microsoft 365 scan locally and inspect the source. No account, no upload, and nothing leaves your tenant.",
+    href: "https://github.com/ugurkocde/licensemeter",
+    cta: "Review it on GitHub →",
+  },
+  {
+    Icon: ShieldCheck,
+    title: "Review the security model",
+    body: "Check the exact Graph scopes, subprocessors, Frankfurt residency, retention, and deletion behavior before granting consent.",
+    href: "/trust-center",
+    cta: "Open the Trust Center →",
+  },
+] as const;
+
 const BASE = siteUrl();
+
+export const metadata: Metadata = {
+  title: { absolute: SITE_TITLE },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: BASE },
+  openGraph: {
+    type: "website",
+    siteName: "LicenseMeter",
+    url: BASE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@ugurkocde",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+};
 
 /* Page-level JSON-LD for SEO/GEO. SoftwareApplication reuses the same @id as
  * the pricing page so answer engines treat them as one entity; offers come
@@ -109,15 +163,16 @@ export default async function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="rise rise-1">
               <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
-                Subscription waste, priced in euros
+                Microsoft 365 + SaaS license optimization
               </p>
               <h1 className="font-display mt-4 text-4xl leading-[1.05] font-semibold tracking-tight text-balance md:text-5xl xl:text-[4rem]">
-                You&rsquo;re paying for subscriptions nobody uses.
+                You&rsquo;re paying for SaaS licenses nobody uses.
               </h1>
               <p className="text-ink-soft mt-5 max-w-xl text-base leading-relaxed lg:text-lg">
-                Adobe, Microsoft, Atlassian and your AI tools quietly bill for
-                seats that left, sit idle, or were never opened. LicenseMeter
-                checks every seat against your directory and shows the waste{" "}
+                Microsoft 365, Adobe, Atlassian and your AI tools quietly bill
+                for seats that left, sit idle, or were never opened.
+                LicenseMeter checks every seat against your directory and shows
+                the waste{" "}
                 <span className="text-brand-text font-semibold">
                   in euros, in one view.
                 </span>
@@ -185,6 +240,64 @@ export default async function LandingPage() {
                 See all connectors →
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Inspectable product evidence, deliberately not presented as customer proof. */}
+      <section className="border-line bg-card border-b">
+        <div className="mx-auto max-w-6xl px-6 py-16 lg:py-20">
+          <div className="max-w-2xl">
+            <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
+              Proof, not promises
+            </p>
+            <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
+              Inspect the product before you connect a tenant.
+            </h2>
+            <p className="text-ink-soft mt-3 leading-relaxed">
+              There are no invented testimonials here. Start with the tested
+              demo data, readable source code, and the same security documents
+              your identity team will review.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {PROOF.map((item) => (
+              <article
+                key={item.title}
+                className="border-line bg-canvas rounded-2xl border p-6"
+              >
+                <span className="bg-brand-soft text-brand-text inline-flex size-11 items-center justify-center rounded-xl">
+                  <item.Icon
+                    className="size-5"
+                    strokeWidth={1.75}
+                    aria-hidden="true"
+                  />
+                </span>
+                <h3 className="font-display mt-4 text-lg font-semibold tracking-tight">
+                  {item.title}
+                </h3>
+                <p className="text-ink-soft mt-2 text-sm leading-relaxed">
+                  {item.body}
+                </p>
+                {item.href.startsWith("/") ? (
+                  <Link
+                    href={item.href}
+                    className="text-brand-text mt-4 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 hover:opacity-80"
+                  >
+                    {item.cta}
+                  </Link>
+                ) : (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-brand-text mt-4 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 hover:opacity-80"
+                  >
+                    {item.cta}
+                  </a>
+                )}
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -283,7 +396,7 @@ export default async function LandingPage() {
                   "mt-5 w-full",
                 )}
               >
-                Start free - no card
+                Start free — no card
               </a>
               <p className="text-ink-faint mt-3 text-xs">
                 First scan free, then free for {TRIAL_DAYS} days, then €{" "}
@@ -402,6 +515,7 @@ export default async function LandingPage() {
                 signInHref={signInHref}
                 demoEnabled={demoEnabled}
                 showNote={false}
+                primaryLabel="Run my free scan"
               />
               <p className="text-ink-faint mt-3 text-xs">
                 Start free with a {TRIAL_DAYS}-day trial. No credit card,

@@ -3,14 +3,15 @@
 import { Maximize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { useReducedMotion } from "./useReducedMotion";
 import { VideoLightbox } from "./VideoLightbox";
 
 /**
  * A single self-playing product demo clip with the same behavior as the
  * landing showcase's video panel: muted looping autoplay that pauses while
- * offscreen or on a hidden browser tab, a poster with native controls under
- * prefers-reduced-motion, and a click-to-enlarge lightbox (backdrop, Escape
- * or the close button dismisses it).
+ * offscreen or on a hidden browser tab. Media sources are attached only near
+ * the viewport, reduced-motion changes are observed live, and a click-to-
+ * enlarge lightbox can be dismissed by backdrop, Escape or close button.
  */
 export const DemoClip = ({
   src,
@@ -28,43 +29,56 @@ export const DemoClip = ({
   className?: string;
 }) => {
   const [expanded, setExpanded] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [inView, setInView] = useState(false);
+  const reducedMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setReducedMotion(
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    const panel = panelRef.current;
+    if (!panel || mediaReady) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setMediaReady(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "320px 0px", threshold: 0.01 },
     );
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [mediaReady]);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
+      { threshold: 0.35 },
+    );
+    observer.observe(panel);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    const panel = panelRef.current;
-    if (!video || !panel || reducedMotion) return;
-    let inView = false;
+    if (!video || !mediaReady) return;
     const sync = () => {
       if (inView && document.visibilityState === "visible") {
-        void video.play().catch(() => undefined);
+        if (reducedMotion) video.pause();
+        else void video.play().catch(() => undefined);
       } else {
         video.pause();
       }
     };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        inView = entry.isIntersecting;
-        sync();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(panel);
     document.addEventListener("visibilitychange", sync);
+    sync();
     return () => {
-      observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [reducedMotion]);
+  }, [inView, mediaReady, reducedMotion]);
 
   const close = () => {
     setExpanded(false);
@@ -73,11 +87,12 @@ export const DemoClip = ({
   };
 
   const open = () => {
+    setMediaReady(true);
     videoRef.current?.pause();
     setExpanded(true);
   };
 
-  const videoElement = (
+  const videoElement = mediaReady ? (
     <video
       ref={videoRef}
       src={src}
@@ -85,12 +100,18 @@ export const DemoClip = ({
       muted
       loop
       playsInline
-      autoPlay={!reducedMotion}
       controls={reducedMotion}
       preload="metadata"
       aria-label={label}
       className="block aspect-video w-full bg-white"
     />
+  ) : (
+    <span
+      aria-hidden="true"
+      className="bg-subtle text-ink-faint flex aspect-video w-full items-center justify-center text-sm"
+    >
+      Product demo
+    </span>
   );
 
   return (
@@ -106,7 +127,7 @@ export const DemoClip = ({
             type="button"
             onClick={open}
             aria-haspopup="dialog"
-            aria-label={`Enlarge: ${label}`}
+            aria-label={`${label} — Enlarge`}
             className="block w-full cursor-zoom-in"
           >
             {videoElement}

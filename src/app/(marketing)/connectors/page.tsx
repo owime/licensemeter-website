@@ -54,7 +54,7 @@ export default function ConnectorsIndexPage() {
 
       <DemoClip
         src="/videos/feature-connectors.mp4"
-        poster="/videos/feature-connectors.jpg"
+        poster="/videos/feature-connectors.webp"
         label="Product demo: connecting the Atlassian connector"
         caption="Connecting Atlassian in the demo workspace: read-only credentials in, first sync done, seats in the directory cross-check."
         className="mt-10 max-w-3xl"

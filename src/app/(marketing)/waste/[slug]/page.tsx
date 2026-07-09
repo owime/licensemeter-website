@@ -134,7 +134,7 @@ export default async function WasteExplainerPage({
         ))}
         <DemoClip
           src="/videos/feature-findings.mp4"
-          poster="/videos/feature-findings.jpg"
+          poster="/videos/feature-findings.webp"
           label="Product demo: filtering and acknowledging findings"
           caption="The findings list in the demo workspace: filter by rule, select the affected seats, acknowledge in bulk."
           className="mt-6"

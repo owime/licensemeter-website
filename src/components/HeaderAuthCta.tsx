@@ -30,16 +30,18 @@ export const HeaderAuthCta = () => {
   }, []);
 
   /* Always visible: on mobile the nav links live in the burger drawer, so
-     the action keeps its header slot. "Start free" is short enough to fit
-     brand + CTA + burger on 360px viewports without wrapping. */
+     the action keeps its header slot. The compact labels below 341px keep
+     brand + CTA + burger on one line through the 320px reflow target. */
   return signedIn ? (
     <ButtonLink href="/app" variant="secondary">
-      <span className="sm:hidden">Dashboard</span>
+      <span className="min-[341px]:hidden">App</span>
+      <span className="hidden min-[341px]:inline sm:hidden">Dashboard</span>
       <span className="hidden sm:inline">Open dashboard</span>
     </ButtonLink>
   ) : (
     <ButtonLink href="/#get-started" variant="secondary">
-      Start free
+      <span className="min-[341px]:hidden">Start</span>
+      <span className="hidden min-[341px]:inline">Start free</span>
     </ButtonLink>
   );
 };

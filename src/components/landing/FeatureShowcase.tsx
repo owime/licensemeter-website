@@ -3,6 +3,7 @@
 import { Maximize2, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { useReducedMotion } from "./useReducedMotion";
 import { VideoLightbox } from "./VideoLightbox";
 
 type Feature = {
@@ -19,28 +20,28 @@ const FEATURES: Feature[] = [
     title: "See the waste in euros",
     body: "The overview prices every unused seat and tracks spend against waste over time.",
     video: "/videos/feature-overview.mp4",
-    poster: "/videos/feature-overview.jpg",
+    poster: "/videos/feature-overview.webp",
   },
   {
     id: "findings",
     title: "Act on findings in bulk",
     body: "Filter by rule, select the seats that leaked, and acknowledge them in one click.",
     video: "/videos/feature-findings.mp4",
-    poster: "/videos/feature-findings.jpg",
+    poster: "/videos/feature-findings.webp",
   },
   {
     id: "ai-costs",
     title: "Track AI spend daily",
     body: "OpenAI and Anthropic API costs side by side, shown as billed.",
     video: "/videos/feature-ai-costs.mp4",
-    poster: "/videos/feature-ai-costs.jpg",
+    poster: "/videos/feature-ai-costs.webp",
   },
   {
     id: "connectors",
     title: "Connect a tool in minutes",
     body: "Read-only connectors for Microsoft 365, Adobe, Atlassian, Zoom and more.",
     video: "/videos/feature-connectors.mp4",
-    poster: "/videos/feature-connectors.jpg",
+    poster: "/videos/feature-connectors.webp",
   },
 ];
 
@@ -48,14 +49,17 @@ const FEATURES: Feature[] = [
  * Landing-page product tour. Desktop: a slim feature rail on the left, a
  * large demo clip on the right; clicking the clip opens it in a lightbox
  * (backdrop or Escape closes). Mobile: a horizontal chip row with the video
- * below it. Only the active clip's <video> is mounted, autoplay is muted and
- * skipped under prefers-reduced-motion (poster with native controls shows
- * instead), and playback pauses while offscreen or on a hidden browser tab.
+ * below it. The active clip and its optimized poster receive no source until
+ * the panel nears the viewport. Autoplay is muted, begins only while genuinely
+ * visible, reacts to prefers-reduced-motion changes, and pauses offscreen or on
+ * a hidden browser tab.
  */
 export const FeatureShowcase = () => {
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [inView, setInView] = useState(false);
+  const reducedMotion = useReducedMotion();
   /* Rotate through the features until the visitor interacts; a manual tab
    * click or opening the lightbox hands over control for good. */
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -64,39 +68,53 @@ export const FeatureShowcase = () => {
   const progressRef = useRef<HTMLSpanElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
+  /* Fetch neither the poster nor video during the initial page load. Start the
+   * request shortly before the panel reaches the viewport, leaving enough time
+   * for the lightweight poster to arrive before it is visible. */
   useEffect(() => {
-    setReducedMotion(
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    const panel = panelRef.current;
+    if (!panel || mediaReady) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setMediaReady(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "320px 0px", threshold: 0.01 },
     );
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [mediaReady]);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
+      { threshold: 0.35 },
+    );
+    observer.observe(panel);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    const panel = panelRef.current;
-    if (!video || !panel || reducedMotion) return;
-    let inView = false;
+    if (!video || !mediaReady) return;
     const sync = () => {
       if (inView && document.visibilityState === "visible") {
-        void video.play().catch(() => undefined);
+        if (reducedMotion) video.pause();
+        else void video.play().catch(() => undefined);
       } else {
         video.pause();
       }
     };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        inView = entry.isIntersecting;
-        sync();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(panel);
     document.addEventListener("visibilitychange", sync);
+    sync();
     return () => {
-      observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [active, reducedMotion]);
+  }, [active, inView, mediaReady, reducedMotion]);
 
   const close = () => {
     setExpanded(false);
@@ -106,6 +124,7 @@ export const FeatureShowcase = () => {
 
   const open = () => {
     setAutoAdvance(false);
+    setMediaReady(true);
     videoRef.current?.pause();
     setExpanded(true);
   };
@@ -124,7 +143,7 @@ export const FeatureShowcase = () => {
   /* Drive the progress bar on the active tab from playback time. Direct DOM
    * writes on rAF keep it smooth without re-rendering per frame. */
   useEffect(() => {
-    if (!autoAdvance || reducedMotion) return;
+    if (!autoAdvance || reducedMotion || !inView || !mediaReady) return;
     let rafId: number;
     const tick = () => {
       const video = videoRef.current;
@@ -141,11 +160,11 @@ export const FeatureShowcase = () => {
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [active, autoAdvance, reducedMotion]);
+  }, [active, autoAdvance, inView, mediaReady, reducedMotion]);
 
   const feature = FEATURES[active] ?? FEATURES[0]!;
 
-  const videoElement = (
+  const videoElement = mediaReady ? (
     <video
       ref={videoRef}
       key={feature.id}
@@ -154,7 +173,6 @@ export const FeatureShowcase = () => {
       muted
       loop={!autoAdvance || reducedMotion}
       playsInline
-      autoPlay={!reducedMotion}
       controls={reducedMotion}
       preload="metadata"
       onEnded={
@@ -165,6 +183,13 @@ export const FeatureShowcase = () => {
       aria-label={`Product demo: ${feature.title}`}
       className="block aspect-video w-full bg-white"
     />
+  ) : (
+    <span
+      aria-hidden="true"
+      className="bg-subtle text-ink-faint flex aspect-video w-full items-center justify-center text-sm"
+    >
+      Product demo
+    </span>
   );
 
   return (
@@ -268,7 +293,7 @@ export const FeatureShowcase = () => {
               type="button"
               onClick={open}
               aria-haspopup="dialog"
-              aria-label={`Enlarge demo: ${feature.title}`}
+              aria-label={`Product demo — Enlarge: ${feature.title}`}
               className="block w-full cursor-zoom-in"
             >
               {videoElement}

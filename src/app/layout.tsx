@@ -7,13 +7,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 
 import { siteUrl } from "~/env";
-import { SITE_DEFINITION } from "~/lib/site";
+import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
 import { SUPPORT_EMAIL } from "~/lib/support";
-
-const TITLE =
-  "LicenseMeter | find the Microsoft 365 licenses you pay for but do not use";
-const DESCRIPTION =
-  "LicenseMeter connects read-only to your Microsoft 365 tenant and shows the monthly cost of unused, misassigned and forgotten licenses.";
 
 const BASE = siteUrl();
 
@@ -70,20 +65,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "./" },
   applicationName: "LicenseMeter",
   category: "Business Software",
-  title: { default: TITLE, template: "%s | LicenseMeter" },
-  description: DESCRIPTION,
+  title: { default: SITE_TITLE, template: "%s | LicenseMeter" },
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
     siteName: "LicenseMeter",
-    title: TITLE,
-    description: DESCRIPTION,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
     // Founder handle (no brand account yet), verified via ugurkoc.de.
     creator: "@ugurkocde",
-    title: TITLE,
-    description: DESCRIPTION,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 

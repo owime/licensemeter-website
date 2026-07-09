@@ -17,6 +17,36 @@ test("home page fits a mobile viewport and menu closes with Escape", async ({
   await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+
+  await page.setViewportSize({ width: 320, height: 568 });
+  const narrowLayout = await page.evaluate(() => ({
+    overflow: document.documentElement.scrollWidth - window.innerWidth,
+    headerHeight: document.querySelector("header")?.getBoundingClientRect()
+      .height,
+  }));
+  expect(narrowLayout.overflow).toBeLessThanOrEqual(1);
+  expect(narrowLayout.headerHeight).toBeLessThanOrEqual(90);
+});
+
+test("home metadata and conversion labels describe the product consistently", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page).toHaveTitle(
+    "Microsoft 365 License Optimization Software | LicenseMeter",
+  );
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "SaaS licenses nobody uses",
+  );
+  await expect(
+    page.getByRole("link", { name: "Run my free scan" }),
+  ).toHaveCount(2);
+
+  const openGraphUrl = await page
+    .locator('meta[property="og:url"]')
+    .getAttribute("content");
+  expect(openGraphUrl).toMatch(/^https?:\/\//);
 });
 
 test("pricing interval is keyboard-accessible and updates its state", async ({
@@ -36,15 +66,31 @@ test("pricing interval is keyboard-accessible and updates its state", async ({
 test("feature tabs support arrow keys and the modal restores focus", async ({
   page,
 }) => {
+  const initialMediaRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/videos/")) {
+      initialMediaRequests.push(request.url());
+    }
+  });
   await page.goto("/");
+  await page.waitForTimeout(500);
+  expect(initialMediaRequests).toEqual([]);
 
   const tabs = page.getByRole("tab");
   await tabs.first().focus();
   await page.keyboard.press("ArrowRight");
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
 
+  const activeVideo = page.locator("#feature-panel video");
+  await expect(activeVideo).toHaveCount(1);
+  await expect(activeVideo).toHaveAttribute(
+    "poster",
+    "/videos/feature-findings.webp",
+  );
+  await expect(activeVideo).not.toHaveAttribute("autoplay", "");
+
   const trigger = page.getByRole("button", {
-    name: /Enlarge demo: Act on findings in bulk/,
+    name: /Product demo.*Enlarge: Act on findings in bulk/,
   });
   await trigger.click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -52,6 +98,25 @@ test("feature tabs support arrow keys and the modal restores focus", async ({
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(trigger).toBeFocused();
+});
+
+test("product tour honors reduced motion before media playback", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.locator("#product-tour").scrollIntoViewIfNeeded();
+
+  const video = page.locator("#feature-panel video");
+  await expect(video).toHaveCount(1);
+  await expect(video).toHaveAttribute("controls", "");
+  await expect(
+    page.getByRole("button", { name: "Pause rotation" }),
+  ).toHaveCount(0);
+  const paused = await video.evaluate(
+    (element) => (element as HTMLVideoElement).paused,
+  );
+  expect(paused).toBe(true);
 });
 
 test("ROI calculator responds to user assumptions", async ({ page }) => {

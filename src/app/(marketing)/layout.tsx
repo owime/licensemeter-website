@@ -88,17 +88,17 @@ export default function MarketingLayout({
       >
         Skip to content
       </a>
-      <header className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-3 px-6 py-6 sm:gap-x-6">
+      <header className="relative mx-auto flex max-w-6xl flex-nowrap items-center justify-between gap-x-3 px-4 py-5 min-[360px]:px-6 min-[360px]:py-6 sm:gap-x-6">
         <BrandHomeLink
           homeUrl={siteUrl()}
-          className="font-display flex items-center gap-2.5 text-lg tracking-tight sm:text-xl"
+          className="font-display flex shrink-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl"
         >
           <BrandMark size={22} />
           <span>
             License<span className="text-brand-text">Meter</span>
           </span>
         </BrandHomeLink>
-        <div className="flex items-center gap-2 sm:gap-5">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-5">
           {/* Inline links above sm; below they live in the burger drawer so
               the header keeps only brand + CTA. */}
           <nav aria-label="Main" className="hidden items-center gap-5 sm:flex">
