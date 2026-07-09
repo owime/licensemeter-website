@@ -11,7 +11,8 @@ import { generateRemediationScript } from "~/server/waste/remediation";
 /** Generated PowerShell remediation script for open findings (optionally one rule). */
 export const GET = async (req: NextRequest) => {
   const ctx = await apiAccess("admin");
-  if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!ctx)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!ctx.entitlement.active)
     return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
 
@@ -29,7 +30,10 @@ export const GET = async (req: NextRequest) => {
     orderBy: desc(findings.monthlyImpactCents),
   });
 
-  await audit(ctx, "export_remediation", { rows: rows.length, rule: rule ?? "all" });
+  await audit(ctx, "export_remediation", {
+    rows: rows.length,
+    rule: rule ?? "all",
+  });
   const script = generateRemediationScript(rows);
   return new Response(script, {
     headers: {

@@ -27,7 +27,7 @@ export const PaywallCard = ({
 }) => (
   <Card title={title}>
     <div className="flex flex-col gap-4">
-      <p className="max-w-2xl text-sm text-ink-soft">
+      <p className="text-ink-soft max-w-2xl text-sm">
         {children ?? lockCopy(state)}
       </p>
       {isOwner ? (
@@ -37,7 +37,7 @@ export const PaywallCard = ({
           </ButtonLink>
         </div>
       ) : (
-        <p className="text-sm text-ink-faint">
+        <p className="text-ink-faint text-sm">
           Ask a workspace owner to upgrade.
         </p>
       )}

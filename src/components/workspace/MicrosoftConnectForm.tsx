@@ -68,7 +68,7 @@ export const MicrosoftByoForm = () => {
     >
       {MICROSOFT_CONNECTOR.byo.idFields.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
-          <span className="text-xs text-ink-faint">{f.label}</span>
+          <span className="text-ink-faint text-xs">{f.label}</span>
           <input
             name={f.name}
             required
@@ -77,13 +77,13 @@ export const MicrosoftByoForm = () => {
             spellCheck={false}
             autoCapitalize="none"
             autoCorrect="off"
-            className="border border-line bg-card px-3 py-2 font-mono text-sm focus:border-ink"
+            className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-sm"
           />
         </label>
       ))}
 
       <fieldset className="flex flex-col gap-1 text-sm">
-        <legend className="text-xs text-ink-faint">Credential type</legend>
+        <legend className="text-ink-faint text-xs">Credential type</legend>
         <div className="flex gap-4 pt-1">
           {(["secret", "cert"] as const).map((t) => (
             <label key={t} className="flex items-center gap-2 text-sm">
@@ -103,7 +103,7 @@ export const MicrosoftByoForm = () => {
       {credType === "secret" ? (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-ink-faint">Client secret</span>
+            <span className="text-ink-faint text-xs">Client secret</span>
             <input
               name="secret"
               required
@@ -113,24 +113,24 @@ export const MicrosoftByoForm = () => {
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
-              className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
+              className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-ink-faint">
+            <span className="text-ink-faint text-xs">
               Secret expiry (optional, for the renewal reminder)
             </span>
             <input
               name="secretExpiresAt"
               type="date"
-              className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
+              className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
             />
           </label>
         </>
       ) : (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-ink-faint">
+            <span className="text-ink-faint text-xs">
               Certificate private key (PEM)
             </span>
             <textarea
@@ -141,11 +141,11 @@ export const MicrosoftByoForm = () => {
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
-              className="border border-line bg-card px-3 py-2 font-mono text-xs focus:border-ink"
+              className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-xs"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-ink-faint">Certificate (PEM)</span>
+            <span className="text-ink-faint text-xs">Certificate (PEM)</span>
             <textarea
               name="cert"
               required
@@ -154,7 +154,7 @@ export const MicrosoftByoForm = () => {
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
-              className="border border-line bg-card px-3 py-2 font-mono text-xs focus:border-ink"
+              className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-xs"
             />
           </label>
         </>
@@ -172,24 +172,24 @@ export const MicrosoftByoForm = () => {
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="text-xs text-danger-text focus:outline-none"
+          className="text-danger-text text-xs focus:outline-none"
         >
           {error}
         </p>
       )}
 
       {note && (
-        <p role="status" aria-live="polite" className="text-xs text-waste-text">
+        <p role="status" aria-live="polite" className="text-waste-text text-xs">
           {note}
         </p>
       )}
 
       {checklist && (
-        <ul className="border border-line bg-card text-xs">
+        <ul className="border-line bg-card border text-xs">
           {checklist.map((c) => (
             <li
               key={c.scope}
-              className="flex items-center justify-between gap-4 border-b border-line px-3 py-1.5 last:border-b-0"
+              className="border-line flex items-center justify-between gap-4 border-b px-3 py-1.5 last:border-b-0"
             >
               <code className="font-mono">{c.scope}</code>
               <span
@@ -257,7 +257,7 @@ export const MicrosoftDisconnectButton = () => {
         role="status"
         aria-live="polite"
         className={
-          message ? "max-w-64 text-right text-xs text-danger-text" : "sr-only"
+          message ? "text-danger-text max-w-64 text-right text-xs" : "sr-only"
         }
       >
         {message}

@@ -20,9 +20,7 @@ export const analyzeAdobeWaste = (
   entraUsers: EntraIdentity[],
   prices: Record<string, number>,
 ): WasteFinding[] => {
-  const entraByEmail = new Map(
-    entraUsers.map((u) => [u.upn.toLowerCase(), u]),
-  );
+  const entraByEmail = new Map(entraUsers.map((u) => [u.upn.toLowerCase(), u]));
   const findings: WasteFinding[] = [];
 
   for (const adobe of adobeUsers) {

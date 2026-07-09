@@ -81,11 +81,15 @@ describe("mapOpenAiCostBuckets", () => {
     const rows = mapOpenAiCostBuckets([
       {
         start_time: unixSeconds("2026-05-31T23:59:59Z"),
-        results: [{ amount: { value: 1, currency: "usd" }, line_item: "gpt-5" }],
+        results: [
+          { amount: { value: 1, currency: "usd" }, line_item: "gpt-5" },
+        ],
       },
       {
         start_time: unixSeconds("2026-06-01T00:00:00Z"),
-        results: [{ amount: { value: 2, currency: "usd" }, line_item: "gpt-5" }],
+        results: [
+          { amount: { value: 2, currency: "usd" }, line_item: "gpt-5" },
+        ],
       },
     ]);
     expect(rows).toEqual([
@@ -98,11 +102,15 @@ describe("mapOpenAiCostBuckets", () => {
     const rows = mapOpenAiCostBuckets([
       {
         start_time: unixSeconds("2026-06-01T00:00:00Z"),
-        results: [{ amount: { value: 0.5, currency: "usd" }, line_item: "gpt-5" }],
+        results: [
+          { amount: { value: 0.5, currency: "usd" }, line_item: "gpt-5" },
+        ],
       },
       {
         start_time: unixSeconds("2026-06-02T00:00:00Z"),
-        results: [{ amount: { value: 0.5, currency: "usd" }, line_item: "gpt-5" }],
+        results: [
+          { amount: { value: 0.5, currency: "usd" }, line_item: "gpt-5" },
+        ],
       },
     ]);
     expect(rows).toHaveLength(2);
@@ -136,7 +144,11 @@ describe("mapAnthropicCostBuckets", () => {
       {
         starting_at: "2026-06-01T00:00:00Z",
         results: [
-          { amount: "123.45", description: "Claude Sonnet usage", currency: "USD" },
+          {
+            amount: "123.45",
+            description: "Claude Sonnet usage",
+            currency: "USD",
+          },
         ],
       },
     ]);
@@ -150,8 +162,16 @@ describe("mapAnthropicCostBuckets", () => {
       {
         starting_at: "2026-06-01T00:00:00Z",
         results: [
-          { amount: "123.45", description: "Claude Sonnet usage", currency: "USD" },
-          { amount: "76.55", description: "Claude Sonnet usage", currency: "USD" },
+          {
+            amount: "123.45",
+            description: "Claude Sonnet usage",
+            currency: "USD",
+          },
+          {
+            amount: "76.55",
+            description: "Claude Sonnet usage",
+            currency: "USD",
+          },
         ],
       },
     ]);
@@ -203,7 +223,9 @@ describe("mapAnthropicCostBuckets", () => {
     const rows = mapAnthropicCostBuckets([
       {
         starting_at: "2026-06-01T00:00:00Z",
-        results: [{ amount: "5", description: "x".repeat(130), currency: "USD" }],
+        results: [
+          { amount: "5", description: "x".repeat(130), currency: "USD" },
+        ],
       },
     ]);
     expect(rows[0]!.category).toBe("x".repeat(120));
@@ -277,8 +299,12 @@ describe("AnthropicAdminClient", () => {
     const first = new URL(calls[0]!);
     const second = new URL(calls[1]!);
     expect(first.searchParams.get("starting_at")).toBe("2026-06-01T00:00:00Z");
-    expect(first.searchParams.get("ending_at")).toBe("2026-06-20T00:00:00.000Z");
-    expect(second.searchParams.get("ending_at")).toBe("2026-06-20T00:00:00.000Z");
+    expect(first.searchParams.get("ending_at")).toBe(
+      "2026-06-20T00:00:00.000Z",
+    );
+    expect(second.searchParams.get("ending_at")).toBe(
+      "2026-06-20T00:00:00.000Z",
+    );
     expect(second.searchParams.get("page")).toBe("page-2");
     expect(nowCalls).toBe(1);
   });

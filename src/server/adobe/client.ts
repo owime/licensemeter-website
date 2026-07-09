@@ -88,7 +88,8 @@ export class UmapiClient implements AdobeClient {
       throw new Error(`Adobe token request failed (${res.status})`);
     }
     const body = (await res.json()) as { access_token?: string };
-    if (!body.access_token) throw new Error("Adobe token response missing access_token");
+    if (!body.access_token)
+      throw new Error("Adobe token response missing access_token");
     return body.access_token;
   }
 

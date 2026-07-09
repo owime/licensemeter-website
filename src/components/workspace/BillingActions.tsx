@@ -4,11 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { IntervalToggle } from "~/components/pricing/IntervalToggle";
 import { ButtonAnchor, ButtonLink, buttonClass } from "~/components/ui";
-import {
-  PLANS,
-  parsePlanString,
-  planString,
-} from "~/lib/plans";
+import { PLANS, parsePlanString, planString } from "~/lib/plans";
 import { SUPPORT_MAILTO } from "~/lib/support";
 import type { PlanInterval, PlanTier } from "~/server/types";
 
@@ -25,17 +21,18 @@ type Props = {
 };
 
 /** German thousands separators, whole euros, matching the rest of the site. */
-const fmtEuros = (n: number): string => new Intl.NumberFormat("de-DE").format(n);
+const fmtEuros = (n: number): string =>
+  new Intl.NumberFormat("de-DE").format(n);
 
 const MspCard = () => (
-  <div className="flex flex-col gap-4 rounded-2xl border border-line bg-subtle p-5">
+  <div className="border-line bg-subtle flex flex-col gap-4 rounded-2xl border p-5">
     <div>
       <p className="text-sm font-medium">
         Your tenant has more than 2,500 seats. Self-serve plans stop here.
       </p>
-      <p className="mt-1 text-sm text-ink-soft">
-        We price larger tenants and MSP portfolios directly. Get in touch and
-        we will set you up.
+      <p className="text-ink-soft mt-1 text-sm">
+        We price larger tenants and MSP portfolios directly. Get in touch and we
+        will set you up.
       </p>
     </div>
     <div className="flex flex-wrap items-center gap-2">
@@ -87,7 +84,9 @@ export const BillingActions = ({
           setError("Billing is not available yet.");
           break;
         case "stripe_unavailable":
-          setError("Billing is temporarily unavailable, please try again in a moment.");
+          setError(
+            "Billing is temporarily unavailable, please try again in a moment.",
+          );
           break;
         case "seats_exceed_self_serve":
           setForcedMsp(true);
@@ -121,7 +120,9 @@ export const BillingActions = ({
         return;
       }
       if (data.error === "stripe_unavailable") {
-        setError("Billing is temporarily unavailable, please try again in a moment.");
+        setError(
+          "Billing is temporarily unavailable, please try again in a moment.",
+        );
         setBusy(false);
         return;
       }
@@ -146,7 +147,7 @@ export const BillingActions = ({
 
   if (!isOwner) {
     return (
-      <p className="text-sm text-ink-soft">
+      <p className="text-ink-soft text-sm">
         Billing is managed by a workspace owner.
       </p>
     );
@@ -154,18 +155,18 @@ export const BillingActions = ({
 
   const notice =
     checkoutParam === "success" ? (
-      <p className="rounded-xl bg-good-soft px-4 py-2 text-sm text-good-text">
+      <p className="bg-good-soft text-good-text rounded-xl px-4 py-2 text-sm">
         Subscription active. Thank you.
       </p>
     ) : checkoutParam === "cancelled" ? (
-      <p className="text-sm text-ink-faint">Checkout cancelled.</p>
+      <p className="text-ink-faint text-sm">Checkout cancelled.</p>
     ) : null;
 
   const autoStarting = Boolean(planParam && !manageable && autoFired.current);
 
   let body: React.ReactNode;
   if (autoStarting && busy) {
-    body = <p className="text-sm text-ink-soft">Starting checkout…</p>;
+    body = <p className="text-ink-soft text-sm">Starting checkout…</p>;
   } else if (manageable) {
     // One portal entry point: Stripe's customer portal already exposes plan
     // changes and cancellation from its home, so a second button landing on the
@@ -188,7 +189,7 @@ export const BillingActions = ({
     body = (
       <div className="flex flex-col gap-4">
         {state === "incomplete" && (
-          <div className="flex flex-col gap-3 rounded-2xl bg-danger-soft px-4 py-3 text-danger-text">
+          <div className="bg-danger-soft text-danger-text flex flex-col gap-3 rounded-2xl px-4 py-3">
             <p className="text-sm font-medium">
               Your payment didn&apos;t complete.
             </p>
@@ -209,7 +210,7 @@ export const BillingActions = ({
           </div>
         )}
         {trialInfo && (
-          <p className="text-sm text-ink-soft">
+          <p className="text-ink-soft text-sm">
             Subscribe now to lock in your plan. You keep your remaining{" "}
             {trialInfo.daysLeft} free trial{" "}
             {trialInfo.daysLeft === 1 ? "day" : "days"} — billing starts{" "}
@@ -221,47 +222,44 @@ export const BillingActions = ({
           onChange={setInterval}
           annualBadge="2 months free"
         />
-        <div className="grid gap-px border border-line bg-line sm:grid-cols-3">
+        <div className="border-line bg-line grid gap-px border sm:grid-cols-3">
           {PLANS.map((plan) => {
             const recommended = plan.tier === recommendedTier;
-            const price =
-              interval === "year" ? plan.annual : plan.monthly;
+            const price = interval === "year" ? plan.annual : plan.monthly;
             return (
               <div
                 key={plan.tier}
-                className={`flex flex-col bg-card px-5 py-5 ${
+                className={`bg-card flex flex-col px-5 py-5 ${
                   recommended
-                    ? "outline outline-2 -outline-offset-1 outline-brand"
+                    ? "outline-brand outline outline-2 -outline-offset-1"
                     : ""
                 }`}
               >
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+                  <span className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
                     {plan.name}
                   </span>
                   {recommended && (
-                    <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-medium tracking-wide text-brand-deep uppercase">
+                    <span className="bg-brand-soft text-brand-deep rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase">
                       Recommended for your size
                     </span>
                   )}
                 </div>
-                <div className="mt-2 font-display text-2xl tracking-tight">
+                <div className="font-display mt-2 text-2xl tracking-tight">
                   € {fmtEuros(price)}
-                  <span className="font-sans text-xs text-ink-soft">
+                  <span className="text-ink-soft font-sans text-xs">
                     {interval === "year" ? " / year" : " / month"}
                   </span>
                 </div>
                 {interval === "year" && (
-                  <div className="mt-1 text-xs font-medium text-brand-deep">
+                  <div className="text-brand-deep mt-1 text-xs font-medium">
                     2 months free
                   </div>
                 )}
-                <div className="mt-1 text-xs text-ink-soft">{plan.seats}</div>
+                <div className="text-ink-soft mt-1 text-xs">{plan.seats}</div>
                 <button
                   type="button"
-                  onClick={() =>
-                    startCheckout(planString(plan.tier, interval))
-                  }
+                  onClick={() => startCheckout(planString(plan.tier, interval))}
                   disabled={busy}
                   className={buttonClass(
                     recommended ? "primary" : "secondary",
@@ -282,7 +280,7 @@ export const BillingActions = ({
     <div className="flex flex-col gap-4">
       {notice}
       {body}
-      {error && <p className="text-sm text-danger-text">{error}</p>}
+      {error && <p className="text-danger-text text-sm">{error}</p>}
     </div>
   );
 };

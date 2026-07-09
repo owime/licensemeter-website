@@ -26,7 +26,11 @@ describe("billing unsubscribe tokens", () => {
     const token = makeBillingUnsubToken(TENANT, SECRET);
     expect(verifyBillingUnsubToken("other-tenant", token, SECRET)).toBe(false);
     expect(
-      verifyBillingUnsubToken(TENANT, token, "another-secret-32-characters-long!"),
+      verifyBillingUnsubToken(
+        TENANT,
+        token,
+        "another-secret-32-characters-long!",
+      ),
     ).toBe(false);
   });
 

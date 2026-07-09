@@ -19,7 +19,11 @@ const MAX_TICKS = Math.floor((3 * 60 * 1000) / POLL_INTERVAL_MS);
  * destination defaults to the dashboard (the Microsoft onboarding flow wants
  * the user to land on their results); connector settings pages pass their own
  * route so the admin stays in context after adding a connector. */
-export const ConnectPoller = ({ redirectTo = "/app" }: { redirectTo?: string }) => {
+export const ConnectPoller = ({
+  redirectTo = "/app",
+}: {
+  redirectTo?: string;
+}) => {
   const [run, setRun] = useState<RunInfo>(null);
   const [tick, setTick] = useState(0);
   const expired = tick >= MAX_TICKS;
@@ -55,7 +59,9 @@ export const ConnectPoller = ({ redirectTo = "/app" }: { redirectTo?: string }) 
   useEffect(() => {
     if (tick === 0 || tick >= MAX_TICKS) return;
     void fetch("/api/sync", { cache: "no-store" })
-      .then(async (res) => (res.ok ? ((await res.json()) as { run: RunInfo }) : null))
+      .then(async (res) =>
+        res.ok ? ((await res.json()) as { run: RunInfo }) : null,
+      )
       .then((body) => {
         if (!body) return;
         setRun(body.run);
@@ -71,20 +77,20 @@ export const ConnectPoller = ({ redirectTo = "/app" }: { redirectTo?: string }) 
   return (
     <div role="status" aria-live="polite">
       {run?.status === "failed" ? (
-        <div className="border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text">
+        <div className="border-danger-soft bg-danger-soft/50 text-danger-text border p-4 text-sm">
           <p className="font-medium">The first sync failed.</p>
           <p className="mt-1">
             {run.error ?? "Check the sync history in settings."}
           </p>
         </div>
       ) : expired ? (
-        <div className="text-sm text-ink-soft">
+        <div className="text-ink-soft text-sm">
           <p>This is taking longer than expected.</p>
           <p className="mt-1">
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="cursor-pointer underline underline-offset-4 hover:text-ink"
+              className="hover:text-ink cursor-pointer underline underline-offset-4"
             >
               Refresh this page
             </button>
@@ -92,10 +98,10 @@ export const ConnectPoller = ({ redirectTo = "/app" }: { redirectTo?: string }) 
           </p>
         </div>
       ) : (
-        <div className="flex items-center gap-3 text-sm text-ink-soft">
+        <div className="text-ink-soft flex items-center gap-3 text-sm">
           <span
             aria-hidden="true"
-            className="inline-block size-2 rounded-full bg-brand motion-safe:animate-pulse"
+            className="bg-brand inline-block size-2 rounded-full motion-safe:animate-pulse"
           />
           Running the first sync: pulling licenses, users and usage reports…
         </div>

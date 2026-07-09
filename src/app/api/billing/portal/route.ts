@@ -24,7 +24,8 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const ctx = await apiAccess("owner");
-  if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!ctx)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (ctx.tenant.isDemo) {
     return NextResponse.json({ error: "demo" }, { status: 400 });
   }
@@ -56,7 +57,9 @@ export const POST = async (req: Request) => {
     session = await stripe().billingPortal.sessions.create(params);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe portal: session create failed for tenant ${ctx.tenant.id}: ${msg}`);
+    console.error(
+      `stripe portal: session create failed for tenant ${ctx.tenant.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe portal: session create failed for tenant ${ctx.tenant.id}: ${msg}`,
       { key: `stripe-portal:${ctx.tenant.id}`, cooldownMs: 3_600_000 },

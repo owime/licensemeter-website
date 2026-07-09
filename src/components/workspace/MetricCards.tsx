@@ -67,14 +67,19 @@ const InfoButton = ({
         onClick={onOpen}
         aria-label={`${label}: what this means`}
         aria-describedby={tipId}
-        className="text-ink-faint hover:text-ink focus-visible:text-ink flex size-4 items-center justify-center rounded-full border border-current text-[10px] leading-none font-semibold transition"
+        className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:ring-brand -my-3 -mr-3 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        <span aria-hidden="true">i</span>
+        <span
+          aria-hidden="true"
+          className="flex size-4 items-center justify-center rounded-full border border-current text-[10px] leading-none font-semibold"
+        >
+          i
+        </span>
       </button>
       <span
         id={tipId}
         role="tooltip"
-        className="border-line bg-ink-panel text-canvas pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 shadow-float transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+        className="border-line bg-ink-panel text-canvas shadow-float pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 transition-opacity duration-150 group-focus-within/info:opacity-100 group-hover/info:opacity-100"
       >
         {explainer}
       </span>
@@ -88,7 +93,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
 
   return (
     <>
-      <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.key}
@@ -101,7 +106,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                 onClick={() => setOpenKey(card.key)}
                 aria-haspopup="dialog"
                 aria-label={`${card.label}: show how this is calculated`}
-                className="text-left text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase underline-offset-4 hover:text-ink hover:underline"
+                className="text-ink-faint hover:text-ink text-left text-[11px] font-medium tracking-[0.16em] uppercase underline-offset-4 hover:underline"
               >
                 {card.label}
               </button>
@@ -119,16 +124,16 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
               className="group/val block w-full text-left"
             >
               <span
-                className={`mt-2 block font-display text-3xl tracking-tight underline-offset-4 group-hover/val:underline ${
+                className={`font-display mt-2 block text-3xl tracking-tight underline-offset-4 group-hover/val:underline ${
                   card.tone === "waste" ? "text-waste-text" : "text-ink"
                 }`}
               >
                 {card.value}
               </span>
             </button>
-            <div className="mt-1 text-xs text-ink-soft">{card.sub}</div>
+            <div className="text-ink-soft mt-1 text-xs">{card.sub}</div>
             {card.note && (
-              <div className="mt-1 text-xs text-ink-faint">{card.note}</div>
+              <div className="text-ink-faint mt-1 text-xs">{card.note}</div>
             )}
           </div>
         ))}
@@ -149,36 +154,36 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
               >
                 {active.value}
               </div>
-              <div className="mt-1 text-sm text-ink-soft">{active.sub}</div>
+              <div className="text-ink-soft mt-1 text-sm">{active.sub}</div>
             </div>
 
             <dl className="flex flex-col gap-4">
               <div>
-                <dt className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+                <dt className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
                   How it is calculated
                 </dt>
-                <dd className="mt-1 text-sm text-ink-soft">
+                <dd className="text-ink-soft mt-1 text-sm">
                   {active.detail.formula}
                 </dd>
               </div>
               <div>
-                <dt className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+                <dt className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
                   Where it comes from
                 </dt>
-                <dd className="mt-1 text-sm text-ink-soft">
+                <dd className="text-ink-soft mt-1 text-sm">
                   {active.detail.source}
                 </dd>
               </div>
             </dl>
 
             <div>
-              <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+              <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
                 Breakdown
               </div>
               {active.detail.rows.length > 0 ? (
                 <table className="mt-3 w-full text-sm">
                   <thead>
-                    <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
+                    <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
                       <th className="py-2 pr-3 font-medium">
                         {active.detail.columns[0]}
                       </th>
@@ -189,11 +194,11 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                   </thead>
                   <tbody>
                     {active.detail.rows.map((row, i) => (
-                      <tr key={i} className="border-b border-line/70">
+                      <tr key={i} className="border-line/70 border-b">
                         <td className="py-2 pr-3">
                           <div className="font-medium">{row.label}</div>
                           {row.sub && (
-                            <div className="font-mono text-[11px] text-ink-faint">
+                            <div className="text-ink-faint font-mono text-[11px]">
                               {row.sub}
                             </div>
                           )}
@@ -201,7 +206,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                         <td
                           className={`tnum py-2 pl-3 text-right align-top font-mono ${
                             row.tone === "waste"
-                              ? "font-medium text-waste-text"
+                              ? "text-waste-text font-medium"
                               : "text-ink"
                           }`}
                         >
@@ -209,13 +214,15 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                         </td>
                       </tr>
                     ))}
-                    <tr className="border-t-2 border-line">
+                    <tr className="border-line border-t-2">
                       <td className="py-2 pr-3 font-medium">
                         {active.detail.totalLabel}
                       </td>
                       <td
                         className={`tnum py-2 pl-3 text-right font-mono font-semibold ${
-                          active.tone === "waste" ? "text-waste-text" : "text-ink"
+                          active.tone === "waste"
+                            ? "text-waste-text"
+                            : "text-ink"
                         }`}
                       >
                         {active.detail.totalValue}
@@ -224,12 +231,12 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                   </tbody>
                 </table>
               ) : (
-                <p className="mt-3 text-sm text-ink-soft">
+                <p className="text-ink-soft mt-3 text-sm">
                   {active.detail.emptyText ?? "Nothing to show yet."}
                 </p>
               )}
               {active.detail.footnote && (
-                <p className="mt-3 text-xs text-ink-faint">
+                <p className="text-ink-faint mt-3 text-xs">
                   {active.detail.footnote}
                 </p>
               )}

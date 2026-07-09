@@ -190,7 +190,10 @@ export default async function LandingPage() {
       </section>
 
       {/* Product tour */}
-      <section id="product-tour" className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
+      <section
+        id="product-tour"
+        className="mx-auto max-w-6xl px-6 py-16 lg:py-24"
+      >
         <div className="max-w-2xl">
           <h2 className="font-display text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
             See it in action.
@@ -258,7 +261,7 @@ export default async function LandingPage() {
               }`}
             >
               {p.featured && (
-                <span className="bg-brand absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
+                <span className="bg-brand-deep absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
                   Most popular
                 </span>
               )}

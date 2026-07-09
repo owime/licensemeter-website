@@ -21,14 +21,14 @@ export const EmptyState = ({
     {Icon && (
       <span
         aria-hidden="true"
-        className="mb-3 flex size-10 items-center justify-center rounded-lg border border-line bg-canvas text-ink-faint"
+        className="border-line bg-canvas text-ink-faint mb-3 flex size-10 items-center justify-center rounded-lg border"
       >
         <Icon className="size-5" />
       </span>
     )}
-    <p className="font-medium text-ink">{heading}</p>
+    <p className="text-ink font-medium">{heading}</p>
     {children && (
-      <p className="mt-1 text-sm leading-relaxed text-ink-soft">{children}</p>
+      <p className="text-ink-soft mt-1 text-sm leading-relaxed">{children}</p>
     )}
   </div>
 );

@@ -35,7 +35,7 @@ export const InviteForm = ({
   return (
     <form
       action={formAction}
-      className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4"
+      className="border-line mt-4 flex flex-wrap items-center gap-2 border-t pt-4"
     >
       <input
         // Remount on each new failure so defaultValue re-applies; resets after success.
@@ -46,14 +46,14 @@ export const InviteForm = ({
         aria-label="Email address to invite"
         placeholder="colleague@yourcompany.com"
         defaultValue={result && !result.ok ? result.email : undefined}
-        className="min-w-56 flex-1 border border-line bg-card px-3 py-2 text-sm focus:border-ink"
+        className="border-line bg-card focus:border-ink min-w-56 flex-1 border px-3 py-2 text-sm"
       />
       <select
         name="role"
         value={role}
         onChange={(e) => setRole(e.target.value as MembershipRole)}
         aria-label="Role for the invited member"
-        className="border border-line bg-card px-2 py-2 text-sm focus:border-ink"
+        className="border-line bg-card focus:border-ink border px-2 py-2 text-sm"
       >
         {ROLE_ORDER.filter((r) => r !== "owner" || allowOwner).map((r) => (
           <option key={r} value={r}>
@@ -79,11 +79,11 @@ export const InviteForm = ({
             ? `Invited ${result.email ?? "member"}.`
             : (result.error ?? "Invite failed")}
       </p>
-      <p className="w-full text-xs text-ink-soft">
+      <p className="text-ink-soft w-full text-xs">
         <span className="font-medium">{ROLE_LABEL[role]}:</span>{" "}
         {ROLE_DESCRIPTION[role]}
       </p>
-      <p className="w-full text-xs text-ink-faint">
+      <p className="text-ink-faint w-full text-xs">
         {inviteEmailsActive
           ? "Invited people get an email with a sign-in link and gain access on their first Microsoft sign-in."
           : "Invited people get access when they first sign in with Microsoft using this email."}{" "}

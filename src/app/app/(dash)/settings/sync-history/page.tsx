@@ -60,20 +60,23 @@ export default async function SyncHistoryPage({
       <header className="rise rise-1">
         <nav
           aria-label="Breadcrumb"
-          className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+          className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
         >
           <Link
             href="/app/settings"
-            className="underline-offset-4 hover:text-ink hover:underline"
+            className="hover:text-ink underline-offset-4 hover:underline"
           >
             Settings
           </Link>{" "}
-          / <span aria-current="page" className="text-ink-soft">Sync history</span>
+          /{" "}
+          <span aria-current="page" className="text-ink-soft">
+            Sync history
+          </span>
         </nav>
-        <h1 className="mt-2 font-display text-3xl tracking-tight">
+        <h1 className="font-display mt-2 text-3xl tracking-tight">
           Sync history
         </h1>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="text-ink-soft mt-1 text-sm">
           {total} {total === 1 ? "run" : "runs"} recorded for this workspace.
         </p>
       </header>
@@ -81,13 +84,13 @@ export default async function SyncHistoryPage({
       <div className="rise rise-2">
         <Card title="Runs">
           {runs.length === 0 ? (
-            <p className="text-sm text-ink-soft">No syncs yet.</p>
+            <p className="text-ink-soft text-sm">No syncs yet.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {runs.map((run) => (
                 <li
                   key={run.id}
-                  className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2 text-sm last:border-b-0 last:pb-0"
+                  className="border-line flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-sm last:border-b-0 last:pb-0"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -99,7 +102,7 @@ export default async function SyncHistoryPage({
                       {fmtDateTime(run.startedAt)}
                     </span>
                   </div>
-                  <div className="min-w-0 font-mono text-[11px] break-words text-ink-soft">
+                  <div className="text-ink-soft min-w-0 font-mono text-[11px] break-words">
                     {run.steps
                       .map(
                         (s) =>
@@ -107,7 +110,8 @@ export default async function SyncHistoryPage({
                             s.status === "ok" ? "" : ` (${s.status})`
                           }`,
                       )
-                      .join(" · ") || (run.error ?? "")}
+                      .join(" · ") ||
+                      (run.error ?? "")}
                   </div>
                 </li>
               ))}
@@ -121,7 +125,7 @@ export default async function SyncHistoryPage({
           aria-label="Sync history pages"
           className="flex flex-wrap items-center justify-between gap-3"
         >
-          <span className="tnum text-xs text-ink-soft">
+          <span className="tnum text-ink-soft text-xs">
             Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
             {Math.min(page * PAGE_SIZE, total)} of {total}
           </span>

@@ -12,10 +12,11 @@ import {
 } from "react";
 
 import { buttonClass } from "~/components/ui";
+import { tourStorageKey } from "~/lib/tourStorage";
+import type { TourPhase } from "~/lib/tourStorage";
 import { markTourDone } from "~/server/actions";
 import type { TourStep } from "./tourSteps";
 
-type TourPhase = "welcome" | "data";
 type AvailableStep = TourStep & { element: HTMLElement };
 type Position = { top: number; left: number };
 type Rect = { top: number; left: number; width: number; height: number };
@@ -34,7 +35,9 @@ const clamp = (value: number, min: number, max: number) =>
 
 const isVisible = (element: HTMLElement) => {
   const rect = element.getBoundingClientRect();
-  return element.getClientRects().length > 0 && rect.width > 0 && rect.height > 0;
+  return (
+    element.getClientRects().length > 0 && rect.width > 0 && rect.height > 0
+  );
 };
 
 const findAvailableSteps = (steps: TourStep[]): AvailableStep[] =>
@@ -48,10 +51,12 @@ const findAvailableSteps = (steps: TourStep[]): AvailableStep[] =>
 export const Tour = ({
   steps,
   phase,
+  storageId,
   finalButtonLabel,
 }: {
   steps: TourStep[];
   phase: TourPhase;
+  storageId: string;
   finalButtonLabel?: string;
 }) => {
   const [availableSteps, setAvailableSteps] = useState<AvailableStep[] | null>(
@@ -68,11 +73,18 @@ export const Tour = ({
   const dismissedRef = useRef(false);
   const titleId = useId();
   const router = useRouter();
+  const localKey = tourStorageKey(storageId, phase);
 
-  const activeStep = hidden
-    ? null
-    : (availableSteps?.[activeIndex] ?? null);
+  const activeStep = hidden ? null : (availableSteps?.[activeIndex] ?? null);
   const open = activeStep !== null;
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(localKey) === "done") setHidden(true);
+    } catch {
+      // Storage can be unavailable in hardened/private browsing contexts.
+    }
+  }, [localKey]);
 
   useEffect(() => {
     if (hidden) return;
@@ -88,6 +100,11 @@ export const Tour = ({
   const finish = useCallback(() => {
     if (dismissedRef.current) return;
     dismissedRef.current = true;
+    try {
+      window.localStorage.setItem(localKey, "done");
+    } catch {
+      // The server-side timestamp remains the source of truth.
+    }
     setHidden(true);
     startTransition(async () => {
       try {
@@ -97,7 +114,7 @@ export const Tour = ({
         // The tour is already dismissed locally; a failed write can retry next visit.
       }
     });
-  }, [phase, router]);
+  }, [localKey, phase, router]);
 
   const updatePosition = useCallback(() => {
     if (!activeStep || !cardRef.current) return;
@@ -146,7 +163,10 @@ export const Tour = ({
     window.addEventListener("resize", handler);
     // Capture phase so scrolls inside nested containers (e.g. the sidebar's
     // own overflow scroller) also reposition the popup and highlight ring.
-    window.addEventListener("scroll", handler, { passive: true, capture: true });
+    window.addEventListener("scroll", handler, {
+      passive: true,
+      capture: true,
+    });
     return () => {
       window.removeEventListener("resize", handler);
       window.removeEventListener("scroll", handler, { capture: true });
@@ -176,7 +196,9 @@ export const Tour = ({
       const active = document.activeElement;
       const inside =
         active instanceof HTMLElement && cardRef.current.contains(active);
-      if (e.shiftKey ? active === first || !inside : active === last || !inside) {
+      if (
+        e.shiftKey ? active === first || !inside : active === last || !inside
+      ) {
         e.preventDefault();
         (e.shiftKey ? last : first).focus();
       }
@@ -193,18 +215,14 @@ export const Tour = ({
 
   const isLast = activeIndex === availableSteps.length - 1;
   const buttonLabel =
-    isLast && finalButtonLabel
-      ? finalButtonLabel
-      : isLast
-        ? "Done"
-        : "Next";
+    isLast && finalButtonLabel ? finalButtonLabel : isLast ? "Done" : "Next";
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-ink/30" onClick={finish} />
+      <div className="bg-ink/30 fixed inset-0 z-40" onClick={finish} />
       {/* The ring is drawn as an overlay (not a class on the anchor) because
-        * the sidebar (sticky) and the rise-animated cards create stacking
-        * contexts that would trap the anchor below the backdrop. */}
+       * the sidebar (sticky) and the rise-animated cards create stacking
+       * contexts that would trap the anchor below the backdrop. */}
       {anchorRect !== null && (
         <div
           aria-hidden="true"
@@ -218,7 +236,7 @@ export const Tour = ({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-busy={pending || undefined}
-        className="fixed z-[70] max-h-[calc(100dvh-1.5rem)] w-[min(calc(100vw-1.5rem),22rem)] overflow-y-auto rounded-2xl border border-line bg-card p-4 shadow-float"
+        className="border-line bg-card shadow-float fixed z-[70] max-h-[calc(100dvh-1.5rem)] w-[min(calc(100vw-1.5rem),22rem)] overflow-y-auto rounded-2xl border p-4"
         style={{
           top: position?.top ?? MARGIN,
           left: position?.left ?? MARGIN,
@@ -244,15 +262,15 @@ export const Tour = ({
           <button
             type="button"
             onClick={finish}
-            className="text-xs font-medium text-ink-soft underline-offset-4 transition hover:text-ink hover:underline"
+            className="text-ink-soft hover:text-ink text-xs font-medium underline-offset-4 transition hover:underline"
           >
             Skip tour
           </button>
         </div>
-        <h2 id={titleId} className="mt-4 font-display text-xl tracking-tight">
+        <h2 id={titleId} className="font-display mt-4 text-xl tracking-tight">
           {activeStep.title}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+        <p className="text-ink-soft mt-2 text-sm leading-relaxed">
           {activeStep.body}
         </p>
         <div className="mt-5 flex justify-end">

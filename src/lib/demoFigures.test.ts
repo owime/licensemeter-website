@@ -43,7 +43,12 @@ const recompute = async () => {
     ],
   );
 
-  const joined = joinSignals({ graphUsers, usageRows, copilotRows, hasP1: true });
+  const joined = joinSignals({
+    graphUsers,
+    usageRows,
+    copilotRows,
+    hasP1: true,
+  });
   const prices: Record<string, number> = {
     ...Object.fromEntries(
       skus.map((s) => [s.skuId, skuDefaultPriceCents(s.skuId)]),
@@ -149,7 +154,11 @@ describe("DEMO_FIGURES matches the recomputed demo tenant analysis", () => {
         "saas_disabled_in_entra",
       ]),
       orphaned: sumByRules(findings, ["adobe_orphaned", "saas_orphaned"]),
-      idle: sumByRules(findings, ["inactive_90d", "never_active", "saas_inactive"]),
+      idle: sumByRules(findings, [
+        "inactive_90d",
+        "never_active",
+        "saas_inactive",
+      ]),
       copilotUnused: sumByRules(findings, ["copilot_unused"]),
       shelfware: sumByRules(findings, ["shelfware"]),
       guests: sumByRules(findings, ["licensed_guest"]),

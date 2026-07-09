@@ -41,10 +41,7 @@ export const GET = async (req: NextRequest) => {
             inArray(memberships.role, ["owner", "admin"]),
             // Claimed via either provider (entra oid / workos workosUserId);
             // pending invites have neither and are excluded.
-            or(
-              isNotNull(memberships.oid),
-              isNotNull(memberships.workosUserId),
-            ),
+            or(isNotNull(memberships.oid), isNotNull(memberships.workosUserId)),
           ),
         }),
         // Cheap emptiness probes: never render a PDF of nothing but zeros.

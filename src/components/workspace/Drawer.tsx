@@ -53,7 +53,9 @@ export const Drawer = ({
       const active = document.activeElement;
       const inside =
         active instanceof HTMLElement && panelRef.current.contains(active);
-      if (e.shiftKey ? active === first || !inside : active === last || !inside) {
+      if (
+        e.shiftKey ? active === first || !inside : active === last || !inside
+      ) {
         e.preventDefault();
         (e.shiftKey ? last : first).focus();
       }
@@ -71,7 +73,7 @@ export const Drawer = ({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-50 bg-ink/30 transition-opacity duration-300 ${
+        className={`bg-ink/30 fixed inset-0 z-50 transition-opacity duration-300 ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -82,7 +84,7 @@ export const Drawer = ({
         aria-modal="true"
         aria-label={title}
         inert={!open}
-        className={`bg-card fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col shadow-float transition-transform duration-300 ease-out ${
+        className={`bg-card shadow-float fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col transition-transform duration-300 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -92,7 +94,7 @@ export const Drawer = ({
             ref={closeRef}
             onClick={onClose}
             aria-label="Close"
-            className="text-ink-faint hover:text-ink -mr-1 flex size-9 items-center justify-center rounded-lg transition hover:bg-subtle"
+            className="text-ink-faint hover:text-ink hover:bg-subtle focus-visible:ring-brand -my-2 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-lg transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
               <path

@@ -1,4 +1,13 @@
-import { and, eq, inArray, isNotNull, lt, notInArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  inArray,
+  isNotNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { siteUrl } from "~/env";
 import { fmtMoney, workspaceLabel } from "~/lib/format";
@@ -34,7 +43,10 @@ import { decryptSecret, secretAad } from "~/server/crypto";
 import type { AdobeUser, SaasProvider, SaasSeat } from "~/server/types";
 import { DemoGraphClient } from "~/server/graph/demoGraph";
 import { msGraphClientForTenant } from "~/server/graph/msConnection";
-import { skuDefaultPriceCents, skuDisplayName } from "~/server/graph/skuCatalog";
+import {
+  skuDefaultPriceCents,
+  skuDisplayName,
+} from "~/server/graph/skuCatalog";
 import {
   PremiumLicenseRequiredError,
   type CopilotUsageRow,
@@ -195,7 +207,10 @@ export const runSync = async (
     runId = run!.id;
   } catch {
     const inFlight = await db.query.syncRuns.findFirst({
-      where: and(eq(syncRuns.tenantId, tenantId), eq(syncRuns.status, "running")),
+      where: and(
+        eq(syncRuns.tenantId, tenantId),
+        eq(syncRuns.status, "running"),
+      ),
     });
     return { runId: inFlight?.id ?? "", status: "running", steps: [] };
   }
@@ -278,7 +293,11 @@ export const runSync = async (
     let usageRows: UsageReportRow[] = [];
     try {
       usageRows = await client.getActiveUserDetail("D90");
-      steps.push({ step: "usageReports", status: "ok", count: usageRows.length });
+      steps.push({
+        step: "usageReports",
+        status: "ok",
+        count: usageRows.length,
+      });
     } catch (err) {
       steps.push({
         step: "usageReports",
@@ -290,7 +309,11 @@ export const runSync = async (
     let copilotRows: CopilotUsageRow[] = [];
     try {
       copilotRows = await client.getCopilotUsage("D90");
-      steps.push({ step: "copilotUsage", status: "ok", count: copilotRows.length });
+      steps.push({
+        step: "copilotUsage",
+        status: "ok",
+        count: copilotRows.length,
+      });
     } catch (err) {
       steps.push({
         step: "copilotUsage",
@@ -319,7 +342,11 @@ export const runSync = async (
               ),
             });
         adobeRows = await adobeClient.getUsers();
-        steps.push({ step: "adobeUsers", status: "ok", count: adobeRows.length });
+        steps.push({
+          step: "adobeUsers",
+          status: "ok",
+          count: adobeRows.length,
+        });
         if (adobeConn) {
           await db
             .update(adobeConnections)
@@ -332,7 +359,11 @@ export const runSync = async (
         // rather than auto-resolving and reopening (same pattern as the
         // generic SaaS connectors below).
         adobeActive = false;
-        steps.push({ step: "adobeUsers", status: "warning", message: errText(err) });
+        steps.push({
+          step: "adobeUsers",
+          status: "warning",
+          message: errText(err),
+        });
         const stored = await db.query.adobeUsers.findMany({
           where: eq(adobeUsersTable.tenantId, tenantId),
         });
@@ -511,14 +542,15 @@ export const runSync = async (
     // Prune only when Graph returned data; an empty result keeps the last
     // known inventory instead of wiping it (defensive against odd responses).
     if (skus.length > 0) {
-      await db
-        .delete(tenantSkus)
-        .where(
-          and(
-            eq(tenantSkus.tenantId, tenantId),
-            notInArray(tenantSkus.skuId, skus.map((s) => s.skuId)),
+      await db.delete(tenantSkus).where(
+        and(
+          eq(tenantSkus.tenantId, tenantId),
+          notInArray(
+            tenantSkus.skuId,
+            skus.map((s) => s.skuId),
           ),
-        );
+        ),
+      );
     }
 
     for (const batch of chunk(joined.users, 250)) {
@@ -559,17 +591,15 @@ export const runSync = async (
         });
     }
     if (joined.users.length > 0) {
-      await db
-        .delete(tenantUsers)
-        .where(
-          and(
-            eq(tenantUsers.tenantId, tenantId),
-            notInArray(
-              tenantUsers.graphId,
-              joined.users.map((u) => u.graphId),
-            ),
+      await db.delete(tenantUsers).where(
+        and(
+          eq(tenantUsers.tenantId, tenantId),
+          notInArray(
+            tenantUsers.graphId,
+            joined.users.map((u) => u.graphId),
           ),
-        );
+        ),
+      );
     }
 
     // Persist Adobe users (upsert + prune) when the connector is active.
@@ -594,17 +624,15 @@ export const runSync = async (
               syncedAt: sql`excluded.synced_at`,
             },
           });
-        await db
-          .delete(adobeUsersTable)
-          .where(
-            and(
-              eq(adobeUsersTable.tenantId, tenantId),
-              notInArray(
-                adobeUsersTable.email,
-                adobeRows.map((u) => u.email.toLowerCase()),
-              ),
+        await db.delete(adobeUsersTable).where(
+          and(
+            eq(adobeUsersTable.tenantId, tenantId),
+            notInArray(
+              adobeUsersTable.email,
+              adobeRows.map((u) => u.email.toLowerCase()),
             ),
-          );
+          ),
+        );
       } else {
         await db
           .delete(adobeUsersTable)
@@ -644,18 +672,16 @@ export const runSync = async (
               syncedAt: sql`excluded.synced_at`,
             },
           });
-        await db
-          .delete(saasSeatsTable)
-          .where(
-            and(
-              eq(saasSeatsTable.tenantId, tenantId),
-              eq(saasSeatsTable.provider, provider),
-              notInArray(
-                saasSeatsTable.email,
-                seats.map((s) => s.email.toLowerCase()),
-              ),
+        await db.delete(saasSeatsTable).where(
+          and(
+            eq(saasSeatsTable.tenantId, tenantId),
+            eq(saasSeatsTable.provider, provider),
+            notInArray(
+              saasSeatsTable.email,
+              seats.map((s) => s.email.toLowerCase()),
             ),
-          );
+          ),
+        );
       } else {
         await db
           .delete(saasSeatsTable)
@@ -726,9 +752,7 @@ export const runSync = async (
           missingSaas.map((id) => ({
             tenantId,
             skuId: id,
-            monthlyPriceCents: tenant.isDemo
-              ? (DEMO_SAAS_PRICES[id] ?? 0)
-              : 0,
+            monthlyPriceCents: tenant.isDemo ? (DEMO_SAAS_PRICES[id] ?? 0) : 0,
             source: "default" as const,
           })),
         )
@@ -765,15 +789,18 @@ export const runSync = async (
       accountEnabled: u.accountEnabled,
     }));
     const adobeFindings = analyzeAdobeWaste(adobeRows, entraIdentities, prices);
-    const saasFindings = [...saasRows.entries()].flatMap(
-      ([provider, seats]) =>
-        analyzeSaasWaste(provider, seats, entraIdentities, prices, {
-          inactiveDays: tenant.inactiveDays,
-          now,
-        }),
+    const saasFindings = [...saasRows.entries()].flatMap(([provider, seats]) =>
+      analyzeSaasWaste(provider, seats, entraIdentities, prices, {
+        inactiveDays: tenant.inactiveDays,
+        now,
+      }),
     );
     const allFindings = newFindings.concat(adobeFindings, saasFindings);
-    steps.push({ step: "wasteAnalysis", status: "ok", count: allFindings.length });
+    steps.push({
+      step: "wasteAnalysis",
+      status: "ok",
+      count: allFindings.length,
+    });
 
     const inserted = await diffFindings(tenantId, allFindings, now);
     await sendLeakAlert(tenant, inserted);
@@ -914,8 +941,12 @@ export const runAnalysis = async (tenantId: string): Promise<void> => {
 
   const [skuRows, userRows, priceRows, adobeRows, saasSeatRows] =
     await Promise.all([
-      db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
-      db.query.tenantUsers.findMany({ where: eq(tenantUsers.tenantId, tenantId) }),
+      db.query.tenantSkus.findMany({
+        where: eq(tenantSkus.tenantId, tenantId),
+      }),
+      db.query.tenantUsers.findMany({
+        where: eq(tenantUsers.tenantId, tenantId),
+      }),
       db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
       db.query.adobeUsers.findMany({
         where: eq(adobeUsersTable.tenantId, tenantId),
@@ -1156,10 +1187,7 @@ const sendLeakAlert = async (
         inArray(memberships.role, ["owner", "admin"]),
         // A claimed membership has signed in via either provider: entra sets
         // oid, workos sets workosUserId. Pending invites have neither.
-        or(
-          isNotNull(memberships.oid),
-          isNotNull(memberships.workosUserId),
-        ),
+        or(isNotNull(memberships.oid), isNotNull(memberships.workosUserId)),
       ),
     });
     const to = admins.map((m) => m.email).filter(Boolean);

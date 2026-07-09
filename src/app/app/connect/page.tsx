@@ -45,39 +45,39 @@ export default async function ConnectPage({
         License<span className="text-brand-text">Meter</span>
       </Link>
 
-      <h1 className="mt-10 font-display text-4xl tracking-tight">
+      <h1 className="font-display mt-10 text-4xl tracking-tight">
         Connect your tenant
       </h1>
 
       {error && (
         <div
           role="alert"
-          className="mt-6 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text"
+          className="border-danger-soft bg-danger-soft/50 text-danger-text mt-6 border p-4 text-sm"
         >
           {connectErrorText(error)}
         </div>
       )}
 
-      <p className="mt-6 text-sm font-medium text-ink">
+      <p className="text-ink mt-6 text-sm font-medium">
         Connect the read-only sync
       </p>
-      <p className="mt-1 text-ink-soft">
-        A Global Administrator or Privileged Role Administrator of your Microsoft
-        365 tenant grants LicenseMeter{" "}
+      <p className="text-ink-soft mt-1">
+        A Global Administrator or Privileged Role Administrator of your
+        Microsoft 365 tenant grants LicenseMeter{" "}
         <strong className="text-ink">read-only</strong> application permissions
-        once. That unlocks nightly monitoring, leak alerts and trends. Nothing is
-        ever written to your tenant, and mailbox or file contents are never
+        once. That unlocks nightly monitoring, leak alerts and trends. Nothing
+        is ever written to your tenant, and mailbox or file contents are never
         readable.
       </p>
 
-      <ul className="mt-6 border border-line bg-card">
+      <ul className="border-line bg-card mt-6 border">
         {CONNECTOR_SCOPES.map((s) => (
           <li
             key={s.scope}
-            className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line px-4 py-2.5 last:border-b-0"
+            className="border-line flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b px-4 py-2.5 last:border-b-0"
           >
             <code className="font-mono text-xs">{s.scope}</code>
-            <span className="text-xs text-ink-soft">{s.why}</span>
+            <span className="text-ink-soft text-xs">{s.why}</span>
           </li>
         ))}
       </ul>
@@ -88,32 +88,34 @@ export default async function ConnectPage({
             Grant admin consent
           </ButtonAnchor>
         ) : (
-          <span className="text-sm text-ink-soft">
+          <span className="text-ink-soft text-sm">
             One-click managed consent is not enabled on this deployment. Use the
             instant scan or CSV import below.
           </span>
         )}
-        <span className="text-xs text-ink-faint">
+        <span className="text-ink-faint text-xs">
           Signed in as {session.user.upn || session.user.email}
         </span>
       </div>
 
       {scanConfigured && (
-        <div className="mt-8 border border-line bg-card p-4">
-          <p className="text-sm font-medium text-ink">Run an instant scan</p>
-          <p className="mt-1 text-sm text-ink-soft">
+        <div className="border-line bg-card mt-8 border p-4">
+          <p className="text-ink text-sm font-medium">Run an instant scan</p>
+          <p className="text-ink-soft mt-1 text-sm">
             One-time scan with the same read-only scopes, running with{" "}
             <strong className="text-ink">your</strong> permissions while you are
             signed in. No standing access, no stored tokens.
           </p>
           <div className="mt-3">
-            <ButtonAnchor href="/api/scan/start">Run an instant scan</ButtonAnchor>
+            <ButtonAnchor href="/api/scan/start">
+              Run an instant scan
+            </ButtonAnchor>
           </div>
         </div>
       )}
 
-      <div className="mt-4 border border-line bg-card p-4">
-        <p className="text-sm text-ink-soft">
+      <div className="border-line bg-card mt-4 border p-4">
+        <p className="text-ink-soft text-sm">
           No admin with consent rights at hand? Start with the CSV trial: two
           admin-center exports, no consent at all.
         </p>

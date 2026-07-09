@@ -196,7 +196,9 @@ function makeEvent(over: Partial<Stripe.Event> = {}): Stripe.Event {
 function makeRequest(opts: { signature?: string | null; body?: string } = {}) {
   const { signature = "sig_valid", body = "{}" } = opts;
   return {
-    headers: { get: (name: string) => (name === "stripe-signature" ? signature : null) },
+    headers: {
+      get: (name: string) => (name === "stripe-signature" ? signature : null),
+    },
     text: () => Promise.resolve(body),
   } as unknown as Parameters<typeof POST>[0];
 }
@@ -604,7 +606,10 @@ describe("POST /api/billing/webhook", () => {
         makeMspSubscription(),
       );
       withEvent(
-        subEvent({ id: "evt_msp_created", type: "customer.subscription.created" }),
+        subEvent({
+          id: "evt_msp_created",
+          type: "customer.subscription.created",
+        }),
       );
 
       const res = await POST(makeRequest());

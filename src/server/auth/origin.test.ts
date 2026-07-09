@@ -12,20 +12,28 @@ import { isSameOrigin } from "~/server/auth/origin";
  * the Origin's host equals Host; false on a host mismatch or a malformed Origin.
  */
 const reqWith = (headers: Record<string, string>): Request =>
-  new Request("https://app.licensemeter.com/api/x", { method: "POST", headers });
+  new Request("https://app.licensemeter.com/api/x", {
+    method: "POST",
+    headers,
+  });
 
 describe("isSameOrigin", () => {
   it("is true when Origin's host matches Host (https, default port)", () => {
     expect(
       isSameOrigin(
-        reqWith({ origin: "https://app.licensemeter.com", host: "app.licensemeter.com" }),
+        reqWith({
+          origin: "https://app.licensemeter.com",
+          host: "app.licensemeter.com",
+        }),
       ),
     ).toBe(true);
   });
 
   it("is true when host:port match including an explicit port", () => {
     expect(
-      isSameOrigin(reqWith({ origin: "http://localhost:3000", host: "localhost:3000" })),
+      isSameOrigin(
+        reqWith({ origin: "http://localhost:3000", host: "localhost:3000" }),
+      ),
     ).toBe(true);
   });
 
@@ -33,7 +41,10 @@ describe("isSameOrigin", () => {
     // URL.host carries the port; scheme is intentionally not part of the check.
     expect(
       isSameOrigin(
-        reqWith({ origin: "http://app.licensemeter.com", host: "app.licensemeter.com" }),
+        reqWith({
+          origin: "http://app.licensemeter.com",
+          host: "app.licensemeter.com",
+        }),
       ),
     ).toBe(true);
   });
@@ -41,14 +52,19 @@ describe("isSameOrigin", () => {
   it("is false for a cross-origin host", () => {
     expect(
       isSameOrigin(
-        reqWith({ origin: "https://evil.example", host: "app.licensemeter.com" }),
+        reqWith({
+          origin: "https://evil.example",
+          host: "app.licensemeter.com",
+        }),
       ),
     ).toBe(false);
   });
 
   it("is false when only the port differs", () => {
     expect(
-      isSameOrigin(reqWith({ origin: "http://localhost:4000", host: "localhost:3000" })),
+      isSameOrigin(
+        reqWith({ origin: "http://localhost:4000", host: "localhost:3000" }),
+      ),
     ).toBe(false);
   });
 
@@ -65,11 +81,18 @@ describe("isSameOrigin", () => {
 
   it("is false for a malformed / non-absolute Origin", () => {
     expect(
-      isSameOrigin(reqWith({ origin: "not a url", host: "app.licensemeter.com" })),
+      isSameOrigin(
+        reqWith({ origin: "not a url", host: "app.licensemeter.com" }),
+      ),
     ).toBe(false);
     // Protocol-relative is not a valid absolute URL -> new URL throws -> false.
     expect(
-      isSameOrigin(reqWith({ origin: "//app.licensemeter.com", host: "app.licensemeter.com" })),
+      isSameOrigin(
+        reqWith({
+          origin: "//app.licensemeter.com",
+          host: "app.licensemeter.com",
+        }),
+      ),
     ).toBe(false);
   });
 
@@ -78,7 +101,9 @@ describe("isSameOrigin", () => {
   });
 
   it("is false when an Origin is present but Host is absent (can't prove same-origin)", () => {
-    expect(isSameOrigin(reqWith({ origin: "https://evil.example" }))).toBe(false);
+    expect(isSameOrigin(reqWith({ origin: "https://evil.example" }))).toBe(
+      false,
+    );
   });
 
   it("is true when both headers are absent", () => {

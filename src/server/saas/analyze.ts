@@ -21,9 +21,7 @@ export const analyzeSaasWaste = (
   opts: { inactiveDays: number; now: Date },
 ): WasteFinding[] => {
   const label = CONNECTOR_LABELS[provider];
-  const entraByEmail = new Map(
-    entraUsers.map((u) => [u.upn.toLowerCase(), u]),
-  );
+  const entraByEmail = new Map(entraUsers.map((u) => [u.upn.toLowerCase(), u]));
   const findings: WasteFinding[] = [];
 
   for (const seat of seats) {

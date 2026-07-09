@@ -38,7 +38,7 @@ export const EntitlementBanner = ({
         className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-3 ${
           lastWeek
             ? "bg-gold-soft text-gold-text"
-            : "border border-line bg-subtle text-ink-soft"
+            : "border-line bg-subtle text-ink-soft border"
         }`}
       >
         <p className="text-sm font-medium">
@@ -57,7 +57,11 @@ export const EntitlementBanner = ({
   // Soft lock: incomplete first payment, expired trial, or past-due with the
   // grace period exhausted. Incomplete gets its own copy and a re-pay CTA so it
   // never reads as a generic "trial ended".
-  if (state === "incomplete" || state === "expired" || (state === "past_due" && locked)) {
+  if (
+    state === "incomplete" ||
+    state === "expired" ||
+    (state === "past_due" && locked)
+  ) {
     const message =
       state === "incomplete"
         ? "Your payment didn't complete. Finish paying to restore exports, nightly sync and alerts."
@@ -71,7 +75,7 @@ export const EntitlementBanner = ({
           ? "Subscribe now"
           : "Update billing";
     return (
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-danger-soft px-5 py-4 text-danger-text">
+      <div className="bg-danger-soft text-danger-text mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4">
         <p className="text-sm font-medium">{message}</p>
         <div className="flex items-center gap-3">
           {nonOwnerNote("Ask a workspace owner to upgrade.")}

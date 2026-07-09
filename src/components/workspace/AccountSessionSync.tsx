@@ -44,8 +44,7 @@ export const AccountSessionSync = () => {
               ? input.href
               : String(input);
         const method = (
-          args[1]?.method ??
-          (input instanceof Request ? input.method : "GET")
+          args[1]?.method ?? (input instanceof Request ? input.method : "GET")
         ).toUpperCase();
         if (res.ok && method !== "GET" && /\bworkos\.com\b/.test(url)) {
           sync();

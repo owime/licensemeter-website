@@ -121,8 +121,11 @@ export type WasteFinding = {
   monthlyImpactCents: number;
 };
 
-const key = (rule: WasteRuleId, userId?: string | null, skuId?: string | null) =>
-  `${rule}|${userId ?? "-"}|${skuId ?? "-"}`;
+const key = (
+  rule: WasteRuleId,
+  userId?: string | null,
+  skuId?: string | null,
+) => `${rule}|${userId ?? "-"}|${skuId ?? "-"}`;
 
 /**
  * Free, viral and capacity-style SKUs whose "unassigned seats" carry no cost:
@@ -182,7 +185,10 @@ const daysBetween = (from: Date, to: Date): number =>
 const licenseCost = (licenses: UserLicense[], prices: Record<string, number>) =>
   licenses.reduce((sum, l) => sum + (prices[l.skuId] ?? 0), 0);
 
-const licenseDetail = (licenses: UserLicense[], prices: Record<string, number>) =>
+const licenseDetail = (
+  licenses: UserLicense[],
+  prices: Record<string, number>,
+) =>
   licenses.map((l) => ({
     skuId: l.skuId,
     name: skuDisplayName(l.skuId),

@@ -59,16 +59,16 @@ const UtilizationBar = ({
   return (
     <div className="flex items-center gap-2">
       <div
-        className="h-1.5 w-24 bg-line"
+        className="bg-line h-1.5 w-24"
         role="progressbar"
         aria-valuenow={rounded}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={`${row.name} seat utilization`}
       >
-        <div className="h-1.5 bg-ink-soft" style={{ width: `${util}%` }} />
+        <div className="bg-ink-soft h-1.5" style={{ width: `${util}%` }} />
       </div>
-      <span className="tnum font-mono text-xs text-ink-soft">
+      <span className="tnum text-ink-soft font-mono text-xs">
         {fmtNumber(rounded, currency)}%
       </span>
     </div>
@@ -127,7 +127,11 @@ export const InventoryTable = ({
     );
 
   const ariaSort = (key: SortKey): "ascending" | "descending" | "none" =>
-    sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
+    sort.key === key
+      ? sort.dir === "asc"
+        ? "ascending"
+        : "descending"
+      : "none";
 
   const SortButton = ({
     sortKey,
@@ -160,13 +164,13 @@ export const InventoryTable = ({
   return (
     <section className="rise rise-3 mt-10">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           License inventory
         </h2>
         {!locked && (
           <a
             href="/api/export/licenses"
-            className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+            className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
           >
             Export CSV
           </a>
@@ -174,26 +178,58 @@ export const InventoryTable = ({
       </div>
 
       {/* Desktop table */}
-      <div className="mt-3 hidden overflow-x-auto border border-line bg-card md:block">
+      <div className="border-line bg-card mt-3 hidden overflow-x-auto border md:block">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-              <th scope="col" aria-sort={ariaSort("name")} className="px-4 py-3 font-medium">
+            <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
+              <th
+                scope="col"
+                aria-sort={ariaSort("name")}
+                className="px-4 py-3 font-medium"
+              >
                 <SortButton sortKey="name" label="Product" />
               </th>
-              <th scope="col" aria-sort={ariaSort("purchased")} className="px-4 py-3 text-right font-medium">
-                <SortButton sortKey="purchased" label="Purchased" align="right" />
+              <th
+                scope="col"
+                aria-sort={ariaSort("purchased")}
+                className="px-4 py-3 text-right font-medium"
+              >
+                <SortButton
+                  sortKey="purchased"
+                  label="Purchased"
+                  align="right"
+                />
               </th>
-              <th scope="col" aria-sort={ariaSort("assigned")} className="px-4 py-3 text-right font-medium">
+              <th
+                scope="col"
+                aria-sort={ariaSort("assigned")}
+                className="px-4 py-3 text-right font-medium"
+              >
                 <SortButton sortKey="assigned" label="Assigned" align="right" />
               </th>
-              <th scope="col" aria-sort={ariaSort("unassigned")} className="px-4 py-3 text-right font-medium">
-                <SortButton sortKey="unassigned" label="Unassigned" align="right" />
+              <th
+                scope="col"
+                aria-sort={ariaSort("unassigned")}
+                className="px-4 py-3 text-right font-medium"
+              >
+                <SortButton
+                  sortKey="unassigned"
+                  label="Unassigned"
+                  align="right"
+                />
               </th>
-              <th scope="col" aria-sort={ariaSort("utilization")} className="px-4 py-3 font-medium">
+              <th
+                scope="col"
+                aria-sort={ariaSort("utilization")}
+                className="px-4 py-3 font-medium"
+              >
                 <SortButton sortKey="utilization" label="Utilization" />
               </th>
-              <th scope="col" aria-sort={ariaSort("spend")} className="px-4 py-3 text-right font-medium">
+              <th
+                scope="col"
+                aria-sort={ariaSort("spend")}
+                className="px-4 py-3 text-right font-medium"
+              >
                 <SortButton sortKey="spend" label="Spend / mo" align="right" />
               </th>
             </tr>
@@ -204,11 +240,11 @@ export const InventoryTable = ({
               return (
                 <tr
                   key={r.skuId}
-                  className="border-b border-line last:border-b-0 hover:bg-canvas"
+                  className="border-line hover:bg-canvas border-b last:border-b-0"
                 >
                   <td className="px-4 py-3">
                     <div className="font-medium">{r.name}</div>
-                    <div className="font-mono text-[11px] text-ink-faint">
+                    <div className="text-ink-faint font-mono text-[11px]">
                       {r.partNumber}
                     </div>
                   </td>
@@ -220,7 +256,9 @@ export const InventoryTable = ({
                   </td>
                   <td
                     className={`tnum px-4 py-3 text-right font-mono ${
-                      free > 0 ? "font-medium text-waste-text" : "text-ink-faint"
+                      free > 0
+                        ? "text-waste-text font-medium"
+                        : "text-ink-faint"
                     }`}
                   >
                     {fmtNumber(free, currency)}
@@ -236,7 +274,7 @@ export const InventoryTable = ({
             })}
             {!hasRows && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink-soft">
+                <td colSpan={6} className="text-ink-soft px-4 py-8 text-center">
                   {emptyText}
                 </td>
               </tr>
@@ -244,25 +282,27 @@ export const InventoryTable = ({
           </tbody>
           {hasRows && (
             <tfoot>
-              <tr className="border-t-2 border-line text-[11px] tracking-[0.14em] text-ink-faint uppercase">
+              <tr className="border-line text-ink-faint border-t-2 text-[11px] tracking-[0.14em] uppercase">
                 <th scope="row" className="px-4 py-3 text-left font-medium">
                   Total
                 </th>
-                <td className="tnum px-4 py-3 text-right font-mono text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.purchased, currency)}
                 </td>
-                <td className="tnum px-4 py-3 text-right font-mono text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.assigned, currency)}
                 </td>
                 <td
                   className={`tnum px-4 py-3 text-right font-mono ${
-                    totals.unassigned > 0 ? "font-medium text-waste-text" : "text-ink"
+                    totals.unassigned > 0
+                      ? "text-waste-text font-medium"
+                      : "text-ink"
                   }`}
                 >
                   {fmtNumber(totals.unassigned, currency)}
                 </td>
                 <td className="px-4 py-3" />
-                <td className="tnum px-4 py-3 text-right font-mono font-semibold text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono font-semibold">
                   {fmtMoney(totals.spendCents, currency)}
                 </td>
               </tr>
@@ -276,28 +316,32 @@ export const InventoryTable = ({
         {sortedRows.map((r) => {
           const free = unassignedOf(r);
           return (
-            <li key={r.skuId} className="border border-line bg-card p-4">
+            <li key={r.skuId} className="border-line bg-card border p-4">
               <div className="font-medium">{r.name}</div>
-              <div className="font-mono text-[11px] text-ink-faint">
+              <div className="text-ink-faint font-mono text-[11px]">
                 {r.partNumber}
               </div>
               <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Purchased</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    Purchased
+                  </dt>
                   <dd>{fmtNumber(r.purchased, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Assigned</dt>
+                  <dt className="text-ink-faint font-sans text-xs">Assigned</dt>
                   <dd>{fmtNumber(r.assigned, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Unassigned</dt>
-                  <dd className={free > 0 ? "font-medium text-waste-text" : ""}>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    Unassigned
+                  </dt>
+                  <dd className={free > 0 ? "text-waste-text font-medium" : ""}>
                     {fmtNumber(free, currency)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
                   <dd>{fmtMoney(r.spendCents, currency)}</dd>
                 </div>
               </dl>
@@ -308,40 +352,44 @@ export const InventoryTable = ({
           );
         })}
         {!hasRows && (
-          <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
+          <li className="border-line bg-card text-ink-soft border px-4 py-8 text-center text-sm">
             {emptyText}
           </li>
         )}
         {hasRows && (
-          <li className="border border-line bg-card p-4">
+          <li className="border-line bg-card border p-4">
             <dl className="tnum grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total purchased
                 </dt>
                 <dd>{fmtNumber(totals.purchased, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total assigned
                 </dt>
                 <dd>{fmtNumber(totals.assigned, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total unassigned
                 </dt>
                 <dd
-                  className={totals.unassigned > 0 ? "font-medium text-waste-text" : ""}
+                  className={
+                    totals.unassigned > 0 ? "text-waste-text font-medium" : ""
+                  }
                 >
                   {fmtNumber(totals.unassigned, currency)}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total spend/mo
                 </dt>
-                <dd className="font-semibold">{fmtMoney(totals.spendCents, currency)}</dd>
+                <dd className="font-semibold">
+                  {fmtMoney(totals.spendCents, currency)}
+                </dd>
               </div>
             </dl>
           </li>

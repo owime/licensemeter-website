@@ -156,7 +156,9 @@ export const tenants = pgTable(
     monthlyReport: boolean("monthly_report").notNull().default(false),
     /** Signal quality from the last sync; lets price edits re-run analysis offline. */
     activitySignal: text("activity_signal").$type<"full" | "none">(),
-    copilotSignal: text("copilot_signal").$type<"per-user" | "aggregate" | "none">(),
+    copilotSignal: text("copilot_signal").$type<
+      "per-user" | "aggregate" | "none"
+    >(),
     usageAggregate: jsonb("usage_aggregate").$type<AggregateUsage>(),
     copilotAggregate: jsonb("copilot_aggregate").$type<AggregateUsage>(),
     isDemo: boolean("is_demo").notNull().default(false),
@@ -311,7 +313,10 @@ export const memberships = pgTable(
     uniqueIndex("memberships_tenant_email_idx").on(t.tenantId, t.email),
     index("memberships_oid_idx").on(t.oid),
     index("memberships_workos_user_idx").on(t.workosUserId),
-    check("memberships_role_check", sql`${t.role} in ('viewer', 'admin', 'owner')`),
+    check(
+      "memberships_role_check",
+      sql`${t.role} in ('viewer', 'admin', 'owner')`,
+    ),
   ],
 );
 
@@ -401,7 +406,10 @@ export const priceBook = pgTable(
     skuId: text("sku_id").notNull(),
     monthlyPriceCents: integer("monthly_price_cents").notNull().default(0),
     /** "default" = catalog estimate, "custom" = entered by the customer. */
-    source: text("source").$type<"default" | "custom">().notNull().default("default"),
+    source: text("source")
+      .$type<"default" | "custom">()
+      .notNull()
+      .default("default"),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -425,7 +433,10 @@ export const findings = pgTable(
     graphUserId: text("graph_user_id"),
     skuId: text("sku_id"),
     title: text("title").notNull(),
-    detail: jsonb("detail").$type<Record<string, unknown>>().notNull().default({}),
+    detail: jsonb("detail")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
     monthlyImpactCents: integer("monthly_impact_cents").notNull().default(0),
     status: text("status").$type<FindingStatus>().notNull().default("open"),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
@@ -584,7 +595,10 @@ export const auditLog = pgTable(
     actorOid: text("actor_oid").notNull(),
     actorEmail: text("actor_email"),
     action: text("action").$type<AuditAction>().notNull(),
-    detail: jsonb("detail").$type<Record<string, unknown>>().notNull().default({}),
+    detail: jsonb("detail")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -657,8 +671,12 @@ export const snapshots = pgTable(
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
     day: date("day").notNull(),
-    totalMonthlySpendCents: integer("total_monthly_spend_cents").notNull().default(0),
-    totalMonthlyWasteCents: integer("total_monthly_waste_cents").notNull().default(0),
+    totalMonthlySpendCents: integer("total_monthly_spend_cents")
+      .notNull()
+      .default(0),
+    totalMonthlyWasteCents: integer("total_monthly_waste_cents")
+      .notNull()
+      .default(0),
     purchasedSeats: integer("purchased_seats").notNull().default(0),
     assignedSeats: integer("assigned_seats").notNull().default(0),
     bySku: jsonb("by_sku")

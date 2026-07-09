@@ -154,7 +154,9 @@ const prettifyPartNumber = (partNumber: string): string =>
   partNumber
     .toLowerCase()
     .split(/[_\s]+/)
-    .map((w) => (w.length > 3 ? w[0]!.toUpperCase() + w.slice(1) : w.toUpperCase()))
+    .map((w) =>
+      w.length > 3 ? w[0]!.toUpperCase() + w.slice(1) : w.toUpperCase(),
+    )
     .join(" ");
 
 export const skuDisplayName = (

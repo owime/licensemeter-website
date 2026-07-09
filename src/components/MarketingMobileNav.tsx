@@ -33,7 +33,7 @@ export const MarketingMobileNav = ({
         aria-expanded={open}
         aria-controls="marketing-nav-drawer"
         aria-label={open ? "Close menu" : "Open menu"}
-        className="-my-1 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center text-ink sm:hidden"
+        className="text-ink -my-1 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center sm:hidden"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
           {open ? (
@@ -56,7 +56,7 @@ export const MarketingMobileNav = ({
       <div
         id="marketing-nav-drawer"
         hidden={!open}
-        className="absolute inset-x-0 top-full z-40 border-y border-line bg-canvas sm:hidden"
+        className="border-line bg-canvas absolute inset-x-0 top-full z-40 border-y sm:hidden"
       >
         <nav aria-label="Main" className="py-2">
           {items.map((item) => (
@@ -64,7 +64,7 @@ export const MarketingMobileNav = ({
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="block px-6 py-3 text-sm font-medium text-ink-soft hover:text-ink"
+              className="text-ink-soft hover:text-ink block px-6 py-3 text-sm font-medium"
             >
               {item.label}
             </Link>

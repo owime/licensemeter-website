@@ -30,11 +30,11 @@ export default async function CsvTrialPage() {
         License<span className="text-brand-text">Meter</span>
       </Link>
 
-      <h1 className="mt-10 font-display text-4xl tracking-tight">
+      <h1 className="font-display mt-10 text-4xl tracking-tight">
         Your waste number from two exports, no consent
       </h1>
 
-      <p className="mt-4 text-ink-soft">
+      <p className="text-ink-soft mt-4">
         Upload the exports below and LicenseMeter runs the same waste rules a
         connected workspace gets: offboarding leaks, overlapping licenses and
         (with the usage file) inactive seats. Anyone with{" "}
@@ -43,8 +43,8 @@ export default async function CsvTrialPage() {
         the exports; no admin consent is involved.
       </p>
 
-      <div className="mt-6 border border-line bg-card p-4 text-xs text-ink-soft">
-        <p className="font-medium tracking-wide text-ink-faint uppercase">
+      <div className="border-line bg-card text-ink-soft mt-6 border p-4 text-xs">
+        <p className="text-ink-faint font-medium tracking-wide uppercase">
           How your data is handled
         </p>
         <p className="mt-2">
@@ -56,18 +56,18 @@ export default async function CsvTrialPage() {
 
       <CsvTrialForm />
 
-      <p className="mt-8 text-xs text-ink-faint">
+      <p className="text-ink-faint mt-8 text-xs">
         Have consent rights?{" "}
         <Link
           href={connectHref}
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Connect the read-only sync instead
         </Link>{" "}
         for nightly updates, leak alerts and trends without re-uploading.
       </p>
 
-      <p className="mt-3 text-xs text-ink-faint">
+      <p className="text-ink-faint mt-3 text-xs">
         Signed in as {session.user.upn || session.user.email}
       </p>
     </main>

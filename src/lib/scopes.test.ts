@@ -18,8 +18,13 @@ describe("BYO connector scopes have no drift", () => {
       "utf8",
     );
     const block = /\$connectorRoles\s*=\s*@\(([^)]*)\)/.exec(script);
-    expect(block, "could not find $connectorRoles array in the script").not.toBeNull();
-    const scriptScopes = [...block![1]!.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    expect(
+      block,
+      "could not find $connectorRoles array in the script",
+    ).not.toBeNull();
+    const scriptScopes = [...block![1]!.matchAll(/"([^"]+)"/g)].map(
+      (m) => m[1],
+    );
 
     const expected = CONNECTOR_SCOPES.map((s) => s.scope);
     expect(scriptScopes.slice().sort()).toEqual(expected.slice().sort());

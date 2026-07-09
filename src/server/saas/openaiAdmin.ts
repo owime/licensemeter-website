@@ -45,8 +45,7 @@ export const mapOpenAiCostBuckets = (
   for (const bucket of buckets) {
     if (bucket.start_time == null) continue;
     const day = new Date(bucket.start_time * 1000).toISOString().slice(0, 10);
-    const byCategory =
-      dollarsByDay.get(day) ?? new Map<string, number>();
+    const byCategory = dollarsByDay.get(day) ?? new Map<string, number>();
     dollarsByDay.set(day, byCategory);
     for (const result of bucket.results ?? []) {
       const category = (result.line_item ?? "other").slice(0, 120);

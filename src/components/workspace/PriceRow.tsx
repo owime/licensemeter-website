@@ -45,7 +45,7 @@ export const PriceEditor = ({
         });
       }}
     >
-      <span className="text-xs text-ink-faint">{currency}</span>
+      <span className="text-ink-faint text-xs">{currency}</span>
       <input
         value={value}
         onChange={(e) => {
@@ -54,7 +54,7 @@ export const PriceEditor = ({
         }}
         inputMode="decimal"
         aria-label={`Monthly price for ${name ?? skuId}`}
-        className="tnum w-24 border border-line bg-card px-2 py-1.5 text-right font-mono text-sm focus:border-ink"
+        className="tnum border-line bg-card focus:border-ink w-24 border px-2 py-1.5 text-right font-mono text-sm"
       />
       <button
         disabled={!dirty || pending}

@@ -31,7 +31,7 @@ export const RenewalDateForm = ({ initial }: { initial: string | null }) => {
         name="date"
         defaultValue={initial ?? ""}
         aria-label="Microsoft agreement renewal date"
-        className="border border-line bg-card px-2 py-1.5 text-sm focus:border-ink"
+        className="border-line bg-card focus:border-ink border px-2 py-1.5 text-sm"
       />
       <Button variant="micro" disabled={pending} className="py-1.5">
         {pending ? "…" : "Save"}

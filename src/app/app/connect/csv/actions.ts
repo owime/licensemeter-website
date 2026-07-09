@@ -94,11 +94,16 @@ export const submitCsvTrial = async (
   // --- Input guards (order: session, sizes, rate limit, parse) ------------
   const directoryFile = formData.get("directory");
   if (!(directoryFile instanceof File) || directoryFile.size === 0) {
-    return fail("Please choose the user export file (Users > Active users > Export users).");
+    return fail(
+      "Please choose the user export file (Users > Active users > Export users).",
+    );
   }
   const usageFile = formData.get("usage");
   const hasUsage = usageFile instanceof File && usageFile.size > 0;
-  if (directoryFile.size > MAX_FILE_BYTES || (hasUsage && usageFile.size > MAX_FILE_BYTES)) {
+  if (
+    directoryFile.size > MAX_FILE_BYTES ||
+    (hasUsage && usageFile.size > MAX_FILE_BYTES)
+  ) {
     return fail("Each file must be 5 MB or smaller.");
   }
 
@@ -106,7 +111,9 @@ export const submitCsvTrial = async (
   // 10 uploads per hour either way.
   const rlKey = tid ? `csvtrial:${tid}` : `csvtrial:ws:${workosUserId}`;
   if (!(await rateLimitDurable(rlKey, 10, 60 * 60 * 1000))) {
-    return fail("Too many uploads for your organization. Please try again later.");
+    return fail(
+      "Too many uploads for your organization. Please try again later.",
+    );
   }
 
   const directoryParsed = parseDirectoryExport(await directoryFile.text());

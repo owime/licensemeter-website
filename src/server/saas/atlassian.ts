@@ -51,9 +51,7 @@ export const mapAtlassianUsers = (users: AtlassianApiUser[]): SaasSeat[] =>
  * managed users and their product access, nothing from inside the products.
  */
 export class AtlassianClient implements SaasClient {
-  constructor(
-    private readonly cfg: { orgId: string; apiKey: string },
-  ) {}
+  constructor(private readonly cfg: { orgId: string; apiKey: string }) {}
 
   async getSeats(): Promise<SaasSeat[]> {
     const seats: SaasSeat[] = [];

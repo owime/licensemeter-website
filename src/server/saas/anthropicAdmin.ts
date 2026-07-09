@@ -21,11 +21,7 @@ type AnthropicCostBucket = {
 
 export const nextUtcDayBoundary = (date: Date): string => {
   const boundary = new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate() + 1,
-    ),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1),
   );
   return boundary.toISOString();
 };

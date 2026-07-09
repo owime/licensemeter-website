@@ -56,7 +56,12 @@ export const CONNECTORS: ConnectorSpec[] = [
     fields: [
       { name: "orgRef", label: "Account ID", placeholder: "q6gBJVO5Tze…" },
       { name: "clientId", label: "Client ID", placeholder: "K3vQn8RsTUm…" },
-      { name: "secret", label: "Client secret", placeholder: "x7TuVwXyZ0a…", secret: true },
+      {
+        name: "secret",
+        label: "Client secret",
+        placeholder: "x7TuVwXyZ0a…",
+        secret: true,
+      },
     ],
     setupHint:
       "A Zoom admin creates a Server-to-Server OAuth app in the Zoom App Marketplace (Develop > Build App) with the user:read:list_users:admin scope, then pastes the three values here. Stored encrypted, used read-only.",
@@ -74,8 +79,17 @@ export const CONNECTORS: ConnectorSpec[] = [
     kind: "api",
     seatNoun: "Jira and Confluence seats",
     fields: [
-      { name: "orgRef", label: "Organization ID", placeholder: "1a2b3c4d-5e6f-…" },
-      { name: "secret", label: "API key", placeholder: "ATCTT3xFfGN0…", secret: true },
+      {
+        name: "orgRef",
+        label: "Organization ID",
+        placeholder: "1a2b3c4d-5e6f-…",
+      },
+      {
+        name: "secret",
+        label: "API key",
+        placeholder: "ATCTT3xFfGN0…",
+        secret: true,
+      },
     ],
     setupHint:
       "An organization admin creates an API key under admin.atlassian.com > Organization settings > API keys and pastes the organization ID plus the key here. Your org needs at least one verified domain (only managed accounts are returned). Stored encrypted, used read-only: managed users and product access only, nothing from inside Jira or Confluence.",
@@ -99,8 +113,17 @@ export const CONNECTORS: ConnectorSpec[] = [
         placeholder: "https://yourorg.my.salesforce.com",
         inputMode: "url",
       },
-      { name: "clientId", label: "Consumer key", placeholder: "3MVG9aBcDeFgHiJ…" },
-      { name: "secret", label: "Consumer secret", placeholder: "A1B2C3D4E5F6…", secret: true },
+      {
+        name: "clientId",
+        label: "Consumer key",
+        placeholder: "3MVG9aBcDeFgHiJ…",
+      },
+      {
+        name: "secret",
+        label: "Consumer secret",
+        placeholder: "A1B2C3D4E5F6…",
+        secret: true,
+      },
     ],
     setupHint:
       "A Salesforce admin creates a Connected App with the Client Credentials flow enabled and the 'Manage user data via APIs (api)' OAuth scope, with an integration user that has API Enabled and View All Users as the read-only run-as user, then pastes the production or sandbox My Domain URL, consumer key and consumer secret here. Stored encrypted; the only query is the user list with license type and last login.",
@@ -119,7 +142,12 @@ export const CONNECTORS: ConnectorSpec[] = [
     unpriced: true,
     seatNoun: "OpenAI console members",
     fields: [
-      { name: "secret", label: "Admin API key", placeholder: "sk-admin-…", secret: true },
+      {
+        name: "secret",
+        label: "Admin API key",
+        placeholder: "sk-admin-…",
+        secret: true,
+      },
     ],
     setupHint:
       "An organization Owner creates an Admin API key under platform.openai.com > Settings > Organization > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",
@@ -138,7 +166,12 @@ export const CONNECTORS: ConnectorSpec[] = [
     unpriced: true,
     seatNoun: "Anthropic console members",
     fields: [
-      { name: "secret", label: "Admin API key", placeholder: "sk-ant-admin…", secret: true },
+      {
+        name: "secret",
+        label: "Admin API key",
+        placeholder: "sk-ant-admin…",
+        secret: true,
+      },
     ],
     setupHint:
       "An organization admin creates an Admin API key in the Claude Console (platform.claude.com) under Organization settings > Admin keys and pastes it here. Stored encrypted, used read-only: member list and daily cost totals only, never request content.",

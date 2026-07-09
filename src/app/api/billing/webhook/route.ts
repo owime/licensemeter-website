@@ -79,7 +79,8 @@ async function upsertSubscription(
     where: eq(subscriptions.tenantId, tenantId),
     columns: { lastEventAt: true },
   });
-  if (existing?.lastEventAt && existing.lastEventAt > eventCreatedAt) return null;
+  if (existing?.lastEventAt && existing.lastEventAt > eventCreatedAt)
+    return null;
 
   const item = sub.items.data[0];
   const priceId = item?.price.id ?? "";
@@ -427,7 +428,8 @@ export const POST = async (req: NextRequest) => {
   if (!billingEnabled()) return NextResponse.json({ received: true });
 
   const sig = req.headers.get("stripe-signature");
-  if (!sig) return NextResponse.json({ error: "no_signature" }, { status: 400 });
+  if (!sig)
+    return NextResponse.json({ error: "no_signature" }, { status: 400 });
 
   const raw = await req.text();
   let event: Stripe.Event;

@@ -5,7 +5,12 @@ import Stripe from "stripe";
 
 import { env, siteUrl } from "~/env";
 import { db } from "~/server/db";
-import { mspAccounts, snapshots, subscriptions, tenants } from "~/server/db/schema";
+import {
+  mspAccounts,
+  snapshots,
+  subscriptions,
+  tenants,
+} from "~/server/db/schema";
 import { notifyOps } from "~/server/ops";
 import type { PlanInterval, PlanTier } from "~/server/types";
 
@@ -212,11 +217,16 @@ export const teardownTenantBilling = async (
     } catch (err) {
       subscriptionCancelFailed = true;
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`stripe teardown: cancel failed for tenant ${tenant.id}: ${msg}`);
-      void notifyOps(`stripe teardown: cancel failed for tenant ${tenant.id}: ${msg}`, {
-        key: `stripe-teardown:${tenant.id}`,
-        cooldownMs: 3_600_000,
-      });
+      console.error(
+        `stripe teardown: cancel failed for tenant ${tenant.id}: ${msg}`,
+      );
+      void notifyOps(
+        `stripe teardown: cancel failed for tenant ${tenant.id}: ${msg}`,
+        {
+          key: `stripe-teardown:${tenant.id}`,
+          cooldownMs: 3_600_000,
+        },
+      );
       // A live subscription is still billing: abort before erasing the customer
       // so the ids the caller needs to retry the cancel survive.
       return { subscriptionCancelFailed };
@@ -227,7 +237,9 @@ export const teardownTenantBilling = async (
     await stripe().customers.del(customerId);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe teardown: customer delete failed for tenant ${tenant.id}: ${msg}`);
+    console.error(
+      `stripe teardown: customer delete failed for tenant ${tenant.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe teardown: customer delete failed for tenant ${tenant.id} (PII erasure incomplete): ${msg}`,
       { key: `stripe-teardown-del:${tenant.id}`, cooldownMs: 3_600_000 },
@@ -265,7 +277,10 @@ export const reconcileTenantSubscription = async (
   const paidUntil = entitled || status === "past_due" ? periodEnd : null;
 
   const cachedPaid = tenant.paidUntil?.getTime() ?? null;
-  if (tenant.subscriptionStatus !== status || cachedPaid !== (paidUntil?.getTime() ?? null)) {
+  if (
+    tenant.subscriptionStatus !== status ||
+    cachedPaid !== (paidUntil?.getTime() ?? null)
+  ) {
     await db
       .update(tenants)
       .set({ subscriptionStatus: status, paidUntil })

@@ -1,10 +1,4 @@
-import {
-  Document,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import { DPA, type DpaBlock, type DpaLang } from "~/lib/dpa";
 
@@ -105,7 +99,12 @@ const s = StyleSheet.create({
   tdPurpose: { width: "28%", paddingHorizontal: 4, color: C.inkSoft },
   tdLoc: { width: "20%", paddingHorizontal: 4, color: C.inkSoft },
   tdBasis: { width: "22%", paddingHorizontal: 4, color: C.inkSoft },
-  noteText: { color: C.inkSoft, marginTop: 6, fontSize: 9, textAlign: "justify" },
+  noteText: {
+    color: C.inkSoft,
+    marginTop: 6,
+    fontSize: 9,
+    textAlign: "justify",
+  },
   signRow: { flexDirection: "row", gap: 14, marginTop: 8 },
   signBox: {
     flex: 1,
@@ -140,7 +139,12 @@ const s = StyleSheet.create({
 const Blocks = ({ blocks }: { blocks: DpaBlock[] }) => (
   <>
     {blocks.map((b, i) => {
-      if (b.kind === "p") return <Text key={i} style={s.p}>{b.text}</Text>;
+      if (b.kind === "p")
+        return (
+          <Text key={i} style={s.p}>
+            {b.text}
+          </Text>
+        );
       if (b.kind === "ul")
         return (
           <View key={i}>
@@ -255,7 +259,9 @@ export const DpaDocument = ({ lang }: { lang: DpaLang }) => {
                   <Text style={s.thPurpose}>
                     {a.subprocessors.headers.purpose}
                   </Text>
-                  <Text style={s.thLoc}>{a.subprocessors.headers.location}</Text>
+                  <Text style={s.thLoc}>
+                    {a.subprocessors.headers.location}
+                  </Text>
                   <Text style={s.thBasis}>{a.subprocessors.headers.basis}</Text>
                 </View>
                 {a.subprocessors.rows.map((r) => (

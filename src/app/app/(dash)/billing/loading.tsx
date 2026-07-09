@@ -3,9 +3,9 @@
 export default function Loading() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6" aria-busy="true">
-      <div className="h-9 w-32 bg-line motion-safe:animate-pulse" />
-      <div className="h-40 rounded-2xl border border-line bg-card motion-safe:animate-pulse" />
-      <div className="h-64 rounded-2xl border border-line bg-card motion-safe:animate-pulse" />
+      <div className="bg-line h-9 w-32 motion-safe:animate-pulse" />
+      <div className="border-line bg-card h-40 rounded-2xl border motion-safe:animate-pulse" />
+      <div className="border-line bg-card h-64 rounded-2xl border motion-safe:animate-pulse" />
       <span className="sr-only">Loading…</span>
     </div>
   );

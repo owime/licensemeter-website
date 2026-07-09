@@ -70,9 +70,7 @@ describe("welcomeHtml", () => {
   });
 
   it("renders the brand mark from the canonical origin", () => {
-    expect(html).toContain(
-      'src="https://licensemeter.com/brand-mark.png"',
-    );
+    expect(html).toContain('src="https://licensemeter.com/brand-mark.png"');
   });
 
   it("quotes the demo figure and the read-only promise", () => {

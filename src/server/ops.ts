@@ -6,10 +6,7 @@ import { opsAlerts } from "~/server/db/schema";
 import { emailEnabled, sendEmail } from "~/server/email";
 
 const escapeHtml = (s: string): string =>
-  s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
 export type NotifyOptions = {
   /** Dedup key: identical keys within the cooldown are suppressed and counted. */

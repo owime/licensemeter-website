@@ -140,7 +140,8 @@ export function entitlementOf(
   if (status && ENTITLED_STATUS.has(status) && horizonOk) return full("paid");
 
   // 4. Dunning grace: keep access while past_due until the period end passes.
-  if (status === "past_due") return horizonOk ? full("past_due") : lock("past_due");
+  if (status === "past_due")
+    return horizonOk ? full("past_due") : lock("past_due");
 
   // 5. Trial not started: no service connected yet, so the clock hasn't begun.
   //    Full access with no countdown (an empty workspace gates nothing anyway).
@@ -218,7 +219,8 @@ export function mspEntitlementOf(
   if (status && ENTITLED_STATUS.has(status) && horizonOk) return full("paid");
 
   // 3. Dunning grace: keep access while past_due until the period end passes.
-  if (status === "past_due") return horizonOk ? full("past_due") : lock("past_due");
+  if (status === "past_due")
+    return horizonOk ? full("past_due") : lock("past_due");
 
   // 4. No active MSP subscription (canceled / unpaid / never subscribed) -> lock.
   return lock("expired");

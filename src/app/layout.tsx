@@ -93,10 +93,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
-    >
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
         <AuthKitProvider>{children}</AuthKitProvider>
         <script
@@ -105,7 +102,7 @@ export default function RootLayout({
             __html: JSON.stringify(SITE_LD).replaceAll("<", "\\u003c"),
           }}
         />
-        <Analytics />
+        {process.env.VERCEL === "1" && <Analytics />}
       </body>
     </html>
   );

@@ -78,14 +78,20 @@ describe("joinSignals", () => {
         },
       ],
       copilotRows: [
-        { userPrincipalName: "ffeeddccbbaa99887766554433221100", lastActivityDate: null },
+        {
+          userPrincipalName: "ffeeddccbbaa99887766554433221100",
+          lastActivityDate: null,
+        },
       ],
     });
 
     expect(result.concealed).toBe(true);
     expect(result.activitySignal).toBe("full");
     expect(result.copilotSignal).toBe("aggregate");
-    expect(result.copilotAggregate).toEqual({ inactiveCount: 1, totalCount: 1 });
+    expect(result.copilotAggregate).toEqual({
+      inactiveCount: 1,
+      totalCount: 1,
+    });
     expect(result.usageAggregate).toEqual({ inactiveCount: 1, totalCount: 1 });
     // Concealed rows must not leak into per-user activity.
     expect(result.users[0]!.lastActivity?.toISOString().slice(0, 10)).toBe(
@@ -161,7 +167,12 @@ describe("joinSignals", () => {
       copilotRows: [],
     });
     expect(result.users[0]!.licenses).toEqual([
-      { skuId: E3, assignedByGroup: "group-1", disabledPlans: [], state: "Active" },
+      {
+        skuId: E3,
+        assignedByGroup: "group-1",
+        disabledPlans: [],
+        state: "Active",
+      },
     ]);
   });
 });
@@ -175,7 +186,12 @@ describe("demo tenant end-to-end analysis", () => {
       client.getActiveUserDetail("D90"),
       client.getCopilotUsage("D90"),
     ]);
-    const joined = joinSignals({ graphUsers, usageRows, copilotRows, hasP1: true });
+    const joined = joinSignals({
+      graphUsers,
+      usageRows,
+      copilotRows,
+      hasP1: true,
+    });
     const prices = Object.fromEntries(
       skus.map((s) => [s.skuId, skuDefaultPriceCents(s.skuId)]),
     );

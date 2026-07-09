@@ -30,9 +30,33 @@ export type Plan = {
 };
 
 export const PLANS: Plan[] = [
-  { tier: "starter", name: "Starter", monthly: 79, annual: 790, seats: "up to 250 seats", seatMax: 250, featured: false },
-  { tier: "growth", name: "Growth", monthly: 199, annual: 1990, seats: "up to 1.000 seats", seatMax: 1000, featured: true },
-  { tier: "scale", name: "Scale", monthly: 499, annual: 4990, seats: "up to 2.500 seats", seatMax: 2500, featured: false },
+  {
+    tier: "starter",
+    name: "Starter",
+    monthly: 79,
+    annual: 790,
+    seats: "up to 250 seats",
+    seatMax: 250,
+    featured: false,
+  },
+  {
+    tier: "growth",
+    name: "Growth",
+    monthly: 199,
+    annual: 1990,
+    seats: "up to 1.000 seats",
+    seatMax: 1000,
+    featured: true,
+  },
+  {
+    tier: "scale",
+    name: "Scale",
+    monthly: 499,
+    annual: 4990,
+    seats: "up to 2.500 seats",
+    seatMax: 2500,
+    featured: false,
+  },
 ];
 
 /** Largest self-serve seat count; above this -> contact sales (MSP). */
@@ -62,7 +86,9 @@ const TIER_ORDER: PlanTier[] = ["starter", "growth", "scale"];
 /** The next band up, or null when already on the top self-serve band (-> MSP). */
 export const nextTier = (tier: PlanTier): PlanTier | null => {
   const i = TIER_ORDER.indexOf(tier);
-  return i >= 0 && i < TIER_ORDER.length - 1 ? (TIER_ORDER[i + 1] ?? null) : null;
+  return i >= 0 && i < TIER_ORDER.length - 1
+    ? (TIER_ORDER[i + 1] ?? null)
+    : null;
 };
 
 /** Seats at or above this fraction of the band cap trigger an upgrade nudge. */
@@ -91,15 +117,23 @@ export const seatNudge = (
     return { state: "over", seatMax, recommendedTier: tierForSeats(seats) };
   }
   if (seats >= Math.floor(seatMax * SEAT_NUDGE_RATIO)) {
-    return { state: "approaching", seatMax, recommendedTier: nextTier(currentTier) };
+    return {
+      state: "approaching",
+      seatMax,
+      recommendedTier: nextTier(currentTier),
+    };
   }
   return null;
 };
 
 /** Annual price expressed per month, for "/mo billed annually" copy. */
-export const annualPerMonth = (plan: Plan): number => Math.round(plan.annual / 12);
+export const annualPerMonth = (plan: Plan): number =>
+  Math.round(plan.annual / 12);
 
-export const priceEurosFor = (tier: PlanTier, interval: PlanInterval): number =>
+export const priceEurosFor = (
+  tier: PlanTier,
+  interval: PlanInterval,
+): number =>
   interval === "year" ? planByTier(tier).annual : planByTier(tier).monthly;
 
 /** MSP per-tenant unit price in whole euros for an interval (annual = 10x monthly). */
@@ -118,5 +152,8 @@ export const parsePlanString = (
   const plan = PLANS.find((p) => p.tier === tierPart);
   if (!plan) return null;
   if (intervalPart !== "monthly" && intervalPart !== "annual") return null;
-  return { tier: plan.tier, interval: intervalPart === "annual" ? "year" : "month" };
+  return {
+    tier: plan.tier,
+    interval: intervalPart === "annual" ? "year" : "month",
+  };
 };

@@ -43,7 +43,13 @@ let billingOn = false;
 
 /** Minimal AccessContext shape; apiAccess is mocked to return this. */
 type TestCtx = {
-  user: { oid: string; tid: string; upn: string; name: string; isDemo: boolean };
+  user: {
+    oid: string;
+    tid: string;
+    upn: string;
+    name: string;
+    isDemo: boolean;
+  };
   tenant: typeof schema.tenants.$inferSelect;
   membership: {
     id: string;
@@ -301,9 +307,8 @@ function makeCtx(
 
 // Imported after the mocks are registered (top-level vi.mock is hoisted).
 const { runSync } = await import("~/server/sync/runSync");
-const { disconnectMicrosoft, disconnectTenant } = await import(
-  "~/server/actions"
-);
+const { disconnectMicrosoft, disconnectTenant } =
+  await import("~/server/actions");
 
 // --- helpers to read state ---------------------------------------------------
 
@@ -454,7 +459,9 @@ describe("disconnectMicrosoft during a running sync", () => {
     expect(await countRows(schema.findings)).toBe(1);
     // Durable audit row recorded before the analysis re-run.
     const audits = await currentDb.select().from(schema.auditLog);
-    expect(audits.some((a) => a.action === "microsoft_disconnected")).toBe(true);
+    expect(audits.some((a) => a.action === "microsoft_disconnected")).toBe(
+      true,
+    );
   });
 });
 

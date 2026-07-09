@@ -17,7 +17,7 @@ export const SyncNowButton = () => {
       <span
         role="status"
         aria-live="polite"
-        className={error ? "text-xs text-danger-text" : "sr-only"}
+        className={error ? "text-danger-text text-xs" : "sr-only"}
       >
         {error}
       </span>

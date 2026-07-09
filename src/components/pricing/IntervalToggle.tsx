@@ -26,7 +26,7 @@ export const IntervalToggle = ({
     <div
       role="group"
       aria-label="Billing interval"
-      className={`inline-flex items-center gap-1 rounded-full border border-line bg-card p-1 ${className}`}
+      className={`border-line bg-card inline-flex items-center gap-1 rounded-full border p-1 ${className}`}
     >
       {options.map((option) => {
         const active = interval === option.value;
@@ -38,10 +38,8 @@ export const IntervalToggle = ({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              active
-                ? "bg-ink text-canvas"
-                : "text-ink-soft hover:text-ink"
+            className={`focus-visible:ring-brand inline-flex min-h-11 cursor-pointer touch-manipulation items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 ${
+              active ? "bg-ink text-canvas" : "text-ink-soft hover:text-ink"
             }`}
           >
             {option.label}

@@ -40,9 +40,7 @@ const page = (title: string, body: string): Response =>
     { headers: { "Content-Type": "text/html; charset=utf-8" } },
   );
 
-const parse = (
-  req: NextRequest,
-): { email: string } | null => {
+const parse = (req: NextRequest): { email: string } | null => {
   const sp = req.nextUrl.searchParams;
   const e = sp.get("e") ?? "";
   const t = sp.get("t") ?? "";

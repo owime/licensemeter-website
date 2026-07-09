@@ -54,7 +54,13 @@ export type SecurityContent = {
   questions: {
     title: string;
     body: string;
-    seeAlso: { pre: string; faqLabel: string; mid: string; privacyLabel: string; post: string };
+    seeAlso: {
+      pre: string;
+      faqLabel: string;
+      mid: string;
+      privacyLabel: string;
+      post: string;
+    };
   };
 };
 
@@ -76,7 +82,8 @@ const EN: SecurityContent = {
       "The consent is recorded in your tenant’s audit log. Sign-in to the dashboard itself uses a separate app registration with only openid, profile and email.",
   },
   delegate: {
-    title: "Delegating the consent without standing Global Administrator rights",
+    title:
+      "Delegating the consent without standing Global Administrator rights",
     body: {
       pre: "Tenant-wide admin consent for Microsoft Graph application permissions (the kind listed above) can be granted by a Global Administrator or a Privileged Role Administrator; an Application Administrator is not sufficient for Graph application permissions, a boundary Microsoft sets, not us. Entra ID does let an organization delegate this consent narrowly: an app consent policy pinned to exactly these ",
       post: " read-only permissions and to the LicenseMeter connector app, attached to a custom directory role. The one-time setup itself requires a Privileged Role Administrator or Global Administrator and Microsoft Graph PowerShell (the role permission cannot be added in the Entra portal yet) and belongs in your identity team’s review.",
@@ -172,7 +179,8 @@ const DE: SecurityContent = {
     title: "So funktioniert der Zugriff",
     body: {
       pre: "Ein globaler Administrator Ihres Tenants erteilt die Einwilligung einmalig über den standardmäßigen Administrator-Einwilligungsdialog von Microsoft. Damit wird die Anwendung „LicenseMeter Connector“ für ",
-      strong: "Anwendungsberechtigungen autorisiert, die ausnahmslos nur lesend sind",
+      strong:
+        "Anwendungsberechtigungen autorisiert, die ausnahmslos nur lesend sind",
       post: ". LicenseMeter synchronisiert anschließend nächtlich mit eigenen Zugangsdaten: kein Dienstkonto in Ihrem Tenant, kein Agent, kein Postfach-Plugin. Sie können die Anwendung in Entra ID jederzeit unabhängig von uns widerrufen.",
     },
     scopeWhy: {

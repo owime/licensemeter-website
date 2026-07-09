@@ -21,18 +21,38 @@ type Tile = {
 };
 
 const SECONDARY: Tile[] = [
-  { name: "Adobe", blurb: "Creative Cloud / Acrobat seats", href: "/app/settings/adobe" },
+  {
+    name: "Adobe",
+    blurb: "Creative Cloud / Acrobat seats",
+    href: "/app/settings/adobe",
+  },
   { name: "Zoom", blurb: "Licensed Zoom seats", href: "/app/settings/zoom" },
-  { name: "Atlassian", blurb: "Jira & Confluence seats", href: "/app/settings/atlassian" },
-  { name: "Salesforce", blurb: "User licenses", href: "/app/settings/salesforce" },
-  { name: "ChatGPT", blurb: "Workspace seats (CSV)", href: "/app/settings/chatgpt" },
-  { name: "Claude", blurb: "Workspace seats (CSV)", href: "/app/settings/claude" },
+  {
+    name: "Atlassian",
+    blurb: "Jira & Confluence seats",
+    href: "/app/settings/atlassian",
+  },
+  {
+    name: "Salesforce",
+    blurb: "User licenses",
+    href: "/app/settings/salesforce",
+  },
+  {
+    name: "ChatGPT",
+    blurb: "Workspace seats (CSV)",
+    href: "/app/settings/chatgpt",
+  },
+  {
+    name: "Claude",
+    blurb: "Workspace seats (CSV)",
+    href: "/app/settings/claude",
+  },
 ];
 
 const Monogram = ({ name }: { name: string }) => (
   <span
     aria-hidden="true"
-    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-line bg-canvas font-display text-sm text-ink-soft"
+    className="border-line bg-canvas font-display text-ink-soft flex size-9 shrink-0 items-center justify-center rounded-lg border text-sm"
   >
     {name.charAt(0)}
   </span>
@@ -48,9 +68,9 @@ export const OnboardingEmptyState = () => (
         Connect your first service
       </h1>
       <p className="text-ink-soft mt-2 max-w-xl text-sm leading-relaxed">
-        LicenseMeter reads your seats read-only and prices every wasted, inactive
-        or orphaned license in euros. Connect one service to see your numbers —
-        your {TRIAL_DAYS}-day trial only starts once you do.
+        LicenseMeter reads your seats read-only and prices every wasted,
+        inactive or orphaned license in euros. Connect one service to see your
+        numbers — your {TRIAL_DAYS}-day trial only starts once you do.
       </p>
     </header>
 
@@ -58,13 +78,13 @@ export const OnboardingEmptyState = () => (
     <Link
       href="/app/settings/microsoft"
       data-tour="connect-cta"
-      className="rise rise-2 group mt-6 block border border-line bg-card p-5 transition hover:border-ink-soft"
+      className="rise rise-2 group border-line bg-card hover:border-ink-soft mt-6 block border p-5 transition"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <Monogram name="Microsoft 365" />
           <div>
-            <p className="font-medium text-ink">Microsoft 365</p>
+            <p className="text-ink font-medium">Microsoft 365</p>
             <p className="text-ink-soft mt-0.5 text-sm">
               Directory, license assignments and usage — usually the biggest
               source of waste. Read-only, one-time admin consent.
@@ -80,16 +100,16 @@ export const OnboardingEmptyState = () => (
     </Link>
 
     {/* Other connectors. */}
-    <div className="rise rise-3 mt-3 grid gap-px border border-line bg-line sm:grid-cols-2">
+    <div className="rise rise-3 border-line bg-line mt-3 grid gap-px border sm:grid-cols-2">
       {SECONDARY.map((t) => (
         <Link
           key={t.name}
           href={t.href}
-          className="flex items-center gap-3 bg-card px-4 py-3.5 transition hover:bg-canvas"
+          className="bg-card hover:bg-canvas flex items-center gap-3 px-4 py-3.5 transition"
         >
           <Monogram name={t.name} />
           <span className="min-w-0">
-            <span className="block text-sm font-medium text-ink">{t.name}</span>
+            <span className="text-ink block text-sm font-medium">{t.name}</span>
             <span className="text-ink-faint block truncate text-xs">
               {t.blurb}
             </span>
@@ -103,14 +123,14 @@ export const OnboardingEmptyState = () => (
       <span>No admin access yet?</span>
       <Link
         href="/app/connect/csv"
-        className="font-medium text-ink underline-offset-4 hover:underline"
+        className="text-ink font-medium underline-offset-4 hover:underline"
       >
         Start with a CSV upload
       </Link>
       <span className="text-ink-faint">·</span>
       <Link
         href="/security"
-        className="font-medium text-ink underline-offset-4 hover:underline"
+        className="text-ink font-medium underline-offset-4 hover:underline"
       >
         See the read-only permissions first
       </Link>

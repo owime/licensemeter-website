@@ -387,9 +387,8 @@ export const buildSaasClient = async (
       return new OpenAiAdminClient({ apiKey: creds.secret });
     }
     case "anthropic": {
-      const { AnthropicAdminClient } = await import(
-        "~/server/saas/anthropicAdmin"
-      );
+      const { AnthropicAdminClient } =
+        await import("~/server/saas/anthropicAdmin");
       return new AnthropicAdminClient({ apiKey: creds.secret });
     }
     case "chatgpt":

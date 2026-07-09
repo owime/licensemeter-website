@@ -54,7 +54,8 @@ export default async function BillingPage({
   const isOwner = hasRole(ctx, "owner");
   const sp = await searchParams;
   const planParam = typeof sp.plan === "string" ? sp.plan : undefined;
-  const checkoutParam = typeof sp.checkout === "string" ? sp.checkout : undefined;
+  const checkoutParam =
+    typeof sp.checkout === "string" ? sp.checkout : undefined;
 
   if (ctx.tenant.isDemo) {
     return (
@@ -64,7 +65,7 @@ export default async function BillingPage({
         </header>
         <div className="rise rise-2">
           <Card title="Demo workspace">
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               This is the demo workspace. It runs on synthetic data and is never
               billed. Connect a real tenant from a Microsoft sign-in to manage a
               subscription.
@@ -86,12 +87,13 @@ export default async function BillingPage({
         </header>
         <div className="rise rise-2">
           <Card title="Billed via your MSP portfolio">
-            <p className="text-sm text-ink-soft">
-              This workspace is part of an MSP portfolio and is billed through the
-              portfolio owner&rsquo;s account. Manage the subscription from the{" "}
+            <p className="text-ink-soft text-sm">
+              This workspace is part of an MSP portfolio and is billed through
+              the portfolio owner&rsquo;s account. Manage the subscription from
+              the{" "}
               <Link
                 href="/app/msp"
-                className="underline underline-offset-4 hover:text-ink"
+                className="hover:text-ink underline underline-offset-4"
               >
                 MSP portfolio
               </Link>
@@ -126,9 +128,9 @@ export default async function BillingPage({
   // the portal, not re-picked — otherwise the picker could start a 2nd checkout.
   const manageable = Boolean(
     sub &&
-      (sub.status === "active" ||
-        sub.status === "trialing" ||
-        sub.status === "past_due"),
+    (sub.status === "active" ||
+      sub.status === "trialing" ||
+      sub.status === "past_due"),
   );
   const overSelfServe = seats.hasSync && seats.seats > MAX_SELF_SERVE_SEATS;
   const recommendedTier = seats.hasSync
@@ -137,15 +139,16 @@ export default async function BillingPage({
   // During the no-card trial, subscribing keeps the remaining free days.
   const trialInfo =
     entitlement.state === "trial"
-      ? { daysLeft: entitlement.trialDaysLeft, endsAt: fmtDate(entitlement.trialEndsAt) }
+      ? {
+          daysLeft: entitlement.trialDaysLeft,
+          endsAt: fmtDate(entitlement.trialEndsAt),
+        }
       : null;
 
   const plan = sub?.tier ? PLANS.find((p) => p.tier === sub.tier) : undefined;
   const intervalLabel = sub?.interval === "year" ? "annual" : "monthly";
   const priceCents =
-    plan && sub?.interval
-      ? priceEurosFor(plan.tier, sub.interval) * 100
-      : null;
+    plan && sub?.interval ? priceEurosFor(plan.tier, sub.interval) * 100 : null;
   // Stripe trialing maps to entitlement "paid"; surface it as a trial so the
   // pill doesn't read "Active" next to a "first charge" date.
   const trialing = sub?.status === "trialing";
@@ -229,16 +232,14 @@ export default async function BillingPage({
                 </span>
               )}
             </div>
-            {datedLine && (
-              <p className="text-sm text-ink-soft">{datedLine}</p>
-            )}
+            {datedLine && <p className="text-ink-soft text-sm">{datedLine}</p>}
             {entitlement.state === "past_due" && (
-              <p className="text-sm text-danger-text">
+              <p className="text-danger-text text-sm">
                 Your last payment failed. Update your card below to keep exports
                 and nightly sync before access pauses.
               </p>
             )}
-            <p className="text-sm text-ink-faint">{seatBand}</p>
+            <p className="text-ink-faint text-sm">{seatBand}</p>
           </div>
         </Card>
 
@@ -255,7 +256,7 @@ export default async function BillingPage({
               checkoutParam={isOwner ? checkoutParam : undefined}
             />
           ) : (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               Billing is not configured on this deployment, so every workspace
               keeps full access — there is nothing to pay for right now.
             </p>

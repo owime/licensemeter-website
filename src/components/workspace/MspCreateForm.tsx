@@ -35,7 +35,7 @@ export const MspCreateForm = ({
         maxLength={120}
         autoComplete="organization"
         placeholder="Your practice or company name"
-        className="min-h-11 w-full border border-line bg-card px-3 py-2 text-sm focus:border-ink sm:max-w-sm"
+        className="border-line bg-card focus:border-ink min-h-11 w-full border px-3 py-2 text-sm sm:max-w-sm"
       />
       <div>
         <button
@@ -47,7 +47,11 @@ export const MspCreateForm = ({
         </button>
       </div>
       {result && !result.ok && (
-        <span role="status" aria-live="polite" className="text-sm text-danger-text">
+        <span
+          role="status"
+          aria-live="polite"
+          className="text-danger-text text-sm"
+        >
           {result.error ?? "Could not create the MSP account"}
         </span>
       )}

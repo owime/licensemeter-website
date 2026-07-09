@@ -58,12 +58,12 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
       <input type="hidden" name="provider" value={spec.provider} />
       <label
         htmlFor={`${spec.provider}-import-csv`}
-        className="text-sm text-ink-soft"
+        className="text-ink-soft text-sm"
       >
         Paste the member table from the {spec.label} admin panel including its
-        header row. Copied web tables and CSV exports both work. An email
-        column is required; name, status, plan and last-active columns are
-        picked up when present. A new import replaces the current snapshot.
+        header row. Copied web tables and CSV exports both work. An email column
+        is required; name, status, plan and last-active columns are picked up
+        when present. A new import replaces the current snapshot.
       </label>
       <textarea
         // Remount on each new failure so defaultValue re-applies; resets after success.
@@ -77,7 +77,7 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
           "Email,Name,Status,Last active\njane@example.com,Jane Fox,active,2026-05-28"
         }
         defaultValue={result && !result.ok ? result.csv : undefined}
-        className="w-full border border-line bg-card px-3 py-2 font-mono text-sm focus:border-ink"
+        className="border-line bg-card focus:border-ink w-full border px-3 py-2 font-mono text-sm"
       />
       <div>
         <Button variant="primary" disabled={pending}>
@@ -151,7 +151,7 @@ export const ClearSeatsButton = ({ spec }: { spec: ConnectorSpec }) => {
         role="status"
         aria-live="polite"
         className={
-          message ? "max-w-64 text-right text-xs text-danger-text" : "sr-only"
+          message ? "text-danger-text max-w-64 text-right text-xs" : "sr-only"
         }
       >
         {message}

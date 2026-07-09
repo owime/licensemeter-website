@@ -241,7 +241,8 @@ export const verifyMsCredential = async (
     if (/AADSTS700027|certificate|thumbprint/i.test(message)) {
       return {
         ok: false,
-        error: "The certificate is not registered on this app, or the key does not match it.",
+        error:
+          "The certificate is not registered on this app, or the key does not match it.",
       };
     }
     if (/AADSTS700016|was not found in the directory/i.test(message)) {
@@ -255,7 +256,8 @@ export const verifyMsCredential = async (
     }
     return {
       ok: false,
-      error: "Could not authenticate with those credentials. Check the values and try again.",
+      error:
+        "Could not authenticate with those credentials. Check the values and try again.",
     };
   }
   const granted = new Set(decodeRoles(token));
@@ -287,7 +289,11 @@ const graphFetch = async (token: string, url: string): Promise<Response> => {
     });
     if (res.status === 429 || res.status === 503) {
       if (attempt >= 3) {
-        throw new GraphHttpError(res.status, "throttled", "Graph throttling persisted");
+        throw new GraphHttpError(
+          res.status,
+          "throttled",
+          "Graph throttling persisted",
+        );
       }
       const retryAfter = Number(res.headers.get("retry-after") ?? "2");
       await sleep(Math.min(retryAfter, 30) * 1000);
@@ -317,7 +323,10 @@ const graphFetch = async (token: string, url: string): Promise<Response> => {
  */
 const MAX_PAGES = 1000;
 
-const getAllPages = async <T>(token: string, firstUrl: string): Promise<T[]> => {
+const getAllPages = async <T>(
+  token: string,
+  firstUrl: string,
+): Promise<T[]> => {
   const items: T[] = [];
   let url: string | undefined = firstUrl;
   for (let page = 0; url; page++) {
@@ -329,12 +338,19 @@ const getAllPages = async <T>(token: string, firstUrl: string): Promise<T[]> => 
       );
     }
     const res = await graphFetch(token, url);
-    const body = (await res.json()) as { value: T[]; "@odata.nextLink"?: string };
+    const body = (await res.json()) as {
+      value: T[];
+      "@odata.nextLink"?: string;
+    };
     items.push(...body.value);
     const next = body["@odata.nextLink"];
     // Defense in depth: never follow pagination off graph.microsoft.com.
     if (next && !next.startsWith("https://graph.microsoft.com/")) {
-      throw new GraphHttpError(502, "bad_next_link", "Unexpected nextLink host");
+      throw new GraphHttpError(
+        502,
+        "bad_next_link",
+        "Unexpected nextLink host",
+      );
     }
     url = next;
   }
@@ -375,7 +391,10 @@ const fetchCopilotUsage = async (
   const contentType = res.headers.get("content-type") ?? "";
   if (contentType.includes("json")) {
     const body = (await res.json()) as {
-      value?: { userPrincipalName?: string; lastActivityDate?: string | null }[];
+      value?: {
+        userPrincipalName?: string;
+        lastActivityDate?: string | null;
+      }[];
     };
     return (body.value ?? []).map((r) => ({
       userPrincipalName: r.userPrincipalName ?? "",
@@ -423,7 +442,9 @@ export class MsGraphClient implements GraphClient {
     }
   }
 
-  async listUsers(opts: { includeSignInActivity: boolean }): Promise<GraphUser[]> {
+  async listUsers(opts: {
+    includeSignInActivity: boolean;
+  }): Promise<GraphUser[]> {
     const token = await acquireToken(this.cred);
     const select = opts.includeSignInActivity
       ? `${USER_FIELDS},signInActivity`
@@ -521,7 +542,9 @@ export class DelegatedGraphClient implements GraphClient {
     }
   }
 
-  async listUsers(opts: { includeSignInActivity: boolean }): Promise<GraphUser[]> {
+  async listUsers(opts: {
+    includeSignInActivity: boolean;
+  }): Promise<GraphUser[]> {
     const select = opts.includeSignInActivity
       ? `${USER_FIELDS},signInActivity`
       : USER_FIELDS;
@@ -536,7 +559,8 @@ export class DelegatedGraphClient implements GraphClient {
         opts.includeSignInActivity &&
         (isAuthDenied(err) ||
           (err instanceof GraphHttpError &&
-            (err.code === "Authentication_RequestFromNonPremiumTenantOrB2CTenant" ||
+            (err.code ===
+              "Authentication_RequestFromNonPremiumTenantOrB2CTenant" ||
               /premium/i.test(err.message))))
       ) {
         throw new PremiumLicenseRequiredError(

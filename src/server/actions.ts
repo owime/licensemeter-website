@@ -51,7 +51,10 @@ import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
 import { notifyOps } from "~/server/ops";
 import { clientIp, rateLimitDurable } from "~/server/rateLimit";
 import { maybeSendWelcome } from "~/server/welcome";
-import { sendWorkspaceDeleted, workspaceAdminEmails } from "~/server/billingEmail";
+import {
+  sendWorkspaceDeleted,
+  workspaceAdminEmails,
+} from "~/server/billingEmail";
 import { teardownTenantWorkosOrg } from "~/server/auth/workos";
 import { billingEnabled, byoConnectorEnabled, siteUrl } from "~/env";
 import { teardownTenantBilling } from "~/server/stripe";
@@ -105,7 +108,9 @@ export const setFindingStatus = async (
   const updated = await db
     .update(findings)
     .set({ status })
-    .where(and(eq(findings.id, findingId), eq(findings.tenantId, ctx.tenant.id)))
+    .where(
+      and(eq(findings.id, findingId), eq(findings.tenantId, ctx.tenant.id)),
+    )
     .returning({ id: findings.id });
   if (updated.length === 0) return fail("Finding not found");
   await audit(ctx, "finding_status_changed", { findingId, status });
@@ -157,7 +162,9 @@ export const updatePrice = async (
   const updated = await db
     .update(priceBook)
     .set({ monthlyPriceCents: cents, source: "custom", updatedAt: new Date() })
-    .where(and(eq(priceBook.tenantId, ctx.tenant.id), eq(priceBook.skuId, skuId)))
+    .where(
+      and(eq(priceBook.tenantId, ctx.tenant.id), eq(priceBook.skuId, skuId)),
+    )
     .returning({ skuId: priceBook.skuId });
   if (updated.length === 0) return fail("Unknown SKU");
 
@@ -299,7 +306,9 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
   if (role === "owner" && ctx.membership.role !== "owner") {
     return fail("Only owners can add owners");
   }
-  if (!(await rateLimitDurable(`invite:${ctx.tenant.id}`, 20, 60 * 60 * 1000))) {
+  if (
+    !(await rateLimitDurable(`invite:${ctx.tenant.id}`, 20, 60 * 60 * 1000))
+  ) {
     return fail("Too many invites this hour, please try again later");
   }
 
@@ -379,7 +388,9 @@ export const resendInvite = async (
   if (!target) return fail("Invite not found");
   if (target.oid || target.workosUserId)
     return fail("This member has already signed in");
-  if (!(await rateLimitDurable(`resend:${ctx.tenant.id}`, 10, 60 * 60 * 1000))) {
+  if (
+    !(await rateLimitDurable(`resend:${ctx.tenant.id}`, 10, 60 * 60 * 1000))
+  ) {
     return fail("Too many resends this hour");
   }
 
@@ -430,10 +441,14 @@ export const removeMember = async (
   if (target.role === "owner" && ctx.membership.role !== "owner") {
     return fail("Only owners can remove owners");
   }
-  if (target.id === ctx.membership.id) return fail("You cannot remove yourself");
+  if (target.id === ctx.membership.id)
+    return fail("You cannot remove yourself");
 
   await db.delete(memberships).where(eq(memberships.id, target.id));
-  await audit(ctx, "member_removed", { email: target.email, role: target.role });
+  await audit(ctx, "member_removed", {
+    email: target.email,
+    role: target.role,
+  });
   revalidateApp();
   return ok();
 };
@@ -654,7 +669,9 @@ export const triggerSync = async (): Promise<ActionResult> => {
   await audit(ctx, "sync_triggered", {});
   const result = await runSync(ctx.tenant.id);
   revalidateApp();
-  return result.status === "failed" ? fail("Sync failed; see sync history") : ok();
+  return result.status === "failed"
+    ? fail("Sync failed; see sync history")
+    : ok();
 };
 
 /** Connect the Adobe Admin Console (UMAPI server-to-server credentials). */
@@ -663,7 +680,8 @@ export const connectAdobe = async (
 ): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
-  if (ctx.tenant.isDemo) return fail("The demo workspace ships with demo Adobe data");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace ships with demo Adobe data");
 
   const read = (name: string) => {
     const v = formData.get(name);
@@ -672,7 +690,8 @@ export const connectAdobe = async (
   const orgId = read("orgId");
   const clientId = read("clientId");
   const clientSecret = read("clientSecret");
-  if (!orgId || !clientId || !clientSecret) return fail("All three fields are required");
+  if (!orgId || !clientId || !clientSecret)
+    return fail("All three fields are required");
   if ([orgId, clientId, clientSecret].some((v) => v.length > 200)) {
     return fail("Credential value too long");
   }
@@ -717,7 +736,8 @@ export const connectAdobe = async (
 export const disconnectAdobe = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
-  if (ctx.tenant.isDemo) return fail("The demo workspace ships with demo Adobe data");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace ships with demo Adobe data");
 
   await db
     .delete(adobeConnections)
@@ -887,9 +907,15 @@ export const connectMicrosoftByo = async (
   const ctx = await apiAccess("admin");
   if (!ctx) return { ok: false, error: "Not allowed" };
   if (!byoConnectorEnabled())
-    return { ok: false, error: "The bring-your-own connector path is not enabled." };
+    return {
+      ok: false,
+      error: "The bring-your-own connector path is not enabled.",
+    };
   if (ctx.tenant.isDemo)
-    return { ok: false, error: "The demo workspace ships with demo Microsoft data" };
+    return {
+      ok: false,
+      error: "The demo workspace ships with demo Microsoft data",
+    };
 
   const read = (name: string) => {
     const v = formData.get(name);
@@ -931,7 +957,13 @@ export const connectMicrosoftByo = async (
       const d = new Date(expiry);
       if (!Number.isNaN(d.getTime())) secretExpiresAt = d;
     }
-    cred = { mode: "byo", credType: "secret", tid, clientId: appClientId, secret };
+    cred = {
+      mode: "byo",
+      credType: "secret",
+      tid,
+      clientId: appClientId,
+      secret,
+    };
     secretEnc = encryptSecret(
       secret,
       secretAad(ctx.tenant.id, "microsoft", "secretEnc"),
@@ -1124,13 +1156,17 @@ export const importSeats = async (
   const text = typeof raw === "string" ? raw : "";
   if (text.trim() === "") return none(fail("Paste the member table first"));
   if (text.length > 1_000_000)
-    return none(fail("Paste is too large. Split the export and import it in parts"));
+    return none(
+      fail("Paste is too large. Split the export and import it in parts"),
+    );
 
   const parsed = parseMembers(text);
   if ("error" in parsed) return none(fail(parsed.error));
   if (parsed.rows.length === 0)
     return none(
-      fail("No member rows recognized. Paste the table including its header row"),
+      fail(
+        "No member rows recognized. Paste the table including its header row",
+      ),
     );
 
   const now = new Date();
@@ -1273,7 +1309,8 @@ export const captureEmail = async (
 export const disconnectTenant = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("owner");
   if (!ctx) return fail("Not allowed");
-  if (ctx.tenant.isDemo) return fail("The demo workspace cannot be disconnected");
+  if (ctx.tenant.isDemo)
+    return fail("The demo workspace cannot be disconnected");
 
   // Cancel the Stripe subscription and erase the Stripe customer BEFORE the
   // local delete, while we still hold the ids. A failed subscription cancel is
@@ -1283,7 +1320,9 @@ export const disconnectTenant = async (): Promise<ActionResult> => {
   // anyway) and does not block. The late customer.subscription.deleted webhook
   // no-ops once the tenant row is gone.
   if (billingEnabled()) {
-    const { subscriptionCancelFailed } = await teardownTenantBilling(ctx.tenant);
+    const { subscriptionCancelFailed } = await teardownTenantBilling(
+      ctx.tenant,
+    );
     if (subscriptionCancelFailed) {
       return fail(
         "We couldn't cancel your Stripe subscription right now — your workspace was NOT deleted so you won't keep being billed. Please try again in a minute or contact support.",
@@ -1302,9 +1341,7 @@ export const disconnectTenant = async (): Promise<ActionResult> => {
       (email) => email.toLowerCase() !== actorEmail,
     );
     const tenant = ctx.tenant;
-    after(() =>
-      sendWorkspaceDeleted(tenant, actor, others).catch(() => null),
-    );
+    after(() => sendWorkspaceDeleted(tenant, actor, others).catch(() => null));
   }
 
   // Durable audit: the in-table auditLog row cascade-deletes WITH the tenant

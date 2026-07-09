@@ -54,7 +54,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
             }
           });
         }}
-        className={`border border-line bg-card px-2 py-1.5 text-sm focus:border-ink ${
+        className={`border-line bg-card focus:border-ink border px-2 py-1.5 text-sm ${
           pending ? "opacity-60" : ""
         }`}
       >
@@ -67,7 +67,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
       <span
         role="status"
         aria-live="polite"
-        className={error ? "text-xs text-danger-text" : "sr-only"}
+        className={error ? "text-danger-text text-xs" : "sr-only"}
       >
         {error}
       </span>

@@ -14,7 +14,10 @@ const NOW = new Date("2026-06-11T00:00:00Z");
 const E3 = "05e9a617-0261-4cee-bb44-138d3ef5d965";
 const PRICES = { [E3]: 3670, [COPILOT_SKU_ID]: 2810 };
 
-const lic = (skuId: string, assignedByGroup: string | null = null): UserLicense => ({
+const lic = (
+  skuId: string,
+  assignedByGroup: string | null = null,
+): UserLicense => ({
   skuId,
   assignedByGroup,
   disabledPlans: [],
@@ -133,8 +136,12 @@ describe("inactive_90d", () => {
   });
 
   it("does not flag at exactly 90 days or below", () => {
-    expect(run({ users: [user({ lastActivity: daysAgo(90) })] })).toHaveLength(0);
-    expect(run({ users: [user({ lastActivity: daysAgo(89) })] })).toHaveLength(0);
+    expect(run({ users: [user({ lastActivity: daysAgo(90) })] })).toHaveLength(
+      0,
+    );
+    expect(run({ users: [user({ lastActivity: daysAgo(89) })] })).toHaveLength(
+      0,
+    );
   });
 
   it("skips per-user inactivity rules without an activity signal", () => {
@@ -226,7 +233,9 @@ describe("overlapping_licenses", () => {
 
   it("does not fire without an overlap", () => {
     const findings = run({ users: [user({ licenses: [lic(E3)] })] });
-    expect(findings.filter((f) => f.rule === "overlapping_licenses")).toHaveLength(0);
+    expect(
+      findings.filter((f) => f.rule === "overlapping_licenses"),
+    ).toHaveLength(0);
   });
 
   it("skips users already flagged by inactivity rules", () => {
@@ -246,13 +255,23 @@ describe("service_plans_disabled", () => {
       users: [
         user({
           licenses: [
-            { skuId: E3, assignedByGroup: null, disabledPlans: ["a", "b"], state: "Active" },
+            {
+              skuId: E3,
+              assignedByGroup: null,
+              disabledPlans: ["a", "b"],
+              state: "Active",
+            },
           ],
         }),
         user({
           graphId: "u-2",
           licenses: [
-            { skuId: E3, assignedByGroup: null, disabledPlans: ["a"], state: "Active" },
+            {
+              skuId: E3,
+              assignedByGroup: null,
+              disabledPlans: ["a"],
+              state: "Active",
+            },
           ],
         }),
       ],

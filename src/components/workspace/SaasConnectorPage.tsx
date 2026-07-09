@@ -64,17 +64,18 @@ export const SaasConnectorPage = async ({
   // a credentials row exists. Used so a previously-connected service stays
   // manageable even if Microsoft was later disconnected.
   const hasConnector = spec.kind === "import" ? seatCount > 0 : Boolean(conn);
-  const microsoftDisconnected = !ctx.tenant.isDemo && ctx.tenant.consentedAt === null;
+  const microsoftDisconnected =
+    !ctx.tenant.isDemo && ctx.tenant.consentedAt === null;
 
   // Shown above an existing connection when Microsoft is gone: the connector
   // can no longer cross-check seats or sync until the tenant is reconnected.
   const reconnectNotice = microsoftDisconnected ? (
-    <p className="border border-gold-soft bg-gold-soft/40 p-3 text-xs text-gold-text">
+    <p className="border-gold-soft bg-gold-soft/40 text-gold-text border p-3 text-xs">
       Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
       seats against your directory or run new syncs.{" "}
       <Link
         href="/app/settings/microsoft"
-        className="underline underline-offset-4 hover:text-ink"
+        className="hover:text-ink underline underline-offset-4"
       >
         Reconnect Microsoft
       </Link>{" "}
@@ -87,24 +88,27 @@ export const SaasConnectorPage = async ({
       <header className="rise rise-1">
         <nav
           aria-label="Breadcrumb"
-          className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+          className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
         >
           <Link
             href="/app/settings"
-            className="underline-offset-4 hover:text-ink hover:underline"
+            className="hover:text-ink underline-offset-4 hover:underline"
           >
             Settings
           </Link>{" "}
           /{" "}
           <Link
             href="/app/settings#connectors"
-            className="underline-offset-4 hover:text-ink hover:underline"
+            className="hover:text-ink underline-offset-4 hover:underline"
           >
             Connectors
           </Link>{" "}
-          / <span aria-current="page" className="text-ink-soft">{spec.label}</span>
+          /{" "}
+          <span aria-current="page" className="text-ink-soft">
+            {spec.label}
+          </span>
         </nav>
-        <h1 className="mt-2 font-display text-3xl tracking-tight">
+        <h1 className="font-display mt-2 text-3xl tracking-tight">
           {spec.label} connector
         </h1>
       </header>
@@ -112,7 +116,7 @@ export const SaasConnectorPage = async ({
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               Connected with demo data: {seatCount} {spec.seatNoun} correlated
               against the directory.{" "}
               {spec.kind === "import"
@@ -125,12 +129,12 @@ export const SaasConnectorPage = async ({
                don't collect credentials that would sit idle. An existing
                connector falls through to its normal card with a reconnect
                notice instead, so it stays manageable. */
-            <p className="text-sm text-ink-soft">
-              Connectors cross-check seats against your Microsoft 365
-              directory, so{" "}
+            <p className="text-ink-soft text-sm">
+              Connectors cross-check seats against your Microsoft 365 directory,
+              so{" "}
               <Link
                 href="/app/settings/microsoft"
-                className="underline underline-offset-4 hover:text-ink"
+                className="hover:text-ink underline underline-offset-4"
               >
                 connect your tenant
               </Link>{" "}
@@ -145,16 +149,16 @@ export const SaasConnectorPage = async ({
                     <div className="font-medium">
                       Imported: {seatCount} {spec.seatNoun}
                     </div>
-                    <div className="mt-0.5 text-xs text-ink-soft">
+                    <div className="text-ink-soft mt-0.5 text-xs">
                       last import {fmtDate(seats.lastImportAt)}
                     </div>
                   </div>
                   {isAdmin && <ClearSeatsButton spec={spec} />}
                 </div>
               ) : isAdmin ? (
-                <p className="text-sm text-ink-soft">{spec.setupHint}</p>
+                <p className="text-ink-soft text-sm">{spec.setupHint}</p>
               ) : (
-                <p className="text-sm text-ink-soft">
+                <p className="text-ink-soft text-sm">
                   Not connected. A workspace admin can import the {spec.label}{" "}
                   member list here.
                 </p>
@@ -169,7 +173,7 @@ export const SaasConnectorPage = async ({
                   <div className="font-medium">
                     Connected: {seatCount} {spec.seatNoun}
                   </div>
-                  <div className="mt-0.5 text-xs text-ink-soft">
+                  <div className="text-ink-soft mt-0.5 text-xs">
                     {showOrgRef && (
                       <>
                         <span className="break-all">{conn.orgRef}</span> ·{" "}
@@ -180,7 +184,7 @@ export const SaasConnectorPage = async ({
                       : "first sync pending"}
                   </div>
                   {conn.lastSyncStatus === "failed" && (
-                    <p className="mt-2 max-w-md text-xs text-danger-text">
+                    <p className="text-danger-text mt-2 max-w-md text-xs">
                       The last sync could not reach {spec.label}. Findings are
                       based on the previous snapshot. If the credentials were
                       changed or revoked, disconnect and reconnect with fresh
@@ -200,7 +204,7 @@ export const SaasConnectorPage = async ({
                   stored secret in place. */}
               {isAdmin && !microsoftDisconnected && (
                 <details className="text-sm">
-                  <summary className="cursor-pointer text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline">
+                  <summary className="text-ink-soft hover:text-ink cursor-pointer text-xs underline-offset-4 hover:underline">
                     Update credentials
                   </summary>
                   <div className="mt-3">
@@ -217,21 +221,21 @@ export const SaasConnectorPage = async ({
             </div>
           ) : isAdmin ? (
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-ink-soft">{spec.setupHint}</p>
+              <p className="text-ink-soft text-sm">{spec.setupHint}</p>
               <SaasConnectForm spec={spec} />
             </div>
           ) : (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               Not connected. A workspace admin can connect {spec.label} here.
             </p>
           )}
         </Card>
 
         <Card title="What it detects">
-          <ul className="flex flex-col gap-2 text-sm text-ink-soft">
+          <ul className="text-ink-soft flex flex-col gap-2 text-sm">
             {spec.detects.map((line) => (
               <li key={line} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-brand-text">
+                <span aria-hidden="true" className="text-brand-text mt-0.5">
                   ·
                 </span>
                 {line}
@@ -239,28 +243,28 @@ export const SaasConnectorPage = async ({
             ))}
           </ul>
           {spec.unpriced ? (
-            <p className="mt-3 text-xs text-ink-faint">
+            <p className="text-ink-faint mt-3 text-xs">
               Costs are reported by the provider in USD and shown on the{" "}
               <Link
                 href="/app/ai-costs"
-                className="underline underline-offset-4 hover:text-ink"
+                className="hover:text-ink underline underline-offset-4"
               >
                 AI costs
               </Link>{" "}
               page. Console membership itself carries no per-seat price.
             </p>
           ) : (
-            <p className="mt-3 text-xs text-ink-faint">
+            <p className="text-ink-faint mt-3 text-xs">
               Seat assignments only: nothing is read from inside {spec.label}.
-              Prices come from the {provider}:&lt;product&gt; keys in your
-              price book.
+              Prices come from the {provider}:&lt;product&gt; keys in your price
+              book.
             </p>
           )}
-          <p className="mt-2 text-xs text-ink-faint">
+          <p className="text-ink-faint mt-2 text-xs">
             The{" "}
             <Link
               href={`/connectors/${provider}`}
-              className="underline underline-offset-4 hover:text-ink"
+              className="hover:text-ink underline underline-offset-4"
             >
               step-by-step setup guide
             </Link>{" "}

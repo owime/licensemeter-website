@@ -9,7 +9,8 @@ export type SpendSeries = {
 
 const W = 680;
 const H = 180;
-const PAD = { top: 16, right: 8, bottom: 24, left: 8 };
+const PAD = { top: 16, right: 8, bottom: 24, left: 76 };
+const Y_TICKS = [0, 0.5, 1] as const;
 
 /** Axis dates in the app's date style, without the year ("27 Apr"). */
 const fmtAxisDate = (day: string): string =>
@@ -32,10 +33,10 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
   if (series.every((s) => s.points.length < 3))
     return (
       <section className="rise rise-3 mt-10">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           Daily API spend
         </h2>
-        <p className="mt-3 border border-line bg-card p-4 text-sm text-ink-soft">
+        <p className="border-line bg-card text-ink-soft mt-3 border p-4 text-sm">
           The spend chart appears once three or more days of cost data are in.
         </p>
       </section>
@@ -77,28 +78,46 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
   return (
     <section className="rise rise-3 mt-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           Daily API spend ({days.length} days)
         </h2>
-        <span className="text-xs text-ink-soft">
+        <span className="text-ink-soft text-xs">
           Latest: {latestParts.join(" · ")}
         </span>
       </div>
-      <div className="mt-3 border border-line bg-card p-4">
+      <div className="border-line bg-card mt-3 border p-4">
         <svg
           width="100%"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
           aria-label={`Daily API spend over ${days.length} days. Latest daily totals: ${latestParts.join(", ")}.`}
         >
-          <line
-            x1={PAD.left}
-            y1={H - PAD.bottom}
-            x2={W - PAD.right}
-            y2={H - PAD.bottom}
-            stroke="var(--color-line-strong)"
-            strokeWidth="1"
-          />
+          {Y_TICKS.map((ratio) => {
+            const y = H - PAD.bottom - ratio * (H - PAD.top - PAD.bottom);
+            return (
+              <g key={ratio}>
+                <line
+                  x1={PAD.left}
+                  y1={y}
+                  x2={W - PAD.right}
+                  y2={y}
+                  stroke="var(--color-line-strong)"
+                  strokeWidth="1"
+                  opacity={ratio === 0 ? 1 : 0.45}
+                />
+                <text
+                  x={PAD.left - 8}
+                  y={y}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  className="fill-ink-faint font-mono"
+                  fontSize="9"
+                >
+                  {fmtMoney(Math.round(max * ratio), "USD")}
+                </text>
+              </g>
+            );
+          })}
           {series.map(
             (s, i) =>
               s.points.length > 0 && (
@@ -160,7 +179,7 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
             ))}
           </tbody>
         </table>
-        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-ink-soft">
+        <div className="text-ink-soft mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px]">
           <span className="font-mono sm:hidden">
             {fmtAxisDate(firstDay)} → {fmtAxisDate(lastDay)}
           </span>
@@ -173,6 +192,51 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
             </span>
           ))}
         </div>
+        <details className="border-line mt-3 border-t pt-3 text-sm">
+          <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
+            View daily values
+          </summary>
+          <div className="overflow-x-auto">
+            <table className="mt-2 w-full min-w-96 text-left text-xs">
+              <caption className="sr-only">
+                Daily API spend per provider.
+              </caption>
+              <thead className="text-ink-faint">
+                <tr>
+                  <th scope="col" className="py-2 pr-4 font-medium">
+                    Date
+                  </th>
+                  {series.map((item) => (
+                    <th
+                      key={item.label}
+                      scope="col"
+                      className="px-4 py-2 text-right font-medium"
+                    >
+                      {item.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="text-ink-soft font-mono">
+                {days.map((day) => (
+                  <tr key={day} className="border-line border-t">
+                    <th scope="row" className="py-2 pr-4 font-normal">
+                      {fmtAxisDate(day)}
+                    </th>
+                    {centsBySeries.map((map, index) => (
+                      <td
+                        key={series[index]!.label}
+                        className="tnum px-4 py-2 text-right"
+                      >
+                        {map.has(day) ? fmtMoney(map.get(day)!, "USD") : "—"}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </div>
     </section>
   );

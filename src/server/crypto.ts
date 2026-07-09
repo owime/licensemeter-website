@@ -27,7 +27,9 @@ import { env } from "~/env";
  * decrypted as another (defends against row-swap / confused-deputy attacks).
  */
 const deriveKey = (secret: string): Buffer =>
-  Buffer.from(hkdfSync("sha256", secret, "licensemeter-adobe", "secret-v1", 32));
+  Buffer.from(
+    hkdfSync("sha256", secret, "licensemeter-adobe", "secret-v1", 32),
+  );
 
 /** Active key for new writes: dedicated DATA_ENCRYPTION_KEY or AUTH_SECRET. */
 const primaryKey = (): Buffer =>
@@ -84,13 +86,14 @@ export const decryptSecret = (enc: string, aad: string): string => {
       const decipher = createDecipheriv("aes-256-gcm", k, ivBuf);
       decipher.setAAD(Buffer.from(aad, "utf8"));
       decipher.setAuthTag(tagBuf);
-      return Buffer.concat([
-        decipher.update(ctBuf),
-        decipher.final(),
-      ]).toString("utf8");
+      return Buffer.concat([decipher.update(ctBuf), decipher.final()]).toString(
+        "utf8",
+      );
     } catch (err) {
       lastErr = err;
     }
   }
-  throw lastErr instanceof Error ? lastErr : new Error("Failed to decrypt secret");
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("Failed to decrypt secret");
 };

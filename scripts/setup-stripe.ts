@@ -23,8 +23,18 @@ if (!key) {
 const stripe = new Stripe(key, { apiVersion: "2026-05-27.dahlia" });
 
 const TIERS = [
-  { tier: "starter", name: "LicenseMeter Starter", monthly: 7900, annual: 79000 },
-  { tier: "growth", name: "LicenseMeter Growth", monthly: 19900, annual: 199000 },
+  {
+    tier: "starter",
+    name: "LicenseMeter Starter",
+    monthly: 7900,
+    annual: 79000,
+  },
+  {
+    tier: "growth",
+    name: "LicenseMeter Growth",
+    monthly: 19900,
+    annual: 199000,
+  },
   { tier: "scale", name: "LicenseMeter Scale", monthly: 49900, annual: 499000 },
 ] as const;
 
@@ -48,7 +58,10 @@ async function findOrCreatePrice(
   unitAmount: number,
   interval: "month" | "year",
 ) {
-  const found = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
+  const found = await stripe.prices.list({
+    lookup_keys: [lookupKey],
+    limit: 1,
+  });
   if (found.data[0]) return found.data[0];
   return stripe.prices.create({
     product: productId,

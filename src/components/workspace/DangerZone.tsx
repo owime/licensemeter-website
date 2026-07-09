@@ -29,17 +29,17 @@ export const DangerZone = ({
   const confirmed = confirmText.trim() === tenantName.trim();
 
   return (
-    <div className="border border-danger-soft bg-card">
-      <div className="border-b border-danger-soft px-5 py-3">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-danger-text uppercase">
+    <div className="border-danger-soft bg-card border">
+      <div className="border-danger-soft border-b px-5 py-3">
+        <h2 className="text-danger-text text-xs font-medium tracking-[0.18em] uppercase">
           Danger zone
         </h2>
       </div>
       <div className="flex flex-col gap-4 px-5 py-4">
-        <p className="max-w-xl text-sm text-ink-soft">
+        <p className="text-ink-soft max-w-xl text-sm">
           Disconnecting deletes every synced record for {tenantName}: users,
-          findings, prices, history. The admin consent in your tenant can then be
-          revoked under Enterprise applications.
+          findings, prices, history. The admin consent in your tenant can then
+          be revoked under Enterprise applications.
           {activeSubscription && (
             <span className="text-danger-text">
               {" "}
@@ -67,18 +67,22 @@ export const DangerZone = ({
               if (e.key === "Enter" && !confirmed) e.preventDefault();
             }}
             placeholder={`Type "${tenantName}" to confirm`}
-            className="min-h-11 w-full border border-line bg-card px-3 py-2 text-sm focus:border-danger sm:max-w-xs"
+            className="border-line bg-card focus:border-danger min-h-11 w-full border px-3 py-2 text-sm sm:max-w-xs"
           />
           <button
             type="submit"
             disabled={pending || !confirmed}
-            className="min-h-11 shrink-0 border border-danger px-4 py-2 text-xs font-medium tracking-wide text-danger-text uppercase hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
+            className="border-danger text-danger-text hover:bg-danger-soft min-h-11 shrink-0 border px-4 py-2 text-xs font-medium tracking-wide uppercase disabled:cursor-not-allowed disabled:opacity-40"
           >
             {pending ? "Deleting…" : "Delete everything"}
           </button>
         </form>
         {result && !result.ok && (
-          <span role="status" aria-live="polite" className="text-xs text-danger-text">
+          <span
+            role="status"
+            aria-live="polite"
+            className="text-danger-text text-xs"
+          >
             {result.error ?? "Something went wrong"}
           </span>
         )}

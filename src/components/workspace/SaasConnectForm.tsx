@@ -48,7 +48,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
       <input type="hidden" name="provider" value={spec.provider} />
       {spec.fields.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
-          <span className="text-xs text-ink-faint">{f.label}</span>
+          <span className="text-ink-faint text-xs">{f.label}</span>
           <input
             name={f.name}
             required
@@ -59,7 +59,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
             spellCheck={false}
             autoCapitalize="none"
             autoCorrect="off"
-            className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
+            className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
           />
         </label>
       ))}
@@ -72,7 +72,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="text-xs text-danger-text focus:outline-none"
+          className="text-danger-text text-xs focus:outline-none"
         >
           {error?.message}
         </span>
@@ -134,7 +134,7 @@ export const SaasDisconnectButton = ({ spec }: { spec: ConnectorSpec }) => {
         role="status"
         aria-live="polite"
         className={
-          message ? "max-w-64 text-right text-xs text-danger-text" : "sr-only"
+          message ? "text-danger-text max-w-64 text-right text-xs" : "sr-only"
         }
       >
         {message}

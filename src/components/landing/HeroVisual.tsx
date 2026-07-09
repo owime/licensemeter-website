@@ -81,14 +81,14 @@ const clamp = (n: number, lo: number, hi: number) =>
  */
 export const HeroVisual = () => {
   // Init at the finished state so SSR + reduced-motion show the real numbers.
-  const [totalCents, setTotalCents] = useState<number>(FINAL_CENTS);
+  const [revealedCents, setRevealedCents] = useState<number>(FINAL_CENTS);
   const [completed, setCompleted] = useState(STEPS);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let cancelled = false;
     let rafId: number | null = null;
     let toId: ReturnType<typeof setTimeout> | null = null;
-    setTotalCents(0);
+    setRevealedCents(0);
     setCompleted(0);
 
     const runPhase = (k: number) => {
@@ -104,7 +104,7 @@ export const HeroVisual = () => {
           startTs ??= now;
           const p = Math.min(1, (now - startTs) / TWEEN_MS);
           const eased = 1 - Math.pow(1 - p, 3);
-          setTotalCents(Math.round(from + (to - from) * eased));
+          setRevealedCents(Math.round(from + (to - from) * eased));
           if (p < 1) {
             rafId = requestAnimationFrame(tick);
           } else {
@@ -129,23 +129,27 @@ export const HeroVisual = () => {
       <div className="grid lg:grid-cols-[1fr_0.72fr]">
         <div className="px-4 py-5 sm:px-6">
           <div className="font-display waste-total tnum text-4xl tracking-tight whitespace-nowrap sm:text-5xl">
-            −€ {demoEuros(totalCents)}
+            −€ {demoEuros(FINAL_CENTS)}
             <span className="text-ink-faint text-base font-normal">/mo</span>
           </div>
 
           <ul className="mt-5 space-y-3">
             {LINES.map((line) => {
-              const value = clamp(totalCents - line.cumStart, 0, line.cents);
-              const found = totalCents > line.cumStart;
+              const value = clamp(revealedCents - line.cumStart, 0, line.cents);
+              const found = revealedCents > line.cumStart;
               return (
                 <li key={line.label}>
                   <div className="flex items-baseline justify-between gap-4">
                     <span
-                      className={found ? "text-ink-soft text-sm" : "text-ink-faint text-sm italic"}
+                      className={
+                        found
+                          ? "text-ink-soft text-sm"
+                          : "text-ink-faint text-sm italic"
+                      }
                     >
                       {line.label}
                     </span>
-                    <span className="tnum font-mono text-sm whitespace-nowrap min-w-[6.5rem] text-right">
+                    <span className="tnum min-w-[6.5rem] text-right font-mono text-sm whitespace-nowrap">
                       {found ? (
                         <span className="text-ink">
                           € {demoEuros(value)}
@@ -214,7 +218,7 @@ export const HeroVisual = () => {
             <div className="bg-canvas/10 h-1 overflow-hidden rounded-full">
               <div
                 className="bg-brand-bright h-full rounded-full transition-[width] duration-300 ease-out"
-                style={{ width: `${(totalCents / FINAL_CENTS) * 100}%` }}
+                style={{ width: `${(revealedCents / FINAL_CENTS) * 100}%` }}
               />
             </div>
             <p className="text-ink-soft-text mt-2.5 text-[11px] font-medium tracking-[0.12em] uppercase">

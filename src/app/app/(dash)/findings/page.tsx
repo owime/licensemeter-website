@@ -1,5 +1,5 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { CircleCheck, SearchX } from "lucide-react";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { CircleCheck, Search, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -24,7 +24,7 @@ import type { FindingStatus } from "~/server/types";
 
 export const metadata: Metadata = { title: "Findings" };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 25;
 
 type FindingRow = typeof findings.$inferSelect;
 
@@ -81,6 +81,7 @@ export default async function FindingsPage({
   const ruleParam =
     typeof sp.rule === "string" && isWasteRule(sp.rule) ? sp.rule : null;
   const showResolved = sp.show === "resolved";
+  const query = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
   const isAdmin = hasRole(ctx, "admin");
   const locked = !ctx.entitlement.active;
   // Acknowledge/bulk/export require an active entitlement; the list itself stays
@@ -98,6 +99,12 @@ export default async function FindingsPage({
     eq(findings.tenantId, ctx.tenant.id),
     statusFilter,
     ruleParam ? eq(findings.rule, ruleParam) : undefined,
+    query
+      ? or(
+          ilike(findings.title, `%${query}%`),
+          sql`coalesce(${findings.detail}->>'upn', '') ilike ${`%${query}%`}`,
+        )
+      : undefined,
   );
 
   // Per-rule active counts drive the filter chips (which always link to the
@@ -151,10 +158,16 @@ export default async function FindingsPage({
     offset: (page - 1) * PAGE_SIZE,
   });
 
-  const filterHref = (rule: string | null, resolved = false, pageNo = 1) => {
+  const filterHref = (
+    rule: string | null,
+    resolved = false,
+    pageNo = 1,
+    queryValue = query,
+  ) => {
     const params = new URLSearchParams();
     if (rule) params.set("rule", rule);
     if (resolved) params.set("show", "resolved");
+    if (queryValue) params.set("q", queryValue);
     if (pageNo > 1) params.set("page", String(pageNo));
     const qs = params.toString();
     return `/app/findings${qs ? `?${qs}` : ""}`;
@@ -167,15 +180,62 @@ export default async function FindingsPage({
     (rule) => (totalByRule.get(rule)?.count ?? 0) > 0 || rule === ruleParam,
   );
 
-  const empty = showResolved
-    ? { icon: CircleCheck, heading: "No resolved findings yet." }
+  const filterClass = (selected: boolean) =>
+    `inline-flex min-h-11 touch-manipulation items-center rounded-full px-3 py-2 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
+      selected
+        ? "bg-ink text-canvas"
+        : "border border-line bg-card text-ink-soft hover:border-ink hover:text-ink"
+    }`;
+  const renderFilterLinks = () => (
+    <>
+      <Link
+        href={filterHref(null)}
+        aria-current={!ruleParam && !showResolved ? "page" : undefined}
+        className={filterClass(!ruleParam && !showResolved)}
+      >
+        All active ({activeTotal})
+      </Link>
+      {!showResolved &&
+        visibleRules.map((rule) => {
+          const agg = totalByRule.get(rule);
+          return (
+            <Link
+              key={rule}
+              href={filterHref(rule)}
+              aria-current={ruleParam === rule ? "page" : undefined}
+              className={filterClass(ruleParam === rule)}
+            >
+              {RULE_META[rule].short} ({agg?.count ?? 0})
+            </Link>
+          );
+        })}
+      <Link
+        href={filterHref(null, true)}
+        aria-current={showResolved ? "page" : undefined}
+        className={filterClass(showResolved)}
+      >
+        Resolved
+      </Link>
+    </>
+  );
+
+  const activeFilterLabel = showResolved
+    ? "Resolved"
     : ruleParam
-      ? { icon: SearchX, heading: "No findings match this filter." }
-      : {
-          icon: CircleCheck,
-          heading: "No open findings.",
-          subtext: "Nothing to reclaim right now.",
-        };
+      ? RULE_META[ruleParam].short
+      : "All active";
+
+  const empty = query
+    ? { icon: SearchX, heading: "No findings match your search." }
+    : showResolved
+      ? { icon: CircleCheck, heading: "No resolved findings yet." }
+      : ruleParam
+        ? { icon: SearchX, heading: "No findings match this filter." }
+        : {
+            icon: CircleCheck,
+            heading: "No open findings.",
+            subtext: "Nothing to reclaim right now.",
+          };
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -216,56 +276,66 @@ export default async function FindingsPage({
         </div>
       )}
 
-      <nav
-        aria-label="Finding filters"
-        className="rise rise-2 mt-8 flex flex-wrap gap-2"
-      >
-        <Link
-          href={filterHref(null)}
-          aria-current={!ruleParam && !showResolved ? "true" : undefined}
-          className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
-            !ruleParam && !showResolved
-              ? "bg-ink text-canvas"
-              : "border-line bg-card text-ink-soft hover:border-ink border"
-          }`}
+      <div className="rise rise-2 mt-8 space-y-3">
+        <form
+          role="search"
+          className="flex flex-col gap-2 sm:flex-row sm:items-center"
         >
-          All active ({activeTotal})
-        </Link>
-        {/* Rule chips describe (and link to) the active view, so hide them
-            while Resolved is shown - stale active counts would mislead and a
-            click would silently leave the resolved view. */}
-        {!showResolved &&
-          visibleRules.map((rule) => {
-            const agg = totalByRule.get(rule);
-            return (
-              <Link
-                key={rule}
-                href={filterHref(rule)}
-                aria-current={
-                  ruleParam === rule && !showResolved ? "true" : undefined
-                }
-                className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
-                  ruleParam === rule && !showResolved
-                    ? "bg-ink text-canvas"
-                    : "border-line bg-card text-ink-soft hover:border-ink border"
-                }`}
-              >
-                {RULE_META[rule].short} ({agg?.count ?? 0})
-              </Link>
-            );
-          })}
-        <Link
-          href={filterHref(null, true)}
-          aria-current={showResolved ? "true" : undefined}
-          className={`relative px-3 py-1.5 text-xs font-medium after:absolute after:inset-x-0 after:-inset-y-2 after:content-[''] ${
-            showResolved
-              ? "bg-ink text-canvas"
-              : "border-line bg-card text-ink-soft hover:border-ink border"
-          }`}
+          {ruleParam && <input type="hidden" name="rule" value={ruleParam} />}
+          {showResolved && <input type="hidden" name="show" value="resolved" />}
+          <label htmlFor="finding-search" className="sr-only">
+            Search findings by title or email
+          </label>
+          <div className="relative min-w-0 flex-1">
+            <Search
+              aria-hidden="true"
+              className="text-ink-faint pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            />
+            <input
+              id="finding-search"
+              name="q"
+              type="search"
+              defaultValue={query}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="Search by finding or email…"
+              className="border-line bg-card text-ink placeholder:text-ink-faint focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 w-full rounded-xl border py-2 pr-3 pl-10 text-sm focus-visible:ring-2"
+            />
+          </div>
+          <button type="submit" className={buttonClass("secondary")}>
+            Search findings
+          </button>
+          {query && (
+            <Link
+              href={filterHref(ruleParam, showResolved, 1, "")}
+              className="text-ink-soft hover:text-ink focus-visible:ring-brand inline-flex min-h-11 touch-manipulation items-center justify-center px-2 text-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2"
+            >
+              Clear search
+            </Link>
+          )}
+        </form>
+
+        <details className="border-line bg-card rounded-xl border md:hidden">
+          <summary className="text-ink flex min-h-11 cursor-pointer touch-manipulation items-center justify-between gap-3 px-4 py-2 text-sm font-medium">
+            Filters
+            <span className="text-ink-soft text-xs font-normal">
+              {activeFilterLabel}
+            </span>
+          </summary>
+          <nav
+            aria-label="Finding filters"
+            className="border-line flex flex-wrap gap-2 border-t p-3"
+          >
+            {renderFilterLinks()}
+          </nav>
+        </details>
+        <nav
+          aria-label="Finding filters"
+          className="hidden flex-wrap gap-2 md:flex"
         >
-          Resolved
-        </Link>
-      </nav>
+          {renderFilterLinks()}
+        </nav>
+      </div>
 
       {/* Desktop table (one form: row checkboxes + bulk action) */}
       <FindingsBulkForm

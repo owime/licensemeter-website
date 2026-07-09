@@ -9,14 +9,16 @@ import {
 import type { SubscriptionStatus } from "~/server/types";
 
 /** Minimal tenant satisfying the fields entitlementOf reads. */
-const tenant = (over: Partial<{
-  isDemo: boolean;
-  compedAt: Date | null;
-  subscriptionStatus: SubscriptionStatus | null;
-  paidUntil: Date | null;
-  trialStartedAt: Date | null;
-  createdAt: Date;
-}> = {}) => ({
+const tenant = (
+  over: Partial<{
+    isDemo: boolean;
+    compedAt: Date | null;
+    subscriptionStatus: SubscriptionStatus | null;
+    paidUntil: Date | null;
+    trialStartedAt: Date | null;
+    createdAt: Date;
+  }> = {},
+) => ({
   isDemo: false,
   compedAt: null,
   subscriptionStatus: null,
@@ -26,7 +28,12 @@ const tenant = (over: Partial<{
   ...over,
 });
 
-const sub = (over: Partial<{ tier: "starter" | "growth" | "scale"; cancelAtPeriodEnd: boolean }> = {}) => ({
+const sub = (
+  over: Partial<{
+    tier: "starter" | "growth" | "scale";
+    cancelAtPeriodEnd: boolean;
+  }> = {},
+) => ({
   tier: "growth" as const,
   cancelAtPeriodEnd: false,
   ...over,
@@ -35,7 +42,9 @@ const sub = (over: Partial<{ tier: "starter" | "growth" | "scale"; cancelAtPerio
 describe("trial window (UTC day math)", () => {
   it("normalizes an intraday anchor to whole UTC days (anchor 19:01 -> expiry +14 days at 00:00)", () => {
     const anchor = new Date("2026-06-11T19:01:24Z");
-    expect(trialEndsAtFor(anchor).toISOString()).toBe("2026-06-25T00:00:00.000Z");
+    expect(trialEndsAtFor(anchor).toISOString()).toBe(
+      "2026-06-25T00:00:00.000Z",
+    );
   });
 
   it("two tenants created hours apart expire on the same boundary", () => {
@@ -66,18 +75,31 @@ describe("entitlementOf precedence", () => {
   });
 
   it("comped_at grandfathers a tenant regardless of an expired trial", () => {
-    const e = entitlementOf(tenant({ compedAt: new Date("2026-06-21T00:00:00Z") }), null, now, false);
+    const e = entitlementOf(
+      tenant({ compedAt: new Date("2026-06-21T00:00:00Z") }),
+      null,
+      now,
+      false,
+    );
     expect(e).toMatchObject({ state: "comped", active: true });
   });
 
   it("active subscription within the paid horizon => paid", () => {
     const e = entitlementOf(
-      tenant({ subscriptionStatus: "active", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      tenant({
+        subscriptionStatus: "active",
+        paidUntil: new Date("2026-08-01T00:00:00Z"),
+      }),
       sub({ tier: "scale" }),
       now,
       false,
     );
-    expect(e).toMatchObject({ state: "paid", active: true, locked: false, plan: "scale" });
+    expect(e).toMatchObject({
+      state: "paid",
+      active: true,
+      locked: false,
+      plan: "scale",
+    });
   });
 
   it("active status but paid horizon in the past (missed cancel webhook) => expired, not paid", () => {
@@ -96,7 +118,10 @@ describe("entitlementOf precedence", () => {
 
   it("past_due within horizon keeps access (dunning grace)", () => {
     const e = entitlementOf(
-      tenant({ subscriptionStatus: "past_due", paidUntil: new Date("2026-07-15T00:00:00Z") }),
+      tenant({
+        subscriptionStatus: "past_due",
+        paidUntil: new Date("2026-07-15T00:00:00Z"),
+      }),
       sub(),
       now,
       false,
@@ -106,7 +131,10 @@ describe("entitlementOf precedence", () => {
 
   it("past_due past horizon (retries exhausted) => locked", () => {
     const e = entitlementOf(
-      tenant({ subscriptionStatus: "past_due", paidUntil: new Date("2026-06-20T00:00:00Z") }),
+      tenant({
+        subscriptionStatus: "past_due",
+        paidUntil: new Date("2026-06-20T00:00:00Z"),
+      }),
       sub(),
       now,
       false,
@@ -149,7 +177,11 @@ describe("entitlementOf precedence", () => {
       now,
       false,
     );
-    expect(e).toMatchObject({ state: "incomplete", active: false, locked: true });
+    expect(e).toMatchObject({
+      state: "incomplete",
+      active: false,
+      locked: true,
+    });
   });
 
   it("incomplete_expired status past the trial => incomplete (locked)", () => {
@@ -162,7 +194,11 @@ describe("entitlementOf precedence", () => {
       now,
       false,
     );
-    expect(e).toMatchObject({ state: "incomplete", active: false, locked: true });
+    expect(e).toMatchObject({
+      state: "incomplete",
+      active: false,
+      locked: true,
+    });
   });
 
   it("incomplete status but still inside the trial => trial access wins", () => {
@@ -212,7 +248,10 @@ describe("entitlementOf precedence", () => {
 
   it("surfaces cancelAtPeriodEnd from the sub for the UI", () => {
     const e = entitlementOf(
-      tenant({ subscriptionStatus: "active", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      tenant({
+        subscriptionStatus: "active",
+        paidUntil: new Date("2026-08-01T00:00:00Z"),
+      }),
       sub({ cancelAtPeriodEnd: true }),
       now,
       false,
@@ -222,11 +261,13 @@ describe("entitlementOf precedence", () => {
 });
 
 /** Minimal MSP account satisfying the fields mspEntitlementOf reads. */
-const account = (over: Partial<{
-  compedAt: Date | null;
-  subscriptionStatus: SubscriptionStatus | null;
-  paidUntil: Date | null;
-}> = {}) => ({
+const account = (
+  over: Partial<{
+    compedAt: Date | null;
+    subscriptionStatus: SubscriptionStatus | null;
+    paidUntil: Date | null;
+  }> = {},
+) => ({
   compedAt: null,
   subscriptionStatus: null,
   paidUntil: null,
@@ -256,7 +297,10 @@ describe("mspEntitlementOf precedence", () => {
 
   it("active subscription within the paid horizon => paid", () => {
     const e = mspEntitlementOf(
-      account({ subscriptionStatus: "active", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      account({
+        subscriptionStatus: "active",
+        paidUntil: new Date("2026-08-01T00:00:00Z"),
+      }),
       now,
       false,
     );
@@ -265,7 +309,10 @@ describe("mspEntitlementOf precedence", () => {
 
   it("trialing subscription within the paid horizon => paid", () => {
     const e = mspEntitlementOf(
-      account({ subscriptionStatus: "trialing", paidUntil: new Date("2026-08-01T00:00:00Z") }),
+      account({
+        subscriptionStatus: "trialing",
+        paidUntil: new Date("2026-08-01T00:00:00Z"),
+      }),
       now,
       false,
     );
@@ -274,7 +321,10 @@ describe("mspEntitlementOf precedence", () => {
 
   it("active status but paid horizon in the past (missed cancel webhook) => expired", () => {
     const e = mspEntitlementOf(
-      account({ subscriptionStatus: "active", paidUntil: new Date("2026-06-20T00:00:00Z") }),
+      account({
+        subscriptionStatus: "active",
+        paidUntil: new Date("2026-06-20T00:00:00Z"),
+      }),
       now,
       false,
     );
@@ -283,7 +333,10 @@ describe("mspEntitlementOf precedence", () => {
 
   it("past_due within horizon keeps access (dunning grace)", () => {
     const e = mspEntitlementOf(
-      account({ subscriptionStatus: "past_due", paidUntil: new Date("2026-07-15T00:00:00Z") }),
+      account({
+        subscriptionStatus: "past_due",
+        paidUntil: new Date("2026-07-15T00:00:00Z"),
+      }),
       now,
       false,
     );
@@ -292,7 +345,10 @@ describe("mspEntitlementOf precedence", () => {
 
   it("past_due past horizon (retries exhausted) => locked", () => {
     const e = mspEntitlementOf(
-      account({ subscriptionStatus: "past_due", paidUntil: new Date("2026-06-20T00:00:00Z") }),
+      account({
+        subscriptionStatus: "past_due",
+        paidUntil: new Date("2026-06-20T00:00:00Z"),
+      }),
       now,
       false,
     );

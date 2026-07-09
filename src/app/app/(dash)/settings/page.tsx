@@ -51,11 +51,11 @@ const Capability = ({
     />
     <div>
       <div className="text-sm font-medium">{label}</div>
-      <div className="text-sm text-ink-soft">
+      <div className="text-ink-soft text-sm">
         {ok === null ? "Unknown: run a sync" : ok ? okText : warnText}
       </div>
       {ok === false && hint && (
-        <div className="mt-1 max-w-xl text-xs text-ink-faint">{hint}</div>
+        <div className="text-ink-faint mt-1 max-w-xl text-xs">{hint}</div>
       )}
     </div>
   </div>
@@ -240,7 +240,7 @@ export default async function SettingsPage() {
             <div>
               <dt className="text-ink-faint">Product tour</dt>
               <dd className="mt-0.5">
-                <ReplayTourButton />
+                <ReplayTourButton storageId={ctx.membership.id} />
               </dd>
             </div>
           </dl>
@@ -255,7 +255,11 @@ export default async function SettingsPage() {
             hint="Without P1, inactivity detection uses workload reports only, which is slightly less precise."
           />
           <Capability
-            ok={ctx.tenant.concealedNames === null ? null : !ctx.tenant.concealedNames}
+            ok={
+              ctx.tenant.concealedNames === null
+                ? null
+                : !ctx.tenant.concealedNames
+            }
             label="Identifiable usage reports"
             okText="Usage reports include user names. Per-user findings enabled."
             warnText="Report names are concealed (Microsoft default since 2021); usage-based findings are aggregate only."
@@ -275,54 +279,57 @@ export default async function SettingsPage() {
 
         <Card title="Sync history">
           {runs.length === 0 ? (
-            <p className="text-sm text-ink-soft">No syncs yet.</p>
+            <p className="text-ink-soft text-sm">No syncs yet.</p>
           ) : (
             <>
-            <ul className="flex flex-col gap-2">
-              {runs.map((run) => (
-                <li
-                  key={run.id}
-                  className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2 text-sm last:border-b-0 last:pb-0"
+              <ul className="flex flex-col gap-2">
+                {runs.map((run) => (
+                  <li
+                    key={run.id}
+                    className="border-line flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-sm last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className={`inline-block size-2 rounded-full ${
+                          run.status === "success"
+                            ? "bg-moss"
+                            : run.status === "running"
+                              ? "bg-gold motion-safe:animate-pulse"
+                              : run.status === "partial"
+                                ? "bg-gold"
+                                : "bg-danger"
+                        }`}
+                      />
+                      <span className="font-medium capitalize">
+                        {run.status}
+                      </span>
+                      <span className="text-ink-faint">
+                        {fmtDateTime(run.startedAt)}
+                      </span>
+                    </div>
+                    <div className="text-ink-soft min-w-0 font-mono text-[11px] break-words">
+                      {run.steps
+                        .map(
+                          (s) =>
+                            `${s.step}${s.count !== undefined ? `:${s.count}` : ""}${
+                              s.status === "ok" ? "" : ` (${s.status})`
+                            }`,
+                        )
+                        .join(" · ") ||
+                        (run.error ?? "")}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 text-right">
+                <Link
+                  href="/app/settings/sync-history"
+                  className="text-ink hover:text-brand-text text-xs font-medium underline-offset-4 hover:underline"
                 >
-                  <div className="flex items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className={`inline-block size-2 rounded-full ${
-                        run.status === "success"
-                          ? "bg-moss"
-                          : run.status === "running"
-                            ? "bg-gold motion-safe:animate-pulse"
-                            : run.status === "partial"
-                              ? "bg-gold"
-                              : "bg-danger"
-                      }`}
-                    />
-                    <span className="font-medium capitalize">{run.status}</span>
-                    <span className="text-ink-faint">
-                      {fmtDateTime(run.startedAt)}
-                    </span>
-                  </div>
-                  <div className="min-w-0 font-mono text-[11px] break-words text-ink-soft">
-                    {run.steps
-                      .map(
-                        (s) =>
-                          `${s.step}${s.count !== undefined ? `:${s.count}` : ""}${
-                            s.status === "ok" ? "" : ` (${s.status})`
-                          }`,
-                      )
-                      .join(" · ") || (run.error ?? "")}
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 text-right">
-              <Link
-                href="/app/settings/sync-history"
-                className="text-xs font-medium text-ink underline-offset-4 hover:text-brand-text hover:underline"
-              >
-                View all runs →
-              </Link>
-            </div>
+                  View all runs →
+                </Link>
+              </div>
             </>
           )}
         </Card>
@@ -332,16 +339,16 @@ export default async function SettingsPage() {
             {members.map((m) => (
               <li
                 key={m.id}
-                className="flex items-center justify-between gap-3 border-b border-line py-2.5 text-sm last:border-b-0"
+                className="border-line flex items-center justify-between gap-3 border-b py-2.5 text-sm last:border-b-0"
               >
                 <div className="min-w-0">
                   <div className="truncate font-medium">
                     {m.name ?? m.email}
                     {m.id === ctx.membership.id && (
-                      <span className="ml-2 text-xs text-ink-faint">(you)</span>
+                      <span className="text-ink-faint ml-2 text-xs">(you)</span>
                     )}
                   </div>
-                  <div className="truncate text-xs text-ink-faint">
+                  <div className="text-ink-faint truncate text-xs">
                     {m.email}
                     {!m.oid &&
                       (inviteExpiry(m.createdAt) < new Date()
@@ -383,7 +390,7 @@ export default async function SettingsPage() {
             />
           )}
           {ctx.tenant.isDemo && (
-            <p className="mt-3 text-xs text-ink-faint">
+            <p className="text-ink-faint mt-3 text-xs">
               Members are fixed in the demo workspace.
             </p>
           )}
@@ -396,7 +403,7 @@ export default async function SettingsPage() {
               {connectorRows.map((row) => (
                 <li
                   key={row.href}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-2.5 text-sm last:border-b-0 last:pb-0"
+                  className="border-line flex flex-wrap items-center justify-between gap-3 border-b pb-2.5 text-sm last:border-b-0 last:pb-0"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{row.label}</span>
@@ -406,7 +413,7 @@ export default async function SettingsPage() {
                   </div>
                   <Link
                     href={row.href}
-                    className="text-xs font-medium text-ink underline-offset-4 hover:text-brand-text hover:underline"
+                    className="text-ink hover:text-brand-text text-xs font-medium underline-offset-4 hover:underline"
                   >
                     {!isAdmin
                       ? "View →"
@@ -417,7 +424,7 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-xs text-ink-faint">
+            <p className="text-ink-faint mt-3 text-xs">
               Each connector has its own page under Settings. Seat assignments
               only, never content.
             </p>
@@ -427,32 +434,32 @@ export default async function SettingsPage() {
         {isAdmin && (
           <Card title="Activity">
             {activity.length === 0 ? (
-              <p className="text-sm text-ink-soft">No activity recorded yet.</p>
+              <p className="text-ink-soft text-sm">No activity recorded yet.</p>
             ) : (
               <ul className="flex flex-col">
                 {activity.map((entry) => (
                   <li
                     key={entry.id}
-                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-line py-2 text-sm last:border-b-0"
+                    className="border-line flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b py-2 text-sm last:border-b-0"
                   >
                     <span className="min-w-0">
                       <span className="font-medium">
                         {entry.action.replaceAll("_", " ")}
                       </span>
-                      <span className="ml-2 text-xs break-all text-ink-faint">
+                      <span className="text-ink-faint ml-2 text-xs break-all">
                         {entry.actorEmail ?? entry.actorOid}
                       </span>
                     </span>
-                    <span className="font-mono text-[11px] whitespace-nowrap text-ink-faint">
+                    <span className="text-ink-faint font-mono text-[11px] whitespace-nowrap">
                       {fmtDateTime(entry.createdAt)}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="mt-3 text-xs text-ink-faint">
-              Exports, price changes, membership and sync actions. Kept with
-              the workspace, deleted with it.
+            <p className="text-ink-faint mt-3 text-xs">
+              Exports, price changes, membership and sync actions. Kept with the
+              workspace, deleted with it.
             </p>
           </Card>
         )}
@@ -466,10 +473,10 @@ export default async function SettingsPage() {
           />
         )}
         {ctx.tenant.isDemo && (
-          <p className="text-xs text-ink-faint">
-            This is the demo workspace: synthetic data, refreshed on every
-            sync. Connect a real tenant from a Microsoft sign-in to see your
-            own numbers.
+          <p className="text-ink-faint text-xs">
+            This is the demo workspace: synthetic data, refreshed on every sync.
+            Connect a real tenant from a Microsoft sign-in to see your own
+            numbers.
           </p>
         )}
       </div>

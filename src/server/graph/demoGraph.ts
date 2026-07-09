@@ -23,14 +23,48 @@ const SKU = {
 } as const;
 
 const FIRST = [
-  "Anna", "Ben", "Clara", "David", "Elena", "Felix", "Greta", "Hannes",
-  "Ines", "Jonas", "Katrin", "Lukas", "Mara", "Nico", "Olivia", "Paul",
-  "Rosa", "Stefan", "Tessa", "Yusuf",
+  "Anna",
+  "Ben",
+  "Clara",
+  "David",
+  "Elena",
+  "Felix",
+  "Greta",
+  "Hannes",
+  "Ines",
+  "Jonas",
+  "Katrin",
+  "Lukas",
+  "Mara",
+  "Nico",
+  "Olivia",
+  "Paul",
+  "Rosa",
+  "Stefan",
+  "Tessa",
+  "Yusuf",
 ];
 const LAST = [
-  "Bauer", "Becker", "Fischer", "Hoffmann", "Keller", "Klein", "Koch",
-  "Krause", "Lang", "Maier", "Neumann", "Richter", "Schmidt", "Schneider",
-  "Schulz", "Vogel", "Wagner", "Weber", "Wolf", "Zimmermann",
+  "Bauer",
+  "Becker",
+  "Fischer",
+  "Hoffmann",
+  "Keller",
+  "Klein",
+  "Koch",
+  "Krause",
+  "Lang",
+  "Maier",
+  "Neumann",
+  "Richter",
+  "Schmidt",
+  "Schneider",
+  "Schulz",
+  "Vogel",
+  "Wagner",
+  "Weber",
+  "Wolf",
+  "Zimmermann",
 ];
 
 /** Deterministic demo identity formula, shared with the Adobe demo fixture. */
@@ -197,7 +231,10 @@ const buildUsers = (now: Date): DemoUser[] => {
         accountEnabled: cfg.enabled,
         userType: cfg.userType ?? "Member",
         createdDateTime: daysAgo(now, cfg.createdDaysAgo ?? 700).toISOString(),
-        assignedLicenses: cfg.skuIds.map((skuId) => ({ skuId, disabledPlans: [] })),
+        assignedLicenses: cfg.skuIds.map((skuId) => ({
+          skuId,
+          disabledPlans: [],
+        })),
         licenseAssignmentStates: cfg.skuIds.map((skuId) => ({
           skuId,
           assignedByGroup: cfg.groupAssigned
@@ -230,8 +267,7 @@ const buildUsers = (now: Date): DemoUser[] => {
         groupAssigned: i % 3 === 0,
         lastActivityDaysAgo: Math.floor(rand() * 21),
         // Copilot seats 1-8 are used, 9-22 never opened it: the demo's headline waste.
-        copilotDaysAgo:
-          i >= 1 && i <= 8 ? Math.floor(rand() * 14) : null,
+        copilotDaysAgo: i >= 1 && i <= 8 ? Math.floor(rand() * 14) : null,
       }),
     );
   }

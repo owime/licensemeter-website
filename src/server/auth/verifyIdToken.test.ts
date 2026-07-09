@@ -83,7 +83,13 @@ describe("verifyEntraIdToken — happy path", () => {
 
   it("omits optional string claims when they are absent or non-string", async () => {
     const result = await verifyEntraIdToken(
-      makeToken({ oid: validClaims.oid, tid: TID, aud: AUD, iss: validClaims.iss, name: 42 }),
+      makeToken({
+        oid: validClaims.oid,
+        tid: TID,
+        aud: AUD,
+        iss: validClaims.iss,
+        name: 42,
+      }),
       AUD,
     );
     expect(result).toEqual({ oid: validClaims.oid, tid: TID });
@@ -112,7 +118,10 @@ describe("verifyEntraIdToken — issuer pinning", () => {
 describe("verifyEntraIdToken — audience pinning (enforced by jose)", () => {
   it("rejects a token minted for a different audience", async () => {
     await expect(
-      verifyEntraIdToken(makeToken({ ...validClaims, aud: "api://some-other-app" }), AUD),
+      verifyEntraIdToken(
+        makeToken({ ...validClaims, aud: "api://some-other-app" }),
+        AUD,
+      ),
     ).rejects.toThrow(/aud/);
   });
 });
@@ -132,7 +141,10 @@ describe("verifyEntraIdToken — algorithm pinning (enforced by jose)", () => {
 describe("verifyEntraIdToken — required claims", () => {
   it("rejects when oid or tid is missing", async () => {
     await expect(
-      verifyEntraIdToken(makeToken({ tid: TID, aud: AUD, iss: validClaims.iss }), AUD),
+      verifyEntraIdToken(
+        makeToken({ tid: TID, aud: AUD, iss: validClaims.iss }),
+        AUD,
+      ),
     ).rejects.toThrow(/missing oid\/tid/);
     await expect(
       verifyEntraIdToken(

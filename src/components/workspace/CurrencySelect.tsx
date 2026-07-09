@@ -43,7 +43,7 @@ export const CurrencySelect = ({ value }: { value: string }) => {
           }
         });
       }}
-      className={`border border-line bg-card px-2 py-1.5 text-sm focus:border-ink ${
+      className={`border-line bg-card focus:border-ink border px-2 py-1.5 text-sm ${
         pending ? "opacity-60" : ""
       }`}
     >

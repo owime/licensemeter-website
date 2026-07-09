@@ -90,5 +90,8 @@ export const Pill = ({
   className = "",
   ...props
 }: React.ComponentProps<"span"> & { tone: PillTone }) => (
-  <span className={`${PILL_BASE} ${PILL_TONES[tone]} ${className}`} {...props} />
+  <span
+    className={`${PILL_BASE} ${PILL_TONES[tone]} ${className}`}
+    {...props}
+  />
 );

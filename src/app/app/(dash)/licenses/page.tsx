@@ -48,8 +48,12 @@ export default async function LicensesPage() {
     : "No license data yet. Run a sync.";
 
   const [skus, prices, adobeSeats, saasSeatRows] = await Promise.all([
-    db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, ctx.tenant.id) }),
-    db.query.priceBook.findMany({ where: eq(priceBook.tenantId, ctx.tenant.id) }),
+    db.query.tenantSkus.findMany({
+      where: eq(tenantSkus.tenantId, ctx.tenant.id),
+    }),
+    db.query.priceBook.findMany({
+      where: eq(priceBook.tenantId, ctx.tenant.id),
+    }),
     // Only the product arrays are needed to tally seat counts; don't pull the
     // full per-user rows.
     db.query.adobeUsers.findMany({
@@ -127,7 +131,7 @@ export default async function LicensesPage() {
           <h1 className="font-display text-3xl tracking-tight">
             Licenses &amp; prices
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+          <p className="text-ink-soft mt-1 max-w-2xl text-sm">
             Prices start as list-price estimates. Enter what you actually pay
             per seat and month. Every impact figure recalculates from your
             numbers. There is no Microsoft API for tenant pricing.
@@ -143,26 +147,38 @@ export default async function LicensesPage() {
       {listPricesOnly && (
         <section className="rise rise-2 mt-6">
           <Card title="Price accuracy">
-            <p className="max-w-2xl text-sm text-ink-soft">
-              Every figure below still uses Microsoft list-price estimates. Enter
-              what you actually pay per seat to make spend and waste exact — your
-              numbers override the estimates immediately.
+            <p className="text-ink-soft max-w-2xl text-sm">
+              Every figure below still uses Microsoft list-price estimates.
+              Enter what you actually pay per seat to make spend and waste exact
+              — your numbers override the estimates immediately.
             </p>
           </Card>
         </section>
       )}
 
       {/* Desktop table */}
-      <div className="rise rise-2 mt-8 mb-8 hidden overflow-x-auto border border-line bg-card md:block">
+      <div className="rise rise-2 border-line bg-card mt-8 mb-8 hidden overflow-x-auto border md:block">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-              <th scope="col" className="px-4 py-3 font-medium">Product</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">Purchased</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">Assigned</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">Unassigned</th>
-              <th scope="col" className="px-4 py-3 text-right font-medium">Spend / mo</th>
-              <th scope="col" className="px-4 py-3 font-medium">Price source</th>
+            <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
+              <th scope="col" className="px-4 py-3 font-medium">
+                Product
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Purchased
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Assigned
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Unassigned
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">
+                Spend / mo
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Price source
+              </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
                 Price / seat / mo
               </th>
@@ -176,13 +192,13 @@ export default async function LicensesPage() {
               return (
                 <tr
                   key={s.skuId}
-                  className="border-b border-line last:border-b-0 hover:bg-canvas"
+                  className="border-line hover:bg-canvas border-b last:border-b-0"
                 >
                   <td className="px-4 py-3">
                     <div className="font-medium">
                       {s.displayName ?? s.skuPartNumber}
                     </div>
-                    <div className="font-mono text-[11px] text-ink-faint">
+                    <div className="text-ink-faint font-mono text-[11px]">
                       {s.skuPartNumber}
                     </div>
                   </td>
@@ -194,7 +210,9 @@ export default async function LicensesPage() {
                   </td>
                   <td
                     className={`tnum px-4 py-3 text-right font-mono ${
-                      free > 0 ? "font-medium text-waste-text" : "text-ink-faint"
+                      free > 0
+                        ? "text-waste-text font-medium"
+                        : "text-ink-faint"
                     }`}
                   >
                     {fmtNumber(free, currency)}
@@ -234,24 +252,26 @@ export default async function LicensesPage() {
           </tbody>
           {sorted.length > 0 && (
             <tfoot>
-              <tr className="border-t-2 border-line text-[11px] tracking-[0.14em] text-ink-faint uppercase">
+              <tr className="border-line text-ink-faint border-t-2 text-[11px] tracking-[0.14em] uppercase">
                 <th scope="row" className="px-4 py-3 text-left font-medium">
                   Total
                 </th>
-                <td className="tnum px-4 py-3 text-right font-mono text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.purchased, currency)}
                 </td>
-                <td className="tnum px-4 py-3 text-right font-mono text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.assigned, currency)}
                 </td>
                 <td
                   className={`tnum px-4 py-3 text-right font-mono ${
-                    totals.unassigned > 0 ? "font-medium text-waste-text" : "text-ink"
+                    totals.unassigned > 0
+                      ? "text-waste-text font-medium"
+                      : "text-ink"
                   }`}
                 >
                   {fmtNumber(totals.unassigned, currency)}
                 </td>
-                <td className="tnum px-4 py-3 text-right font-mono font-semibold text-ink">
+                <td className="tnum text-ink px-4 py-3 text-right font-mono font-semibold">
                   {fmtMoney(totals.spendCents, currency)}
                 </td>
                 <td className="px-4 py-3" />
@@ -268,13 +288,13 @@ export default async function LicensesPage() {
           const p = priceRows.get(s.skuId);
           const cents = p?.monthlyPriceCents ?? 0;
           return (
-            <li key={s.skuId} className="border border-line bg-card p-4">
+            <li key={s.skuId} className="border-line bg-card border p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <div className="font-medium">
                     {s.displayName ?? s.skuPartNumber}
                   </div>
-                  <div className="font-mono text-[11px] text-ink-faint">
+                  <div className="text-ink-faint font-mono text-[11px]">
                     {s.skuPartNumber}
                   </div>
                 </div>
@@ -282,29 +302,33 @@ export default async function LicensesPage() {
               </div>
               <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Purchased</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    Purchased
+                  </dt>
                   <dd>{fmtNumber(s.prepaidEnabled, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Assigned</dt>
+                  <dt className="text-ink-faint font-sans text-xs">Assigned</dt>
                   <dd>{fmtNumber(s.consumedUnits, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Unassigned</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    Unassigned
+                  </dt>
                   <dd
                     className={
-                      unassignedOf(s) > 0 ? "font-medium text-waste-text" : ""
+                      unassignedOf(s) > 0 ? "text-waste-text font-medium" : ""
                     }
                   >
                     {fmtNumber(unassignedOf(s), currency)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-sans text-xs text-ink-faint">Spend/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
                   <dd>{fmtMoney(s.consumedUnits * cents, currency)}</dd>
                 </div>
               </dl>
-              <div className="mt-3 border-t border-line pt-3">
+              <div className="border-line mt-3 border-t pt-3">
                 {isAdmin ? (
                   <PriceEditor
                     skuId={s.skuId}
@@ -322,40 +346,46 @@ export default async function LicensesPage() {
           );
         })}
         {sorted.length === 0 && (
-          <li className="border border-line bg-card">
+          <li className="border-line bg-card border">
             <EmptyState icon={PackageOpen} heading="No license data yet.">
               {emptyMessage}
             </EmptyState>
           </li>
         )}
         {sorted.length > 0 && (
-          <li className="border border-line bg-card p-4">
+          <li className="border-line bg-card border p-4">
             <dl className="tnum grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total purchased
                 </dt>
                 <dd>{fmtNumber(totals.purchased, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total assigned
                 </dt>
                 <dd>{fmtNumber(totals.assigned, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total unassigned
                 </dt>
-                <dd className={totals.unassigned > 0 ? "font-medium text-waste-text" : ""}>
+                <dd
+                  className={
+                    totals.unassigned > 0 ? "text-waste-text font-medium" : ""
+                  }
+                >
                   {fmtNumber(totals.unassigned, currency)}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="font-sans text-xs font-medium text-ink-faint uppercase">
+                <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total spend/mo
                 </dt>
-                <dd className="font-semibold">{fmtMoney(totals.spendCents, currency)}</dd>
+                <dd className="font-semibold">
+                  {fmtMoney(totals.spendCents, currency)}
+                </dd>
               </div>
             </dl>
           </li>
@@ -364,26 +394,26 @@ export default async function LicensesPage() {
 
       {adobeProducts.length > 0 && (
         <section className="rise rise-3 mb-8">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             Adobe products
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+          <p className="text-ink-soft mt-1 max-w-2xl text-sm">
             Seat counts come from the Adobe Admin Console; Adobe publishes no
             price API, so enter your per-seat price to put a number on the
             offboarding leaks.
           </p>
-          <ul className="mt-3 border border-line bg-card">
+          <ul className="border-line bg-card mt-3 border">
             {adobeProducts.map(([product, count]) => {
               const p = priceRows.get(adobePriceKey(product));
               const cents = p?.monthlyPriceCents ?? 0;
               return (
                 <li
                   key={product}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                  className="border-line flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 last:border-b-0"
                 >
                   <div className="min-w-0">
                     <span className="font-medium">{product}</span>
-                    <span className="tnum ml-3 font-mono text-sm text-ink-soft">
+                    <span className="tnum text-ink-soft ml-3 font-mono text-sm">
                       {fmtNumber(count, currency)} seats
                     </span>
                   </div>
@@ -408,26 +438,26 @@ export default async function LicensesPage() {
 
       {saasSections.map(({ provider, label, products }) => (
         <section key={provider} className="rise rise-3 mb-8">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             {label} products
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+          <p className="text-ink-soft mt-1 max-w-2xl text-sm">
             Seat counts come from the {label} connector; {label} publishes no
             price API, so enter your per-seat price to put a number on the
             findings.
           </p>
-          <ul className="mt-3 border border-line bg-card">
+          <ul className="border-line bg-card mt-3 border">
             {products.map(([product, count]) => {
               const p = priceRows.get(saasPriceKey(provider, product));
               const cents = p?.monthlyPriceCents ?? 0;
               return (
                 <li
                   key={product}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                  className="border-line flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 last:border-b-0"
                 >
                   <div className="min-w-0">
                     <span className="font-medium">{product}</span>
-                    <span className="tnum ml-3 font-mono text-sm text-ink-soft">
+                    <span className="tnum text-ink-soft ml-3 font-mono text-sm">
                       {fmtNumber(count, currency)} seats
                     </span>
                   </div>
@@ -453,24 +483,24 @@ export default async function LicensesPage() {
       {isAdmin && (
         <section className="rise rise-3 mb-8">
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+            <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
               Bulk price import
             </h2>
             {!locked && (
               <a
                 href="/api/export/pricebook"
-                className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
               >
                 Export price book CSV
               </a>
             )}
           </div>
-          <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-            Maintaining prices for many products or workspaces? Export the
-            price book, fill in what you pay in a spreadsheet, and paste the
-            result back here.
+          <p className="text-ink-soft mt-1 max-w-2xl text-sm">
+            Maintaining prices for many products or workspaces? Export the price
+            book, fill in what you pay in a spreadsheet, and paste the result
+            back here.
           </p>
-          <div className="mt-3 border border-line bg-card p-4">
+          <div className="border-line bg-card mt-3 border p-4">
             <ImportPricesForm />
           </div>
         </section>

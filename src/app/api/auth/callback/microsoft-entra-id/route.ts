@@ -8,7 +8,10 @@ import {
   SIGNIN_SCOPES,
   signInRedirectUri,
 } from "~/server/auth/msal";
-import { verifyEntraIdToken, type VerifiedEntraClaims } from "~/server/auth/verifyIdToken";
+import {
+  verifyEntraIdToken,
+  type VerifiedEntraClaims,
+} from "~/server/auth/verifyIdToken";
 import {
   createSessionToken,
   expiredOAuthCookie,
@@ -172,7 +175,10 @@ export const GET = async (req: NextRequest) => {
   if (oauth?.kind === "scan") return handleScanCallback(req, oauth);
 
   if (error) {
-    return backToLanding(req, `${error}: ${params.get("error_description") ?? ""}`);
+    return backToLanding(
+      req,
+      `${error}: ${params.get("error_description") ?? ""}`,
+    );
   }
 
   if (!oauth) return backToLanding(req, "missing or expired oauth cookie");

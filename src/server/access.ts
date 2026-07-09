@@ -1,4 +1,14 @@
-import { and, asc, eq, gt, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -36,7 +46,13 @@ export type WorkspaceSummary = {
 };
 
 export type AccessContext = {
-  user: { oid: string; tid: string; upn: string; name: string; isDemo: boolean };
+  user: {
+    oid: string;
+    tid: string;
+    upn: string;
+    name: string;
+    isDemo: boolean;
+  };
   tenant: typeof tenants.$inferSelect;
   membership: typeof memberships.$inferSelect;
   /** Every workspace this user can open (MSP/consultant support). */
@@ -177,11 +193,33 @@ const resolveEntra = async (
  * workspace). Everything else is treated as a corporate domain.
  */
 const CONSUMER_EMAIL_DOMAINS = new Set([
-  "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com",
-  "msn.com", "yahoo.com", "yahoo.co.uk", "icloud.com", "me.com", "mac.com",
-  "aol.com", "proton.me", "protonmail.com", "pm.me", "gmx.com", "gmx.de",
-  "gmx.net", "web.de", "mail.com", "yandex.com", "zoho.com", "fastmail.com",
-  "hey.com", "qq.com", "163.com", "126.com",
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "yahoo.com",
+  "yahoo.co.uk",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+  "pm.me",
+  "gmx.com",
+  "gmx.de",
+  "gmx.net",
+  "web.de",
+  "mail.com",
+  "yandex.com",
+  "zoho.com",
+  "fastmail.com",
+  "hey.com",
+  "qq.com",
+  "163.com",
+  "126.com",
 ]);
 
 const domainOfEmail = (email: string): string | null => {
@@ -289,7 +327,8 @@ const resolveWorkos = async (
 ): Promise<AccessContext | null> => {
   const upn = session.user.upn;
   const email = (session.user.email ?? "").toLowerCase();
-  const canLinkByEmail = session.user.emailVerified === true && email.length > 0;
+  const canLinkByEmail =
+    session.user.emailVerified === true && email.length > 0;
   const inviteCutoff = new Date(Date.now() - INVITE_TTL_DAYS * 86_400_000);
 
   const accessible = () =>
@@ -344,7 +383,13 @@ const resolveWorkos = async (
 
   return {
     // Project the WorkOS user id onto the actor id used for audit/display.
-    user: { oid: workosUserId, tid: "", upn, name: session.user.name ?? "", isDemo: false },
+    user: {
+      oid: workosUserId,
+      tid: "",
+      upn,
+      name: session.user.name ?? "",
+      isDemo: false,
+    },
     tenant: active.tenant,
     membership: active.membership,
     workspaces: rows.map((r) => ({

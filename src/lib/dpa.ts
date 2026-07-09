@@ -129,7 +129,7 @@ const EN: DpaDoc = {
     controller: {
       label: "Controller (Verantwortlicher)",
       lines: [
-        "The customer organization that uses the Service and is bound by the Principal Agreement (the \"Controller\").",
+        'The customer organization that uses the Service and is bound by the Principal Agreement (the "Controller").',
         "Its legal name, address and authorized representative are those stated in the Controller's account and in the counter-signature block of this DPA.",
       ],
     },
@@ -451,23 +451,28 @@ const EN: DpaDoc = {
             name: "Vercel Inc.",
             purpose: "Application hosting and content delivery",
             location: "EU (Frankfurt function region)",
-            basis: "EU processing; SCCs for any support access from outside the EU",
+            basis:
+              "EU processing; SCCs for any support access from outside the EU",
           },
           {
             name: "Supabase Inc.",
             purpose: "Managed PostgreSQL database (primary data store)",
             location: "EU (AWS eu-central-1, Frankfurt)",
-            basis: "EU processing; SCCs for any support access from outside the EU",
+            basis:
+              "EU processing; SCCs for any support access from outside the EU",
           },
           {
             name: "Microsoft (Microsoft Ireland Operations Ltd. / Microsoft Corporation)",
-            purpose: "Identity platform (sign-in, admin consent) and Microsoft Graph API",
+            purpose:
+              "Identity platform (sign-in, admin consent) and Microsoft Graph API",
             location: "EU Data Boundary; US fallback",
-            basis: "EU Standard Contractual Clauses (Microsoft Products and Services DPA)",
+            basis:
+              "EU Standard Contractual Clauses (Microsoft Products and Services DPA)",
           },
           {
             name: "WorkOS, Inc.",
-            purpose: "Authentication and user identity management (AuthKit sign-in), where enabled",
+            purpose:
+              "Authentication and user identity management (AuthKit sign-in), where enabled",
             location: "US",
             basis: "EU Standard Contractual Clauses (WorkOS DPA)",
           },
@@ -475,7 +480,8 @@ const EN: DpaDoc = {
             name: "Stripe (Stripe Payments Europe Ltd. / Stripe, Inc.)",
             purpose: "Billing and subscription management (for paid plans)",
             location: "EU and US",
-            basis: "EU Standard Contractual Clauses (Stripe DPA); retains invoice data to meet statutory tax-retention duties",
+            basis:
+              "EU Standard Contractual Clauses (Stripe DPA); retains invoice data to meet statutory tax-retention duties",
           },
           {
             name: "Resend Inc.",
@@ -887,31 +893,38 @@ const DE: DpaDoc = {
             name: "Vercel Inc.",
             purpose: "Anwendungs-Hosting und Content Delivery",
             location: "EU (Funktionsregion Frankfurt)",
-            basis: "Verarbeitung in der EU; SCC für etwaige Support-Zugriffe von außerhalb der EU",
+            basis:
+              "Verarbeitung in der EU; SCC für etwaige Support-Zugriffe von außerhalb der EU",
           },
           {
             name: "Supabase Inc.",
             purpose: "Verwaltete PostgreSQL-Datenbank (primärer Datenspeicher)",
             location: "EU (AWS eu-central-1, Frankfurt)",
-            basis: "Verarbeitung in der EU; SCC für etwaige Support-Zugriffe von außerhalb der EU",
+            basis:
+              "Verarbeitung in der EU; SCC für etwaige Support-Zugriffe von außerhalb der EU",
           },
           {
             name: "Microsoft (Microsoft Ireland Operations Ltd. / Microsoft Corporation)",
-            purpose: "Identitätsplattform (Anmeldung, Admin-Consent) und Microsoft Graph API",
+            purpose:
+              "Identitätsplattform (Anmeldung, Admin-Consent) und Microsoft Graph API",
             location: "EU Data Boundary; US als Rückfallebene",
-            basis: "EU-Standardvertragsklauseln (Microsoft Products and Services DPA)",
+            basis:
+              "EU-Standardvertragsklauseln (Microsoft Products and Services DPA)",
           },
           {
             name: "WorkOS, Inc.",
-            purpose: "Authentifizierung und Identitätsverwaltung (AuthKit-Anmeldung), soweit aktiviert",
+            purpose:
+              "Authentifizierung und Identitätsverwaltung (AuthKit-Anmeldung), soweit aktiviert",
             location: "USA",
             basis: "EU-Standardvertragsklauseln (WorkOS DPA)",
           },
           {
             name: "Stripe (Stripe Payments Europe Ltd. / Stripe, Inc.)",
-            purpose: "Abrechnung und Abonnementverwaltung (bei kostenpflichtigen Plänen)",
+            purpose:
+              "Abrechnung und Abonnementverwaltung (bei kostenpflichtigen Plänen)",
             location: "EU und USA",
-            basis: "EU-Standardvertragsklauseln (Stripe DPA); Aufbewahrung von Rechnungsdaten zur Erfüllung gesetzlicher steuerlicher Aufbewahrungspflichten",
+            basis:
+              "EU-Standardvertragsklauseln (Stripe DPA); Aufbewahrung von Rechnungsdaten zur Erfüllung gesetzlicher steuerlicher Aufbewahrungspflichten",
           },
           {
             name: "Resend Inc.",

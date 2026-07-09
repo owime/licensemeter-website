@@ -8,7 +8,7 @@ export default function DashError({ reset }: { reset: () => void }) {
     <div className="mx-auto max-w-4xl">
       <div
         role="alert"
-        className="flex items-start gap-4 rounded-2xl bg-danger-soft px-5 py-4 text-danger-text"
+        className="bg-danger-soft text-danger-text flex items-start gap-4 rounded-2xl px-5 py-4"
       >
         <svg
           width="22"
@@ -37,8 +37,8 @@ export default function DashError({ reset }: { reset: () => void }) {
             Something went wrong
           </h1>
           <p className="mt-1 max-w-md text-sm">
-            This page failed to load. Your data is unaffected. Try again, and
-            if it keeps happening, sign out and back in.
+            This page failed to load. Your data is unaffected. Try again, and if
+            it keeps happening, sign out and back in.
           </p>
           <div className="mt-4">
             <Button onClick={() => reset()}>Try again</Button>

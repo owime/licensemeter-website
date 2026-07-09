@@ -49,7 +49,7 @@ export const RoleSelect = ({
         value={current}
         disabled={pending}
         onChange={(e) => onChange(e.target.value as MembershipRole)}
-        className="border border-line bg-card px-2 py-1 text-xs focus:border-ink disabled:opacity-50"
+        className="border-line bg-card focus:border-ink border px-2 py-1 text-xs disabled:opacity-50"
       >
         {options.map((r) => (
           <option key={r} value={r}>
@@ -61,7 +61,9 @@ export const RoleSelect = ({
         role="status"
         aria-live="polite"
         className={
-          error ? "mt-1 max-w-56 text-right text-xs text-danger-text" : "sr-only"
+          error
+            ? "text-danger-text mt-1 max-w-56 text-right text-xs"
+            : "sr-only"
         }
       >
         {error}

@@ -25,6 +25,12 @@ describe("unsubscribe tokens", () => {
   it("does not transfer between emails or secrets", () => {
     const token = makeUnsubToken("user@example.com", SECRET);
     expect(verifyUnsubToken("other@example.com", token, SECRET)).toBe(false);
-    expect(verifyUnsubToken("user@example.com", token, "another-secret-32-characters-long!")).toBe(false);
+    expect(
+      verifyUnsubToken(
+        "user@example.com",
+        token,
+        "another-secret-32-characters-long!",
+      ),
+    ).toBe(false);
   });
 });

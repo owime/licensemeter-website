@@ -120,8 +120,7 @@ export class SalesforceClient implements SaasClient {
         headers: { Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(30_000),
       });
-      if (!res.ok)
-        throw new Error(`Salesforce query failed (${res.status})`);
+      if (!res.ok) throw new Error(`Salesforce query failed (${res.status})`);
       const body = (await res.json()) as {
         records?: SalesforceUserRecord[];
         done?: boolean;

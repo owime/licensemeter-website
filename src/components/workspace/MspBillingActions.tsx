@@ -8,7 +8,8 @@ import { MSP_PRICE_ANNUAL_EUR, MSP_PRICE_EUR } from "~/lib/plans";
 import type { PlanInterval } from "~/server/types";
 
 /** German thousands separators, whole euros, matching the rest of the site. */
-const fmtEuros = (n: number): string => new Intl.NumberFormat("de-DE").format(n);
+const fmtEuros = (n: number): string =>
+  new Intl.NumberFormat("de-DE").format(n);
 
 type Props = {
   /** True once the account has a live Stripe subscription (manage, not subscribe). */
@@ -51,7 +52,9 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
           setError("Billing is not available yet.");
           break;
         case "stripe_unavailable":
-          setError("Billing is temporarily unavailable, please try again in a moment.");
+          setError(
+            "Billing is temporarily unavailable, please try again in a moment.",
+          );
           break;
         default:
           setError("Could not start checkout, try again.");
@@ -82,7 +85,9 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
         return;
       }
       if (data.error === "stripe_unavailable") {
-        setError("Billing is temporarily unavailable, please try again in a moment.");
+        setError(
+          "Billing is temporarily unavailable, please try again in a moment.",
+        );
         setBusy(false);
         return;
       }
@@ -96,11 +101,11 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
 
   const notice =
     checkoutParam === "success" ? (
-      <p className="rounded-xl bg-good-soft px-4 py-2 text-sm text-good-text">
+      <p className="bg-good-soft text-good-text rounded-xl px-4 py-2 text-sm">
         Subscription active. Thank you.
       </p>
     ) : checkoutParam === "cancelled" ? (
-      <p className="text-sm text-ink-faint">Checkout cancelled.</p>
+      <p className="text-ink-faint text-sm">Checkout cancelled.</p>
     ) : null;
 
   let body: React.ReactNode;
@@ -123,7 +128,7 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
     const unit = interval === "year" ? MSP_PRICE_ANNUAL_EUR : MSP_PRICE_EUR;
     body = (
       <div className="flex flex-col gap-4">
-        <p className="text-sm text-ink-soft">
+        <p className="text-ink-soft text-sm">
           One flat price per attached client tenant, billed by quantity on a
           single subscription. Attach or detach tenants below at any time — the
           quantity reconciles automatically.
@@ -133,17 +138,15 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
           onChange={setInterval}
           annualBadge="2 months free"
         />
-        <div className="border border-line bg-card px-5 py-4">
+        <div className="border-line bg-card border px-5 py-4">
           <div className="font-display text-2xl tracking-tight">
             € {fmtEuros(unit)}
-            <span className="font-sans text-xs text-ink-soft">
-              {interval === "year"
-                ? " / tenant / year"
-                : " / tenant / month"}
+            <span className="text-ink-soft font-sans text-xs">
+              {interval === "year" ? " / tenant / year" : " / tenant / month"}
             </span>
           </div>
           {interval === "year" && (
-            <div className="mt-1 text-xs font-medium text-brand-deep">
+            <div className="text-brand-deep mt-1 text-xs font-medium">
               2 months free
             </div>
           )}
@@ -166,7 +169,7 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
     <div className="flex flex-col gap-4">
       {notice}
       {body}
-      {error && <p className="text-sm text-danger-text">{error}</p>}
+      {error && <p className="text-danger-text text-sm">{error}</p>}
     </div>
   );
 };

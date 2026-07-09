@@ -63,10 +63,7 @@ describe("UmapiClient", () => {
             {
               email: "indirect@example.com",
               status: "active",
-              groups: [
-                "Design Team",
-                "Acrobat Pro",
-              ],
+              groups: ["Design Team", "Acrobat Pro"],
             },
             {
               email: "admin-only@example.com",
@@ -193,13 +190,15 @@ describe("UmapiClient", () => {
       }).getUsers(),
     ).rejects.toThrow("group catalog exceeds 20 pages");
 
-    const requestedUrls = fetchMock.mock.calls.map(([input]) => fetchUrl(input));
-    expect(
-      requestedUrls.some((url) => url.includes("/users/org-123/")),
-    ).toBe(false);
-    expect(requestedUrls.filter((url) => groupPagePattern.test(url))).toHaveLength(
-      20,
+    const requestedUrls = fetchMock.mock.calls.map(([input]) =>
+      fetchUrl(input),
     );
+    expect(requestedUrls.some((url) => url.includes("/users/org-123/"))).toBe(
+      false,
+    );
+    expect(
+      requestedUrls.filter((url) => groupPagePattern.test(url)),
+    ).toHaveLength(20);
   });
 
   it("fails before sleeping when Adobe rate-limit retry would exceed the budget", async () => {

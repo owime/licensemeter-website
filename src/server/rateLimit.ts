@@ -44,5 +44,4 @@ export const rateLimitDurable = async (
  */
 export const clientIp = (headerStore: {
   get(name: string): string | null;
-}): string =>
-  headerStore.get("x-real-ip") ?? "unknown";
+}): string => headerStore.get("x-real-ip") ?? "unknown";

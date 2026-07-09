@@ -52,7 +52,10 @@ describe("parseOAuthToken", () => {
 
   it("round-trips a sign-in payload without a kind", async () => {
     const token = await createOAuthToken({ state: "s2", verifier: "v2" });
-    expect(await parseOAuthToken(token)).toEqual({ state: "s2", verifier: "v2" });
+    expect(await parseOAuthToken(token)).toEqual({
+      state: "s2",
+      verifier: "v2",
+    });
   });
 
   it("stays backward compatible with legacy payloads signed before the kind existed", async () => {
@@ -72,7 +75,9 @@ describe("parseOAuthToken", () => {
   });
 
   it("rejects payloads missing state or verifier", async () => {
-    expect(await parseOAuthToken(await legacyToken({ state: "s5" }))).toBeNull();
+    expect(
+      await parseOAuthToken(await legacyToken({ state: "s5" })),
+    ).toBeNull();
     expect(
       await parseOAuthToken(await legacyToken({ verifier: "v5" })),
     ).toBeNull();

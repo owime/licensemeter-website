@@ -3,18 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "next build",
-    "check": "next lint && tsc --noEmit",
+    "check": "eslint . && tsc --noEmit",
+    "ci": "npm run format:check && npm run check && npm run test && npm run build",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
@@ -31,7 +36,7 @@
     "geist": "^1.7.2",
     "jose": "^6.2.3",
     "lucide-react": "^1.21.0",
-    "next": "^15.5.19",
+    "next": "^15.5.20",
     "postgres": "^3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -45,6 +50,7 @@
     "@emnapi/wasi-threads": "^2.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@napi-rs/wasm-runtime": "^1.1.5",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.0.15",
     "@tybys/wasm-util": "^0.10.2",
     "@types/node": "^20.14.10",
@@ -52,8 +58,8 @@
     "@types/react-dom": "^19.0.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.5.19",
-    "postcss": "^8.5.3",
+    "eslint-config-next": "^15.5.20",
+    "postcss": "^8.5.10",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "sharp": "^0.34.5",
@@ -65,6 +71,10 @@
   },
   "ct3aMetadata": {
     "initVersion": "7.40.0"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "postcss": "^8.5.10"
   },
   "packageManager": "npm@11.6.2"
 }

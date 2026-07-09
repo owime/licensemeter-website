@@ -55,11 +55,7 @@ const ok = <T>(rows: T[]): { ok: true; rows: T[] } => ({ ok: true, rows });
 
 /** Normalize a header cell for alias matching: BOM/trim/case/inner spaces. */
 const normalizeHeader = (h: string): string =>
-  h
-    .replace(/^﻿/, "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  h.replace(/^﻿/, "").trim().toLowerCase().replace(/\s+/g, " ");
 
 /**
  * English aliases cover both the classic MSOnline-era export and the
@@ -100,10 +96,7 @@ const BLOCKED_VALUES = new Set([
   "blocked from signing in",
 ]);
 
-const findColumn = (
-  header: string[],
-  aliases: readonly string[],
-): number => {
+const findColumn = (header: string[], aliases: readonly string[]): number => {
   const normalized = header.map(normalizeHeader);
   for (const alias of aliases) {
     const i = normalized.indexOf(alias);
@@ -156,7 +149,11 @@ export const parseDirectoryExport = (
   if (licensesCol === -1)
     missing.push({ field: "licenses", aliases: DIRECTORY_ALIASES.licenses });
   if (missing.length > 0) {
-    return headerError("user export (Users > Active users > Export users)", missing, header);
+    return headerError(
+      "user export (Users > Active users > Export users)",
+      missing,
+      header,
+    );
   }
 
   const out: DirectoryRow[] = [];
@@ -228,7 +225,10 @@ const isoOrNull = (value: string | undefined): string | null => {
 };
 
 const maxDate = (...dates: (Date | null)[]): Date | null =>
-  dates.reduce<Date | null>((max, d) => (d && (!max || d > max) ? d : max), null);
+  dates.reduce<Date | null>(
+    (max, d) => (d && (!max || d > max) ? d : max),
+    null,
+  );
 
 /**
  * Parses the Reports > Usage > Active users detail export. Requires a UPN
@@ -255,15 +255,11 @@ export const parseUsageExport = (
     lastActivityCol !== -1;
 
   const missing: { field: string; aliases: readonly string[] }[] = [];
-  if (upnCol === -1)
-    missing.push({ field: "upn", aliases: USAGE_ALIASES.upn });
+  if (upnCol === -1) missing.push({ field: "upn", aliases: USAGE_ALIASES.upn });
   if (!hasActivityColumn) {
     missing.push({
       field: "lastActivity",
-      aliases: [
-        ...USAGE_ALIASES.exchange,
-        ...USAGE_ALIASES.lastActivity,
-      ],
+      aliases: [...USAGE_ALIASES.exchange, ...USAGE_ALIASES.lastActivity],
     });
   }
   if (missing.length > 0) {

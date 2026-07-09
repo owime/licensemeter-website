@@ -72,7 +72,9 @@ export const POST = async (req: NextRequest) => {
     customerId = await getOrCreateMspCustomer(account, email);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe msp checkout: customer setup failed for account ${account.id}: ${msg}`);
+    console.error(
+      `stripe msp checkout: customer setup failed for account ${account.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe msp checkout: customer setup failed for account ${account.id}: ${msg}`,
       { key: `stripe-msp-checkout:${account.id}`, cooldownMs: 3_600_000 },
@@ -124,7 +126,9 @@ export const POST = async (req: NextRequest) => {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe msp checkout: session create failed for account ${account.id}: ${msg}`);
+    console.error(
+      `stripe msp checkout: session create failed for account ${account.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe msp checkout: session create failed for account ${account.id}: ${msg}`,
       { key: `stripe-msp-checkout:${account.id}`, cooldownMs: 3_600_000 },

@@ -22,14 +22,14 @@ export const maxDuration = 300;
 
 /** Required application permissions, the single source of truth for both paths. */
 const ScopeList = () => (
-  <ul className="border border-line bg-card">
+  <ul className="border-line bg-card border">
     {CONNECTOR_SCOPES.map((s) => (
       <li
         key={s.scope}
-        className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line px-4 py-2.5 last:border-b-0"
+        className="border-line flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b px-4 py-2.5 last:border-b-0"
       >
         <code className="font-mono text-xs">{s.scope}</code>
-        <span className="text-xs text-ink-soft">{s.why}</span>
+        <span className="text-ink-soft text-xs">{s.why}</span>
       </li>
     ))}
   </ul>
@@ -52,7 +52,7 @@ const SetupOptions = ({
 }) => (
   <div className="flex flex-col gap-4">
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-ink-soft">{MICROSOFT_CONNECTOR.managedHint}</p>
+      <p className="text-ink-soft text-sm">{MICROSOFT_CONNECTOR.managedHint}</p>
       <ScopeList />
       {connectorConfigured ? (
         <div>
@@ -61,28 +61,28 @@ const SetupOptions = ({
           </ButtonAnchor>
         </div>
       ) : (
-        <p className="text-sm text-ink-soft">
+        <p className="text-ink-soft text-sm">
           One-click managed consent is not enabled on this deployment. Use the
           instant scan or CSV import below.
         </p>
       )}
-      <p className="text-xs text-ink-faint">
+      <p className="text-ink-faint text-xs">
         Not a Global Administrator? Forward this page to one — they complete the
         Microsoft dialog and you become the workspace owner.
       </p>
     </div>
 
     {byoEnabled && (
-      <details className="group border-t border-line pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-ink-soft select-none hover:text-ink">
+      <details className="group border-line border-t pt-4">
+        <summary className="text-ink-soft hover:text-ink cursor-pointer text-sm font-medium select-none">
           Advanced — bring your own app registration
         </summary>
         <div className="mt-3 flex flex-col gap-3">
-          <p className="text-sm text-ink-soft">
+          <p className="text-ink-soft text-sm">
             {MICROSOFT_CONNECTOR.byoHint}{" "}
             <Link
               href="/connectors/microsoft"
-              className="underline underline-offset-4 hover:text-ink"
+              className="hover:text-ink underline underline-offset-4"
             >
               Setup guide and script
             </Link>
@@ -94,9 +94,9 @@ const SetupOptions = ({
     )}
 
     {scanConfigured && (
-      <div className="border-t border-line pt-4">
-        <p className="text-sm font-medium text-ink">Run an instant scan</p>
-        <p className="mt-1 text-sm text-ink-soft">
+      <div className="border-line border-t pt-4">
+        <p className="text-ink text-sm font-medium">Run an instant scan</p>
+        <p className="text-ink-soft mt-1 text-sm">
           One-time scan with the same read-only scopes, running with{" "}
           <strong className="text-ink">your</strong> permissions while you are
           signed in. No standing access, no stored tokens. Works for Application
@@ -104,13 +104,15 @@ const SetupOptions = ({
           above.
         </p>
         <div className="mt-3">
-          <ButtonAnchor href="/api/scan/start">Run an instant scan</ButtonAnchor>
+          <ButtonAnchor href="/api/scan/start">
+            Run an instant scan
+          </ButtonAnchor>
         </div>
       </div>
     )}
 
-    <div className="border-t border-line pt-4">
-      <p className="text-sm text-ink-soft">
+    <div className="border-line border-t pt-4">
+      <p className="text-ink-soft text-sm">
         No admin with consent rights at hand? Start with the CSV trial: two
         admin-center exports, no consent at all.
       </p>
@@ -146,24 +148,27 @@ export default async function MicrosoftConnectorPage({
       <header className="rise rise-1">
         <nav
           aria-label="Breadcrumb"
-          className="text-xs font-medium tracking-[0.2em] text-ink-faint uppercase"
+          className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
         >
           <Link
             href="/app/settings"
-            className="underline-offset-4 hover:text-ink hover:underline"
+            className="hover:text-ink underline-offset-4 hover:underline"
           >
             Settings
           </Link>{" "}
           /{" "}
           <Link
             href="/app/settings#connectors"
-            className="underline-offset-4 hover:text-ink hover:underline"
+            className="hover:text-ink underline-offset-4 hover:underline"
           >
             Connectors
           </Link>{" "}
-          / <span aria-current="page" className="text-ink-soft">Microsoft 365</span>
+          /{" "}
+          <span aria-current="page" className="text-ink-soft">
+            Microsoft 365
+          </span>
         </nav>
-        <h1 className="mt-2 font-display text-3xl tracking-tight">
+        <h1 className="font-display mt-2 text-3xl tracking-tight">
           Microsoft 365 connector
         </h1>
       </header>
@@ -171,12 +176,12 @@ export default async function MicrosoftConnectorPage({
       {error && (
         <div
           role="alert"
-          className="rise rise-2 flex flex-wrap items-center justify-between gap-3 border border-danger-soft bg-danger-soft/50 p-4 text-sm text-danger-text"
+          className="rise rise-2 border-danger-soft bg-danger-soft/50 text-danger-text flex flex-wrap items-center justify-between gap-3 border p-4 text-sm"
         >
           <span>{connectErrorText(error)}</span>
           <Link
             href="/app/settings/microsoft"
-            className="shrink-0 text-xs font-medium underline underline-offset-4 hover:text-ink"
+            className="hover:text-ink shrink-0 text-xs font-medium underline underline-offset-4"
           >
             Dismiss
           </Link>
@@ -194,7 +199,7 @@ export default async function MicrosoftConnectorPage({
       <div className="rise rise-3 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               Connected with demo data. On a real workspace, a Global
               Administrator grants read-only access in one click, or you bring
               your own Entra app registration.
@@ -211,23 +216,27 @@ export default async function MicrosoftConnectorPage({
                   : null;
                 if (conn.lastVerifyError) {
                   return (
-                    <div className="border border-danger-soft bg-danger-soft/50 p-3 text-sm text-danger-text">
+                    <div className="border-danger-soft bg-danger-soft/50 text-danger-text border p-3 text-sm">
                       {conn.lastVerifyError}
                     </div>
                   );
                 }
                 if (conn.mode === "byo" && expMs !== null && expMs <= 0) {
                   return (
-                    <div className="border border-danger-soft bg-danger-soft/50 p-3 text-sm text-danger-text">
+                    <div className="border-danger-soft bg-danger-soft/50 text-danger-text border p-3 text-sm">
                       The stored credential expired on{" "}
                       {fmtDate(conn.secretExpiresAt)}. Re-enter it below to
                       resume the nightly sync.
                     </div>
                   );
                 }
-                if (conn.mode === "byo" && expMs !== null && expMs <= 14 * DAY) {
+                if (
+                  conn.mode === "byo" &&
+                  expMs !== null &&
+                  expMs <= 14 * DAY
+                ) {
                   return (
-                    <div className="border border-waste-soft bg-waste-soft/50 p-3 text-sm text-waste-text">
+                    <div className="border-waste-soft bg-waste-soft/50 text-waste-text border p-3 text-sm">
                       The stored credential expires on{" "}
                       {fmtDate(conn.secretExpiresAt)}. Renew it in Entra and
                       re-enter it below before then to avoid a sync gap.
@@ -246,7 +255,7 @@ export default async function MicrosoftConnectorPage({
                         ? " — Bring your own app (certificate)"
                         : " — Bring your own app (client secret)"}
                   </div>
-                  <div className="mt-0.5 text-xs text-ink-soft">
+                  <div className="text-ink-soft mt-0.5 text-xs">
                     Tenant <span className="font-mono">{conn.tid}</span>
                     {conn.appClientId && (
                       <>
@@ -257,7 +266,7 @@ export default async function MicrosoftConnectorPage({
                     )}
                   </div>
                   {conn.mode === "byo" && (
-                    <div className="mt-0.5 text-xs text-ink-soft">
+                    <div className="text-ink-soft mt-0.5 text-xs">
                       {conn.credType === "cert" && conn.certThumbprint && (
                         <>
                           thumbprint{" "}
@@ -280,15 +289,15 @@ export default async function MicrosoftConnectorPage({
               </div>
 
               {isAdmin && byoEnabled && (
-                <details className="group border-t border-line pt-4">
-                  <summary className="cursor-pointer text-sm font-medium text-ink-soft select-none hover:text-ink">
+                <details className="group border-line border-t pt-4">
+                  <summary className="text-ink-soft hover:text-ink cursor-pointer text-sm font-medium select-none">
                     {conn.mode === "managed"
                       ? "Switch to your own app registration (Advanced)"
                       : "Update credentials"}
                   </summary>
                   <div className="mt-3 flex flex-col gap-3">
                     {conn.mode === "managed" && (
-                      <p className="text-sm text-ink-soft">
+                      <p className="text-ink-soft text-sm">
                         {MICROSOFT_CONNECTOR.byoHint}
                       </p>
                     )}
@@ -304,30 +313,30 @@ export default async function MicrosoftConnectorPage({
               scanConfigured={scanConfigured}
             />
           ) : (
-            <p className="text-sm text-ink-soft">
+            <p className="text-ink-soft text-sm">
               Not connected. A workspace admin can connect Microsoft 365 here.
             </p>
           )}
         </Card>
 
         <Card title="What it detects">
-          <ul className="flex flex-col gap-2 text-sm text-ink-soft">
+          <ul className="text-ink-soft flex flex-col gap-2 text-sm">
             {MICROSOFT_CONNECTOR.detects.map((line) => (
               <li key={line} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-brand-text">
+                <span aria-hidden="true" className="text-brand-text mt-0.5">
                   ·
                 </span>
                 {line}
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-ink-faint">
+          <p className="text-ink-faint mt-3 text-xs">
             Read-only application permissions only. Nothing is ever written to
             your tenant, and mailbox or file contents are never readable. Full
             details for your security team:{" "}
             <Link
               href="/security"
-              className="underline underline-offset-4 hover:text-ink"
+              className="hover:text-ink underline underline-offset-4"
             >
               security overview
             </Link>

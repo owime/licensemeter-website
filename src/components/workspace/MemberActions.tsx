@@ -75,7 +75,7 @@ export const MemberActions = ({
           <form action={resendAction}>
             <button
               disabled={resendPending}
-              className="text-xs text-ink-faint underline-offset-4 hover:text-ink hover:underline disabled:opacity-50"
+              className="text-ink-faint hover:text-ink text-xs underline-offset-4 hover:underline disabled:opacity-50"
             >
               {resendPending ? "Sending…" : "Resend"}
             </button>
@@ -103,7 +103,11 @@ export const MemberActions = ({
                   : "text-ink-faint hover:text-danger-text"
               }`}
             >
-              {removePending ? "Removing…" : armed ? "Confirm remove" : "Remove"}
+              {removePending
+                ? "Removing…"
+                : armed
+                  ? "Confirm remove"
+                  : "Remove"}
             </button>
             <span role="status" aria-live="polite" className="sr-only">
               {armed ? "Press again to confirm removal." : null}

@@ -39,7 +39,7 @@ export const CsvTrialForm = () => {
           accept=".csv,text/csv"
           className={inputClass}
         />
-        <p className="text-xs text-ink-soft">
+        <p className="text-ink-soft text-xs">
           Microsoft 365 admin center &gt; Users &gt; Active users &gt; Export
           users. It shows who holds which licenses, and who is blocked.
         </p>
@@ -57,7 +57,7 @@ export const CsvTrialForm = () => {
           accept=".csv,text/csv"
           className={inputClass}
         />
-        <p className="text-xs text-ink-soft">
+        <p className="text-ink-soft text-xs">
           Reports &gt; Usage &gt; Active users &gt; Export (detail). This adds
           inactivity detection on top of the offboarding and overlap checks.
         </p>
@@ -87,7 +87,9 @@ export const CsvTrialForm = () => {
       <p
         role="status"
         aria-live="polite"
-        className={result && !result.ok ? "text-sm text-danger-text" : "sr-only"}
+        className={
+          result && !result.ok ? "text-danger-text text-sm" : "sr-only"
+        }
       >
         {result && !result.ok ? result.error : null}
       </p>

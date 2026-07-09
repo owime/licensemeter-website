@@ -1,4 +1,7 @@
-import { ConfidentialClientApplication, CryptoProvider } from "@azure/msal-node";
+import {
+  ConfidentialClientApplication,
+  CryptoProvider,
+} from "@azure/msal-node";
 
 import { appBaseUrl, env } from "~/env";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";

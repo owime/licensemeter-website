@@ -38,9 +38,7 @@ export const MspPortfolioActions = ({
   );
 
   if (!attached && blocked) {
-    return (
-      <span className="text-xs text-ink-faint">{blockedReason}</span>
-    );
+    return <span className="text-ink-faint text-xs">{blockedReason}</span>;
   }
 
   return (
@@ -52,7 +50,7 @@ export const MspPortfolioActions = ({
         <span
           role="status"
           aria-live="polite"
-          className="text-xs text-danger-text"
+          className="text-danger-text text-xs"
         >
           {result.error ?? "Something went wrong"}
         </span>

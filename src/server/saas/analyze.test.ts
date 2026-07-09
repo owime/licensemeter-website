@@ -49,7 +49,12 @@ describe("analyzeSaasWaste", () => {
   it("flags seats whose Entra account is disabled, with summed product prices", () => {
     const findings = analyzeSaasWaste(
       "atlassian",
-      [seat({ email: "gone@example.com", products: ["Jira Software", "Confluence"] })],
+      [
+        seat({
+          email: "gone@example.com",
+          products: ["Jira Software", "Confluence"],
+        }),
+      ],
       ENTRA,
       PRICES,
       { inactiveDays: 90, now: NOW },
@@ -73,7 +78,9 @@ describe("analyzeSaasWaste", () => {
     );
     expect(findings).toHaveLength(1);
     expect(findings[0]!.rule).toBe("saas_orphaned");
-    expect(findings[0]!.dedupeKey).toBe("saas_orphaned|zoom:nobody@example.com|-");
+    expect(findings[0]!.dedupeKey).toBe(
+      "saas_orphaned|zoom:nobody@example.com|-",
+    );
     // Orphans have no directory user to link to.
     expect(findings[0]!.graphUserId).toBeNull();
   });
@@ -136,7 +143,14 @@ describe("analyzeSaasWaste", () => {
 describe("provider mappers", () => {
   it("zoom keeps only Licensed users and parses last login", () => {
     const seats = mapZoomUsers([
-      { email: "a@x.com", type: 2, first_name: "A", last_name: "B", status: "active", last_login_time: "2026-05-01T10:00:00Z" },
+      {
+        email: "a@x.com",
+        type: 2,
+        first_name: "A",
+        last_name: "B",
+        status: "active",
+        last_login_time: "2026-05-01T10:00:00Z",
+      },
       { email: "basic@x.com", type: 1 },
       { type: 2 },
     ]);
@@ -146,7 +160,9 @@ describe("provider mappers", () => {
       displayName: "A B",
       products: ["Licensed"],
     });
-    expect(seats[0]!.lastActiveAt?.toISOString()).toBe("2026-05-01T10:00:00.000Z");
+    expect(seats[0]!.lastActiveAt?.toISOString()).toBe(
+      "2026-05-01T10:00:00.000Z",
+    );
   });
 
   it("atlassian keeps active users with product access and takes the freshest activity", () => {
@@ -156,16 +172,34 @@ describe("provider mappers", () => {
         name: "A",
         account_status: "active",
         product_access: [
-          { key: "jira-software", name: "Jira Software", last_active: "2026-01-01T00:00:00Z" },
-          { key: "confluence", name: "Confluence", last_active: "2026-03-01T00:00:00Z" },
+          {
+            key: "jira-software",
+            name: "Jira Software",
+            last_active: "2026-01-01T00:00:00Z",
+          },
+          {
+            key: "confluence",
+            name: "Confluence",
+            last_active: "2026-03-01T00:00:00Z",
+          },
         ],
       },
-      { email: "no-products@x.com", account_status: "active", product_access: [] },
-      { email: "suspended@x.com", account_status: "suspended", product_access: [{ name: "Jira Software" }] },
+      {
+        email: "no-products@x.com",
+        account_status: "active",
+        product_access: [],
+      },
+      {
+        email: "suspended@x.com",
+        account_status: "suspended",
+        product_access: [{ name: "Jira Software" }],
+      },
     ]);
     expect(seats).toHaveLength(1);
     expect(seats[0]!.products).toEqual(["Jira Software", "Confluence"]);
-    expect(seats[0]!.lastActiveAt?.toISOString()).toBe("2026-03-01T00:00:00.000Z");
+    expect(seats[0]!.lastActiveAt?.toISOString()).toBe(
+      "2026-03-01T00:00:00.000Z",
+    );
   });
 
   it("atlassian maps never-active users to a null signal", () => {
@@ -201,9 +235,15 @@ describe("provider mappers", () => {
     ).not.toBeNull();
     expect(validSalesforceUrl("http://acme.my.salesforce.com")).toBeNull();
     expect(validSalesforceUrl("https://evil.example.com")).toBeNull();
-    expect(validSalesforceUrl("https://my.salesforce.com.evil.example")).toBeNull();
-    expect(validSalesforceUrl("https://acme.my.salesforce.com:8080")).toBeNull();
-    expect(validSalesforceUrl("https://acme.my.salesforce.com/path")).toBeNull();
+    expect(
+      validSalesforceUrl("https://my.salesforce.com.evil.example"),
+    ).toBeNull();
+    expect(
+      validSalesforceUrl("https://acme.my.salesforce.com:8080"),
+    ).toBeNull();
+    expect(
+      validSalesforceUrl("https://acme.my.salesforce.com/path"),
+    ).toBeNull();
     expect(validSalesforceUrl("not a url")).toBeNull();
   });
 
@@ -211,17 +251,21 @@ describe("provider mappers", () => {
     const ORIGIN = "https://acme.my.salesforce.com";
     const SANDBOX_ORIGIN = "https://acme--sb.sandbox.my.salesforce.com";
     expect(normalizeSalesforceOrgRef("acme.my.salesforce.com")).toBe(ORIGIN);
-    expect(normalizeSalesforceOrgRef("  acme.my.salesforce.com  ")).toBe(ORIGIN);
-    expect(normalizeSalesforceOrgRef("acme--sb.sandbox.my.salesforce.com")).toBe(
-      SANDBOX_ORIGIN,
+    expect(normalizeSalesforceOrgRef("  acme.my.salesforce.com  ")).toBe(
+      ORIGIN,
     );
+    expect(
+      normalizeSalesforceOrgRef("acme--sb.sandbox.my.salesforce.com"),
+    ).toBe(SANDBOX_ORIGIN);
     expect(
       normalizeSalesforceOrgRef(
         "https://acme--sb.sandbox.my.salesforce.com/lightning/setup",
       ),
     ).toBe(SANDBOX_ORIGIN);
     expect(
-      normalizeSalesforceOrgRef("https://acme.my.salesforce.com/lightning/setup"),
+      normalizeSalesforceOrgRef(
+        "https://acme.my.salesforce.com/lightning/setup",
+      ),
     ).toBe(ORIGIN);
     expect(
       normalizeSalesforceOrgRef("https://acme.my.salesforce.com/?foo=1#bar"),
@@ -236,7 +280,9 @@ describe("provider mappers", () => {
   });
 
   it("salesforce orgRef normalization still rejects non-Salesforce hosts", () => {
-    expect(normalizeSalesforceOrgRef("acme.salesforce.com.evil.com")).toBeNull();
+    expect(
+      normalizeSalesforceOrgRef("acme.salesforce.com.evil.com"),
+    ).toBeNull();
     expect(normalizeSalesforceOrgRef("https://evil.example.com")).toBeNull();
     expect(
       normalizeSalesforceOrgRef("https://acme.my.salesforce.com:8080"),

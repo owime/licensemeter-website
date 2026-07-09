@@ -32,18 +32,18 @@ const CONNECTORS_LD = {
 export default function ConnectorsIndexPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
-      <p className="text-xs font-medium tracking-[0.2em] text-brand-text uppercase">
+      <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         Connectors
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
         Connect what your company already pays for.
       </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
         Microsoft 365 is the core connection, granted once through
         Microsoft&rsquo;s admin-consent dialog, documented in the{" "}
         <Link
           href="/security"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           security overview
         </Link>
@@ -60,13 +60,13 @@ export default function ConnectorsIndexPage() {
         className="mt-10 max-w-3xl"
       />
 
-      <section className="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2">
+      <section className="border-line bg-line mt-12 grid gap-px border sm:grid-cols-2">
         <h2 className="sr-only">Setup guides</h2>
         {CONNECTOR_GUIDES.map((g) => (
           <Link
             key={g.slug}
             href={`/connectors/${g.slug}`}
-            className="group bg-card px-6 py-6 transition hover:bg-canvas"
+            className="group bg-card hover:bg-canvas px-6 py-6 transition"
           >
             <div className="flex items-center gap-2">
               <span className="font-display text-xl tracking-tight group-hover:underline group-hover:underline-offset-4">
@@ -76,11 +76,11 @@ export default function ConnectorsIndexPage() {
                 {g.kind === "api" ? "Connect via API" : "CSV import"}
               </Pill>
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            <p className="text-ink-soft mt-2 text-sm leading-relaxed">
               {g.summary}
             </p>
             {g.kind === "import" && (
-              <p className="mt-2 text-xs leading-relaxed text-ink-faint">
+              <p className="text-ink-faint mt-2 text-xs leading-relaxed">
                 No API: you paste an exported member list, matched against your
                 directory. Re-import to refresh.
               </p>
@@ -89,7 +89,7 @@ export default function ConnectorsIndexPage() {
         ))}
       </section>
 
-      <p className="mt-8 text-sm text-ink-soft">
+      <p className="text-ink-soft mt-8 text-sm">
         All connector credentials are stored encrypted (AES-256-GCM), used
         read-only and deleted the moment you disconnect. Product names are
         trademarks of their respective owners; LicenseMeter is independent of

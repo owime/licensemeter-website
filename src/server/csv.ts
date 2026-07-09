@@ -22,4 +22,5 @@ export const csvResponse = (filename: string, csv: string): Response =>
     },
   });
 
-export const centsToDecimal = (cents: number): string => (cents / 100).toFixed(2);
+export const centsToDecimal = (cents: number): string =>
+  (cents / 100).toFixed(2);

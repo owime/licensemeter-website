@@ -5,7 +5,8 @@
 export const CONNECT_ERROR_TEXT: Record<string, string> = {
   not_configured:
     "The connector app registration is not configured on this deployment (CONNECTOR_CLIENT_ID missing).",
-  missing_state: "The consent response was missing its state value. Please retry.",
+  missing_state:
+    "The consent response was missing its state value. Please retry.",
   invalid_state:
     "That link was already used or has expired. Start again from this page.",
   expired_state: "The consent link expired (15 minutes). Please retry.",

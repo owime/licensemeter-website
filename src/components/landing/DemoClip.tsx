@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Maximize2, X } from "lucide-react";
+import { Maximize2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { VideoLightbox } from "./VideoLightbox";
 
 /**
  * A single self-playing product demo clip with the same behavior as the
@@ -64,25 +66,11 @@ export const DemoClip = ({
     };
   }, [reducedMotion]);
 
-  const close = useCallback(() => {
+  const close = () => {
     setExpanded(false);
     const video = videoRef.current;
     if (video && !reducedMotion) void video.play().catch(() => undefined);
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    if (!expanded) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", onKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [expanded, close]);
+  };
 
   const open = () => {
     videoRef.current?.pause();
@@ -123,7 +111,7 @@ export const DemoClip = ({
           >
             {videoElement}
             <span className="bg-ink/70 text-canvas pointer-events-none absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-              <Maximize2 className="size-3.5" />
+              <Maximize2 className="size-3.5" aria-hidden="true" />
               Enlarge
             </span>
           </button>
@@ -136,38 +124,13 @@ export const DemoClip = ({
       )}
 
       {expanded && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={label}
-          onClick={close}
-          className="bg-ink/80 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm sm:p-10"
-        >
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close"
-            className="text-canvas/80 hover:text-canvas absolute top-4 right-4 cursor-pointer p-2"
-          >
-            <X className="size-6" />
-          </button>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-6xl"
-          >
-            <video
-              src={src}
-              poster={poster}
-              muted
-              loop
-              playsInline
-              autoPlay
-              preload="auto"
-              aria-label={label}
-              className="shadow-hero block aspect-video w-full rounded-2xl bg-white"
-            />
-          </div>
-        </div>
+        <VideoLightbox
+          open={expanded}
+          onClose={close}
+          src={src}
+          poster={poster}
+          label={label}
+        />
       )}
     </figure>
   );

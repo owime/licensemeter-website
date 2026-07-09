@@ -14,7 +14,7 @@ export default function NotFound() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-24">
       <Link
         href="/"
-        className="flex items-center gap-2.5 font-display text-lg tracking-tight"
+        className="font-display flex items-center gap-2.5 text-lg tracking-tight"
       >
         <BrandMark size={22} />
         <span>
@@ -22,32 +22,32 @@ export default function NotFound() {
         </span>
       </Link>
 
-      <p className="mt-12 text-xs font-medium tracking-[0.2em] text-brand-text uppercase">
+      <p className="text-brand-text mt-12 text-xs font-medium tracking-[0.2em] uppercase">
         404
       </p>
-      <h1 className="mt-4 font-display text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
         This page does not exist.
       </h1>
-      <p className="mt-4 max-w-md text-lg leading-relaxed text-ink-soft">
+      <p className="text-ink-soft mt-4 max-w-md text-lg leading-relaxed">
         The link may be old or mistyped. Here is the way back.
       </p>
 
       <nav className="mt-8 flex flex-col gap-2 text-sm">
         <Link
           href="/"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Home
         </Link>
         <Link
           href="/connectors"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Connector setup guides
         </Link>
         <Link
           href="/app"
-          className="font-medium text-ink underline underline-offset-4 hover:text-brand-text"
+          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
           Open the dashboard
         </Link>

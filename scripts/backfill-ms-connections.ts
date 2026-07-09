@@ -40,7 +40,9 @@ const main = async () => {
     const rowCount = (res as { rowCount?: number }).rowCount ?? 1;
     if (rowCount > 0) {
       inserted += rowCount;
-      console.log(`  + managed msConnection for tenant ${row.id} (tid ${row.tid})`);
+      console.log(
+        `  + managed msConnection for tenant ${row.id} (tid ${row.tid})`,
+      );
     } else {
       console.log(`  ~ already present, skipped tenant ${row.id}`);
     }

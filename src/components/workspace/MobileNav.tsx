@@ -65,7 +65,9 @@ export const MobileNav = ({
       const active = document.activeElement;
       const inside =
         active instanceof HTMLElement && headerRef.current.contains(active);
-      if (e.shiftKey ? active === first || !inside : active === last || !inside) {
+      if (
+        e.shiftKey ? active === first || !inside : active === last || !inside
+      ) {
         e.preventDefault();
         (e.shiftKey ? last : first).focus();
       }

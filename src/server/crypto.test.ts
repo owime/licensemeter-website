@@ -75,7 +75,10 @@ describe("DATA_ENCRYPTION_KEY rotation", () => {
 
     // After rotation: distinct DATA_ENCRYPTION_KEY. New writes use the new key,
     // but the legacy AUTH_SECRET ciphertext must still decrypt (fallback path).
-    const after = await cryptoWithEnv({ AUTH_SECRET: OLD, DATA_ENCRYPTION_KEY: NEW });
+    const after = await cryptoWithEnv({
+      AUTH_SECRET: OLD,
+      DATA_ENCRYPTION_KEY: NEW,
+    });
     expect(after.decryptSecret(legacyEnc, aad)).toBe("rotate-me");
 
     const newEnc = after.encryptSecret("new-write", aad);

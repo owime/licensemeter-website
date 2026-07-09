@@ -48,10 +48,10 @@ export default function TermsPage() {
           LicenseMeter (the &ldquo;Service&rdquo;) by companies and other
           organizations (the &ldquo;Customer&rdquo;). The provider and
           contracting party is UgurLabs UG (haftungsbeschränkt), Fährstraße 217,
-          40221 Düsseldorf, Germany, represented by its Managing
-          Director Ugur Koc (the &ldquo;Provider&rdquo;). The Service is
-          directed exclusively at businesses within the meaning of Section 14 of
-          the German Civil Code (BGB), not at consumers.
+          40221 Düsseldorf, Germany, represented by its Managing Director Ugur
+          Koc (the &ldquo;Provider&rdquo;). The Service is directed exclusively
+          at businesses within the meaning of Section 14 of the German Civil
+          Code (BGB), not at consumers.
         </p>
       </Section>
 
@@ -95,13 +95,16 @@ export default function TermsPage() {
           When the Customer connects its tenant or further source systems, the
           Provider processes the data retrieved solely on the instructions and
           on behalf of the Customer (Art. 28 GDPR). A{" "}
-          <a href="/dpa" className="hover:text-ink underline underline-offset-4">
+          <a
+            href="/dpa"
+            className="hover:text-ink underline underline-offset-4"
+          >
             data processing agreement (DPA)
           </a>{" "}
           is provided before production use and, in the event of a conflict
-          regarding data processing, prevails over these Terms.
-          Mailbox, file or message content is not read; access is technically
-          limited to read-only permissions.
+          regarding data processing, prevails over these Terms. Mailbox, file or
+          message content is not read; access is technically limited to
+          read-only permissions.
         </p>
       </Section>
 
@@ -166,10 +169,10 @@ export default function TermsPage() {
           The usage relationship runs for an indefinite period. The Customer may
           end it at any time by disconnecting the workspace; on disconnect, all
           synchronized data is deleted immediately and in full (see Privacy
-          Policy). A paid subscription can be cancelled at any time and then runs
-          until the end of the current billing period; it is managed through the
-          billing portal. The right to extraordinary termination for good cause
-          remains unaffected for both parties.
+          Policy). A paid subscription can be cancelled at any time and then
+          runs until the end of the current billing period; it is managed
+          through the billing portal. The right to extraordinary termination for
+          good cause remains unaffected for both parties.
         </p>
       </Section>
 

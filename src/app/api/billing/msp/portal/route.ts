@@ -57,7 +57,9 @@ export const POST = async (req: Request) => {
     session = await stripe().billingPortal.sessions.create(params);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe msp portal: session create failed for account ${account.id}: ${msg}`);
+    console.error(
+      `stripe msp portal: session create failed for account ${account.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe msp portal: session create failed for account ${account.id}: ${msg}`,
       { key: `stripe-msp-portal:${account.id}`, cooldownMs: 3_600_000 },

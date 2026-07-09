@@ -8,7 +8,12 @@ import { audit } from "~/server/audit";
 import { isSameOrigin } from "~/server/auth/origin";
 import { entitlementOf } from "~/server/entitlement";
 import { notifyOps } from "~/server/ops";
-import { getOrCreateCustomer, knownSeats, priceIdFor, stripe } from "~/server/stripe";
+import {
+  getOrCreateCustomer,
+  knownSeats,
+  priceIdFor,
+  stripe,
+} from "~/server/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,12 +39,15 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const ctx = await apiAccess("owner");
-  if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!ctx)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (ctx.tenant.isDemo) {
     return NextResponse.json({ error: "demo" }, { status: 400 });
   }
 
-  const body = (await req.json().catch(() => null)) as { plan?: unknown } | null;
+  const body = (await req.json().catch(() => null)) as {
+    plan?: unknown;
+  } | null;
   const parsed = parsePlanString(
     typeof body?.plan === "string" ? body.plan : null,
   );
@@ -67,7 +75,9 @@ export const POST = async (req: NextRequest) => {
     customerId = await getOrCreateCustomer(ctx.tenant, ctx.membership.email);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe checkout: customer setup failed for tenant ${ctx.tenant.id}: ${msg}`);
+    console.error(
+      `stripe checkout: customer setup failed for tenant ${ctx.tenant.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe checkout: customer setup failed for tenant ${ctx.tenant.id}: ${msg}`,
       { key: `stripe-checkout:${ctx.tenant.id}`, cooldownMs: 3_600_000 },
@@ -138,7 +148,9 @@ export const POST = async (req: NextRequest) => {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`stripe checkout: session create failed for tenant ${ctx.tenant.id}: ${msg}`);
+    console.error(
+      `stripe checkout: session create failed for tenant ${ctx.tenant.id}: ${msg}`,
+    );
     void notifyOps(
       `stripe checkout: session create failed for tenant ${ctx.tenant.id}: ${msg}`,
       { key: `stripe-checkout:${ctx.tenant.id}`, cooldownMs: 3_600_000 },

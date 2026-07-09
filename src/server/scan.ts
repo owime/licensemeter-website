@@ -71,7 +71,9 @@ export const resolveScanTenant = async (
     if (existing.consentedAt) {
       return {
         ok: false,
-        error: membership ? "scan_already_synced" : "scan_already_synced_invite",
+        error: membership
+          ? "scan_already_synced"
+          : "scan_already_synced_invite",
       };
     }
     if (!membership) return { ok: false, error: "scan_trial_invite" };

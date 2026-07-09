@@ -14,8 +14,16 @@ import { connectAdobe, disconnectAdobe } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
 
 const FIELDS = [
-  { name: "orgId", label: "Organization ID", placeholder: "1234ABCD…@AdobeOrg" },
-  { name: "clientId", label: "Client ID (API key)", placeholder: "a1b2c3d4e5f6…" },
+  {
+    name: "orgId",
+    label: "Organization ID",
+    placeholder: "1234ABCD…@AdobeOrg",
+  },
+  {
+    name: "clientId",
+    label: "Client ID (API key)",
+    placeholder: "a1b2c3d4e5f6…",
+  },
   { name: "clientSecret", label: "Client secret", placeholder: "p8e-AbCdEf…" },
 ] as const;
 
@@ -49,7 +57,7 @@ export const AdobeConnectForm = () => {
     >
       {FIELDS.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
-          <span className="text-xs text-ink-faint">{f.label}</span>
+          <span className="text-ink-faint text-xs">{f.label}</span>
           <input
             name={f.name}
             required
@@ -59,7 +67,7 @@ export const AdobeConnectForm = () => {
             spellCheck={false}
             autoCapitalize="none"
             autoCorrect="off"
-            className="border border-line bg-card px-3 py-2 text-sm focus:border-ink"
+            className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
           />
         </label>
       ))}
@@ -72,7 +80,7 @@ export const AdobeConnectForm = () => {
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="text-xs text-danger-text focus:outline-none"
+          className="text-danger-text text-xs focus:outline-none"
         >
           {error?.message}
         </span>
@@ -121,13 +129,17 @@ export const AdobeDisconnectButton = () => {
       className="flex flex-col items-end gap-1"
     >
       <Button disabled={pending} onBlur={() => setArmed(false)}>
-        {pending ? "Removing…" : armed ? "Confirm disconnect" : "Disconnect Adobe"}
+        {pending
+          ? "Removing…"
+          : armed
+            ? "Confirm disconnect"
+            : "Disconnect Adobe"}
       </Button>
       <span
         role="status"
         aria-live="polite"
         className={
-          message ? "max-w-64 text-right text-xs text-danger-text" : "sr-only"
+          message ? "text-danger-text max-w-64 text-right text-xs" : "sr-only"
         }
       >
         {message}

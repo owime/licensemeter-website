@@ -54,6 +54,7 @@ export default async function OverviewPage() {
         {ctx.membership.welcomeTourAt === null && (
           <Tour
             phase="welcome"
+            storageId={ctx.membership.id}
             steps={welcomeTourSteps}
             finalButtonLabel="Got it"
           />
@@ -73,48 +74,55 @@ export default async function OverviewPage() {
     inArray(findings.status, ["open", "acknowledged"]),
   );
 
-  const [skus, prices, topFindings, ruleAgg, lastRun, importedUser, historyDesc] =
-    await Promise.all([
-      db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
-      db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
-      // Only the rows the dashboard actually renders ("Largest open findings").
-      // Headline figures come from the grouped aggregate below, so a large
-      // tenant never streams every finding row into the page.
-      db.query.findings.findMany({
-        where: openFindingsWhere,
-        orderBy: desc(findings.monthlyImpactCents),
-        limit: 6,
-      }),
-      // Per-rule count + impact, summed in Postgres. Drives the metric cards
-      // and every breakdown table without loading individual finding rows.
-      db
-        .select({
-          rule: findings.rule,
-          count: sql<number>`count(*)::int`,
-          cents: sql<number>`coalesce(sum(${findings.monthlyImpactCents}), 0)::int`,
+  const [
+    skus,
+    prices,
+    topFindings,
+    ruleAgg,
+    lastRun,
+    importedUser,
+    historyDesc,
+  ] = await Promise.all([
+    db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
+    db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
+    // Only the rows the dashboard actually renders ("Largest open findings").
+    // Headline figures come from the grouped aggregate below, so a large
+    // tenant never streams every finding row into the page.
+    db.query.findings.findMany({
+      where: openFindingsWhere,
+      orderBy: desc(findings.monthlyImpactCents),
+      limit: 6,
+    }),
+    // Per-rule count + impact, summed in Postgres. Drives the metric cards
+    // and every breakdown table without loading individual finding rows.
+    db
+      .select({
+        rule: findings.rule,
+        count: sql<number>`count(*)::int`,
+        cents: sql<number>`coalesce(sum(${findings.monthlyImpactCents}), 0)::int`,
+      })
+      .from(findings)
+      .where(openFindingsWhere)
+      .groupBy(findings.rule),
+    db.query.syncRuns.findFirst({
+      where: eq(syncRuns.tenantId, tenantId),
+      orderBy: desc(syncRuns.startedAt),
+    }),
+    isTrial
+      ? db.query.tenantUsers.findFirst({
+          where: eq(tenantUsers.tenantId, tenantId),
+          orderBy: desc(tenantUsers.syncedAt),
         })
-        .from(findings)
-        .where(openFindingsWhere)
-        .groupBy(findings.rule),
-      db.query.syncRuns.findFirst({
-        where: eq(syncRuns.tenantId, tenantId),
-        orderBy: desc(syncRuns.startedAt),
-      }),
-      isTrial
-        ? db.query.tenantUsers.findFirst({
-            where: eq(tenantUsers.tenantId, tenantId),
-            orderBy: desc(tenantUsers.syncedAt),
-          })
-        : Promise.resolve(undefined),
-      // Newest 90 days, reversed below into ascending order for the chart.
-      // Ascending with a limit would pin the window to the oldest days ever
-      // collected.
-      db.query.snapshots.findMany({
-        where: eq(snapshots.tenantId, tenantId),
-        orderBy: desc(snapshots.day),
-        limit: 90,
-      }),
-    ]);
+      : Promise.resolve(undefined),
+    // Newest 90 days, reversed below into ascending order for the chart.
+    // Ascending with a limit would pin the window to the oldest days ever
+    // collected.
+    db.query.snapshots.findMany({
+      where: eq(snapshots.tenantId, tenantId),
+      orderBy: desc(snapshots.day),
+      limit: 90,
+    }),
+  ]);
 
   const history = [...historyDesc].reverse();
 
@@ -259,7 +267,7 @@ export default async function OverviewPage() {
           Estimated at list prices.{" "}
           <Link
             href="/app/licenses"
-            className="underline underline-offset-4 hover:text-ink"
+            className="hover:text-ink underline underline-offset-4"
           >
             Set your actual prices
           </Link>
@@ -291,8 +299,7 @@ export default async function OverviewPage() {
       detail: {
         formula:
           "Monthly waste × 12 months. A projection of what the open findings cost over a year if nothing is reclaimed.",
-        source:
-          "Same findings as monthly waste, each multiplied by twelve.",
+        source: "Same findings as monthly waste, each multiplied by twelve.",
         columns: ["Rule", "Impact / yr"],
         rows: annualRows,
         totalLabel: "Total annualized waste",
@@ -326,22 +333,27 @@ export default async function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl">
       {ctx.membership.dataTourAt === null && (
-        <Tour phase="data" steps={dataTourSteps} finalButtonLabel="Done" />
+        <Tour
+          phase="data"
+          storageId={ctx.membership.id}
+          steps={dataTourSteps}
+          finalButtonLabel="Done"
+        />
       )}
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight">Overview</h1>
-          <p className="mt-1 text-sm text-ink-soft">
+          <p className="text-ink-soft mt-1 text-sm">
             {lastRun?.status === "running"
               ? "Sync running…"
               : isTrial
                 ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
                 : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
-              <span className="ml-2 text-danger-text">(last sync failed)</span>
+              <span className="text-danger-text ml-2">(last sync failed)</span>
             )}
             {lastRun?.status === "partial" && (
-              <span className="ml-2 text-gold-text">
+              <span className="text-gold-text ml-2">
                 (completed with warnings
                 {degradedSteps > 0
                   ? ` · ${fmtNumber(degradedSteps, currency)} ${
@@ -361,7 +373,9 @@ export default async function OverviewPage() {
               <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
               {/* Trial workspaces (consentedAt null) have no Graph access: a
                   manual sync could only fail. Demo tenants have consentedAt set. */}
-              {hasRole(ctx, "admin") && ctx.tenant.consentedAt && <SyncNowButton />}
+              {hasRole(ctx, "admin") && ctx.tenant.consentedAt && (
+                <SyncNowButton />
+              )}
             </>
           )}
         </div>
@@ -371,10 +385,9 @@ export default async function OverviewPage() {
         <section className="rise rise-2 mt-8">
           <Card title="Trial workspace">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="max-w-2xl text-sm text-ink-soft">
-                Figures come from your last instant scan or CSV upload.
-                Connect the read-only sync for nightly updates, leak alerts
-                and trends.
+              <p className="text-ink-soft max-w-2xl text-sm">
+                Figures come from your last instant scan or CSV upload. Connect
+                the read-only sync for nightly updates, leak alerts and trends.
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonLink variant="primary" href="/app/settings/microsoft">
@@ -393,11 +406,11 @@ export default async function OverviewPage() {
       )}
 
       {renewalDays !== null && renewalDays < 0 && (
-        <p className="rise rise-2 mt-8 text-sm text-ink-faint">
+        <p className="rise rise-2 text-ink-faint mt-8 text-sm">
           Renewal date passed:{" "}
           <Link
             href="/app/settings"
-            className="underline underline-offset-4 hover:text-ink"
+            className="hover:text-ink underline underline-offset-4"
           >
             update it in Settings
           </Link>
@@ -414,10 +427,10 @@ export default async function OverviewPage() {
                     ? "Renewal today"
                     : `Renewal in ${renewalDays} ${renewalDays === 1 ? "day" : "days"}`}
                 </div>
-                <p className="mt-1 text-sm text-ink-soft">
+                <p className="text-ink-soft mt-1 text-sm">
                   {fmtNumber(openCount, currency)} open{" "}
                   {openCount === 1 ? "finding" : "findings"} worth{" "}
-                  <span className="font-medium text-waste-text">
+                  <span className="text-waste-text font-medium">
                     {fmtMoney(monthlyWaste, currency)}/mo
                   </span>
                   . Reclaim these seats before you re-commit.
@@ -455,26 +468,26 @@ export default async function OverviewPage() {
 
       <section className="rise rise-4 mt-10 mb-8">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             Largest open findings
           </h2>
           <Link
             href="/app/findings"
-            className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+            className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
           >
             All findings →
           </Link>
         </div>
-        <ul className="mt-3 border border-line bg-card">
+        <ul className="border-line bg-card mt-3 border">
           {topFindings.map((f) => (
-            <li key={f.id} className="border-b border-line last:border-b-0">
+            <li key={f.id} className="border-line border-b last:border-b-0">
               <Link
                 href={
                   f.graphUserId
                     ? `/app/users/${f.graphUserId}`
                     : `/app/findings?rule=${f.rule}`
                 }
-                className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 hover:bg-canvas"
+                className="group hover:bg-canvas flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <FindingChip rule={f.rule} detail={f.detail} />
@@ -482,7 +495,7 @@ export default async function OverviewPage() {
                     {f.title}
                   </span>
                 </div>
-                <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
+                <span className="tnum text-waste-text shrink-0 font-mono text-sm font-medium">
                   {f.monthlyImpactCents > 0
                     ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
                     : "-"}
@@ -491,7 +504,7 @@ export default async function OverviewPage() {
             </li>
           ))}
           {topFindings.length === 0 && (
-            <li className="px-4 py-8 text-center text-sm text-ink-soft">
+            <li className="text-ink-soft px-4 py-8 text-center text-sm">
               No open findings. Either the tenant is spotless or the first sync
               has not finished yet.
             </li>

@@ -10,7 +10,12 @@ import {
   sendTrialReminder,
 } from "~/server/billingEmail";
 import { db } from "~/server/db";
-import { opsAlerts, snapshots, subscriptions, tenants } from "~/server/db/schema";
+import {
+  opsAlerts,
+  snapshots,
+  subscriptions,
+  tenants,
+} from "~/server/db/schema";
 import { emailEnabled } from "~/server/email";
 import { entitlementOf, type Entitlement } from "~/server/entitlement";
 import { notifyOps } from "~/server/ops";
@@ -101,7 +106,11 @@ export const GET = async (req: NextRequest) => {
       const ok =
         stage === "trial_expired"
           ? await sendTrialExpired(tenant, wasteLine)
-          : await sendTrialReminder(tenant, entitlement.trialDaysLeft, wasteLine);
+          : await sendTrialReminder(
+              tenant,
+              entitlement.trialDaysLeft,
+              wasteLine,
+            );
 
       if (ok) {
         // Record the dedup row only after a successful send, so a transient
@@ -130,7 +139,10 @@ export const GET = async (req: NextRequest) => {
         where: eq(subscriptions.tenantId, tenant.id),
         columns: { tier: true, status: true },
       });
-      if (!sub?.tier || (sub.status !== "active" && sub.status !== "trialing")) {
+      if (
+        !sub?.tier ||
+        (sub.status !== "active" && sub.status !== "trialing")
+      ) {
         continue;
       }
       const snap = await db.query.snapshots.findFirst({

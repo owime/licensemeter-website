@@ -104,10 +104,10 @@ export const createMspAccount = async (
 ): Promise<CreateMspResult> => {
   if (!mspEnabled()) return fail("MSP billing is not available");
   const id = await currentIdentity();
-  if (!id) return fail("Sign in with your own account to create an MSP account");
+  if (!id)
+    return fail("Sign in with your own account to create an MSP account");
 
-  const raw =
-    typeof input === "string" ? input : (input.get("name") ?? "");
+  const raw = typeof input === "string" ? input : (input.get("name") ?? "");
   const name = typeof raw === "string" ? raw.trim() : "";
   if (name.length > 120) return fail("Name is too long");
 
@@ -230,7 +230,9 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
   const findingsByTenant = new Map(findingCounts.map((c) => [c.tenantId, c.n]));
   // Purchased seats come from the same snapshot, so the attach guardrail and the
   // table read one number without an extra per-row query.
-  const seatByTenant = new Map(snaps.map((s) => [s.tenantId, s.purchasedSeats]));
+  const seatByTenant = new Map(
+    snaps.map((s) => [s.tenantId, s.purchasedSeats]),
+  );
 
   return owned
     .map((r) => {
@@ -254,7 +256,9 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
           : null,
       };
     })
-    .sort((a, b) => (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1));
+    .sort(
+      (a, b) => (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1),
+    );
 };
 
 /** Stripe statuses we treat as a tenant's own LIVE subscription to cancel on attach. */
@@ -272,7 +276,11 @@ const LIVE_TENANT_SUB: ReadonlySet<SubscriptionStatus> = new Set([
 const gateOwnerOfTenant = async (
   tenantId: string,
 ): Promise<
-  | { ok: true; account: typeof mspAccounts.$inferSelect; tenant: typeof tenants.$inferSelect }
+  | {
+      ok: true;
+      account: typeof mspAccounts.$inferSelect;
+      tenant: typeof tenants.$inferSelect;
+    }
   | { ok: false; result: ActionResult }
 > => {
   // Guard the whole attach/detach pathway when MSP billing is unconfigured: the
@@ -285,7 +293,8 @@ const gateOwnerOfTenant = async (
   if (!id) return { ok: false, result: fail("Not allowed") };
 
   const account = await currentMspAccount();
-  if (!account) return { ok: false, result: fail("You don't have an MSP account") };
+  if (!account)
+    return { ok: false, result: fail("You don't have an MSP account") };
 
   const [membership] = await db
     .select({ tenant: tenants })
@@ -354,7 +363,11 @@ export const attachWorkspace = async (
   // attach a workspace that is still being charged on its own card.
   const own = await db.query.subscriptions.findFirst({
     where: eq(subscriptions.tenantId, tenantId),
-    columns: { stripeSubscriptionId: true, status: true, stripeCustomerId: true },
+    columns: {
+      stripeSubscriptionId: true,
+      status: true,
+      stripeCustomerId: true,
+    },
   });
   if (own && LIVE_TENANT_SUB.has(own.status)) {
     // Defense against a corrupt local row: never cancel a subscription that

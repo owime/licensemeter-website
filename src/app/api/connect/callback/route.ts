@@ -61,7 +61,9 @@ export const GET = async (req: NextRequest) => {
   after(async () => {
     await db
       .delete(consentStates)
-      .where(lt(consentStates.createdAt, new Date(Date.now() - 24 * 60 * 60 * 1000)));
+      .where(
+        lt(consentStates.createdAt, new Date(Date.now() - 24 * 60 * 60 * 1000)),
+      );
   });
 
   // Validate the consent result BEFORE consuming the nonce, so a declined or
@@ -119,7 +121,8 @@ export const GET = async (req: NextRequest) => {
     });
     if (owner && owner.id !== target.id) return fail("tenant_taken");
     // Refuse to silently repoint a workspace already bound to another tenant.
-    if (target.tid && target.tid !== grantedTid) return fail("already_connected");
+    if (target.tid && target.tid !== grantedTid)
+      return fail("already_connected");
 
     await db.transaction(async (tx) => {
       await tx

@@ -118,7 +118,11 @@ export const sendPaymentFailed = async (
     to,
     from: BILLING_FROM,
     subject: `Payment failed — ${name}`,
-    html: paymentFailedHtml({ tenantName: name, invoiceUrl, appUrl: siteUrl() }),
+    html: paymentFailedHtml({
+      tenantName: name,
+      invoiceUrl,
+      appUrl: siteUrl(),
+    }),
   });
 };
 

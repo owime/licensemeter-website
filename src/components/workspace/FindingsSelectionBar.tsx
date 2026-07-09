@@ -96,9 +96,7 @@ export const FindingsBulkForm = ({
                   : (result.error ?? "Something went wrong.")
                 : ""}
             </p>
-            <span className="tnum text-xs text-ink-soft">
-              {count} selected
-            </span>
+            <span className="tnum text-ink-soft text-xs">{count} selected</span>
             {/* The submitter's name/value picks the target status. */}
             <button
               name="status"

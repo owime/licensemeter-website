@@ -4,7 +4,11 @@ import type {
   UsageReportRow,
 } from "~/server/graph/types";
 import { isConcealedUpn } from "~/server/graph/types";
-import { COPILOT_SKU_ID, type WasteInput, type WasteUser } from "~/server/waste/engine";
+import {
+  COPILOT_SKU_ID,
+  type WasteInput,
+  type WasteUser,
+} from "~/server/waste/engine";
 import type { AggregateUsage, WorkloadActivity } from "~/server/types";
 
 const maxDate = (...dates: (Date | null)[]): Date | null =>

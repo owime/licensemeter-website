@@ -91,10 +91,10 @@ export const NavLinks = ({
               aria-current={parentCurrent ? "page" : undefined}
               className={`border-l-2 px-[18px] py-2.5 text-sm transition ${
                 parentCurrent
-                  ? "border-brand bg-sidebar-line/70 font-medium text-canvas"
+                  ? "border-brand bg-sidebar-line/70 text-canvas font-medium"
                   : sectionActive
-                    ? "border-transparent text-canvas"
-                    : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-canvas"
+                    ? "text-canvas border-transparent"
+                    : "text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-transparent"
               }`}
             >
               {item.label}
@@ -110,8 +110,8 @@ export const NavLinks = ({
                     aria-current={current ? "page" : undefined}
                     className={`border-l-2 py-2 pr-4 pl-[34px] text-[13px] transition ${
                       current
-                        ? "border-brand bg-sidebar-line/70 font-medium text-canvas"
-                        : "border-transparent text-sidebar-soft hover:border-sidebar-soft hover:text-canvas"
+                        ? "border-brand bg-sidebar-line/70 text-canvas font-medium"
+                        : "text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-transparent"
                     }`}
                   >
                     {child.label}

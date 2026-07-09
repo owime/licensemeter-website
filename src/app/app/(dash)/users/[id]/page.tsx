@@ -91,7 +91,7 @@ export default async function UserDetailPage({
     <div className="mx-auto max-w-4xl">
       <Link
         href="/app/findings"
-        className="text-xs text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+        className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
       >
         ← Back to findings
       </Link>
@@ -101,7 +101,7 @@ export default async function UserDetailPage({
           <h1 className="font-display text-3xl tracking-tight">
             {user.displayName ?? user.upn}
           </h1>
-          <p className="mt-1 font-mono text-sm break-all text-ink-soft">
+          <p className="text-ink-soft mt-1 font-mono text-sm break-all">
             {user.upn}
           </p>
         </div>
@@ -113,7 +113,7 @@ export default async function UserDetailPage({
         </div>
       </header>
 
-      <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-3">
+      <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-3">
         {[
           {
             label: "Monthly license cost",
@@ -123,10 +123,10 @@ export default async function UserDetailPage({
           { label: "Account created", value: fmtDate(user.createdDateTime) },
         ].map((c) => (
           <div key={c.label} className="bg-card p-5">
-            <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+            <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
               {c.label}
             </div>
-            <div className="tnum mt-2 font-display text-2xl tracking-tight">
+            <div className="tnum font-display mt-2 text-2xl tracking-tight">
               {c.value}
             </div>
           </div>
@@ -134,27 +134,27 @@ export default async function UserDetailPage({
       </section>
 
       <section className="rise rise-3 mt-8">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           Licenses
         </h2>
-        <ul className="mt-3 border border-line bg-card">
+        <ul className="border-line bg-card mt-3 border">
           {user.licenses.map((l) => (
             <li
               key={l.skuId}
-              className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-4 py-3 last:border-b-0"
+              className="border-line flex flex-wrap items-baseline justify-between gap-2 border-b px-4 py-3 last:border-b-0"
             >
               <div>
                 <span className="font-medium">{skuDisplayName(l.skuId)}</span>
                 {l.assignedByGroup && (
                   <span
-                    className="ml-2 text-xs text-ink-faint"
+                    className="text-ink-faint ml-2 text-xs"
                     title={`Assigned via group ${l.assignedByGroup}`}
                   >
                     via group {l.assignedByGroup.slice(0, 8)}…
                   </span>
                 )}
                 {l.disabledPlans.length > 0 && (
-                  <span className="ml-2 text-xs text-gold-text">
+                  <span className="text-gold-text ml-2 text-xs">
                     {l.disabledPlans.length} plans disabled
                   </span>
                 )}
@@ -173,13 +173,13 @@ export default async function UserDetailPage({
       </section>
 
       <section className="rise rise-4 mt-8">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           Activity by workload
         </h2>
-        <dl className="tnum mt-3 grid grid-cols-2 gap-px border border-line bg-line font-mono text-sm sm:grid-cols-5">
+        <dl className="tnum border-line bg-line mt-3 grid grid-cols-2 gap-px border font-mono text-sm sm:grid-cols-5">
           {Object.entries(ACTIVITY_LABELS).map(([key, label]) => (
             <div key={key} className="bg-card p-4">
-              <dt className="font-sans text-xs text-ink-faint">{label}</dt>
+              <dt className="text-ink-faint font-sans text-xs">{label}</dt>
               <dd className="mt-1">
                 {fmtDate(
                   user.workloadActivity?.[
@@ -190,7 +190,7 @@ export default async function UserDetailPage({
             </div>
           ))}
         </dl>
-        <p className="mt-2 text-xs text-ink-faint">
+        <p className="text-ink-faint mt-2 text-xs">
           Last interactive sign-in {fmtDate(user.lastInteractiveSignIn)} ·
           non-interactive {fmtDate(user.lastNonInteractiveSignIn)} · synced{" "}
           {fmtDate(user.syncedAt)}
@@ -198,15 +198,15 @@ export default async function UserDetailPage({
       </section>
 
       <section className="rise rise-5 mt-8 mb-8">
-        <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+        <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           Findings for this user
         </h2>
-        <ul className="mt-3 border border-line bg-card">
+        <ul className="border-line bg-card mt-3 border">
           {userFindings.map((f) => (
-            <li key={f.id} className="border-b border-line last:border-b-0">
+            <li key={f.id} className="border-line border-b last:border-b-0">
               <Link
                 href={`/app/findings?rule=${f.rule}`}
-                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-canvas"
+                className="hover:bg-canvas flex flex-wrap items-center justify-between gap-2 px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <FindingChip rule={f.rule} detail={f.detail} />
@@ -225,7 +225,7 @@ export default async function UserDetailPage({
                     {f.status}
                   </Pill>
                 </div>
-                <span className="tnum shrink-0 font-mono text-sm font-medium text-waste-text">
+                <span className="tnum text-waste-text shrink-0 font-mono text-sm font-medium">
                   {f.monthlyImpactCents > 0
                     ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
                     : "-"}
@@ -235,7 +235,10 @@ export default async function UserDetailPage({
           ))}
           {userFindings.length === 0 && (
             <li>
-              <EmptyState icon={CircleCheck} heading="No findings for this user." />
+              <EmptyState
+                icon={CircleCheck}
+                heading="No findings for this user."
+              />
             </li>
           )}
         </ul>

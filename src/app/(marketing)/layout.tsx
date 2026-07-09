@@ -147,7 +147,7 @@ export default function MarketingLayout({
                   target="_blank"
                   rel="noreferrer"
                   aria-label={social.label}
-                  className="border-line-strong text-ink-soft hover:border-brand hover:text-ink focus-visible:ring-brand focus-visible:ring-offset-card bg-canvas inline-flex h-9 w-9 items-center justify-center rounded-lg border transition focus-visible:ring-2 focus-visible:ring-offset-2"
+                  className="border-line-strong text-ink-soft hover:border-brand hover:text-ink focus-visible:ring-brand focus-visible:ring-offset-card bg-canvas inline-flex size-11 touch-manipulation items-center justify-center rounded-lg border transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
                 >
                   <svg
                     viewBox="0 0 24 24"

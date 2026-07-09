@@ -60,12 +60,30 @@ describe("nextTier", () => {
  */
 describe("parsePlanString", () => {
   it("parses every valid tier:interval token, mapping the interval to the storage form", () => {
-    expect(parsePlanString("starter:monthly")).toEqual({ tier: "starter", interval: "month" });
-    expect(parsePlanString("starter:annual")).toEqual({ tier: "starter", interval: "year" });
-    expect(parsePlanString("growth:monthly")).toEqual({ tier: "growth", interval: "month" });
-    expect(parsePlanString("growth:annual")).toEqual({ tier: "growth", interval: "year" });
-    expect(parsePlanString("scale:monthly")).toEqual({ tier: "scale", interval: "month" });
-    expect(parsePlanString("scale:annual")).toEqual({ tier: "scale", interval: "year" });
+    expect(parsePlanString("starter:monthly")).toEqual({
+      tier: "starter",
+      interval: "month",
+    });
+    expect(parsePlanString("starter:annual")).toEqual({
+      tier: "starter",
+      interval: "year",
+    });
+    expect(parsePlanString("growth:monthly")).toEqual({
+      tier: "growth",
+      interval: "month",
+    });
+    expect(parsePlanString("growth:annual")).toEqual({
+      tier: "growth",
+      interval: "year",
+    });
+    expect(parsePlanString("scale:monthly")).toEqual({
+      tier: "scale",
+      interval: "month",
+    });
+    expect(parsePlanString("scale:annual")).toEqual({
+      tier: "scale",
+      interval: "year",
+    });
   });
 
   it("rejects empty / nullish input", () => {
@@ -102,7 +120,10 @@ describe("parsePlanString", () => {
     // Documents the actual contract: extra ':' segments after the interval are
     // dropped by the 2-element destructure, so a third part does not poison the
     // result. This is safe — the interval is still strictly validated.
-    expect(parsePlanString("growth:monthly:extra")).toEqual({ tier: "growth", interval: "month" });
+    expect(parsePlanString("growth:monthly:extra")).toEqual({
+      tier: "growth",
+      interval: "month",
+    });
     // But junk in the interval slot itself is still rejected.
     expect(parsePlanString("growth:extra:monthly")).toBeNull();
   });

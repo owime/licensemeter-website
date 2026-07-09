@@ -23,9 +23,7 @@ const summary = (result: ImportPricesResult): string => {
   if (result.skipped.length > 0) {
     const shown = result.skipped.slice(0, 8).join(", ");
     const more =
-      result.skipped.length > 8
-        ? ` and ${result.skipped.length - 8} more`
-        : "";
+      result.skipped.length > 8 ? ` and ${result.skipped.length - 8} more` : "";
     parts.push(
       `Skipped ${result.skipped.length} unknown ${plural(result.skipped.length, "key")}: ${shown}${more}.`,
     );
@@ -56,10 +54,10 @@ export const ImportPricesForm = () => {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      <label htmlFor="price-import-csv" className="text-sm text-ink-soft">
+      <label htmlFor="price-import-csv" className="text-ink-soft text-sm">
         One product per line:{" "}
-        <span className="font-mono text-xs">key,monthly price</span>. The key
-        is an M365 SKU id or part number, or a connector key like{" "}
+        <span className="font-mono text-xs">key,monthly price</span>. The key is
+        an M365 SKU id or part number, or a connector key like{" "}
         <span className="font-mono text-xs">adobe:Photoshop</span>. Prices
         accept 14.90 and 14,90; unknown keys are skipped.
       </label>
@@ -73,7 +71,7 @@ export const ImportPricesForm = () => {
         spellCheck={false}
         placeholder={"ENTERPRISEPACK,12.80\nadobe:Photoshop,23,79"}
         defaultValue={result && !result.ok ? result.csv : undefined}
-        className="w-full border border-line bg-card px-3 py-2 font-mono text-sm focus:border-ink"
+        className="border-line bg-card focus:border-ink w-full border px-3 py-2 font-mono text-sm"
       />
       <div>
         <Button variant="primary" disabled={pending}>

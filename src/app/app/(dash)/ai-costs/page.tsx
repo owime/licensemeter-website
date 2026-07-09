@@ -79,12 +79,18 @@ export default async function AiCostsPage() {
   const perProviderCards = providers.flatMap((p) => [
     {
       label: `${CONNECTOR_LABELS[p]} this month`,
-      value: fmtMoney(totalFor(p, (d) => d.startsWith(monthPrefix)), "USD"),
+      value: fmtMoney(
+        totalFor(p, (d) => d.startsWith(monthPrefix)),
+        "USD",
+      ),
       sub: "calendar month, UTC",
     },
     {
       label: `${CONNECTOR_LABELS[p]} last 30 days`,
-      value: fmtMoney(totalFor(p, (d) => d >= cutoff30), "USD"),
+      value: fmtMoney(
+        totalFor(p, (d) => d >= cutoff30),
+        "USD",
+      ),
       sub: "rolling window",
     },
   ]);
@@ -110,7 +116,10 @@ export default async function AiCostsPage() {
           {
             label: "Total AI spend last 30 days",
             value: fmtMoney(
-              providers.reduce((s, p) => s + totalFor(p, (d) => d >= cutoff30), 0),
+              providers.reduce(
+                (s, p) => s + totalFor(p, (d) => d >= cutoff30),
+                0,
+              ),
               "USD",
             ),
             sub: "all providers, rolling window",
@@ -167,17 +176,17 @@ export default async function AiCostsPage() {
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight">AI costs</h1>
-          <p className="mt-1 text-sm text-ink-soft">
+          <p className="text-ink-soft mt-1 text-sm">
             {lastRun?.status === "running"
               ? "Sync running…"
               : isTrial
                 ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
                 : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
-              <span className="ml-2 text-danger-text">(last sync failed)</span>
+              <span className="text-danger-text ml-2">(last sync failed)</span>
             )}
             {lastRun?.status === "partial" && (
-              <span className="ml-2 text-gold-text">
+              <span className="text-gold-text ml-2">
                 (completed with warnings
                 {degradedSteps > 0
                   ? ` · ${degradedSteps} ${degradedSteps === 1 ? "step" : "steps"} degraded`
@@ -194,16 +203,16 @@ export default async function AiCostsPage() {
         <section className="rise rise-2 mt-8">
           <Card title="Connect an AI provider">
             <div className="flex flex-col gap-4">
-              <p className="max-w-2xl text-sm text-ink-soft">
-                Connect OpenAI or Anthropic to see what your organization
-                spends on their APIs: daily totals by model and line item,
-                exactly as billed. The same connector correlates console
-                members against Entra ID, so departed people who still hold
-                live API keys surface as findings.
+              <p className="text-ink-soft max-w-2xl text-sm">
+                Connect OpenAI or Anthropic to see what your organization spends
+                on their APIs: daily totals by model and line item, exactly as
+                billed. The same connector correlates console members against
+                Entra ID, so departed people who still hold live API keys
+                surface as findings.
               </p>
               {isTrial ? (
                 <>
-                  <p className="max-w-2xl text-sm text-ink-soft">
+                  <p className="text-ink-soft max-w-2xl text-sm">
                     Connect your Microsoft 365 tenant first, then add the AI
                     connectors.
                   </p>
@@ -214,18 +223,18 @@ export default async function AiCostsPage() {
                   </div>
                 </>
               ) : !isAdmin ? (
-                <p className="max-w-2xl text-sm text-ink-soft">
+                <p className="text-ink-soft max-w-2xl text-sm">
                   Connecting needs an admin. Ask a workspace admin to connect{" "}
                   <Link
                     href="/app/settings/openai"
-                    className="underline underline-offset-4 hover:text-ink"
+                    className="hover:text-ink underline underline-offset-4"
                   >
                     OpenAI
                   </Link>{" "}
                   or{" "}
                   <Link
                     href="/app/settings/anthropic"
-                    className="underline underline-offset-4 hover:text-ink"
+                    className="hover:text-ink underline underline-offset-4"
                   >
                     Anthropic
                   </Link>
@@ -248,7 +257,7 @@ export default async function AiCostsPage() {
         <section className="rise rise-2 mt-8">
           <Card title="Connection">
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-ink-soft">
+              <p className="text-ink-soft text-sm">
                 Connected. The first sync brings in each provider&apos;s cost
                 history.
               </p>
@@ -256,15 +265,15 @@ export default async function AiCostsPage() {
                 {aiConns.map((c) => (
                   <li
                     key={c.provider}
-                    className="flex flex-wrap items-center justify-between gap-2 text-ink-soft"
+                    className="text-ink-soft flex flex-wrap items-center justify-between gap-2"
                   >
                     <Link
                       href={`/app/settings/${c.provider}`}
-                      className="font-medium text-ink underline-offset-4 hover:underline"
+                      className="text-ink font-medium underline-offset-4 hover:underline"
                     >
                       {CONNECTOR_LABELS[c.provider] ?? c.provider}
                     </Link>
-                    <span className="text-xs text-ink-faint">
+                    <span className="text-ink-faint text-xs">
                       {c.lastSyncAt
                         ? `last sync ${fmtDate(c.lastSyncAt)} (${c.lastSyncStatus ?? "pending"})`
                         : "first sync pending"}
@@ -277,16 +286,16 @@ export default async function AiCostsPage() {
         </section>
       ) : (
         <>
-          <section className="rise rise-2 mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+          <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
             {statCards.map((card) => (
               <div key={card.label} className="bg-card p-5">
-                <div className="text-[11px] font-medium tracking-[0.16em] text-ink-faint uppercase">
+                <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
                   {card.label}
                 </div>
-                <div className="tnum mt-2 font-display text-3xl tracking-tight">
+                <div className="tnum font-display mt-2 text-3xl tracking-tight">
                   {card.value}
                 </div>
-                <div className="mt-1 text-xs text-ink-soft">{card.sub}</div>
+                <div className="text-ink-soft mt-1 text-xs">{card.sub}</div>
               </div>
             ))}
           </section>
@@ -294,20 +303,27 @@ export default async function AiCostsPage() {
           <SpendChart series={series} />
 
           <section className="rise rise-4 mt-10">
-            <h2 className="text-xs font-medium tracking-[0.18em] text-ink-faint uppercase">
+            <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
               Top cost categories
             </h2>
             {/* Desktop table */}
-            <div className="mt-3 hidden overflow-x-auto border border-line bg-card md:block">
+            <div className="border-line bg-card mt-3 hidden overflow-x-auto border md:block">
               <table className="w-full text-sm">
                 <caption className="sr-only">
                   Top AI cost categories over the last 30 days, billed in USD.
                 </caption>
                 <thead>
-                  <tr className="border-b border-line text-left text-[11px] tracking-[0.14em] text-ink-faint uppercase">
-                    <th scope="col" className="px-4 py-3 font-medium">Category</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Provider</th>
-                    <th scope="col" className="px-4 py-3 text-right font-medium">
+                  <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
+                    <th scope="col" className="px-4 py-3 font-medium">
+                      Category
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-medium">
+                      Provider
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right font-medium"
+                    >
                       Last 30 days
                     </th>
                   </tr>
@@ -316,10 +332,10 @@ export default async function AiCostsPage() {
                   {topCategories.map((c) => (
                     <tr
                       key={`${c.provider}:${c.category}`}
-                      className="border-b border-line last:border-b-0 hover:bg-canvas"
+                      className="border-line hover:bg-canvas border-b last:border-b-0"
                     >
                       <td className="px-4 py-3 font-medium">{c.category}</td>
-                      <td className="px-4 py-3 text-ink-soft">
+                      <td className="text-ink-soft px-4 py-3">
                         {CONNECTOR_LABELS[c.provider]}
                       </td>
                       <td className="tnum px-4 py-3 text-right font-mono">
@@ -328,9 +344,9 @@ export default async function AiCostsPage() {
                     </tr>
                   ))}
                   {otherCents > 0 && (
-                    <tr className="border-b border-line last:border-b-0 hover:bg-canvas">
-                      <td className="px-4 py-3 text-ink-soft">Other</td>
-                      <td className="px-4 py-3 text-ink-faint">-</td>
+                    <tr className="border-line hover:bg-canvas border-b last:border-b-0">
+                      <td className="text-ink-soft px-4 py-3">Other</td>
+                      <td className="text-ink-faint px-4 py-3">-</td>
                       <td className="tnum px-4 py-3 text-right font-mono">
                         {fmtMoney(otherCents, "USD")}
                       </td>
@@ -340,7 +356,7 @@ export default async function AiCostsPage() {
                     <tr>
                       <td
                         colSpan={3}
-                        className="px-4 py-8 text-center text-ink-soft"
+                        className="text-ink-soft px-4 py-8 text-center"
                       >
                         No spend in the last 30 days.
                       </td>
@@ -355,11 +371,11 @@ export default async function AiCostsPage() {
               {topCategories.map((c) => (
                 <li
                   key={`${c.provider}:${c.category}`}
-                  className="flex items-center justify-between gap-3 border border-line bg-card p-4"
+                  className="border-line bg-card flex items-center justify-between gap-3 border p-4"
                 >
                   <div className="min-w-0">
                     <div className="truncate font-medium">{c.category}</div>
-                    <div className="text-xs text-ink-soft">
+                    <div className="text-ink-soft text-xs">
                       {CONNECTOR_LABELS[c.provider]}
                     </div>
                   </div>
@@ -369,7 +385,7 @@ export default async function AiCostsPage() {
                 </li>
               ))}
               {otherCents > 0 && (
-                <li className="flex items-center justify-between gap-3 border border-line bg-card p-4">
+                <li className="border-line bg-card flex items-center justify-between gap-3 border p-4">
                   <span className="text-ink-soft">Other</span>
                   <span className="tnum shrink-0 font-mono text-sm">
                     {fmtMoney(otherCents, "USD")}
@@ -377,7 +393,7 @@ export default async function AiCostsPage() {
                 </li>
               )}
               {topCategories.length === 0 && (
-                <li className="border border-line bg-card px-4 py-8 text-center text-sm text-ink-soft">
+                <li className="border-line bg-card text-ink-soft border px-4 py-8 text-center text-sm">
                   No spend in the last 30 days.
                 </li>
               )}
@@ -386,9 +402,9 @@ export default async function AiCostsPage() {
         </>
       )}
 
-      <p className="rise rise-4 mt-8 mb-8 text-xs text-ink-faint">
-        Billed by the providers in USD. Shown as billed, never converted to
-        your workspace currency.
+      <p className="rise rise-4 text-ink-faint mt-8 mb-8 text-xs">
+        Billed by the providers in USD. Shown as billed, never converted to your
+        workspace currency.
       </p>
     </div>
   );

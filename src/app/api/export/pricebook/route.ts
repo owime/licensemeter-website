@@ -15,13 +15,18 @@ import { priceBook, tenantSkus } from "~/server/db/schema";
  */
 export const GET = async () => {
   const ctx = await apiAccess("viewer");
-  if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!ctx)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!ctx.entitlement.active)
     return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
 
   const [prices, skus] = await Promise.all([
-    db.query.priceBook.findMany({ where: eq(priceBook.tenantId, ctx.tenant.id) }),
-    db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, ctx.tenant.id) }),
+    db.query.priceBook.findMany({
+      where: eq(priceBook.tenantId, ctx.tenant.id),
+    }),
+    db.query.tenantSkus.findMany({
+      where: eq(tenantSkus.tenantId, ctx.tenant.id),
+    }),
   ]);
   const skuById = new Map(skus.map((s) => [s.skuId, s]));
 
