@@ -18,6 +18,7 @@ jobs:
       WORKOS_API_KEY: sk_ci_only
       WORKOS_CLIENT_ID: client_ci_only
       WORKOS_COOKIE_PASSWORD: ci-only-cookie-password-0123456789abcdef
+      NEXT_PUBLIC_WORKOS_REDIRECT_URI: http://127.0.0.1:3100/auth/callback
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
