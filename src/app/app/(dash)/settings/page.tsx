@@ -9,7 +9,6 @@ import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
 import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle";
 import { ReplayTourButton } from "~/components/workspace/ReplayTourButton";
-import { RenewalDateForm } from "~/components/workspace/RenewalDateForm";
 import { TrialRemindersToggle } from "~/components/workspace/TrialRemindersToggle";
 import { RoleSelect } from "~/components/workspace/RoleSelect";
 import { Card, Pill } from "~/components/ui";
@@ -190,15 +189,14 @@ export default async function SettingsPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-ink-faint">
-                Microsoft agreement renewal date
-              </dt>
+              <dt className="text-ink-faint">Contract renewals</dt>
               <dd className="mt-0.5">
-                {canEdit ? (
-                  <RenewalDateForm initial={ctx.tenant.renewalDate} />
-                ) : (
-                  fmtDate(ctx.tenant.renewalDate)
-                )}
+                <Link
+                  href="/app/renewals"
+                  className="hover:text-ink underline underline-offset-4"
+                >
+                  Manage renewal calendar
+                </Link>
               </dd>
             </div>
             <div>
@@ -433,6 +431,23 @@ export default async function SettingsPage() {
 
         {isAdmin && (
           <Card title="Activity">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-ink-soft text-sm">Recent workspace changes.</p>
+              <div className="flex gap-3 text-xs">
+                <Link
+                  href="/app/settings/activity"
+                  className="hover:text-ink underline"
+                >
+                  Full activity log
+                </Link>
+                <a
+                  href="/api/export/audit"
+                  className="hover:text-ink underline"
+                >
+                  Export CSV
+                </a>
+              </div>
+            </div>
             {activity.length === 0 ? (
               <p className="text-ink-soft text-sm">No activity recorded yet.</p>
             ) : (

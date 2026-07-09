@@ -121,6 +121,13 @@ export type AiSpendRow = {
   amountCents: number;
 };
 
+/** Human workflow layered over an automatically detected finding. */
+export type RemediationStatus =
+  | "unassigned"
+  | "planned"
+  | "requested"
+  | "in_progress";
+
 /** One Adobe Admin Console user as returned by the User Management API. */
 export type AdobeUser = {
   email: string;
@@ -138,6 +145,7 @@ export type AuditAction =
   | "member_removed"
   | "member_role_changed"
   | "finding_status_changed"
+  | "finding_workflow_updated"
   | "sync_triggered"
   | "currency_changed"
   | "adobe_connected"
@@ -156,6 +164,10 @@ export type AuditAction =
   | "seats_imported"
   | "seats_import_cleared"
   | "renewal_date_changed"
+  | "renewal_created"
+  | "renewal_updated"
+  | "renewal_deleted"
+  | "export_audit_log_csv"
   | "leak_alerts_changed"
   | "monthly_report_changed"
   | "tour_done"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { buttonClass } from "~/components/ui";
 import { updatePrice } from "~/server/actions";
@@ -19,17 +19,14 @@ export const PriceEditor = ({
   currency: string;
 }) => {
   const [value, setValue] = useState(initial);
-  const [lastInitial, setLastInitial] = useState(initial);
-  const [state, setState] = useState<"idle" | "saved" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   /* Re-sync if the server-confirmed price changes underneath us (e.g. the
      canonical "14.90" after saving "14.9"), so Save stays disabled. */
-  if (lastInitial !== initial) {
-    setLastInitial(initial);
-    setValue(initial);
-  }
+  useEffect(() => setValue(initial), [initial]);
 
   const dirty = value !== initial;
 
@@ -39,9 +36,19 @@ export const PriceEditor = ({
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
-          const result = await updatePrice(skuId, value);
-          setState(result.ok ? "saved" : "error");
-          if (result.ok) router.refresh();
+          try {
+            const result = await updatePrice(skuId, value);
+            setFailed(!result.ok);
+            setMessage(
+              result.ok
+                ? "Saved"
+                : (result.error ?? "Could not save. Please retry."),
+            );
+            if (result.ok) router.refresh();
+          } catch {
+            setFailed(true);
+            setMessage("Could not save. Please retry.");
+          }
         });
       }}
     >
@@ -50,11 +57,14 @@ export const PriceEditor = ({
         value={value}
         onChange={(e) => {
           setValue(e.target.value);
-          setState("idle");
+          setMessage(null);
+          setFailed(false);
         }}
+        name={`price-${skuId}`}
+        autoComplete="off"
         inputMode="decimal"
         aria-label={`Monthly price for ${name ?? skuId}`}
-        className="tnum border-line bg-card focus:border-ink w-24 border px-2 py-1.5 text-right font-mono text-sm"
+        className="tnum border-line bg-card focus:border-ink min-h-11 w-24 border px-2 py-1.5 text-right font-mono text-sm"
       />
       <button
         disabled={!dirty || pending}
@@ -64,9 +74,9 @@ export const PriceEditor = ({
       </button>
       <span
         aria-live="polite"
-        className={`w-10 text-[11px] ${state === "error" ? "text-danger-text" : "text-moss"}`}
+        className={`max-w-44 text-[11px] ${failed ? "text-danger-text" : "text-moss"}`}
       >
-        {state === "saved" ? "Saved" : state === "error" ? "Invalid" : ""}
+        {message}
       </span>
     </form>
   );

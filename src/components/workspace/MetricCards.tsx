@@ -93,7 +93,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
 
   return (
     <>
-      <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+      <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((card) => (
           <div
             key={card.key}

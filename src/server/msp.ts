@@ -153,6 +153,7 @@ export type PortfolioWorkspace = {
   /** Whether a sync has ever produced a snapshot (distinguishes 0 from "no data"). */
   hasSync: boolean;
   currency: string;
+  currencyRatePpm: number;
   /** Lightweight QBR summary, present only for attached workspaces. */
   summary: {
     spendCents: number;
@@ -247,6 +248,7 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
         seats: seatByTenant.get(t.id) ?? 0,
         hasSync,
         currency: t.currency,
+        currencyRatePpm: t.currencyRatePpm,
         summary: snap
           ? {
               spendCents: snap.spendCents,
@@ -256,9 +258,15 @@ export const mspPortfolio = async (): Promise<PortfolioWorkspace[]> => {
           : null,
       };
     })
-    .sort(
-      (a, b) => (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1),
-    );
+    .sort((a, b) => {
+      const aEur = a.summary
+        ? (a.summary.wasteCents * 1_000_000) / a.currencyRatePpm
+        : -1;
+      const bEur = b.summary
+        ? (b.summary.wasteCents * 1_000_000) / b.currencyRatePpm
+        : -1;
+      return bEur - aEur;
+    });
 };
 
 /** Stripe statuses we treat as a tenant's own LIVE subscription to cancel on attach. */

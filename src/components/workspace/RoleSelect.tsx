@@ -45,11 +45,13 @@ export const RoleSelect = ({
     <div className="flex flex-col items-end">
       <select
         aria-label="Member role"
+        name={`role-${membershipId}`}
+        autoComplete="off"
         title={ROLE_DESCRIPTION[current]}
         value={current}
         disabled={pending}
         onChange={(e) => onChange(e.target.value as MembershipRole)}
-        className="border-line bg-card focus:border-ink border px-2 py-1 text-xs disabled:opacity-50"
+        className="border-line bg-card focus:border-ink min-h-11 border px-2 py-1 text-xs disabled:opacity-50"
       >
         {options.map((r) => (
           <option key={r} value={r}>

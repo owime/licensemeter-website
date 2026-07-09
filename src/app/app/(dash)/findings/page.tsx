@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CopyScriptButton } from "~/components/workspace/CopyScriptButton";
 import { EmptyState } from "~/components/workspace/EmptyState";
 import { FindingChip } from "~/components/workspace/FindingChip";
+import { FindingStatusControl } from "~/components/workspace/FindingStatusControl";
 import {
   CheckboxHitArea,
   FindingsBulkForm,
@@ -15,9 +16,10 @@ import { PaywallCard } from "~/components/workspace/PaywallCard";
 import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
 import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
+import { calculatePriceCoverage } from "~/lib/priceCoverage";
 import { ALL_RULES, isWasteRule, RULE_META } from "~/lib/rules";
 import { hasRole, requireAccess } from "~/server/access";
-import { bulkSetFindingStatus, setFindingStatus } from "~/server/actions";
+import { bulkSetFindingStatus } from "~/server/actions";
 import { db } from "~/server/db";
 import { findings, priceBook } from "~/server/db/schema";
 import type { FindingStatus } from "~/server/types";
@@ -42,33 +44,11 @@ const StatusPill = ({ status }: { status: FindingStatus }) => (
   </Pill>
 );
 
-/**
- * Desktop rows live inside the bulk form, so the per-row action uses
- * formAction (nested forms are invalid HTML); mobile cards get their own form.
- */
-const AckButton = ({
-  finding,
-  standalone = false,
-}: {
-  finding: FindingRow;
-  standalone?: boolean;
-}) => {
-  const toggle = async () => {
-    "use server";
-    await setFindingStatus(
-      finding.id,
-      finding.status === "open" ? "acknowledged" : "open",
-    );
-  };
-  const button = (
-    <button
-      {...(standalone ? {} : { formAction: toggle })}
-      className={buttonClass("micro")}
-    >
-      {finding.status === "open" ? "Acknowledge" : "Reopen"}
-    </button>
-  );
-  return standalone ? <form action={toggle}>{button}</form> : button;
+const workflowLabel: Record<FindingRow["remediationStatus"], string> = {
+  unassigned: "Not planned",
+  planned: "Planned",
+  requested: "Requested",
+  in_progress: "In progress",
 };
 
 export default async function FindingsPage({
@@ -130,14 +110,17 @@ export default async function FindingsPage({
       .then((r) => r[0] ?? { total: 0, impact: 0 }),
     db.query.priceBook.findMany({
       where: eq(priceBook.tenantId, ctx.tenant.id),
-      columns: { source: true },
+      columns: { source: true, monthlyPriceCents: true },
     }),
   ]);
 
-  // Same gate as the Overview nudge: hidden pre-sync (no rows = no figures)
-  // and once any custom price exists.
-  const listPricesOnly =
-    prices.length > 0 && !prices.some((p) => p.source === "custom");
+  const priceCoverage = calculatePriceCoverage(
+    prices.map((price) => ({
+      seats: 1,
+      priceCents: price.monthlyPriceCents,
+      source: price.source,
+    })),
+  );
 
   const totalByRule = new Map<string, { count: number }>();
   for (const r of activeAgg) totalByRule.set(r.rule, { count: r.count });
@@ -403,16 +386,12 @@ export default async function FindingsPage({
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-medium">
-                        {f.graphUserId ? (
-                          <Link
-                            href={`/app/users/${f.graphUserId}`}
-                            className="underline-offset-4 hover:underline"
-                          >
-                            {f.title}
-                          </Link>
-                        ) : (
-                          f.title
-                        )}
+                        <Link
+                          href={`/app/findings/${f.id}`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {f.title}
+                        </Link>
                       </div>
                       {detail.upn && (
                         <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
@@ -429,11 +408,25 @@ export default async function FindingsPage({
                       {fmtDate(f.firstSeenAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusPill status={f.status} />
+                      <div className="flex flex-col items-start gap-1.5">
+                        <StatusPill status={f.status} />
+                        {f.remediationStatus !== "unassigned" && (
+                          <Pill tone="outline">
+                            {workflowLabel[f.remediationStatus]}
+                          </Pill>
+                        )}
+                      </div>
                     </td>
                     {canAct && !showResolved && (
                       <td className="px-4 py-3 text-right">
-                        <AckButton finding={f} />
+                        <FindingStatusControl
+                          findingId={f.id}
+                          initial={
+                            f.status === "acknowledged"
+                              ? "acknowledged"
+                              : "open"
+                          }
+                        />
                       </td>
                     )}
                   </tr>
@@ -485,16 +478,12 @@ export default async function FindingsPage({
                   <StatusPill status={f.status} />
                 </div>
                 <div className="mt-2 text-sm font-medium">
-                  {f.graphUserId ? (
-                    <Link
-                      href={`/app/users/${f.graphUserId}`}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {f.title}
-                    </Link>
-                  ) : (
-                    f.title
-                  )}
+                  <Link
+                    href={`/app/findings/${f.id}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {f.title}
+                  </Link>
                 </div>
                 {detail.upn && (
                   <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
@@ -513,7 +502,12 @@ export default async function FindingsPage({
                 </div>
                 {canAct && !showResolved && (
                   <div className="border-line mt-3 border-t pt-3">
-                    <AckButton finding={f} />
+                    <FindingStatusControl
+                      findingId={f.id}
+                      initial={
+                        f.status === "acknowledged" ? "acknowledged" : "open"
+                      }
+                    />
                   </div>
                 )}
               </li>
@@ -553,9 +547,9 @@ export default async function FindingsPage({
         </nav>
       )}
 
-      {listPricesOnly && (
+      {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
         <section className="rise rise-3 mb-8">
-          <PriceAccuracyCard />
+          <PriceAccuracyCard coverage={priceCoverage} />
         </section>
       )}
     </div>

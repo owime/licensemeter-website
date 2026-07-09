@@ -1,3 +1,5 @@
+import { convertEurCents } from "~/lib/currency";
+
 /**
  * Static catalog of common Microsoft SKUs: GUID -> friendly name + approximate
  * EUR list price. GUIDs are from Microsoft's published "Product names and
@@ -169,5 +171,11 @@ export const skuDisplayName = (
   return skuId;
 };
 
-export const skuDefaultPriceCents = (skuId: string): number =>
-  SKU_CATALOG[skuId]?.defaultMonthlyPriceCents ?? 0;
+export const skuDefaultPriceCents = (
+  skuId: string,
+  currencyRatePpm = 1_000_000,
+): number =>
+  convertEurCents(
+    SKU_CATALOG[skuId]?.defaultMonthlyPriceCents ?? 0,
+    currencyRatePpm,
+  );

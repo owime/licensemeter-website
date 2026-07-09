@@ -15,6 +15,13 @@ const CURRENCY_LOCALE: Record<string, string> = {
   USD: "en-US",
   GBP: "en-GB",
   CHF: "de-CH",
+  CAD: "en-CA",
+  AUD: "en-AU",
+  DKK: "da-DK",
+  NOK: "nb-NO",
+  SEK: "sv-SE",
+  PLN: "pl-PL",
+  CZK: "cs-CZ",
 };
 
 export const fmtMoney = (cents: number, currency: string): string =>

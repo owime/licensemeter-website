@@ -1,57 +1,100 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
+import { CURRENCY_LABELS, SUPPORTED_CURRENCIES } from "~/lib/currency";
 import { setCurrency } from "~/server/actions";
 
 export const CurrencySelect = ({ value }: { value: string }) => {
   const [pending, startTransition] = useTransition();
-  const [current, setCurrent] = useState(value);
-  const [lastValue, setLastValue] = useState(value);
-  const inFlight = useRef(false);
+  const [selected, setSelected] = useState(value);
+  const [message, setMessage] = useState("");
+  const [failed, setFailed] = useState(false);
   const router = useRouter();
 
-  /* Re-sync if the server-confirmed currency changes underneath us. */
-  if (lastValue !== value) {
-    setLastValue(value);
-    setCurrent(value);
-  }
+  useEffect(() => setSelected(value), [value]);
+
+  const dirty = selected !== value;
 
   return (
-    <select
-      value={current}
-      aria-busy={pending || undefined}
-      aria-label="Workspace currency"
-      onChange={(e) => {
-        const next = e.target.value;
-        /* One mutation at a time, and none when re-selecting the current
-           currency (arrowing through options fires change per step). */
-        if (inFlight.current || next === current) return;
-        inFlight.current = true;
-        setCurrent(next);
+    <form
+      className="flex max-w-sm flex-col items-start gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!dirty || pending) return;
+        setMessage("");
+        setFailed(false);
         startTransition(async () => {
           try {
-            const result = await setCurrency(next);
+            const result = await setCurrency(selected);
             if (!result.ok) {
-              setCurrent(value);
+              setFailed(true);
+              setMessage(result.error ?? "Currency conversion failed.");
               return;
             }
+            const rate = result.rate?.toLocaleString(undefined, {
+              maximumFractionDigits: 6,
+            });
+            setMessage(
+              rate && result.from && result.to
+                ? `Converted at 1 ${result.from} = ${rate} ${result.to} (${result.asOf}).`
+                : "Currency updated.",
+            );
             router.refresh();
-          } finally {
-            inFlight.current = false;
+          } catch {
+            setFailed(true);
+            setMessage("Currency conversion failed. Please retry.");
           }
         });
       }}
-      className={`border-line bg-card focus:border-ink border px-2 py-1.5 text-sm ${
-        pending ? "opacity-60" : ""
-      }`}
     >
-      {["EUR", "USD", "GBP", "CHF"].map((c) => (
-        <option key={c} value={c}>
-          {c}
-        </option>
-      ))}
-    </select>
+      <div className="flex items-center gap-2">
+        <select
+          value={selected}
+          name="currency"
+          autoComplete="off"
+          disabled={pending}
+          aria-busy={pending || undefined}
+          aria-label="Workspace reporting currency"
+          onChange={(event) => {
+            setSelected(event.target.value);
+            setMessage("");
+            setFailed(false);
+          }}
+          className="border-line bg-card focus:border-ink border px-2 py-1.5 text-sm disabled:opacity-60"
+        >
+          {SUPPORTED_CURRENCIES.map((currency) => (
+            <option key={currency} value={currency}>
+              {CURRENCY_LABELS[currency]}
+            </option>
+          ))}
+        </select>
+        {dirty && (
+          <button
+            type="submit"
+            disabled={pending}
+            className="border-ink bg-ink text-paper hover:bg-ink-soft border px-2.5 py-1.5 text-xs font-medium disabled:opacity-60"
+          >
+            {pending ? "Converting…" : "Convert"}
+          </button>
+        )}
+      </div>
+      <p className="text-ink-faint text-xs leading-relaxed">
+        Changing currency converts prices, findings and trend history using the
+        latest ECB reference rate. Review negotiated prices afterwards.
+      </p>
+      <p
+        role="status"
+        aria-live="polite"
+        className={
+          message
+            ? `text-xs ${failed ? "text-danger-text" : "text-moss"}`
+            : "sr-only"
+        }
+      >
+        {message || "No currency change in progress."}
+      </p>
+    </form>
   );
 };

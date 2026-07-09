@@ -705,7 +705,10 @@ export const runSync = async (
         missing.map((s) => ({
           tenantId,
           skuId: s.skuId,
-          monthlyPriceCents: skuDefaultPriceCents(s.skuId),
+          monthlyPriceCents: skuDefaultPriceCents(
+            s.skuId,
+            tenant.currencyRatePpm,
+          ),
           source: "default" as const,
         })),
       );

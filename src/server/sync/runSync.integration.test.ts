@@ -143,6 +143,14 @@ vi.mock("~/server/stripe", () => ({
     teardownTenantBillingMock(...(args as [])),
 }));
 
+// actions.ts is imported for disconnect coverage; currency conversion itself
+// is outside this suite and its server-only ECB client must not be evaluated.
+vi.mock("~/server/exchangeRates", () => ({
+  fetchEcbReferenceRates: vi.fn(() =>
+    Promise.resolve({ asOf: "2026-07-09", perEur: { EUR: 1 } }),
+  ),
+}));
+
 // Every test injects a fake GraphClient; the MSAL-backed factory must never run.
 vi.mock("~/server/graph/msConnection", () => ({
   msGraphClientForTenant: vi.fn(() => {

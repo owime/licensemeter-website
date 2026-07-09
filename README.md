@@ -9,14 +9,14 @@ puts a monthly price on every wasted seat.
 
 ## What it detects
 
-| Rule | Signal |
-| --- | --- |
-| Disabled account still licensed | `accountEnabled = false` with assigned licenses (offboarding leak) |
-| Licensed but never active | No sign-in or workload activity, 30-day grace after account creation |
-| Inactive for 90+ days | Last activity (sign-ins + Exchange/OneDrive/SharePoint/Teams) older than 90 days |
-| Unassigned paid seats | `prepaidUnits.enabled` minus `consumedUnits` per SKU (shelfware) |
-| Copilot seat unused | Copilot license with no Copilot activity in 60 days |
-| Licensed guest account | `userType = Guest` holding paid licenses |
+| Rule                            | Signal                                                                           |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| Disabled account still licensed | `accountEnabled = false` with assigned licenses (offboarding leak)               |
+| Licensed but never active       | No sign-in or workload activity, 30-day grace after account creation             |
+| Inactive for 90+ days           | Last activity (sign-ins + Exchange/OneDrive/SharePoint/Teams) older than 90 days |
+| Unassigned paid seats           | `prepaidUnits.enabled` minus `consumedUnits` per SKU (shelfware)                 |
+| Copilot seat unused             | Copilot license with no Copilot activity in 60 days                              |
+| Licensed guest account          | `userType = Guest` holding paid licenses                                         |
 
 Every finding carries a monthly cost from an editable per-tenant price book
 (prefilled with list-price estimates, as there is no Microsoft API for tenant
@@ -39,7 +39,8 @@ Detection adapts to what the customer tenant allows:
 - Next.js 15 (App Router) + Tailwind CSS 4, deployable on Vercel
 - MSAL auth-code flow with PKCE for multi-tenant Entra sign-in
   (`/organizations`), jose-signed session cookies
-- Drizzle ORM: Postgres in production, embedded PGlite for local dev/demo
+- Drizzle ORM: direct PostgreSQL connection to Supabase in production (no
+  Supabase browser SDK or Data API), embedded PGlite for local dev/demo
 - MSAL (client credentials) for app-only Graph access per customer tenant
 - Vitest unit tests for the waste engine, signal joining, and CSV parsing
 
@@ -61,8 +62,10 @@ npm run check          # eslint + tsc
 ```
 
 Schema changes deploy with `npm run db:push` (drizzle-kit push), locally and in
-production alike; there is no migrations directory. The `scripts/db-*.sql`
-files are the idempotent RLS/grants scripts run separately against production.
+production alike; there is no migrations directory. Production's
+`DATABASE_URL` points directly to the Supabase-hosted PostgreSQL database. The
+`scripts/db-*.sql` files are the idempotent RLS/grants scripts run separately
+against production; PGlite is never the production data store.
 
 ## Connecting real tenants
 

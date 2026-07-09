@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
 import { Pill } from "~/components/ui";
+import { normalizeCurrencyCents } from "~/lib/currency";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
@@ -98,6 +99,7 @@ export default async function PortfolioPage() {
     return {
       ws,
       currency: tenant?.currency ?? "EUR",
+      currencyRatePpm: tenant?.currencyRatePpm ?? 1_000_000,
       snapshot: snapById.get(ws.id),
       isTrial,
       syncFailed,
@@ -106,19 +108,35 @@ export default async function PortfolioPage() {
     };
   });
 
-  const sorted = rows.sort(
-    (a, b) => (b.snapshot?.wasteCents ?? 0) - (a.snapshot?.wasteCents ?? 0),
+  const reportingCurrency = ctx.tenant.currency;
+  const reportingRatePpm = ctx.tenant.currencyRatePpm;
+  const normalizedRows = rows.map((row) => ({
+    ...row,
+    reportingSpendCents: row.snapshot
+      ? normalizeCurrencyCents(
+          row.snapshot.spendCents,
+          row.currencyRatePpm,
+          reportingRatePpm,
+        )
+      : null,
+    reportingWasteCents: row.snapshot
+      ? normalizeCurrencyCents(
+          row.snapshot.wasteCents,
+          row.currencyRatePpm,
+          reportingRatePpm,
+        )
+      : null,
+  }));
+
+  const sorted = normalizedRows.sort(
+    (a, b) => (b.reportingWasteCents ?? 0) - (a.reportingWasteCents ?? 0),
   );
 
-  // Portfolio totals: finding counts are currency-agnostic; spend/waste only add
-  // up when every workspace with data shares one currency.
   const withSnap = sorted.filter((r) => r.snapshot);
-  const currencies = new Set(withSnap.map((r) => r.currency));
-  const portfolioCurrency = currencies.size === 1 ? [...currencies][0]! : null;
   const totals = withSnap.reduce(
     (acc, r) => ({
-      spendCents: acc.spendCents + (r.snapshot?.spendCents ?? 0),
-      wasteCents: acc.wasteCents + (r.snapshot?.wasteCents ?? 0),
+      spendCents: acc.spendCents + (r.reportingSpendCents ?? 0),
+      wasteCents: acc.wasteCents + (r.reportingWasteCents ?? 0),
     }),
     { spendCents: 0, wasteCents: 0 },
   );
@@ -129,7 +147,9 @@ export default async function PortfolioPage() {
       <header className="rise rise-1">
         <h1 className="font-display text-3xl tracking-tight">Portfolio</h1>
         <p className="text-ink-soft mt-1 text-sm">
-          All {ctx.workspaces.length} workspaces you can open, sorted by waste.
+          All {ctx.workspaces.length} workspaces, normalized to{" "}
+          {reportingCurrency}
+          and sorted by waste.
         </p>
       </header>
 
@@ -138,15 +158,11 @@ export default async function PortfolioPage() {
           {[
             {
               label: "Monthly spend",
-              value: portfolioCurrency
-                ? fmtMoney(totals.spendCents, portfolioCurrency)
-                : "Mixed currencies",
+              value: fmtMoney(totals.spendCents, reportingCurrency),
             },
             {
               label: "Monthly waste",
-              value: portfolioCurrency
-                ? fmtMoney(totals.wasteCents, portfolioCurrency)
-                : "Mixed currencies",
+              value: fmtMoney(totals.wasteCents, reportingCurrency),
               waste: true,
             },
             { label: "Open findings", value: fmtNumber(totalFindings) },
@@ -211,6 +227,8 @@ export default async function PortfolioPage() {
                 syncFailed,
                 syncText,
                 openFindings,
+                reportingSpendCents,
+                reportingWasteCents,
               }) => (
                 <tr
                   key={ws.id}
@@ -235,10 +253,38 @@ export default async function PortfolioPage() {
                     {snapshot ? fmtNumber(snapshot.seats, currency) : "-"}
                   </td>
                   <td className="tnum px-4 py-3 text-right font-mono">
-                    {snapshot ? fmtMoney(snapshot.spendCents, currency) : "-"}
+                    {snapshot ? (
+                      <>
+                        {fmtMoney(snapshot.spendCents, currency)}
+                        {currency !== reportingCurrency && (
+                          <div className="text-ink-faint text-[10px]">
+                            {fmtMoney(
+                              reportingSpendCents ?? 0,
+                              reportingCurrency,
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                   <td className="tnum text-waste-text px-4 py-3 text-right font-mono font-medium">
-                    {snapshot ? fmtMoney(snapshot.wasteCents, currency) : "-"}
+                    {snapshot ? (
+                      <>
+                        {fmtMoney(snapshot.wasteCents, currency)}
+                        {currency !== reportingCurrency && (
+                          <div className="text-ink-faint text-[10px] font-normal">
+                            {fmtMoney(
+                              reportingWasteCents ?? 0,
+                              reportingCurrency,
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                   <td className="tnum px-4 py-3 text-right font-mono">
                     {fmtNumber(openFindings)}
@@ -269,6 +315,8 @@ export default async function PortfolioPage() {
             syncFailed,
             syncText,
             openFindings,
+            reportingSpendCents,
+            reportingWasteCents,
           }) => (
             <li key={ws.id} className="border-line bg-card border p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -301,13 +349,17 @@ export default async function PortfolioPage() {
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
                   <dd>
-                    {snapshot ? fmtMoney(snapshot.spendCents, currency) : "-"}
+                    {snapshot
+                      ? fmtMoney(reportingSpendCents ?? 0, reportingCurrency)
+                      : "-"}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">Waste/mo</dt>
                   <dd className="text-waste-text font-medium">
-                    {snapshot ? fmtMoney(snapshot.wasteCents, currency) : "-"}
+                    {snapshot
+                      ? fmtMoney(reportingWasteCents ?? 0, reportingCurrency)
+                      : "-"}
                   </dd>
                 </div>
                 <div className="col-span-2 flex justify-between gap-2">

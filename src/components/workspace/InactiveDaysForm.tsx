@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { setInactiveDays } from "~/server/actions";
 
@@ -15,21 +15,20 @@ const OPTIONS = [30, 60, 90, 120, 180];
 export const InactiveDaysForm = ({ value }: { value: number }) => {
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(value);
-  const [lastValue, setLastValue] = useState(value);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
   const router = useRouter();
 
   /* Re-sync if the server-confirmed value changes underneath us. */
-  if (lastValue !== value) {
-    setLastValue(value);
-    setCurrent(value);
-  }
+  useEffect(() => setCurrent(value), [value]);
 
   return (
     <div className="flex items-center gap-2">
       <select
         value={String(current)}
+        name="inactiveDays"
+        autoComplete="off"
+        disabled={pending}
         aria-busy={pending || undefined}
         aria-label="Inactivity threshold in days"
         onChange={(e) => {
@@ -54,7 +53,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
             }
           });
         }}
-        className={`border-line bg-card focus:border-ink border px-2 py-1.5 text-sm ${
+        className={`border-line bg-card focus:border-ink min-h-11 border px-2 py-1.5 text-sm ${
           pending ? "opacity-60" : ""
         }`}
       >

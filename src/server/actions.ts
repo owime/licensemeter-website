@@ -27,9 +27,11 @@ import {
   saasConnections,
   saasSeats,
   snapshots,
+  syncRuns,
   tenants,
   tenantSkus,
   tenantUsers,
+  vendorRenewals,
 } from "~/server/db/schema";
 import {
   parsePrices,
@@ -45,6 +47,8 @@ import {
 import { parseMembers } from "~/server/saas/parseMembers";
 import { normalizeSalesforceOrgRef } from "~/server/saas/salesforce";
 import { connectorSpec } from "~/lib/connectors";
+import { isSupportedCurrency } from "~/lib/currency";
+import { rateBetween } from "~/lib/exchangeRates";
 import { workspaceLabel } from "~/lib/format";
 import { encryptSecret, secretAad } from "~/server/crypto";
 import { emailEnabled, inviteHtml, sendEmail } from "~/server/email";
@@ -59,7 +63,8 @@ import { teardownTenantWorkosOrg } from "~/server/auth/workos";
 import { billingEnabled, byoConnectorEnabled, siteUrl } from "~/env";
 import { teardownTenantBilling } from "~/server/stripe";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
-import type { MembershipRole } from "~/server/types";
+import { fetchEcbReferenceRates } from "~/server/exchangeRates";
+import type { MembershipRole, RemediationStatus } from "~/server/types";
 
 export type ActionResult = { ok: boolean; error?: string };
 
@@ -139,6 +144,213 @@ export const bulkSetFindingStatus = async (
     .where(and(inArray(findings.id, ids), eq(findings.tenantId, ctx.tenant.id)))
     .returning({ id: findings.id });
   await audit(ctx, "findings_bulk_updated", { count: updated.length, status });
+  revalidateApp();
+  return ok();
+};
+
+const field = (formData: FormData, name: string, max: number): string => {
+  const value = formData.get(name);
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
+};
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const parseAnnualValue = (raw: string): number | null => {
+  const normalized = raw.replace(",", ".");
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return null;
+  const cents = Math.round(Number(normalized) * 100);
+  return Number.isSafeInteger(cents) && cents >= 0 && cents <= 2_000_000_000
+    ? cents
+    : null;
+};
+
+/** Assign and track a finding without changing its detection lifecycle. */
+export const updateFindingWorkflow = async (
+  findingId: string,
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
+
+  const remediationStatus = field(formData, "remediationStatus", 30);
+  const allowed: RemediationStatus[] = [
+    "unassigned",
+    "planned",
+    "requested",
+    "in_progress",
+  ];
+  if (!allowed.includes(remediationStatus as RemediationStatus)) {
+    return fail("Choose a valid remediation status");
+  }
+  const assigneeMembershipId = field(formData, "assigneeMembershipId", 60);
+  const dueDate = field(formData, "dueDate", 10);
+  const workflowNote = field(formData, "workflowNote", 2_000);
+  const ticketUrl = field(formData, "ticketUrl", 500);
+  if (dueDate && !ISO_DATE.test(dueDate)) return fail("Enter a valid due date");
+  if (ticketUrl) {
+    try {
+      const parsed = new URL(ticketUrl);
+      if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+    } catch {
+      return fail("Enter a complete http:// or https:// ticket URL");
+    }
+  }
+  if (assigneeMembershipId) {
+    const assignee = await db.query.memberships.findFirst({
+      where: and(
+        eq(memberships.id, assigneeMembershipId),
+        eq(memberships.tenantId, ctx.tenant.id),
+      ),
+      columns: { id: true },
+    });
+    if (!assignee) return fail("Choose a member of this workspace");
+  }
+
+  const updated = await db
+    .update(findings)
+    .set({
+      remediationStatus: remediationStatus as RemediationStatus,
+      assigneeMembershipId: assigneeMembershipId || null,
+      dueDate: dueDate || null,
+      workflowNote: workflowNote || null,
+      ticketUrl: ticketUrl || null,
+      remediationRequestedAt:
+        remediationStatus === "requested" ? new Date() : null,
+    })
+    .where(
+      and(eq(findings.id, findingId), eq(findings.tenantId, ctx.tenant.id)),
+    )
+    .returning({ id: findings.id });
+  if (!updated[0]) return fail("Finding not found");
+  await audit(ctx, "finding_workflow_updated", {
+    findingId,
+    remediationStatus,
+    assigneeMembershipId: assigneeMembershipId || null,
+    dueDate: dueDate || null,
+    ticketUrl: ticketUrl || null,
+  });
+  revalidateApp();
+  return ok();
+};
+
+/** Create or update one vendor contract renewal. */
+export const saveVendorRenewal = async (
+  formData: FormData,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
+
+  const id = field(formData, "id", 60);
+  const vendor = field(formData, "vendor", 100);
+  const contractName = field(formData, "contractName", 160);
+  const renewalDate = field(formData, "renewalDate", 10);
+  const noticeDaysRaw = field(formData, "noticeDays", 3);
+  const annualValue = field(formData, "annualValue", 30);
+  const ownerMembershipId = field(formData, "ownerMembershipId", 60);
+  const notes = field(formData, "notes", 2_000);
+  if (!vendor) return fail("Enter a vendor");
+  if (!contractName) return fail("Enter a contract name");
+  if (!ISO_DATE.test(renewalDate)) return fail("Enter a valid renewal date");
+  const noticeDays = Number.parseInt(noticeDaysRaw || "30", 10);
+  if (!Number.isInteger(noticeDays) || noticeDays < 0 || noticeDays > 365) {
+    return fail("Notice period must be between 0 and 365 days");
+  }
+  const annualValueCents = parseAnnualValue(annualValue || "0");
+  if (annualValueCents === null)
+    return fail("Enter an annual value like 12000");
+  if (ownerMembershipId) {
+    const owner = await db.query.memberships.findFirst({
+      where: and(
+        eq(memberships.id, ownerMembershipId),
+        eq(memberships.tenantId, ctx.tenant.id),
+      ),
+      columns: { id: true },
+    });
+    if (!owner) return fail("Choose a member of this workspace");
+  }
+  const values = {
+    vendor,
+    contractName,
+    renewalDate,
+    noticeDays,
+    annualValueCents,
+    ownerMembershipId: ownerMembershipId || null,
+    notes: notes || null,
+    updatedAt: new Date(),
+  };
+  const previous = id
+    ? await db.query.vendorRenewals.findFirst({
+        where: and(
+          eq(vendorRenewals.id, id),
+          eq(vendorRenewals.tenantId, ctx.tenant.id),
+        ),
+        columns: { vendor: true },
+      })
+    : null;
+  if (id) {
+    const changed = await db
+      .update(vendorRenewals)
+      .set(values)
+      .where(
+        and(
+          eq(vendorRenewals.id, id),
+          eq(vendorRenewals.tenantId, ctx.tenant.id),
+        ),
+      )
+      .returning({ id: vendorRenewals.id });
+    if (!changed[0]) return fail("Renewal not found");
+    await audit(ctx, "renewal_updated", { id, vendor, renewalDate });
+  } else {
+    const [created] = await db
+      .insert(vendorRenewals)
+      .values({ tenantId: ctx.tenant.id, ...values })
+      .returning({ id: vendorRenewals.id });
+    await audit(ctx, "renewal_created", {
+      id: created?.id,
+      vendor,
+      renewalDate,
+    });
+  }
+  if (vendor.toLowerCase() === "microsoft 365") {
+    await db
+      .update(tenants)
+      .set({ renewalDate })
+      .where(eq(tenants.id, ctx.tenant.id));
+  } else if (previous?.vendor.toLowerCase() === "microsoft 365") {
+    await db
+      .update(tenants)
+      .set({ renewalDate: null })
+      .where(eq(tenants.id, ctx.tenant.id));
+  }
+  revalidateApp();
+  return ok();
+};
+
+export const deleteVendorRenewal = async (
+  id: string,
+): Promise<ActionResult> => {
+  const ctx = await apiAccess("admin");
+  if (!ctx) return fail("Not allowed");
+  if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
+  const [deleted] = await db
+    .delete(vendorRenewals)
+    .where(
+      and(
+        eq(vendorRenewals.id, id),
+        eq(vendorRenewals.tenantId, ctx.tenant.id),
+      ),
+    )
+    .returning({ id: vendorRenewals.id, vendor: vendorRenewals.vendor });
+  if (!deleted) return fail("Renewal not found");
+  if (deleted.vendor.toLowerCase() === "microsoft 365") {
+    await db
+      .update(tenants)
+      .set({ renewalDate: null })
+      .where(eq(tenants.id, ctx.tenant.id));
+  }
+  await audit(ctx, "renewal_deleted", { id, vendor: deleted.vendor });
   revalidateApp();
   return ok();
 };
@@ -643,20 +855,106 @@ export const resetTour = async (): Promise<ActionResult> => {
   return ok();
 };
 
-export const setCurrency = async (currency: string): Promise<ActionResult> => {
+export type CurrencyChangeResult = ActionResult & {
+  rate?: number;
+  asOf?: string;
+  from?: string;
+  to?: string;
+};
+
+/**
+ * Change the workspace reporting currency without relabelling the same raw
+ * numbers. Prices, current findings and trend history are converted together
+ * at the latest ECB reference rate; runAnalysis then rebuilds derived values.
+ */
+export const setCurrency = async (
+  currency: string,
+): Promise<CurrencyChangeResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
   if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
-  if (!["EUR", "USD", "GBP", "CHF"].includes(currency)) {
+  if (!isSupportedCurrency(currency)) {
     return fail("Unsupported currency");
   }
-  await db
-    .update(tenants)
-    .set({ currency })
-    .where(eq(tenants.id, ctx.tenant.id));
-  await audit(ctx, "currency_changed", { currency });
+  if (!isSupportedCurrency(ctx.tenant.currency)) {
+    return fail("The current workspace currency is unsupported");
+  }
+  if (currency === ctx.tenant.currency) return ok();
+
+  const running = await db.query.syncRuns.findFirst({
+    where: and(
+      eq(syncRuns.tenantId, ctx.tenant.id),
+      eq(syncRuns.status, "running"),
+    ),
+    columns: { id: true },
+  });
+  if (running) return fail("Wait for the current sync to finish, then retry");
+
+  let reference;
+  let rate: number;
+  let targetPerEur: number;
+  try {
+    reference = await fetchEcbReferenceRates();
+    rate = rateBetween(reference, ctx.tenant.currency, currency);
+    targetPerEur = rateBetween(reference, "EUR", currency);
+  } catch (error) {
+    console.error("currency change: ECB reference rates unavailable", error);
+    return fail("Exchange rates are temporarily unavailable. Please retry.");
+  }
+
+  const from = ctx.tenant.currency;
+
+  try {
+    await db.transaction(async (tx) => {
+      const convertedPrice = sql<number>`round(${priceBook.monthlyPriceCents}::numeric * ${rate})::integer`;
+      const convertedImpact = sql<number>`round(${findings.monthlyImpactCents}::numeric * ${rate})::integer`;
+      const convertedSpend = sql<number>`round(${snapshots.totalMonthlySpendCents}::numeric * ${rate})::integer`;
+      const convertedWaste = sql<number>`round(${snapshots.totalMonthlyWasteCents}::numeric * ${rate})::integer`;
+
+      await tx
+        .update(priceBook)
+        .set({ monthlyPriceCents: convertedPrice, updatedAt: new Date() })
+        .where(eq(priceBook.tenantId, ctx.tenant.id));
+      await tx
+        .update(findings)
+        .set({ monthlyImpactCents: convertedImpact })
+        .where(eq(findings.tenantId, ctx.tenant.id));
+      await tx
+        .update(snapshots)
+        .set({
+          totalMonthlySpendCents: convertedSpend,
+          totalMonthlyWasteCents: convertedWaste,
+        })
+        .where(eq(snapshots.tenantId, ctx.tenant.id));
+      await tx
+        .update(tenants)
+        .set({
+          currency,
+          currencyRatePpm: Math.round(targetPerEur * 1_000_000),
+        })
+        .where(eq(tenants.id, ctx.tenant.id));
+    });
+  } catch (error) {
+    console.error("currency change: conversion failed", error);
+    return fail("Currency conversion failed. No values were changed.");
+  }
+
+  try {
+    await audit(ctx, "currency_changed", {
+      from,
+      to: currency,
+      rate,
+      source: "ECB",
+      asOf: reference.asOf,
+    });
+    await runAnalysis(ctx.tenant.id);
+  } catch (error) {
+    // The atomic conversion already left stored and derived amounts internally
+    // consistent. A later price edit or sync will rebuild the same values.
+    console.error("currency change: post-conversion refresh failed", error);
+  }
   revalidateApp();
-  return ok();
+  return { ok: true, rate, asOf: reference.asOf, from, to: currency };
 };
 
 /** Manual sync trigger from the Overview page. */

@@ -5,9 +5,11 @@ import { PackageOpen } from "lucide-react";
 import { ImportPricesForm } from "./ImportPricesForm";
 import { EmptyState } from "~/components/workspace/EmptyState";
 import { PriceEditor } from "~/components/workspace/PriceRow";
-import { ButtonAnchor, ButtonLink, Card, Pill } from "~/components/ui";
+import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
+import { ButtonAnchor, ButtonLink, Pill } from "~/components/ui";
 import { CONNECTORS } from "~/lib/connectors";
 import { fmtMoney, fmtNumber } from "~/lib/format";
+import { calculatePriceCoverage } from "~/lib/priceCoverage";
 import { adobePriceKey } from "~/server/adobe/analyze";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
@@ -35,8 +37,21 @@ const PriceSourcePill = ({ price }: { price: PriceRow | undefined }) => {
   );
 };
 
-export default async function LicensesPage() {
+export default async function LicensesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const ctx = await requireAccess("viewer");
+  const sp = await searchParams;
+  const query =
+    typeof sp.q === "string" ? sp.q.trim().toLowerCase().slice(0, 100) : "";
+  const requestedFilter = typeof sp.pricing === "string" ? sp.pricing : "all";
+  const pricingFilter = ["all", "unpriced", "estimate", "custom"].includes(
+    requestedFilter,
+  )
+    ? requestedFilter
+    : "all";
   const isAdmin = hasRole(ctx, "admin");
   const locked = !ctx.entitlement.active;
   const currency = ctx.tenant.currency;
@@ -67,7 +82,7 @@ export default async function LicensesPage() {
   ]);
   const priceRows = new Map(prices.map((p) => [p.skuId, p]));
 
-  const adobeProducts = [
+  const allAdobeProducts = [
     ...adobeSeats
       .flatMap((u) => u.products)
       .reduce(
@@ -76,7 +91,7 @@ export default async function LicensesPage() {
       ),
   ].sort((a, b) => a[0].localeCompare(b[0]));
   // Unpriced connectors (AI consoles) bill API usage, not seats. No price rows.
-  const saasSections = CONNECTORS.filter((c) => !c.unpriced)
+  const allSaasSections = CONNECTORS.filter((c) => !c.unpriced)
     .map(({ provider, label }) => ({
       provider,
       label,
@@ -97,16 +112,16 @@ export default async function LicensesPage() {
   const realSkus = skus.filter(
     (s) => !isShelfwareExempt(s.skuPartNumber, s.prepaidEnabled),
   );
-  const sorted = [...realSkus].sort((a, b) =>
+  const allSorted = [...realSkus].sort((a, b) =>
     (a.displayName ?? a.skuPartNumber).localeCompare(
       b.displayName ?? b.skuPartNumber,
     ),
   );
 
   // Over-assigned SKUs (assigned > purchased) have no spare seats; clamp to 0.
-  const unassignedOf = (s: (typeof sorted)[number]) =>
+  const unassignedOf = (s: (typeof allSorted)[number]) =>
     Math.max(0, s.prepaidEnabled - s.consumedUnits);
-  const totals = sorted.reduce(
+  const totals = allSorted.reduce(
     (acc, s) => {
       const cents = priceRows.get(s.skuId)?.monthlyPriceCents ?? 0;
       return {
@@ -119,10 +134,75 @@ export default async function LicensesPage() {
     { purchased: 0, assigned: 0, unassigned: 0, spendCents: 0 },
   );
 
-  // Figures still rest on Microsoft list prices until a custom price is saved
-  // (mirrors the Overview "Price accuracy" detection).
-  const listPricesOnly =
-    prices.length > 0 && !prices.some((p) => p.source === "custom");
+  const coverageProducts = [
+    ...allSorted.map((s) => ({
+      seats: s.consumedUnits,
+      priceCents: priceRows.get(s.skuId)?.monthlyPriceCents ?? 0,
+      source: priceRows.get(s.skuId)?.source,
+    })),
+    ...allAdobeProducts.map(([product, count]) => ({
+      seats: count,
+      priceCents: priceRows.get(adobePriceKey(product))?.monthlyPriceCents ?? 0,
+      source: priceRows.get(adobePriceKey(product))?.source,
+    })),
+    ...allSaasSections.flatMap(({ provider, products }) =>
+      products.map(([product, count]) => ({
+        seats: count,
+        priceCents:
+          priceRows.get(saasPriceKey(provider, product))?.monthlyPriceCents ??
+          0,
+        source: priceRows.get(saasPriceKey(provider, product))?.source,
+      })),
+    ),
+  ];
+  const priceCoverage = calculatePriceCoverage(coverageProducts);
+  const matchesPrice = (price: PriceRow | undefined) =>
+    pricingFilter === "all" ||
+    (pricingFilter === "unpriced" &&
+      (!price || price.monthlyPriceCents === 0)) ||
+    (pricingFilter === "estimate" &&
+      Boolean(
+        price && price.monthlyPriceCents > 0 && price.source === "default",
+      )) ||
+    (pricingFilter === "custom" &&
+      Boolean(
+        price && price.monthlyPriceCents > 0 && price.source === "custom",
+      ));
+  const matchesQuery = (...values: string[]) =>
+    !query || values.some((value) => value.toLowerCase().includes(query));
+  const sorted = allSorted.filter(
+    (s) =>
+      matchesPrice(priceRows.get(s.skuId)) &&
+      matchesQuery(s.displayName ?? "", s.skuPartNumber, s.skuId),
+  );
+  const adobeProducts = allAdobeProducts.filter(
+    ([product]) =>
+      matchesPrice(priceRows.get(adobePriceKey(product))) &&
+      matchesQuery(product, adobePriceKey(product)),
+  );
+  const saasSections = allSaasSections
+    .map((section) => ({
+      ...section,
+      products: section.products.filter(
+        ([product]) =>
+          matchesPrice(
+            priceRows.get(saasPriceKey(section.provider, product)),
+          ) &&
+          matchesQuery(
+            section.label,
+            product,
+            saasPriceKey(section.provider, product),
+          ),
+      ),
+    }))
+    .filter((section) => section.products.length > 0);
+  const filtersActive = Boolean(query) || pricingFilter !== "all";
+  const tableEmptyHeading = filtersActive
+    ? "No matching Microsoft products."
+    : "No license data yet.";
+  const tableEmptyMessage = filtersActive
+    ? "Try a broader search or a different price status."
+    : emptyMessage;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -144,17 +224,42 @@ export default async function LicensesPage() {
         )}
       </header>
 
-      {listPricesOnly && (
+      {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
         <section className="rise rise-2 mt-6">
-          <Card title="Price accuracy">
-            <p className="text-ink-soft max-w-2xl text-sm">
-              Every figure below still uses Microsoft list-price estimates.
-              Enter what you actually pay per seat to make spend and waste exact
-              — your numbers override the estimates immediately.
-            </p>
-          </Card>
+          <PriceAccuracyCard coverage={priceCoverage} />
         </section>
       )}
+
+      <form className="rise rise-2 border-line bg-card mt-6 flex flex-col gap-3 border p-4 sm:flex-row sm:items-end">
+        <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-medium">
+          Search products
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            autoComplete="off"
+            placeholder="Product, SKU or connector…"
+            className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-medium">
+          Price status
+          <select
+            name="pricing"
+            defaultValue={pricingFilter}
+            autoComplete="off"
+            className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
+          >
+            <option value="all">All products</option>
+            <option value="unpriced">Unpriced only</option>
+            <option value="estimate">List estimates only</option>
+            <option value="custom">Contract prices only</option>
+          </select>
+        </label>
+        <button className="border-ink bg-ink text-canvas hover:bg-ink-soft min-h-11 border px-4 py-2 text-sm font-medium">
+          Apply filters
+        </button>
+      </form>
 
       {/* Desktop table */}
       <div className="rise rise-2 border-line bg-card mt-8 mb-8 hidden overflow-x-auto border md:block">
@@ -243,8 +348,8 @@ export default async function LicensesPage() {
             {sorted.length === 0 && (
               <tr>
                 <td colSpan={7}>
-                  <EmptyState icon={PackageOpen} heading="No license data yet.">
-                    {emptyMessage}
+                  <EmptyState icon={PackageOpen} heading={tableEmptyHeading}>
+                    {tableEmptyMessage}
                   </EmptyState>
                 </td>
               </tr>
@@ -347,8 +452,8 @@ export default async function LicensesPage() {
         })}
         {sorted.length === 0 && (
           <li className="border-line bg-card border">
-            <EmptyState icon={PackageOpen} heading="No license data yet.">
-              {emptyMessage}
+            <EmptyState icon={PackageOpen} heading={tableEmptyHeading}>
+              {tableEmptyMessage}
             </EmptyState>
           </li>
         )}

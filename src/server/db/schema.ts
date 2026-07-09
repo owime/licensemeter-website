@@ -19,6 +19,7 @@ import type {
   AuditAction,
   FindingStatus,
   MembershipRole,
+  RemediationStatus,
   PlanInterval,
   PlanTier,
   SaasProvider,
@@ -125,6 +126,8 @@ export const tenants = pgTable(
     tid: text("tid"),
     name: text("name"),
     currency: text("currency").notNull().default("EUR"),
+    /** EUR catalog-price multiplier for this reporting currency, in parts per million. */
+    currencyRatePpm: integer("currency_rate_ppm").notNull().default(1_000_000),
     /**
      * WorkOS Organization that owns this workspace, when AUTH_PROVIDER=workos.
      * Null for entra-mode tenants. Decouples the workspace identity from the
@@ -219,6 +222,11 @@ export const tenants = pgTable(
     index("tenants_msp_account_idx")
       .on(t.mspAccountId)
       .where(sql`${t.mspAccountId} is not null`),
+    check(
+      "tenants_currency_supported",
+      sql`${t.currency} in ('EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'DKK', 'NOK', 'SEK', 'PLN', 'CZK')`,
+    ),
+    check("tenants_currency_rate_positive", sql`${t.currencyRatePpm} > 0`),
   ],
 );
 
@@ -439,6 +447,20 @@ export const findings = pgTable(
       .default({}),
     monthlyImpactCents: integer("monthly_impact_cents").notNull().default(0),
     status: text("status").$type<FindingStatus>().notNull().default("open"),
+    remediationStatus: text("remediation_status")
+      .$type<RemediationStatus>()
+      .notNull()
+      .default("unassigned"),
+    assigneeMembershipId: uuid("assignee_membership_id").references(
+      () => memberships.id,
+      { onDelete: "set null" },
+    ),
+    dueDate: date("due_date"),
+    workflowNote: text("workflow_note"),
+    ticketUrl: text("ticket_url"),
+    remediationRequestedAt: timestamp("remediation_requested_at", {
+      withTimezone: true,
+    }),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -450,9 +472,57 @@ export const findings = pgTable(
   (t) => [
     uniqueIndex("findings_tenant_dedupe_idx").on(t.tenantId, t.dedupeKey),
     index("findings_tenant_status_idx").on(t.tenantId, t.status),
+    index("findings_tenant_remediation_idx").on(
+      t.tenantId,
+      t.remediationStatus,
+    ),
+    index("findings_assignee_idx").on(t.assigneeMembershipId),
     // Backs the user-detail page, which lists findings for one user.
     index("findings_tenant_user_idx").on(t.tenantId, t.graphUserId),
     check("findings_monthly_impact_nonneg", sql`${t.monthlyImpactCents} >= 0`),
+    check(
+      "findings_remediation_status_check",
+      sql`${t.remediationStatus} in ('unassigned', 'planned', 'requested', 'in_progress')`,
+    ),
+  ],
+);
+
+/** Contract and notice-period calendar across Microsoft and SaaS vendors. */
+export const vendorRenewals = pgTable(
+  "vendor_renewals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    vendor: text("vendor").notNull(),
+    contractName: text("contract_name").notNull(),
+    renewalDate: date("renewal_date").notNull(),
+    noticeDays: integer("notice_days").notNull().default(30),
+    annualValueCents: integer("annual_value_cents").notNull().default(0),
+    ownerMembershipId: uuid("owner_membership_id").references(
+      () => memberships.id,
+      { onDelete: "set null" },
+    ),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("vendor_renewals_tenant_date_idx").on(t.tenantId, t.renewalDate),
+    index("vendor_renewals_owner_idx").on(t.ownerMembershipId),
+    check(
+      "vendor_renewals_notice_days_range",
+      sql`${t.noticeDays} between 0 and 365`,
+    ),
+    check(
+      "vendor_renewals_annual_value_nonneg",
+      sql`${t.annualValueCents} >= 0`,
+    ),
   ],
 );
 

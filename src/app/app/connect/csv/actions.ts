@@ -379,7 +379,10 @@ export const submitCsvTrial = async (
         missing.map((s) => ({
           tenantId,
           skuId: s.skuId,
-          monthlyPriceCents: skuDefaultPriceCents(s.skuId),
+          monthlyPriceCents: skuDefaultPriceCents(
+            s.skuId,
+            existing?.currencyRatePpm,
+          ),
           source: "default" as const,
         })),
       )

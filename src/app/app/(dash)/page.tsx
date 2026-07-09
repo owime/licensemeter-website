@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -20,6 +20,7 @@ import {
   welcomeTourSteps,
 } from "~/components/workspace/tourSteps";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
+import { calculatePriceCoverage } from "~/lib/priceCoverage";
 import { ALL_RULES, RULE_META } from "~/lib/rules";
 import type { WasteRuleId } from "~/server/types";
 import { requireAccess, hasRole } from "~/server/access";
@@ -34,6 +35,7 @@ import {
   syncRuns,
   tenantSkus,
   tenantUsers,
+  vendorRenewals,
 } from "~/server/db/schema";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -82,6 +84,8 @@ export default async function OverviewPage() {
     lastRun,
     importedUser,
     historyDesc,
+    resolvedSavings,
+    upcomingRenewals,
   ] = await Promise.all([
     db.query.tenantSkus.findMany({ where: eq(tenantSkus.tenantId, tenantId) }),
     db.query.priceBook.findMany({ where: eq(priceBook.tenantId, tenantId) }),
@@ -122,6 +126,28 @@ export default async function OverviewPage() {
       orderBy: desc(snapshots.day),
       limit: 90,
     }),
+    db
+      .select({
+        count: sql<number>`count(*)::int`,
+        cents: sql<number>`coalesce(sum(${findings.monthlyImpactCents}), 0)::int`,
+      })
+      .from(findings)
+      .where(
+        and(
+          eq(findings.tenantId, tenantId),
+          eq(findings.status, "resolved"),
+          gte(findings.resolvedAt, new Date(Date.now() - 30 * 86_400_000)),
+        ),
+      )
+      .then((rows) => rows[0] ?? { count: 0, cents: 0 }),
+    db.query.vendorRenewals.findMany({
+      where: and(
+        eq(vendorRenewals.tenantId, tenantId),
+        gte(vendorRenewals.renewalDate, new Date().toISOString().slice(0, 10)),
+      ),
+      orderBy: asc(vendorRenewals.renewalDate),
+      limit: 3,
+    }),
   ]);
 
   const history = [...historyDesc].reverse();
@@ -156,13 +182,34 @@ export default async function OverviewPage() {
     spendCents: s.consumedUnits * (priceBySku.get(s.skuId) ?? 0),
   }));
 
-  // The price book is already loaded for the spend figures, so list-price
-  // detection costs no extra query. Hidden pre-sync (no rows = no figures).
-  const listPricesOnly =
-    prices.length > 0 && !prices.some((p) => p.source === "custom");
+  const priceRowsBySku = new Map(prices.map((p) => [p.skuId, p]));
+  const priceCoverage = calculatePriceCoverage(
+    realSkus.map((s) => {
+      const price = priceRowsBySku.get(s.skuId);
+      return {
+        seats: s.consumedUnits,
+        priceCents: price?.monthlyPriceCents ?? 0,
+        source: price?.source,
+      };
+    }),
+  );
 
-  // Days until the Microsoft agreement renewal; null when no date is set.
-  const renewalDays = daysUntilDate(ctx.tenant.renewalDate, new Date());
+  const nextRenewal =
+    upcomingRenewals[0] ??
+    (ctx.tenant.renewalDate
+      ? {
+          vendor: "Microsoft 365",
+          contractName: "Microsoft agreement",
+          renewalDate: ctx.tenant.renewalDate,
+          noticeDays: 0,
+        }
+      : null);
+  const renewalDays = daysUntilDate(
+    nextRenewal?.renewalDate ?? null,
+    new Date(),
+  );
+  const noticeDaysUntil =
+    renewalDays === null ? null : renewalDays - (nextRenewal?.noticeDays ?? 0);
   const openCount = ruleAgg.reduce((sum, r) => sum + r.count, 0);
 
   // A partial sync finished but some steps degraded to warnings/failures (e.g.
@@ -231,8 +278,8 @@ export default async function OverviewPage() {
     value: fmtNumber(agg.count, currency),
   }));
 
-  const listPriceFootnote = listPricesOnly
-    ? "Figures use Microsoft list prices. Set your actual prices on the Licenses page for exact numbers."
+  const listPriceFootnote = !priceCoverage.complete
+    ? `${priceCoverage.customProducts} of ${priceCoverage.totalProducts} product prices use contract values; remaining figures are estimates or unpriced.`
     : undefined;
 
   const metricCards: MetricCardData[] = [
@@ -262,7 +309,7 @@ export default async function OverviewPage() {
       value: fmtMoney(monthlyWaste, currency),
       sub: `${wasteShare.toFixed(1)}% of spend`,
       tone: "waste",
-      note: listPricesOnly ? (
+      note: !priceCoverage.complete ? (
         <>
           Estimated at list prices.{" "}
           <Link
@@ -326,6 +373,32 @@ export default async function OverviewPage() {
         totalValue: fmtNumber(openCount, currency),
         emptyText: "No open findings.",
         footnote: `${ruleEntries.length} of ${ALL_RULES.length} rules currently have open findings.`,
+      },
+    },
+    {
+      key: "savings",
+      label: "Verified savings (30d)",
+      value: fmtMoney(resolvedSavings.cents, currency),
+      sub: `${fmtNumber(resolvedSavings.count, currency)} confirmed ${resolvedSavings.count === 1 ? "resolution" : "resolutions"}`,
+      tone: "ink",
+      explainer:
+        "Monthly recurring waste that disappeared after a later sync confirmed the affected license was reclaimed.",
+      detail: {
+        formula:
+          "Monthly impact from findings automatically resolved during the last 30 days.",
+        source:
+          "A later sync must confirm the waste condition no longer exists; acknowledging a finding does not count as savings.",
+        columns: ["Measure", "Value"],
+        rows: [
+          {
+            label: "Annualized recurring savings",
+            sub: `${fmtMoney(resolvedSavings.cents, currency)}/mo × 12`,
+            value: fmtMoney(resolvedSavings.cents * 12, currency),
+          },
+        ],
+        totalLabel: "Verified monthly savings",
+        totalValue: fmtMoney(resolvedSavings.cents, currency),
+        emptyText: "No findings were confirmed resolved in the last 30 days.",
       },
     },
   ];
@@ -409,68 +482,64 @@ export default async function OverviewPage() {
         <p className="rise rise-2 text-ink-faint mt-8 text-sm">
           Renewal date passed:{" "}
           <Link
-            href="/app/settings"
+            href="/app/renewals"
             className="hover:text-ink underline underline-offset-4"
           >
-            update it in Settings
+            update it in Renewals
           </Link>
           .
         </p>
       )}
-      {renewalDays !== null && renewalDays >= 0 && renewalDays <= 90 && (
-        <section className="rise rise-2 mt-8">
-          <Card title="Renewal window">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <div className="font-display text-2xl tracking-tight">
-                  {renewalDays === 0
-                    ? "Renewal today"
-                    : `Renewal in ${renewalDays} ${renewalDays === 1 ? "day" : "days"}`}
+      {renewalDays !== null &&
+        noticeDaysUntil !== null &&
+        renewalDays >= 0 &&
+        noticeDaysUntil <= 90 && (
+          <section className="rise rise-2 mt-8">
+            <Card title="Renewal window">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="font-display text-2xl tracking-tight">
+                    {renewalDays === 0
+                      ? "Renewal today"
+                      : `${nextRenewal?.vendor}: renewal in ${renewalDays} ${renewalDays === 1 ? "day" : "days"}`}
+                  </div>
+                  <p className="text-ink-soft mt-1 text-sm">
+                    {nextRenewal?.contractName}.{" "}
+                    {fmtNumber(openCount, currency)} open{" "}
+                    {openCount === 1 ? "finding" : "findings"} worth{" "}
+                    <span className="text-waste-text font-medium">
+                      {fmtMoney(monthlyWaste, currency)}/mo
+                    </span>
+                    . Reclaim these seats before you re-commit.
+                  </p>
                 </div>
-                <p className="text-ink-soft mt-1 text-sm">
-                  {fmtNumber(openCount, currency)} open{" "}
-                  {openCount === 1 ? "finding" : "findings"} worth{" "}
-                  <span className="text-waste-text font-medium">
-                    {fmtMoney(monthlyWaste, currency)}/mo
-                  </span>
-                  . Reclaim these seats before you re-commit.
-                </p>
+                <div className="flex flex-wrap gap-2">
+                  <ButtonLink href="/app/findings">Review findings</ButtonLink>
+                  <ButtonLink href="/app/renewals">Renewal calendar</ButtonLink>
+                </div>
               </div>
-              <ButtonLink href="/app/findings">Review findings</ButtonLink>
-            </div>
-          </Card>
-        </section>
-      )}
+            </Card>
+          </section>
+        )}
 
       <MetricCards cards={metricCards} />
 
-      {listPricesOnly && (
+      {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
         <section className="rise rise-2 mt-6">
-          <PriceAccuracyCard />
+          <PriceAccuracyCard coverage={priceCoverage} />
         </section>
       )}
 
-      <TrendChart
-        currency={currency}
-        points={history.map((s) => ({
-          day: s.day,
-          spendCents: s.totalMonthlySpendCents,
-          wasteCents: s.totalMonthlyWasteCents,
-        }))}
-      />
-
-      <InventoryTable
-        rows={inventoryRows}
-        currency={currency}
-        locked={locked}
-        emptyText={emptyInventory}
-      />
-
-      <section className="rise rise-4 mt-10 mb-8">
+      <section className="rise rise-3 mt-8">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-            Largest open findings
-          </h2>
+          <div>
+            <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
+              Next best actions
+            </h2>
+            <p className="text-ink-soft mt-1 text-sm">
+              Highest-value open findings to review first.
+            </p>
+          </div>
           <Link
             href="/app/findings"
             className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
@@ -482,11 +551,7 @@ export default async function OverviewPage() {
           {topFindings.map((f) => (
             <li key={f.id} className="border-line border-b last:border-b-0">
               <Link
-                href={
-                  f.graphUserId
-                    ? `/app/users/${f.graphUserId}`
-                    : `/app/findings?rule=${f.rule}`
-                }
+                href={`/app/findings/${f.id}`}
                 className="group hover:bg-canvas flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
@@ -511,6 +576,22 @@ export default async function OverviewPage() {
           )}
         </ul>
       </section>
+
+      <TrendChart
+        currency={currency}
+        points={history.map((s) => ({
+          day: s.day,
+          spendCents: s.totalMonthlySpendCents,
+          wasteCents: s.totalMonthlyWasteCents,
+        }))}
+      />
+
+      <InventoryTable
+        rows={inventoryRows}
+        currency={currency}
+        locked={locked}
+        emptyText={emptyInventory}
+      />
     </div>
   );
 }

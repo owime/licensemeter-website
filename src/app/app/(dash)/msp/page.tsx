@@ -7,6 +7,7 @@ import { MspBillingActions } from "~/components/workspace/MspBillingActions";
 import { MspCreateForm } from "~/components/workspace/MspCreateForm";
 import { MspPortfolioActions } from "~/components/workspace/MspPortfolioActions";
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
+import { normalizeCurrencyCents } from "~/lib/currency";
 import { fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import {
   MSP_LARGE_TENANT_SEATS,
@@ -160,26 +161,38 @@ export default async function MspPage({
     );
   }
 
-  const portfolio = await mspPortfolio();
+  const reportingCurrency = ctx.tenant.currency;
+  const reportingRatePpm = ctx.tenant.currencyRatePpm;
+  const portfolio = (await mspPortfolio()).map((row) => ({
+    ...row,
+    reportingSpendCents: row.summary
+      ? normalizeCurrencyCents(
+          row.summary.spendCents,
+          row.currencyRatePpm,
+          reportingRatePpm,
+        )
+      : null,
+    reportingWasteCents: row.summary
+      ? normalizeCurrencyCents(
+          row.summary.wasteCents,
+          row.currencyRatePpm,
+          reportingRatePpm,
+        )
+      : null,
+  }));
   // Attached first, then by waste desc within each group (mspPortfolio already
   // sorts by waste, but mixes attached/unattached; this groups the billed
   // tenants to the top where the QBR numbers live).
   const rows = [...portfolio].sort((a, b) => {
     if (a.attached !== b.attached) return a.attached ? -1 : 1;
-    return (b.summary?.wasteCents ?? -1) - (a.summary?.wasteCents ?? -1);
+    return (b.reportingWasteCents ?? -1) - (a.reportingWasteCents ?? -1);
   });
 
-  // Portfolio QBR totals across attached tenants. Spend/waste only add up within
-  // one currency, so they're shown only when every attached tenant shares one;
-  // finding counts are currency-agnostic and always summed.
   const attachedRows = rows.filter((r) => r.attached && r.summary);
-  const attachedCurrencies = new Set(attachedRows.map((r) => r.currency));
-  const portfolioCurrency =
-    attachedCurrencies.size === 1 ? [...attachedCurrencies][0]! : null;
   const portfolioTotals = attachedRows.reduce(
     (acc, r) => ({
-      spendCents: acc.spendCents + (r.summary?.spendCents ?? 0),
-      wasteCents: acc.wasteCents + (r.summary?.wasteCents ?? 0),
+      spendCents: acc.spendCents + (r.reportingSpendCents ?? 0),
+      wasteCents: acc.wasteCents + (r.reportingWasteCents ?? 0),
       openFindings: acc.openFindings + (r.summary?.openFindings ?? 0),
     }),
     { spendCents: 0, wasteCents: 0, openFindings: 0 },
@@ -275,15 +288,11 @@ export default async function MspPage({
             },
             {
               label: "Monthly spend",
-              value: portfolioCurrency
-                ? fmtMoney(portfolioTotals.spendCents, portfolioCurrency)
-                : "Mixed currencies",
+              value: fmtMoney(portfolioTotals.spendCents, reportingCurrency),
             },
             {
               label: "Monthly waste",
-              value: portfolioCurrency
-                ? fmtMoney(portfolioTotals.wasteCents, portfolioCurrency)
-                : "Mixed currencies",
+              value: fmtMoney(portfolioTotals.wasteCents, reportingCurrency),
               waste: true,
             },
           ].map((c) => (
