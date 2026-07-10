@@ -27,6 +27,7 @@ import {
 } from "~/server/db/schema";
 import { emailEnabled } from "~/server/email";
 import { CONNECTORS } from "~/lib/connectors";
+import { syncStepLabel } from "~/lib/activityLabels";
 
 const Capability = ({
   ok,
@@ -168,6 +169,11 @@ export default async function SettingsPage() {
                   : fmtDate(ctx.tenant.consentedAt)}
               </dd>
             </div>
+            <div className="border-line mt-2 border-t pt-4 sm:col-span-2">
+              <h3 className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
+                Data &amp; detection
+              </h3>
+            </div>
             <div>
               <dt className="text-ink-faint">Currency</dt>
               <dd className="mt-0.5">
@@ -198,6 +204,11 @@ export default async function SettingsPage() {
                   Manage renewal calendar
                 </Link>
               </dd>
+            </div>
+            <div className="border-line mt-2 border-t pt-4 sm:col-span-2">
+              <h3 className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
+                Notifications &amp; product experience
+              </h3>
             </div>
             <div>
               <dt className="text-ink-faint">Leak alert emails</dt>
@@ -310,8 +321,8 @@ export default async function SettingsPage() {
                       {run.steps
                         .map(
                           (s) =>
-                            `${s.step}${s.count !== undefined ? `:${s.count}` : ""}${
-                              s.status === "ok" ? "" : ` (${s.status})`
+                            `${syncStepLabel(s.step)}${s.count !== undefined ? `: ${s.count}` : ""}${
+                              s.status === "ok" ? "" : ` · ${s.status}`
                             }`,
                         )
                         .join(" · ") ||

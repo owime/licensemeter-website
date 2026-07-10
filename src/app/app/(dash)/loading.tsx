@@ -9,8 +9,8 @@ export default function Loading() {
       <div className="bg-line mt-2 h-4 w-56 motion-safe:animate-pulse" />
 
       {/* Metric cards */}
-      <div className="border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
+      <div className="border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-5">
+        {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="bg-card p-5">
             <div className="bg-line h-3 w-24 motion-safe:animate-pulse" />
             <div className="bg-line mt-3 h-8 w-32 motion-safe:animate-pulse" />

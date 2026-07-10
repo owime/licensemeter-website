@@ -74,6 +74,17 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
       (s) =>
         `${s.label} ${fmtMoney(s.points[s.points.length - 1]!.cents, "USD")}`,
     );
+  const csv = [
+    ["date", ...series.map((item) => item.label)].join(","),
+    ...days.map((day) =>
+      [
+        day,
+        ...centsBySeries.map((values) =>
+          values.has(day) ? ((values.get(day) ?? 0) / 100).toFixed(2) : "",
+        ),
+      ].join(","),
+    ),
+  ].join("\n");
 
   return (
     <section className="rise rise-3 mt-10">
@@ -130,6 +141,25 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
                 />
               ),
           )}
+          {series.map((item, index) => {
+            const point = item.points[item.points.length - 1];
+            if (!point) return null;
+            const y =
+              H - PAD.bottom - (point.cents / max) * (H - PAD.top - PAD.bottom);
+            return (
+              <circle
+                key={`${item.label}-latest`}
+                cx={xOf(point.day)}
+                cy={y}
+                r="5"
+                fill={STROKES[index] ?? "var(--color-brand)"}
+                tabIndex={0}
+                aria-label={`${item.label} on ${fmtAxisDate(point.day)}: ${fmtMoney(point.cents, "USD")}`}
+              >
+                <title>{`${item.label}: ${fmtMoney(point.cents, "USD")} on ${fmtAxisDate(point.day)}`}</title>
+              </circle>
+            );
+          })}
           {/* In-chart labels scale with the viewBox. Below sm they would render
               unreadably small, so the legend line carries the range instead. */}
           <text
@@ -150,35 +180,6 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
             {fmtAxisDate(lastDay)}
           </text>
         </svg>
-        {/* The chart is a finance figure: a screen reader needs the per-day
-            numbers, not just the headline summary on the SVG. */}
-        <table className="sr-only">
-          <caption>
-            Daily API spend per provider over {days.length} days.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Date</th>
-              {series.map((s) => (
-                <th key={s.label} scope="col">
-                  {s.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {days.map((day) => (
-              <tr key={day}>
-                <th scope="row">{fmtAxisDate(day)}</th>
-                {centsBySeries.map((map, i) => (
-                  <td key={series[i]!.label}>
-                    {map.has(day) ? fmtMoney(map.get(day)!, "USD") : "—"}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
         <div className="text-ink-soft mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px]">
           <span className="font-mono sm:hidden">
             {fmtAxisDate(firstDay)} → {fmtAxisDate(lastDay)}
@@ -192,51 +193,60 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
             </span>
           ))}
         </div>
-        <details className="border-line mt-3 border-t pt-3 text-sm">
-          <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
-            View daily values
-          </summary>
-          <div className="overflow-x-auto">
-            <table className="mt-2 w-full min-w-96 text-left text-xs">
-              <caption className="sr-only">
-                Daily API spend per provider.
-              </caption>
-              <thead className="text-ink-faint">
-                <tr>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    Date
-                  </th>
-                  {series.map((item) => (
-                    <th
-                      key={item.label}
-                      scope="col"
-                      className="px-4 py-2 text-right font-medium"
-                    >
-                      {item.label}
+        <div className="border-line mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+          <details className="min-w-0 text-sm">
+            <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
+              View daily values
+            </summary>
+            <div className="max-w-full overflow-x-auto">
+              <table className="mt-2 w-full table-fixed text-left text-xs">
+                <caption className="sr-only">
+                  Daily API spend per provider.
+                </caption>
+                <thead className="text-ink-faint">
+                  <tr>
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                      Date
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="text-ink-soft font-mono">
-                {days.map((day) => (
-                  <tr key={day} className="border-line border-t">
-                    <th scope="row" className="py-2 pr-4 font-normal">
-                      {fmtAxisDate(day)}
-                    </th>
-                    {centsBySeries.map((map, index) => (
-                      <td
-                        key={series[index]!.label}
-                        className="tnum px-4 py-2 text-right"
+                    {series.map((item) => (
+                      <th
+                        key={item.label}
+                        scope="col"
+                        className="px-2 py-2 text-right font-medium sm:px-4"
                       >
-                        {map.has(day) ? fmtMoney(map.get(day)!, "USD") : "—"}
-                      </td>
+                        {item.label}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
+                </thead>
+                <tbody className="text-ink-soft font-mono">
+                  {days.map((day) => (
+                    <tr key={day} className="border-line border-t">
+                      <th scope="row" className="py-2 pr-4 font-normal">
+                        {fmtAxisDate(day)}
+                      </th>
+                      {centsBySeries.map((map, index) => (
+                        <td
+                          key={series[index]!.label}
+                          className="tnum px-2 py-2 text-right text-[11px] sm:px-4 sm:text-xs"
+                        >
+                          {map.has(day) ? fmtMoney(map.get(day)!, "USD") : "—"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+          <a
+            href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
+            download="licensemeter-ai-spend.csv"
+            className="text-ink-soft hover:text-ink inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
+          >
+            Export Chart CSV
+          </a>
+        </div>
       </div>
     </section>
   );

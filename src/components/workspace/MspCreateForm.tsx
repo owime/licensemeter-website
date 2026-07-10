@@ -48,11 +48,10 @@ export const MspCreateForm = ({
       </div>
       {result && !result.ok && (
         <span
-          role="status"
-          aria-live="polite"
-          className="text-danger-text text-sm"
+          role="alert"
+          className="border-danger-soft bg-danger-soft/50 text-danger-text rounded-xl border px-3 py-2 text-sm"
         >
-          {result.error ?? "Could not create the MSP account"}
+          {result.error ?? "Could not create the MSP account. Please retry."}
         </span>
       )}
     </form>

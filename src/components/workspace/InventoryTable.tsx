@@ -321,7 +321,7 @@ export const InventoryTable = ({
               <div className="text-ink-faint font-mono text-[11px]">
                 {r.partNumber}
               </div>
-              <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+              <dl className="tnum mt-3 grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
                     Purchased
@@ -358,7 +358,7 @@ export const InventoryTable = ({
         )}
         {hasRows && (
           <li className="border-line bg-card border p-4">
-            <dl className="tnum grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+            <dl className="tnum grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total purchased

@@ -10,7 +10,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/app/findings"
-        className="text-ink-soft hover:text-ink mt-4 inline-block text-xs underline-offset-4 hover:underline"
+        className="text-ink-soft hover:text-ink mt-4 inline-flex min-h-11 items-center text-xs underline-offset-4 hover:underline"
       >
         ← Back to findings
       </Link>

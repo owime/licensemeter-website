@@ -72,6 +72,55 @@
   --shadow-hero: 0 24px 56px -18px rgba(12, 26, 23, 0.22);
 }
 
+:root {
+  color-scheme: light;
+}
+
+/* System dark mode uses the same semantic tokens and hierarchy rather than
+ * inverting pixels. Native controls and scrollbars follow via color-scheme. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-canvas: #081310;
+    --color-card: #0d1b17;
+    --color-subtle: #12231e;
+    --color-ink: #edf7f3;
+    --color-ink-soft: #bdd0ca;
+    --color-ink-faint: #91aaa2;
+    --color-line: #243832;
+    --color-line-strong: #345048;
+    --color-brand: #2dd4bf;
+    --color-brand-strong: #0f766e;
+    --color-brand-text: #5eead4;
+    --color-brand-deep: #ccfbf1;
+    --color-brand-soft: #123c35;
+    --color-waste: #f59e0b;
+    --color-waste-text: #fbbf24;
+    --color-waste-deep: #fde68a;
+    --color-waste-soft: #3a2a0b;
+    --color-good: #34d399;
+    --color-good-text: #6ee7b7;
+    --color-good-soft: #103529;
+    --color-danger: #f87171;
+    --color-danger-text: #fca5a5;
+    --color-danger-soft: #3a1719;
+    --color-moss: #34d399;
+    --color-moss-soft: #103529;
+    --color-gold: #fbbf24;
+    --color-gold-text: #fde68a;
+    --color-gold-soft: #3a2a0b;
+    --color-slate-ink: #cbd5e1;
+    --color-slate-soft: #263340;
+    --color-plum: #c4b5fd;
+    --color-plum-soft: #302451;
+    --color-teal-ink: #67e8f9;
+    --color-teal-soft: #123944;
+    --shadow-card: 0 2px 10px -2px rgba(0, 0, 0, 0.28);
+    --shadow-float: 0 12px 30px -10px rgba(0, 0, 0, 0.48);
+    --shadow-hero: 0 24px 56px -18px rgba(0, 0, 0, 0.62);
+  }
+}
+
 /* Visible keyboard focus everywhere; teal ring on light, canvas ring on ink. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--color-brand);
@@ -86,6 +135,8 @@
 body {
   background-color: var(--color-canvas);
   color: var(--color-ink);
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 /* Tabular numerals for every data column. */

@@ -199,11 +199,31 @@ export default async function MicrosoftConnectorPage({
       <div className="rise rise-3 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
-            <p className="text-ink-soft text-sm">
-              Connected with demo data. On a real workspace, a Global
-              Administrator grants read-only access in one click, or you bring
-              your own Entra app registration.
-            </p>
+            <div className="flex flex-col gap-4">
+              <p className="text-ink-soft text-sm">
+                Connected with demo data. On a real workspace, a Global
+                Administrator grants read-only access in one click, or you bring
+                your own Entra app registration.
+              </p>
+              <details className="border-line border-t pt-3">
+                <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
+                  Preview consent and required permissions
+                </summary>
+                <div className="mt-2 flex flex-col gap-3">
+                  <p className="text-ink-soft text-sm">
+                    The managed flow opens Microsoft&rsquo;s consent screen. No
+                    password or delegated user token is stored.
+                  </p>
+                  <ScopeList />
+                  <Link
+                    href="/connectors/microsoft"
+                    className="text-ink hover:text-brand-text inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4"
+                  >
+                    Open the Microsoft setup guide
+                  </Link>
+                </div>
+              </details>
+            </div>
           ) : conn ? (
             <div className="flex flex-col gap-4">
               {(() => {

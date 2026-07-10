@@ -205,7 +205,7 @@ export const DpaView = ({ lang }: { lang: DpaLang }) => {
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
         {doc.ui.eyebrow}
       </p>
-      <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
+      <h1 className="font-display mt-4 text-3xl tracking-tight text-balance break-words hyphens-auto sm:text-4xl">
         {doc.ui.pageTitle}
       </h1>
       <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">

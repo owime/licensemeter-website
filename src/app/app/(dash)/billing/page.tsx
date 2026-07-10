@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 
 import { BillingActions } from "~/components/workspace/BillingActions";
-import { Card, Pill } from "~/components/ui";
+import { Card, Pill, buttonClass } from "~/components/ui";
 import type { PillTone } from "~/components/ui";
 import { billingEnabled } from "~/env";
 import { fmtDate, fmtMoney } from "~/lib/format";
@@ -65,11 +65,39 @@ export default async function BillingPage({
         </header>
         <div className="rise rise-2">
           <Card title="Demo workspace">
-            <p className="text-ink-soft text-sm">
-              This is the demo workspace. It runs on synthetic data and is never
-              billed. Connect a real tenant from a Microsoft sign-in to manage a
-              subscription.
-            </p>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <Pill tone="slate">Demo</Pill>
+                <p className="text-ink-soft text-sm">
+                  Synthetic data is never billed.
+                </p>
+              </div>
+              <div className="border-line bg-line grid gap-px border sm:grid-cols-3">
+                {PLANS.map((plan) => (
+                  <div key={plan.tier} className="bg-card p-4">
+                    <p className="text-ink-faint text-xs font-medium uppercase">
+                      {plan.name}
+                    </p>
+                    <p className="font-display mt-2 text-xl">
+                      € {plan.monthly}
+                      <span className="text-ink-soft text-xs"> / month</span>
+                    </p>
+                    <p className="text-ink-soft mt-1 text-xs">{plan.seats}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-ink-soft text-sm">
+                In a real owner workspace this page recommends a plan from the
+                synced seat count, starts Stripe Checkout, and provides the
+                billing portal for plan changes or cancellation.
+              </p>
+              <Link
+                href="/pricing"
+                className={buttonClass("secondary", "self-start")}
+              >
+                Review Plans &amp; Pricing
+              </Link>
+            </div>
           </Card>
         </div>
       </div>

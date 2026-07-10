@@ -128,3 +128,32 @@ test("ROI calculator responds to user assumptions", async ({ page }) => {
   await expect(output).not.toHaveText(before ?? "");
   await expect(page.getByText(/At 500 seats/)).toBeVisible();
 });
+
+test("German trust pages localize the shell and document language", async ({
+  page,
+}) => {
+  await page.goto("/de/security");
+  await expect(page.locator("html")).toHaveAttribute("lang", "de");
+  await expect(
+    page.getByRole("navigation", { name: "Hauptnavigation" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Kostenlos starten" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("In der EU gehostet", { exact: true }),
+  ).toBeVisible();
+});
+
+test("connector index ends with a clear next step", async ({ page }) => {
+  await page.goto("/connectors");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Connect what",
+  );
+  await expect(
+    page.getByRole("link", { name: "Start Free", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Review Security" }),
+  ).toBeVisible();
+});

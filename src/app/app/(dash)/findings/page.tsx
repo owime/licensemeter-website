@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { CircleCheck, Search, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -62,6 +62,10 @@ export default async function FindingsPage({
     typeof sp.rule === "string" && isWasteRule(sp.rule) ? sp.rule : null;
   const showResolved = sp.show === "resolved";
   const query = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
+  const sort =
+    sp.sort === "newest" || sp.sort === "oldest" || sp.sort === "status"
+      ? sp.sort
+      : "impact";
   const isAdmin = hasRole(ctx, "admin");
   const locked = !ctx.entitlement.active;
   // Acknowledge/bulk/export require an active entitlement; the list itself stays
@@ -136,7 +140,14 @@ export default async function FindingsPage({
   );
   const pageRows = await db.query.findings.findMany({
     where: listWhere,
-    orderBy: desc(findings.monthlyImpactCents),
+    orderBy:
+      sort === "newest"
+        ? [desc(findings.firstSeenAt), desc(findings.monthlyImpactCents)]
+        : sort === "oldest"
+          ? [asc(findings.firstSeenAt), desc(findings.monthlyImpactCents)]
+          : sort === "status"
+            ? [asc(findings.status), desc(findings.monthlyImpactCents)]
+            : [desc(findings.monthlyImpactCents), desc(findings.firstSeenAt)],
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
@@ -151,6 +162,7 @@ export default async function FindingsPage({
     if (rule) params.set("rule", rule);
     if (resolved) params.set("show", "resolved");
     if (queryValue) params.set("q", queryValue);
+    if (sort !== "impact") params.set("sort", sort);
     if (pageNo > 1) params.set("page", String(pageNo));
     const qs = params.toString();
     return `/app/findings${qs ? `?${qs}` : ""}`;
@@ -259,7 +271,7 @@ export default async function FindingsPage({
         </div>
       )}
 
-      <div className="rise rise-2 mt-8 space-y-3">
+      <div className="rise rise-2 bg-canvas sticky top-16 z-10 -mx-2 mt-6 space-y-3 px-2 py-2 md:static md:mx-0 md:mt-8 md:p-0">
         <form
           role="search"
           className="flex flex-col gap-2 sm:flex-row sm:items-center"
@@ -285,6 +297,21 @@ export default async function FindingsPage({
               className="border-line bg-card text-ink placeholder:text-ink-faint focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 w-full rounded-xl border py-2 pr-3 pl-10 text-sm focus-visible:ring-2"
             />
           </div>
+          <label className="sr-only" htmlFor="finding-sort">
+            Sort findings
+          </label>
+          <select
+            id="finding-sort"
+            name="sort"
+            defaultValue={sort}
+            autoComplete="off"
+            className="border-line bg-card text-ink min-h-11 rounded-xl border px-3 py-2 text-sm"
+          >
+            <option value="impact">Highest impact</option>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="status">Status</option>
+          </select>
           <button type="submit" className={buttonClass("secondary")}>
             Search findings
           </button>
@@ -319,6 +346,12 @@ export default async function FindingsPage({
           {renderFilterLinks()}
         </nav>
       </div>
+
+      {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
+        <section className="rise rise-3 mt-5">
+          <PriceAccuracyCard coverage={priceCoverage} />
+        </section>
+      )}
 
       {/* Desktop table (one form: row checkboxes + bulk action) */}
       <FindingsBulkForm
@@ -393,11 +426,19 @@ export default async function FindingsPage({
                           {f.title}
                         </Link>
                       </div>
-                      {detail.upn && (
-                        <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
-                          {detail.upn}
-                        </div>
-                      )}
+                      {detail.upn &&
+                        (f.graphUserId ? (
+                          <Link
+                            href={`/app/users/${encodeURIComponent(f.graphUserId)}`}
+                            className="text-ink-faint hover:text-ink mt-0.5 inline-flex min-h-8 items-center font-mono text-[11px] underline-offset-4 hover:underline"
+                          >
+                            {detail.upn} · user profile
+                          </Link>
+                        ) : (
+                          <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
+                            {detail.upn}
+                          </div>
+                        ))}
                     </td>
                     <td className="tnum text-waste-text px-4 py-3 text-right font-mono font-medium">
                       {f.monthlyImpactCents > 0
@@ -485,11 +526,19 @@ export default async function FindingsPage({
                     {f.title}
                   </Link>
                 </div>
-                {detail.upn && (
-                  <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
-                    {detail.upn}
-                  </div>
-                )}
+                {detail.upn &&
+                  (f.graphUserId ? (
+                    <Link
+                      href={`/app/users/${encodeURIComponent(f.graphUserId)}`}
+                      className="text-ink-faint hover:text-ink mt-1 inline-flex min-h-8 items-center font-mono text-[11px] underline-offset-4 hover:underline"
+                    >
+                      {detail.upn} · user profile
+                    </Link>
+                  ) : (
+                    <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
+                      {detail.upn}
+                    </div>
+                  ))}
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <span className="text-ink-soft text-xs">
                     First seen {fmtDate(f.firstSeenAt)}
@@ -545,12 +594,6 @@ export default async function FindingsPage({
             )}
           </div>
         </nav>
-      )}
-
-      {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
-        <section className="rise rise-3 mb-8">
-          <PriceAccuracyCard coverage={priceCoverage} />
-        </section>
       )}
     </div>
   );

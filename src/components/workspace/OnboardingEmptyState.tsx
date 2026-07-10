@@ -6,8 +6,9 @@ import { TRIAL_DAYS } from "~/lib/plans";
 /**
  * Shown on the dashboard when a workspace has connected no service yet. Sign-in
  * no longer forces a Microsoft connect gate (workspace-first onboarding): the
- * user lands here and is nudged to connect their FIRST service — any connector,
- * not just Microsoft. The trial clock only starts once they connect one.
+ * user lands here and chooses the supported first step: connect Microsoft 365
+ * or use the no-admin CSV assessment. SaaS connectors unlock once a directory
+ * exists so their seats can be correlated to people.
  *
  * Connector logos are intentionally not used (vendor brand-usage constraints):
  * a neutral monogram + the product name only.
@@ -65,16 +66,17 @@ export const OnboardingEmptyState = () => (
         Get started
       </p>
       <h1 className="font-display mt-3 text-3xl tracking-tight">
-        Connect your first service
+        Add your Microsoft 365 directory
       </h1>
       <p className="text-ink-soft mt-2 max-w-xl text-sm leading-relaxed">
         LicenseMeter reads your seats read-only and prices every wasted,
-        inactive or orphaned license in euros. Connect one service to see your
-        numbers — your {TRIAL_DAYS}-day trial only starts once you do.
+        inactive or orphaned license in euros. Connect Microsoft 365 for the
+        complete analysis, or upload its license export for a no-admin preview.
+        Your {TRIAL_DAYS}-day trial only starts once data is added.
       </p>
     </header>
 
-    {/* Microsoft 365 — the highest-value source, featured but not required. */}
+    {/* Microsoft 365 is the directory all SaaS seats are correlated against. */}
     <Link
       href="/app/settings/microsoft"
       data-tour="connect-cta"
@@ -94,18 +96,39 @@ export const OnboardingEmptyState = () => (
         <span
           className={buttonClass("primary", "hidden shrink-0 sm:inline-flex")}
         >
-          Connect
+          Connect Microsoft 365
         </span>
       </div>
     </Link>
 
-    {/* Other connectors. */}
+    <Link
+      href="/app/connect/csv"
+      className="rise rise-2 border-line bg-card hover:border-ink-soft mt-3 flex min-h-20 items-center gap-3 border px-5 py-4 transition-colors"
+    >
+      <Monogram name="CSV" />
+      <span className="min-w-0">
+        <span className="text-ink block text-sm font-medium">
+          No Microsoft admin access?
+        </span>
+        <span className="text-ink-soft mt-0.5 block text-sm">
+          Upload a Microsoft license export for an immediate assessment.
+        </span>
+      </span>
+    </Link>
+
+    <div className="rise rise-3 mt-7 flex items-end justify-between gap-4">
+      <div>
+        <h2 className="font-display text-lg">Add more sources afterward</h2>
+        <p className="text-ink-soft mt-1 text-sm">
+          These connectors unlock after Microsoft 365 is connected.
+        </p>
+      </div>
+    </div>
     <div className="rise rise-3 border-line bg-line mt-3 grid gap-px border sm:grid-cols-2">
       {SECONDARY.map((t) => (
-        <Link
+        <div
           key={t.name}
-          href={t.href}
-          className="bg-card hover:bg-canvas flex items-center gap-3 px-4 py-3.5 transition"
+          className="bg-card flex min-h-16 items-center gap-3 px-4 py-3.5"
         >
           <Monogram name={t.name} />
           <span className="min-w-0">
@@ -114,25 +137,19 @@ export const OnboardingEmptyState = () => (
               {t.blurb}
             </span>
           </span>
-        </Link>
+          <span className="text-ink-faint ml-auto shrink-0 text-[11px] font-medium tracking-wide uppercase">
+            After Microsoft
+          </span>
+        </div>
       ))}
     </div>
 
-    {/* Low-commitment fallbacks. */}
-    <div className="rise rise-3 text-ink-soft mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-      <span>No admin access yet?</span>
-      <Link
-        href="/app/connect/csv"
-        className="text-ink font-medium underline-offset-4 hover:underline"
-      >
-        Start with a CSV upload
-      </Link>
-      <span className="text-ink-faint">·</span>
+    <div className="rise rise-3 text-ink-soft mt-4 text-sm">
       <Link
         href="/security"
-        className="text-ink font-medium underline-offset-4 hover:underline"
+        className="text-ink inline-flex min-h-11 items-center font-medium underline-offset-4 hover:underline"
       >
-        See the read-only permissions first
+        Review the read-only permissions before connecting
       </Link>
     </div>
   </div>

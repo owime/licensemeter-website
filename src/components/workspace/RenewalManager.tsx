@@ -19,6 +19,19 @@ export type RenewalView = {
   notes: string | null;
 };
 
+const renewalDateLabel = (value: string) =>
+  new Intl.DateTimeFormat(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+
+const daysUntil = (value: string) =>
+  Math.ceil(
+    (new Date(`${value}T00:00:00Z`).getTime() - Date.now()) / 86_400_000,
+  );
+
 type MemberOption = { id: string; label: string };
 
 const RenewalForm = ({
@@ -241,52 +254,75 @@ export const RenewalManager = ({
         </h2>
         {renewals.length === 0 ? (
           <div className="border-line bg-card text-ink-soft mt-3 border border-dashed px-5 py-10 text-center text-sm">
-            No contract renewals recorded yet.
+            <p className="font-medium">No contract renewals recorded yet.</p>
+            <p className="text-ink-faint mt-1 text-xs">
+              {canEdit
+                ? "Add the first contract using the form above so its notice deadline appears on Overview."
+                : "A workspace admin can add contracts and notice deadlines here."}
+            </p>
           </div>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
-            {renewals.map((renewal) => (
-              <li key={renewal.id} className="border-line bg-card border p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="text-ink-faint text-xs font-medium uppercase">
-                      {renewal.vendor}
-                    </div>
-                    <h3 className="mt-1 font-medium">{renewal.contractName}</h3>
-                  </div>
-                  <time
-                    className="tnum font-display text-xl"
-                    dateTime={renewal.renewalDate}
-                  >
-                    {renewal.renewalDate}
-                  </time>
-                </div>
-                <div className="text-ink-soft mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-                  <span>{renewal.noticeDays}-day notice period</span>
-                  <span>
-                    {fmtMoney(renewal.annualValueCents, currency)} annual value
-                  </span>
-                </div>
-                {canEdit && (
-                  <details className="border-line mt-4 border-t pt-3">
-                    <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer items-center text-sm font-medium">
-                      Edit contract
-                    </summary>
-                    <div className="mt-3">
-                      <RenewalForm
-                        initial={renewal}
-                        members={members}
-                        currency={currency}
-                        onSaved={() => router.refresh()}
-                      />
-                      <div className="mt-3 flex justify-end">
-                        <DeleteRenewalButton id={renewal.id} />
+            {renewals.map((renewal) => {
+              const remaining = daysUntil(renewal.renewalDate);
+              const noticeDeadline = remaining - renewal.noticeDays;
+              return (
+                <li key={renewal.id} className="border-line bg-card border p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <div className="text-ink-faint text-xs font-medium uppercase">
+                        {renewal.vendor}
                       </div>
+                      <h3 className="mt-1 font-medium">
+                        {renewal.contractName}
+                      </h3>
                     </div>
-                  </details>
-                )}
-              </li>
-            ))}
+                    <time
+                      className="tnum font-display text-xl"
+                      dateTime={renewal.renewalDate}
+                    >
+                      {renewalDateLabel(renewal.renewalDate)}
+                    </time>
+                  </div>
+                  <div className="text-ink-soft mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                    <span>{renewal.noticeDays}-day notice period</span>
+                    <span
+                      className={
+                        noticeDeadline <= 30
+                          ? "text-waste-text font-medium"
+                          : ""
+                      }
+                    >
+                      {noticeDeadline < 0
+                        ? `Notice deadline passed ${Math.abs(noticeDeadline)} days ago`
+                        : `Decision due in ${noticeDeadline} days`}
+                    </span>
+                    <span>
+                      {fmtMoney(renewal.annualValueCents, currency)} annual
+                      value
+                    </span>
+                  </div>
+                  {canEdit && (
+                    <details className="border-line mt-4 border-t pt-3">
+                      <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer items-center text-sm font-medium">
+                        Edit contract
+                      </summary>
+                      <div className="mt-3">
+                        <RenewalForm
+                          initial={renewal}
+                          members={members}
+                          currency={currency}
+                          onSaved={() => router.refresh()}
+                        />
+                        <div className="mt-3 flex justify-end">
+                          <DeleteRenewalButton id={renewal.id} />
+                        </div>
+                      </div>
+                    </details>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

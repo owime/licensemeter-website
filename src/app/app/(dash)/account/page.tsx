@@ -29,18 +29,33 @@ export default async function AccountPage() {
         </header>
         <div className="rise rise-2">
           <Card title="Demo workspace">
-            <p className="text-ink-soft text-sm">
-              This is the demo workspace, so there is no personal account to
-              manage here. Name, password and sign-in security apply to real
-              sign-ins.{" "}
+            <div className="flex flex-col gap-4">
+              <p className="text-ink-soft text-sm">
+                This shared demo has no personal identity to edit. A real
+                account exposes the following self-service security controls.
+              </p>
+              <ul className="border-line bg-subtle grid gap-px border sm:grid-cols-3">
+                {[
+                  "Profile & name",
+                  "Password",
+                  "Multi-factor authentication",
+                ].map((item) => (
+                  <li key={item} className="bg-card p-4 text-sm font-medium">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-ink-faint text-xs">
+                Changes apply to your login across every workspace. The demo
+                remains read-only so one visitor cannot affect another.
+              </p>
               <Link
                 href="/app"
-                className="hover:text-ink underline underline-offset-4"
+                className="text-ink hover:text-brand-text inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4"
               >
-                Back to the overview
+                Back to Overview
               </Link>
-              .
-            </p>
+            </div>
           </Card>
         </div>
       </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ButtonAnchor, buttonClass } from "~/components/ui";
 import { fmtDateTime } from "~/lib/format";
+import { auditActionLabel, auditDetailLabel } from "~/lib/activityLabels";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { auditLog } from "~/server/db/schema";
@@ -119,7 +120,7 @@ export default async function ActivityPage({
             <option value="">All actions</option>
             {actionRows.map((row) => (
               <option key={row.action} value={row.action}>
-                {row.action.replaceAll("_", " ")}
+                {auditActionLabel(row.action)}
               </option>
             ))}
           </select>
@@ -134,8 +135,8 @@ export default async function ActivityPage({
             <li key={entry.id} className="border-line bg-card border p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                  <span className="font-medium capitalize">
-                    {entry.action.replaceAll("_", " ")}
+                  <span className="font-medium">
+                    {auditActionLabel(entry.action)}
                   </span>
                   <span className="text-ink-faint ml-2 text-xs break-all">
                     {entry.actorEmail ?? entry.actorOid}
@@ -149,8 +150,8 @@ export default async function ActivityPage({
                 <dl className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
                   {details.map(([key, value]) => (
                     <div key={key} className="min-w-0 text-xs">
-                      <dt className="text-ink-faint capitalize">
-                        {key.replaceAll("_", " ")}
+                      <dt className="text-ink-faint">
+                        {auditDetailLabel(key)}
                       </dt>
                       <dd className="mt-0.5 font-mono break-words">
                         {detailValue(value)}

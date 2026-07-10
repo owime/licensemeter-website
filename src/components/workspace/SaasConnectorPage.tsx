@@ -12,7 +12,7 @@ import {
 } from "~/components/workspace/SaasConnectForm";
 import { ConnectPoller } from "~/components/workspace/ConnectPoller";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
-import { Card } from "~/components/ui";
+import { Card, buttonClass } from "~/components/ui";
 import { connectorSpec } from "~/lib/connectors";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
@@ -116,13 +116,34 @@ export const SaasConnectorPage = async ({
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
-            <p className="text-ink-soft text-sm">
-              Connected with demo data: {seatCount} {spec.seatNoun} correlated
-              against the directory.{" "}
-              {spec.kind === "import"
-                ? `On a real workspace an admin pastes the member export from ${spec.label} here.`
-                : `On a real workspace this uses credentials your ${spec.label} admin creates.`}
-            </p>
+            <div className="flex flex-col gap-4">
+              <p className="text-ink-soft text-sm">
+                Connected with demo data: {seatCount} {spec.seatNoun}
+                correlated against the directory.
+              </p>
+              <details className="border-line border-t pt-3">
+                <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
+                  Preview real workspace setup
+                </summary>
+                <div className="text-ink-soft mt-2 space-y-3 text-sm">
+                  <p>{spec.setupHint}</p>
+                  {spec.fields.length > 0 && (
+                    <p>
+                      Required values:{" "}
+                      {spec.fields.map((field) => field.label).join(", ")}.
+                      Secrets can be shown while reviewing and are encrypted at
+                      rest.
+                    </p>
+                  )}
+                  <Link
+                    href={`/connectors/${provider}`}
+                    className={buttonClass("secondary")}
+                  >
+                    Open {spec.label} Setup Guide
+                  </Link>
+                </div>
+              </details>
+            </div>
           ) : microsoftDisconnected && !hasConnector ? (
             /* CSV-trial / disconnected workspace with nothing imported yet: a
                connector can never sync without the Microsoft connection, so
@@ -256,20 +277,15 @@ export const SaasConnectorPage = async ({
           ) : (
             <p className="text-ink-faint mt-3 text-xs">
               Seat assignments only: nothing is read from inside {spec.label}.
-              Prices come from the {provider}:&lt;product&gt; keys in your price
-              book.
+              Product prices are editable in your license price book.
             </p>
           )}
-          <p className="text-ink-faint mt-2 text-xs">
-            The{" "}
-            <Link
-              href={`/connectors/${provider}`}
-              className="hover:text-ink underline underline-offset-4"
-            >
-              step-by-step setup guide
-            </Link>{" "}
-            links the official {spec.label} documentation for every step.
-          </p>
+          <Link
+            href={`/connectors/${provider}`}
+            className={buttonClass("secondary", "mt-4")}
+          >
+            Open {spec.label} Setup Guide
+          </Link>
         </Card>
       </div>
     </div>

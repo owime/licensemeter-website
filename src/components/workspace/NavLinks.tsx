@@ -100,25 +100,42 @@ export const NavLinks = ({
             >
               {item.label}
             </Link>
-            {sectionActive &&
-              item.children?.map((child) => {
-                const current = inSection(pathname, child.href);
-                return (
+            {sectionActive && item.children && (
+              <div className="border-sidebar-line ml-4 border-l">
+                {childCurrent && (
                   <Link
-                    key={child.href}
-                    href={child.href}
+                    href={childCurrent.href}
                     onClick={onNavigate}
-                    aria-current={current ? "page" : undefined}
-                    className={`border-l-2 py-2 pr-4 pl-[34px] text-[13px] transition ${
-                      current
-                        ? "border-brand bg-sidebar-line/70 text-canvas font-medium"
-                        : "text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-transparent"
-                    }`}
+                    aria-current="page"
+                    className="border-brand bg-sidebar-line/70 text-canvas block border-l-2 py-2 pr-4 pl-4 text-[13px] font-medium"
                   >
-                    {child.label}
+                    {childCurrent.label}
                   </Link>
-                );
-              })}
+                )}
+                <details>
+                  <summary className="text-sidebar-soft hover:text-canvas flex min-h-11 cursor-pointer touch-manipulation items-center px-4 text-[13px] font-medium">
+                    {childCurrent ? "Other connectors" : "Connectors"}
+                    <span className="ml-auto text-[11px]">
+                      {item.children.length}
+                    </span>
+                  </summary>
+                  <div className="flex flex-col pb-1">
+                    {item.children
+                      .filter((child) => child.href !== childCurrent?.href)
+                      .map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={onNavigate}
+                          className="text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-l-2 border-transparent py-2 pr-4 pl-4 text-[13px] transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
         );
       })}

@@ -67,6 +67,16 @@ export const TrendChart = ({
   const wastePath = buildPath(points, (p) => p.wasteCents, max);
   const first = points[0]!;
   const last = points[points.length - 1]!;
+  const lastX = W - PAD.right;
+  const yOf = (value: number) =>
+    H - PAD.bottom - (value / max) * (H - PAD.top - PAD.bottom);
+  const csv = [
+    "date,monthly_spend,monthly_waste",
+    ...points.map(
+      (point) =>
+        `${point.day},${(point.spendCents / 100).toFixed(2)},${(point.wasteCents / 100).toFixed(2)}`,
+    ),
+  ].join("\n");
 
   return (
     <section data-tour="trend" className="rise rise-3 mt-10">
@@ -126,6 +136,30 @@ export const TrendChart = ({
             stroke="var(--color-ink-soft)"
             strokeWidth="1.5"
           />
+          {[
+            {
+              label: "Monthly spend",
+              value: last.spendCents,
+              color: "var(--color-ink-soft)",
+            },
+            {
+              label: "Monthly waste",
+              value: last.wasteCents,
+              color: "var(--color-waste)",
+            },
+          ].map((point) => (
+            <circle
+              key={point.label}
+              cx={lastX}
+              cy={yOf(point.value)}
+              r="5"
+              fill={point.color}
+              tabIndex={0}
+              aria-label={`${point.label} on ${fmtAxisDate(last.day)}: ${fmtMoney(point.value, currency)}`}
+            >
+              <title>{`${point.label}: ${fmtMoney(point.value, currency)} on ${fmtAxisDate(last.day)}`}</title>
+            </circle>
+          ))}
           <path
             d={wastePath}
             fill="none"
@@ -152,29 +186,6 @@ export const TrendChart = ({
             {fmtAxisDate(last.day)}
           </text>
         </svg>
-        {/* The chart is a finance figure: a screen reader needs the per-day
-            numbers, not just the headline summary on the SVG. */}
-        <table className="sr-only">
-          <caption>
-            Monthly spend and waste per day over {points.length} days.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Monthly spend</th>
-              <th scope="col">Monthly waste</th>
-            </tr>
-          </thead>
-          <tbody>
-            {points.map((p) => (
-              <tr key={p.day}>
-                <th scope="row">{fmtAxisDate(p.day)}</th>
-                <td>{fmtMoney(p.spendCents, currency)}</td>
-                <td>{fmtMoney(p.wasteCents, currency)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
         <div className="text-ink-soft mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px]">
           <span className="font-mono sm:hidden">
             {fmtAxisDate(first.day)} → {fmtAxisDate(last.day)}
@@ -187,46 +198,61 @@ export const TrendChart = ({
             <span className="bg-waste inline-block h-0.5 w-4" /> Monthly waste
           </span>
         </div>
-        <details className="border-line mt-3 border-t pt-3 text-sm">
-          <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
-            View daily values
-          </summary>
-          <div className="overflow-x-auto">
-            <table className="mt-2 w-full min-w-96 text-left text-xs">
-              <caption className="sr-only">
-                Monthly spend and waste per day.
-              </caption>
-              <thead className="text-ink-faint">
-                <tr>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    Date
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-right font-medium">
-                    Spend
-                  </th>
-                  <th scope="col" className="py-2 pl-4 text-right font-medium">
-                    Waste
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="text-ink-soft font-mono">
-                {points.map((point) => (
-                  <tr key={point.day} className="border-line border-t">
-                    <th scope="row" className="py-2 pr-4 font-normal">
-                      {fmtAxisDate(point.day)}
+        <div className="border-line mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+          <details className="min-w-0 text-sm">
+            <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
+              View daily values
+            </summary>
+            <div className="max-w-full overflow-x-auto">
+              <table className="mt-2 w-full table-fixed text-left text-xs">
+                <caption className="sr-only">
+                  Monthly spend and waste per day.
+                </caption>
+                <thead className="text-ink-faint">
+                  <tr>
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                      Date
                     </th>
-                    <td className="tnum px-4 py-2 text-right">
-                      {fmtMoney(point.spendCents, currency)}
-                    </td>
-                    <td className="tnum py-2 pl-4 text-right">
-                      {fmtMoney(point.wasteCents, currency)}
-                    </td>
+                    <th
+                      scope="col"
+                      className="px-2 py-2 text-right font-medium sm:px-4"
+                    >
+                      Spend
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 pl-2 text-right font-medium sm:pl-4"
+                    >
+                      Waste
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
+                </thead>
+                <tbody className="text-ink-soft font-mono">
+                  {points.map((point) => (
+                    <tr key={point.day} className="border-line border-t">
+                      <th scope="row" className="py-2 pr-4 font-normal">
+                        {fmtAxisDate(point.day)}
+                      </th>
+                      <td className="tnum px-2 py-2 text-right text-[11px] sm:px-4 sm:text-xs">
+                        {fmtMoney(point.spendCents, currency)}
+                      </td>
+                      <td className="tnum py-2 pl-2 text-right text-[11px] sm:pl-4 sm:text-xs">
+                        {fmtMoney(point.wasteCents, currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+          <a
+            href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
+            download="licensemeter-spend-waste-trend.csv"
+            className="text-ink-soft hover:text-ink inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
+          >
+            Export Chart CSV
+          </a>
+        </div>
       </div>
     </section>
   );

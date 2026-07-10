@@ -77,7 +77,8 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
           "Email,Name,Status,Last active\njane@example.com,Jane Fox,active,2026-05-28"
         }
         defaultValue={result && !result.ok ? result.csv : undefined}
-        className="border-line bg-card focus:border-ink w-full border px-3 py-2 font-mono text-sm"
+        autoComplete="off"
+        className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-44 w-full border px-3 py-2 font-mono text-sm focus-visible:ring-2"
       />
       <div>
         <Button variant="primary" disabled={pending}>
@@ -87,11 +88,11 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
       <p
         ref={statusRef}
         tabIndex={-1}
-        role="status"
-        aria-live="polite"
+        role={result && !result.ok ? "alert" : "status"}
+        aria-live={result?.ok ? "polite" : undefined}
         className={
           result
-            ? `text-xs focus:outline-none ${result.ok ? "text-moss" : "text-danger-text"}`
+            ? `focus-visible:ring-brand text-xs focus-visible:ring-2 ${result.ok ? "text-moss" : "text-danger-text"}`
             : "sr-only"
         }
       >

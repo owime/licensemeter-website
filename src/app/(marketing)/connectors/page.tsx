@@ -4,6 +4,7 @@ import Link from "next/link";
 import { siteUrl } from "~/env";
 import { DemoClip } from "~/components/landing/DemoClip";
 import { Pill } from "~/components/ui";
+import { buttonClass } from "~/components/ui";
 import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 
 export const metadata: Metadata = {
@@ -66,10 +67,16 @@ export default function ConnectorsIndexPage() {
           <Link
             key={g.slug}
             href={`/connectors/${g.slug}`}
-            className="group bg-card hover:bg-canvas px-6 py-6 transition"
+            className="group bg-card hover:bg-canvas min-w-0 px-6 py-6 transition"
           >
-            <div className="flex items-center gap-2">
-              <span className="font-display text-xl tracking-tight group-hover:underline group-hover:underline-offset-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="border-line bg-canvas font-display text-ink-soft flex size-10 shrink-0 items-center justify-center rounded-xl border text-sm"
+              >
+                {g.name.charAt(0)}
+              </span>
+              <span className="font-display min-w-0 text-xl tracking-tight break-words group-hover:underline group-hover:underline-offset-4">
                 {g.name}
               </span>
               <Pill tone={g.kind === "api" ? "brand" : "slate"}>
@@ -95,6 +102,24 @@ export default function ConnectorsIndexPage() {
         trademarks of their respective owners; LicenseMeter is independent of
         all of them.
       </p>
+
+      <section className="border-line bg-subtle mt-12 rounded-2xl border px-6 py-8 sm:px-8">
+        <h2 className="font-display text-2xl tracking-tight text-balance">
+          Start with Microsoft 365, then add every paid seat source.
+        </h2>
+        <p className="text-ink-soft mt-2 max-w-2xl text-sm leading-relaxed">
+          Run the read-only demo first, or create a workspace and follow the
+          guided Microsoft consent flow. No credit card is required.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/#get-started" className={buttonClass("primary")}>
+            Start Free
+          </Link>
+          <Link href="/security" className={buttonClass("secondary")}>
+            Review Security
+          </Link>
+        </div>
+      </section>
 
       <script
         type="application/ld+json"

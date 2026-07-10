@@ -1,9 +1,9 @@
 import { and, desc, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
-import { Pill } from "~/components/ui";
+import { Card, Pill, buttonClass } from "~/components/ui";
 import { normalizeCurrencyCents } from "~/lib/currency";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { requireAccess } from "~/server/access";
@@ -24,7 +24,35 @@ export const metadata: Metadata = { title: "Portfolio" };
  */
 export default async function PortfolioPage() {
   const ctx = await requireAccess("viewer");
-  if (ctx.workspaces.length < 2) redirect("/app");
+  if (ctx.workspaces.length < 2) {
+    return (
+      <div className="mx-auto max-w-3xl pb-8">
+        <header className="rise rise-1">
+          <h1 className="font-display text-3xl tracking-tight">Portfolio</h1>
+          <p className="text-ink-soft mt-2 max-w-2xl text-sm leading-relaxed">
+            Portfolio reporting becomes available when you can access 2 or more
+            workspaces. Your current workspace is ready on the overview.
+          </p>
+        </header>
+        <div className="rise rise-2 mt-8">
+          <Card title="One workspace connected">
+            <p className="text-ink-soft text-sm">
+              Add another client workspace from the MSP area to compare spend,
+              waste, findings, and sync health in one view.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/app" className={buttonClass("primary")}>
+                Open Overview
+              </Link>
+              <Link href="/app/msp" className={buttonClass("secondary")}>
+                Set Up MSP Portfolio
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const ids = ctx.workspaces.map((w) => w.id);
 

@@ -28,7 +28,9 @@ export const EmptyState = ({
     )}
     <p className="text-ink font-medium">{heading}</p>
     {children && (
-      <p className="text-ink-soft mt-1 text-sm leading-relaxed">{children}</p>
+      <div className="text-ink-soft mt-1 text-sm leading-relaxed">
+        {children}
+      </div>
     )}
   </div>
 );

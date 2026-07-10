@@ -1,7 +1,14 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { memberships, snapshots, syncRuns, tenants } from "~/server/db/schema";
+import {
+  findings,
+  memberships,
+  snapshots,
+  syncRuns,
+  tenants,
+  vendorRenewals,
+} from "~/server/db/schema";
 import { runSync } from "~/server/sync/runSync";
 import { DEMO_EMAIL, DEMO_OID, DEMO_TID } from "./constants";
 
@@ -71,6 +78,94 @@ const seedDemoWorkspace = async (): Promise<void> => {
   if (!anyRun) {
     await seedDemoHistory(tenant.id);
     await runSync(tenant.id);
+  }
+  await seedDemoShowcase(tenant.id);
+};
+
+/**
+ * Read-only demo content for workflows that a Graph sync does not naturally
+ * create: verified savings, assigned remediation, and procurement deadlines.
+ * Every insert/update is idempotent so it is safe on each demo access.
+ */
+const seedDemoShowcase = async (tenantId: string): Promise<void> => {
+  const owner = await db.query.memberships.findFirst({
+    where: eq(memberships.tenantId, tenantId),
+  });
+
+  const resolved = await db.query.findings.findFirst({
+    where: and(
+      eq(findings.tenantId, tenantId),
+      eq(findings.dedupeKey, "demo|verified-saving|project-plan"),
+    ),
+  });
+  if (!resolved) {
+    await db.insert(findings).values({
+      tenantId,
+      dedupeKey: "demo|verified-saving|project-plan",
+      rule: "inactive_90d",
+      title: "Reclaimed inactive Project Plan seat",
+      detail: {
+        displayName: "Former contractor",
+        inactiveDays: 143,
+        hint: "License removed and confirmed by the next directory sync.",
+      },
+      monthlyImpactCents: 2_990,
+      status: "resolved",
+      remediationStatus: "in_progress",
+      assigneeMembershipId: owner?.id ?? null,
+      workflowNote: "Validated with the project delivery owner before removal.",
+      resolvedAt: new Date(),
+    });
+  }
+
+  const planned = await db.query.findings.findFirst({
+    where: and(eq(findings.tenantId, tenantId), eq(findings.status, "open")),
+    orderBy: desc(findings.monthlyImpactCents),
+  });
+  if (planned?.remediationStatus === "unassigned") {
+    const due = new Date(Date.now() + 14 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    await db
+      .update(findings)
+      .set({
+        remediationStatus: "planned",
+        assigneeMembershipId: owner?.id ?? null,
+        dueDate: due,
+        workflowNote:
+          "Confirm the owner and downstream mailbox retention before reclaiming.",
+      })
+      .where(eq(findings.id, planned.id));
+  }
+
+  const existingRenewal = await db.query.vendorRenewals.findFirst({
+    where: eq(vendorRenewals.tenantId, tenantId),
+  });
+  if (!existingRenewal) {
+    const dateAfter = (days: number) =>
+      new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+    await db.insert(vendorRenewals).values([
+      {
+        tenantId,
+        vendor: "Microsoft",
+        contractName: "Microsoft Customer Agreement",
+        renewalDate: dateAfter(74),
+        noticeDays: 45,
+        annualValueCents: 8_375_880,
+        ownerMembershipId: owner?.id ?? null,
+        notes: "Review Copilot adoption and shelfware before the true-up.",
+      },
+      {
+        tenantId,
+        vendor: "Adobe",
+        contractName: "Creative Cloud for teams",
+        renewalDate: dateAfter(132),
+        noticeDays: 30,
+        annualValueCents: 1_248_000,
+        ownerMembershipId: owner?.id ?? null,
+        notes: "Validate leaver removals with the design operations lead.",
+      },
+    ]);
   }
 };
 

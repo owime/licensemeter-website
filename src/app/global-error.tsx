@@ -11,9 +11,9 @@ export default function GlobalError({
     <html lang="en">
       <body
         style={{
-          fontFamily: "Georgia, serif",
-          background: "#faf8f3",
-          color: "#1c1a16",
+          fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          background: "#f4f7f6",
+          color: "#102c2a",
           display: "flex",
           minHeight: "100vh",
           alignItems: "center",
@@ -21,18 +21,28 @@ export default function GlobalError({
           margin: 0,
         }}
       >
-        <div style={{ textAlign: "center", padding: 24 }}>
+        <div
+          style={{
+            textAlign: "left",
+            padding: 28,
+            maxWidth: 520,
+            background: "#ffffff",
+            border: "1px solid #d8e2df",
+            borderRadius: 16,
+            boxShadow: "0 18px 50px rgba(16, 44, 42, 0.08)",
+          }}
+        >
           <div style={{ fontSize: 22 }}>
-            License<span style={{ color: "#a8330d" }}>Meter</span>
+            License<span style={{ color: "#087f76" }}>Meter</span>
           </div>
           <h1 style={{ fontSize: 28, fontWeight: "normal", marginTop: 24 }}>
             Something went wrong on our side.
           </h1>
           <p
             style={{
-              fontFamily: "Arial, sans-serif",
               fontSize: 14,
-              color: "#6b665d",
+              color: "#56706c",
+              lineHeight: 1.6,
             }}
           >
             The error has been reported. Your data is unaffected.
@@ -41,12 +51,13 @@ export default function GlobalError({
             onClick={() => reset()}
             style={{
               marginTop: 16,
-              background: "#1c1a16",
-              color: "#faf8f3",
+              background: "#087f76",
+              color: "#ffffff",
               border: "none",
               padding: "12px 20px",
-              fontFamily: "Arial, sans-serif",
               fontSize: 14,
+              fontWeight: 600,
+              borderRadius: 10,
               cursor: "pointer",
             }}
           >

@@ -75,7 +75,7 @@ export const MemberActions = ({
           <form action={resendAction}>
             <button
               disabled={resendPending}
-              className="text-ink-faint hover:text-ink text-xs underline-offset-4 hover:underline disabled:opacity-50"
+              className="text-ink-faint hover:text-ink inline-flex min-h-11 items-center text-xs underline-offset-4 hover:underline disabled:opacity-50"
             >
               {resendPending ? "Sending…" : "Resend"}
             </button>
@@ -97,10 +97,10 @@ export const MemberActions = ({
             <button
               disabled={removePending}
               onBlur={() => setArmed(false)}
-              className={`text-xs underline-offset-4 hover:underline disabled:opacity-50 ${
+              className={`inline-flex min-h-11 items-center text-xs underline-offset-4 hover:underline disabled:opacity-50 ${
                 armed
-                  ? "text-danger-text underline"
-                  : "text-ink-faint hover:text-danger-text"
+                  ? "text-danger-text border-danger-soft rounded-lg border px-2 underline"
+                  : "text-danger-text hover:bg-danger-soft rounded-lg px-2"
               }`}
             >
               {removePending

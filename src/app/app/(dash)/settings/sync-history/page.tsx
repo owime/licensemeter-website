@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Card, buttonClass } from "~/components/ui";
 import { fmtDateTime } from "~/lib/format";
+import { syncStepLabel } from "~/lib/activityLabels";
 import { requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { syncRuns } from "~/server/db/schema";
@@ -106,8 +107,8 @@ export default async function SyncHistoryPage({
                     {run.steps
                       .map(
                         (s) =>
-                          `${s.step}${s.count !== undefined ? `:${s.count}` : ""}${
-                            s.status === "ok" ? "" : ` (${s.status})`
+                          `${syncStepLabel(s.step)}${s.count !== undefined ? `: ${s.count}` : ""}${
+                            s.status === "ok" ? "" : ` · ${s.status}`
                           }`,
                       )
                       .join(" · ") ||

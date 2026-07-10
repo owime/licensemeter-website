@@ -12,8 +12,10 @@ import { useEffect, useState } from "react";
  */
 export const MarketingMobileNav = ({
   items,
+  navLabel = "Main",
 }: {
   items: { href: string; label: string }[];
+  navLabel?: string;
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -58,7 +60,7 @@ export const MarketingMobileNav = ({
         hidden={!open}
         className="border-line bg-canvas absolute inset-x-0 top-full z-40 border-y sm:hidden"
       >
-        <nav aria-label="Main" className="py-2">
+        <nav aria-label={navLabel} className="py-2">
           {items.map((item) => (
             <Link
               key={item.href}

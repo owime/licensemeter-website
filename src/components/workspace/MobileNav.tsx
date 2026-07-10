@@ -131,7 +131,7 @@ export const MobileNav = ({
         tabIndex={-1}
         hidden={!open}
         inert={!open}
-        className="border-sidebar-line flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4 focus:outline-none"
+        className="border-sidebar-line focus-visible:ring-canvas flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4 focus-visible:ring-2 focus-visible:ring-inset"
       >
         <div className="px-4 py-3">
           {workspaces.length > 1 ? (

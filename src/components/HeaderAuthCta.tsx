@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import { ButtonLink } from "~/components/ui";
 
@@ -12,6 +13,7 @@ import { ButtonLink } from "~/components/ui";
  */
 export const HeaderAuthCta = () => {
   const [signedIn, setSignedIn] = useState(false);
+  const german = usePathname().startsWith("/de/");
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -36,12 +38,16 @@ export const HeaderAuthCta = () => {
     <ButtonLink href="/app" variant="secondary">
       <span className="min-[341px]:hidden">App</span>
       <span className="hidden min-[341px]:inline sm:hidden">Dashboard</span>
-      <span className="hidden sm:inline">Open dashboard</span>
+      <span className="hidden sm:inline">
+        {german ? "Dashboard öffnen" : "Open dashboard"}
+      </span>
     </ButtonLink>
   ) : (
     <ButtonLink href="/#get-started" variant="secondary">
       <span className="min-[341px]:hidden">Start</span>
-      <span className="hidden min-[341px]:inline">Start free</span>
+      <span className="hidden min-[341px]:inline">
+        {german ? "Kostenlos starten" : "Start free"}
+      </span>
     </ButtonLink>
   );
 };

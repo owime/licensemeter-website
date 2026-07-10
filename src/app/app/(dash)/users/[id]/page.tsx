@@ -146,12 +146,14 @@ export default async function UserDetailPage({
               <div>
                 <span className="font-medium">{skuDisplayName(l.skuId)}</span>
                 {l.assignedByGroup && (
-                  <span
-                    className="text-ink-faint ml-2 text-xs"
-                    title={`Assigned via group ${l.assignedByGroup}`}
-                  >
-                    via group {l.assignedByGroup.slice(0, 8)}…
-                  </span>
+                  <details className="ml-2 inline-block align-middle">
+                    <summary className="text-ink-faint hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-xs underline-offset-4 hover:underline">
+                      Assigned by group
+                    </summary>
+                    <span className="text-ink-faint block max-w-xs font-mono text-[11px] break-all">
+                      Group ID: {l.assignedByGroup}
+                    </span>
+                  </details>
                 )}
                 {l.disabledPlans.length > 0 && (
                   <span className="text-gold-text ml-2 text-xs">
@@ -177,8 +179,11 @@ export default async function UserDetailPage({
           Activity by workload
         </h2>
         <dl className="tnum border-line bg-line mt-3 grid grid-cols-2 gap-px border font-mono text-sm sm:grid-cols-5">
-          {Object.entries(ACTIVITY_LABELS).map(([key, label]) => (
-            <div key={key} className="bg-card p-4">
+          {Object.entries(ACTIVITY_LABELS).map(([key, label], index) => (
+            <div
+              key={key}
+              className={`bg-card p-4 ${index === 4 ? "max-sm:col-span-2" : ""}`}
+            >
               <dt className="text-ink-faint font-sans text-xs">{label}</dt>
               <dd className="mt-1">
                 {fmtDate(
@@ -205,7 +210,7 @@ export default async function UserDetailPage({
           {userFindings.map((f) => (
             <li key={f.id} className="border-line border-b last:border-b-0">
               <Link
-                href={`/app/findings?rule=${f.rule}`}
+                href={`/app/findings/${f.id}`}
                 className="hover:bg-canvas flex flex-wrap items-center justify-between gap-2 px-4 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">

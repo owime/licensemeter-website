@@ -67,7 +67,7 @@ const InfoButton = ({
         onClick={onOpen}
         aria-label={`${label}: what this means`}
         aria-describedby={tipId}
-        className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:ring-brand -my-3 -mr-3 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
+        className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:ring-brand -my-3 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         <span
           aria-hidden="true"
@@ -135,6 +135,13 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
             {card.note && (
               <div className="text-ink-faint mt-1 text-xs">{card.note}</div>
             )}
+            <button
+              type="button"
+              onClick={() => setOpenKey(card.key)}
+              className="text-brand-text hover:text-ink mt-3 inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
+            >
+              View breakdown <span aria-hidden="true">→</span>
+            </button>
           </div>
         ))}
       </section>

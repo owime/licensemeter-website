@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "~/components/ui";
+import { Button, ButtonLink } from "~/components/ui";
 
 /** Dash-level error boundary. No internals on screen, just a way back. */
 export default function DashError({ reset }: { reset: () => void }) {
@@ -40,8 +40,12 @@ export default function DashError({ reset }: { reset: () => void }) {
             This page failed to load. Your data is unaffected. Try again, and if
             it keeps happening, sign out and back in.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button onClick={() => reset()}>Try again</Button>
+            <ButtonLink href="/app">Open Overview</ButtonLink>
+            <ButtonLink href="/app/settings/sync-history">
+              Check Sync History
+            </ButtonLink>
           </div>
         </div>
       </div>

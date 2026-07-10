@@ -31,6 +31,7 @@ export const MicrosoftByoForm = () => {
   const [note, setNote] = useState<string | null>(null);
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [pending, startTransition] = useTransition();
+  const [showSecret, setShowSecret] = useState(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const router = useRouter();
 
@@ -68,16 +69,20 @@ export const MicrosoftByoForm = () => {
     >
       {MICROSOFT_CONNECTOR.byo.idFields.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
-          <span className="text-ink-faint text-xs">{f.label}</span>
+          <span className="text-ink-faint text-xs">
+            {f.label} <span aria-hidden="true">*</span>
+            <span className="sr-only"> (required)</span>
+          </span>
           <input
             name={f.name}
             required
             type="text"
             placeholder={f.placeholder}
+            autoComplete="off"
             spellCheck={false}
             autoCapitalize="none"
             autoCorrect="off"
-            className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-sm"
+            className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 border px-3 py-2 font-mono text-sm focus-visible:ring-2"
           />
         </label>
       ))}
@@ -103,18 +108,31 @@ export const MicrosoftByoForm = () => {
       {credType === "secret" ? (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-ink-faint text-xs">Client secret</span>
-            <input
-              name="secret"
-              required
-              type="password"
-              placeholder={MICROSOFT_CONNECTOR.byo.secretPlaceholder}
-              autoComplete="new-password"
-              spellCheck={false}
-              autoCapitalize="none"
-              autoCorrect="off"
-              className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
-            />
+            <span className="text-ink-faint text-xs">
+              Client secret <span aria-hidden="true">*</span>
+              <span className="sr-only"> (required)</span>
+            </span>
+            <span className="relative">
+              <input
+                name="secret"
+                required
+                type={showSecret ? "text" : "password"}
+                placeholder={MICROSOFT_CONNECTOR.byo.secretPlaceholder}
+                autoComplete="new-password"
+                spellCheck={false}
+                autoCapitalize="none"
+                autoCorrect="off"
+                className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 w-full border px-3 py-2 pr-18 text-sm focus-visible:ring-2"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSecret((value) => !value)}
+                className="text-ink-soft hover:text-ink absolute inset-y-0 right-0 inline-flex min-h-11 items-center px-3 text-xs font-medium"
+                aria-label={`${showSecret ? "Hide" : "Show"} client secret`}
+              >
+                {showSecret ? "Hide" : "Show"}
+              </button>
+            </span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
@@ -123,7 +141,8 @@ export const MicrosoftByoForm = () => {
             <input
               name="secretExpiresAt"
               type="date"
-              className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
+              autoComplete="off"
+              className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 border px-3 py-2 text-sm focus-visible:ring-2"
             />
           </label>
         </>
@@ -131,7 +150,7 @@ export const MicrosoftByoForm = () => {
         <>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
-              Certificate private key (PEM)
+              Certificate private key (PEM) <span aria-hidden="true">*</span>
             </span>
             <textarea
               name="privateKey"
@@ -141,11 +160,14 @@ export const MicrosoftByoForm = () => {
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
-              className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-xs"
+              autoComplete="off"
+              className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-28 border px-3 py-2 font-mono text-xs focus-visible:ring-2"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-ink-faint text-xs">Certificate (PEM)</span>
+            <span className="text-ink-faint text-xs">
+              Certificate (PEM) <span aria-hidden="true">*</span>
+            </span>
             <textarea
               name="cert"
               required
@@ -154,7 +176,8 @@ export const MicrosoftByoForm = () => {
               spellCheck={false}
               autoCapitalize="none"
               autoCorrect="off"
-              className="border-line bg-card focus:border-ink border px-3 py-2 font-mono text-xs"
+              autoComplete="off"
+              className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-28 border px-3 py-2 font-mono text-xs focus-visible:ring-2"
             />
           </label>
         </>
@@ -170,9 +193,8 @@ export const MicrosoftByoForm = () => {
         <p
           ref={errorRef}
           tabIndex={-1}
-          role="status"
-          aria-live="polite"
-          className="text-danger-text text-xs focus:outline-none"
+          role="alert"
+          className="text-danger-text focus-visible:ring-brand text-xs focus-visible:ring-2"
         >
           {error}
         </p>

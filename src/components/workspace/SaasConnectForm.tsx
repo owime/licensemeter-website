@@ -21,6 +21,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
   /* Object identity changes per failure so repeated identical errors re-focus. */
   const [error, setError] = useState<{ message: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [revealedField, setRevealedField] = useState<string | null>(null);
   const errorRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
 
@@ -40,6 +41,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
           const result = await connectSaasConnector(data);
           if (!result.ok) {
             setError({ message: result.error ?? "Connection failed" });
+            return;
           }
           router.refresh();
         });
@@ -48,19 +50,44 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
       <input type="hidden" name="provider" value={spec.provider} />
       {spec.fields.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
-          <span className="text-ink-faint text-xs">{f.label}</span>
-          <input
-            name={f.name}
-            required
-            type={f.secret ? "password" : "text"}
-            placeholder={f.placeholder}
-            inputMode={f.inputMode}
-            autoComplete={f.secret ? "new-password" : "off"}
-            spellCheck={false}
-            autoCapitalize="none"
-            autoCorrect="off"
-            className="border-line bg-card focus:border-ink border px-3 py-2 text-sm"
-          />
+          <span className="text-ink-faint text-xs">
+            {f.label} <span aria-hidden="true">*</span>
+            <span className="sr-only"> (required)</span>
+          </span>
+          <span className="relative">
+            <input
+              name={f.name}
+              required
+              type={
+                f.secret
+                  ? revealedField === f.name
+                    ? "text"
+                    : "password"
+                  : f.inputMode === "url"
+                    ? "url"
+                    : "text"
+              }
+              placeholder={f.placeholder}
+              inputMode={f.inputMode}
+              autoComplete={f.secret ? "new-password" : "off"}
+              spellCheck={false}
+              autoCapitalize="none"
+              autoCorrect="off"
+              className={`border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 w-full border px-3 py-2 text-sm focus-visible:ring-2 ${f.secret ? "pr-18" : ""}`}
+            />
+            {f.secret && (
+              <button
+                type="button"
+                onClick={() =>
+                  setRevealedField(revealedField === f.name ? null : f.name)
+                }
+                className="text-ink-soft hover:text-ink absolute inset-y-0 right-0 inline-flex min-h-11 items-center px-3 text-xs font-medium"
+                aria-label={`${revealedField === f.name ? "Hide" : "Show"} ${f.label.toLowerCase()}`}
+              >
+                {revealedField === f.name ? "Hide" : "Show"}
+              </button>
+            )}
+          </span>
         </label>
       ))}
       <div className="flex items-center gap-3">
@@ -70,9 +97,8 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
         <span
           ref={errorRef}
           tabIndex={-1}
-          role="status"
-          aria-live="polite"
-          className="text-danger-text text-xs focus:outline-none"
+          role="alert"
+          className="text-danger-text focus-visible:ring-brand text-xs focus-visible:ring-2"
         >
           {error?.message}
         </span>

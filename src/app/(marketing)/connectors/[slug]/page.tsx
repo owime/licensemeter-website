@@ -100,18 +100,18 @@ export default async function ConnectorGuidePage({
         </h2>
         <ol className="mt-6 flex flex-col gap-8">
           {guide.steps.map((step, i) => (
-            <li key={step.title} className="flex gap-5">
+            <li key={step.title} className="flex min-w-0 gap-4 sm:gap-5">
               <span
                 aria-hidden="true"
                 className="text-brand-text font-mono text-xs"
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-display text-xl tracking-tight">
                   {step.title}
                 </h3>
-                <p className="text-ink-soft mt-2 text-sm leading-relaxed">
+                <p className="text-ink-soft mt-2 text-sm leading-relaxed break-words">
                   {step.body}
                 </p>
                 {step.doc && (

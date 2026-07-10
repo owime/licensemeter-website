@@ -8,7 +8,7 @@ import {
 } from "~/components/workspace/AdobeConnectForm";
 import { ConnectPoller } from "~/components/workspace/ConnectPoller";
 import { SyncNowButton } from "~/components/workspace/SyncNowButton";
-import { Card } from "~/components/ui";
+import { Card, buttonClass } from "~/components/ui";
 import { fmtDate } from "~/lib/format";
 import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
@@ -82,11 +82,31 @@ export default async function AdobeConnectorPage() {
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
           {ctx.tenant.isDemo ? (
-            <p className="text-ink-soft text-sm">
-              Connected with demo data: {adobeCount} Adobe seats correlated
-              against the directory. On a real workspace this uses your Adobe
-              Admin Console credentials.
-            </p>
+            <div className="flex flex-col gap-4">
+              <p className="text-ink-soft text-sm">
+                Connected with demo data: {adobeCount} Adobe seats correlated
+                against the directory.
+              </p>
+              <details className="border-line border-t pt-3">
+                <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
+                  Preview real workspace setup
+                </summary>
+                <div className="text-ink-soft mt-2 space-y-3 text-sm">
+                  <p>
+                    A System Admin creates an OAuth server-to-server project
+                    with the User Management API, then enters the organization
+                    ID, client ID, and client secret. The secret is encrypted at
+                    rest and used read-only.
+                  </p>
+                  <Link
+                    href="/connectors/adobe"
+                    className={buttonClass("secondary")}
+                  >
+                    Open Adobe Setup Guide
+                  </Link>
+                </div>
+              </details>
+            </div>
           ) : microsoftDisconnected && !adobeConn ? (
             /* CSV-trial / disconnected workspace with no Adobe connection yet:
                a connector can never sync without Microsoft, so don't collect
@@ -187,18 +207,14 @@ export default async function AdobeConnectorPage() {
           </ul>
           <p className="text-ink-faint mt-3 text-xs">
             Entitlements only: no Adobe documents or content are read. Prices
-            come from the adobe:&lt;product&gt; keys in your price book.
+            are editable in your license price book.
           </p>
-          <p className="text-ink-faint mt-2 text-xs">
-            The{" "}
-            <Link
-              href="/connectors/adobe"
-              className="hover:text-ink underline underline-offset-4"
-            >
-              step-by-step setup guide
-            </Link>{" "}
-            links the official Adobe documentation for every step.
-          </p>
+          <Link
+            href="/connectors/adobe"
+            className={buttonClass("secondary", "mt-4")}
+          >
+            Open Adobe Setup Guide
+          </Link>
         </Card>
       </div>
     </div>

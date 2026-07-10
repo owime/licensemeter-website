@@ -169,7 +169,14 @@ export const MspBillingActions = ({ manageable, checkoutParam }: Props) => {
     <div className="flex flex-col gap-4">
       {notice}
       {body}
-      {error && <p className="text-danger-text text-sm">{error}</p>}
+      {error && (
+        <p
+          role="alert"
+          className="border-danger-soft bg-danger-soft/50 text-danger-text rounded-xl border px-4 py-3 text-sm"
+        >
+          {error} Retry the action or contact support if it continues.
+        </p>
+      )}
     </div>
   );
 };

@@ -72,6 +72,9 @@ export const PriceEditor = ({
       >
         {pending ? "…" : "Save"}
       </button>
+      {dirty && !pending && !message && (
+        <span className="text-waste-text text-[11px] font-medium">Unsaved</span>
+      )}
       <span
         aria-live="polite"
         className={`max-w-44 text-[11px] ${failed ? "text-danger-text" : "text-moss"}`}

@@ -6,7 +6,7 @@ import { ImportPricesForm } from "./ImportPricesForm";
 import { EmptyState } from "~/components/workspace/EmptyState";
 import { PriceEditor } from "~/components/workspace/PriceRow";
 import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
-import { ButtonAnchor, ButtonLink, Pill } from "~/components/ui";
+import { ButtonAnchor, ButtonLink, Pill, buttonClass } from "~/components/ui";
 import { CONNECTORS } from "~/lib/connectors";
 import { fmtMoney, fmtNumber } from "~/lib/format";
 import { calculatePriceCoverage } from "~/lib/priceCoverage";
@@ -198,7 +198,7 @@ export default async function LicensesPage({
     .filter((section) => section.products.length > 0);
   const filtersActive = Boolean(query) || pricingFilter !== "all";
   const tableEmptyHeading = filtersActive
-    ? "No matching Microsoft products."
+    ? "No matching Microsoft products in this section."
     : "No license data yet.";
   const tableEmptyMessage = filtersActive
     ? "Try a broader search or a different price status."
@@ -216,12 +216,25 @@ export default async function LicensesPage({
             per seat and month. Every impact figure recalculates from your
             numbers. There is no Microsoft API for tenant pricing.
           </p>
+          {isAdmin && (
+            <p className="text-ink-faint mt-2 text-xs">
+              Changed rows show an enabled Save button. For many prices, use the
+              bulk import below.
+            </p>
+          )}
         </div>
-        {locked ? (
-          <ButtonLink href="/app/billing">Upgrade to export</ButtonLink>
-        ) : (
-          <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {isAdmin && (
+            <a href="#bulk-price-import" className={buttonClass("secondary")}>
+              Bulk Import Prices
+            </a>
+          )}
+          {locked ? (
+            <ButtonLink href="/app/billing">Upgrade to Export</ButtonLink>
+          ) : (
+            <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
+          )}
+        </div>
       </header>
 
       {!priceCoverage.complete && priceCoverage.totalProducts > 0 && (
@@ -405,7 +418,7 @@ export default async function LicensesPage({
                 </div>
                 <PriceSourcePill price={p} />
               </div>
-              <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+              <dl className="tnum mt-3 grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
                     Purchased
@@ -459,7 +472,7 @@ export default async function LicensesPage({
         )}
         {sorted.length > 0 && (
           <li className="border-line bg-card border p-4">
-            <dl className="tnum grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
+            <dl className="tnum grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
                   Total purchased
@@ -498,7 +511,10 @@ export default async function LicensesPage({
       </ul>
 
       {adobeProducts.length > 0 && (
-        <section className="rise rise-3 mb-8">
+        <section
+          id="bulk-price-import"
+          className="rise rise-3 mb-8 scroll-mt-24"
+        >
           <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
             Adobe products
           </h2>

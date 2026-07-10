@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { mspEnabled } from "~/env";
-import { Card, Pill } from "~/components/ui";
+import { Card, Pill, buttonClass } from "~/components/ui";
 import type { PillTone } from "~/components/ui";
 import { MspBillingActions } from "~/components/workspace/MspBillingActions";
 import { MspCreateForm } from "~/components/workspace/MspCreateForm";
@@ -101,11 +102,38 @@ export default async function MspPage({
           </h1>
         </header>
         <div className="rise rise-2">
-          <Card title="Not available in the demo">
-            <p className="text-ink-soft text-sm">
-              MSP portfolios bind real client tenants you own onto one
-              subscription. Sign in to a real workspace to create one.
-            </p>
+          <Card title="MSP portfolio preview">
+            <div className="flex flex-col gap-4">
+              <p className="text-ink-soft text-sm">
+                A real MSP account binds client workspaces you own onto one
+                subscription and sorts them by recoverable waste.
+              </p>
+              <div className="border-line bg-line grid gap-px border sm:grid-cols-3">
+                {[
+                  ["Client workspaces", "12"],
+                  ["Monthly spend", "€ 84,200"],
+                  ["Recoverable waste", "€ 11,740"],
+                ].map(([label, value]) => (
+                  <div key={label} className="bg-card p-4">
+                    <p className="text-ink-faint text-[11px] font-medium uppercase">
+                      {label}
+                    </p>
+                    <p className="font-display mt-2 text-2xl">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-ink-faint text-xs">
+                Each row includes sync health, seats, spend, findings, and a
+                direct path into that client workspace. Demo figures here are
+                illustrative and do not create portfolio records.
+              </p>
+              <Link
+                href="/msp"
+                className={buttonClass("secondary", "self-start")}
+              >
+                Explore MSP Packaging
+              </Link>
+            </div>
           </Card>
         </div>
       </div>

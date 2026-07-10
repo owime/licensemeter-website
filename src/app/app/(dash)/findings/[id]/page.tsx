@@ -14,6 +14,64 @@ import { findings, memberships } from "~/server/db/schema";
 
 export const metadata: Metadata = { title: "Finding workflow" };
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const DETAIL_LABELS: Record<string, string> = {
+  upn: "User",
+  displayName: "Display name",
+  lastActivity: "Last activity",
+  copilotLastActivity: "Last Copilot activity",
+  inactiveDays: "Inactive for",
+  accountAgeDays: "Account age",
+  purchased: "Purchased seats",
+  assigned: "Assigned seats",
+  unassigned: "Unassigned seats",
+  usersWithDisabledPlans: "Affected users",
+  inactiveCount: "Inactive seats",
+  totalCount: "Total seats",
+  hint: "Recommended next step",
+  pairs: "Overlapping products",
+  licenses: "Assigned products",
+};
+
+const TECHNICAL_DETAIL_KEYS = new Set([
+  "aggregate",
+  "skuId",
+  "skuPartNumber",
+  "redundantSkuIds",
+]);
+
+const formatDetailValue = (key: string, value: unknown) => {
+  if (typeof value === "number") {
+    return key.endsWith("Days") ? `${value} days` : String(value);
+  }
+  if (typeof value === "string") {
+    if (key.toLowerCase().includes("activity")) return fmtDate(value);
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+          const row = item as Record<string, unknown>;
+          if (typeof row.name === "string") return row.name;
+          if (
+            typeof row.suite === "string" &&
+            typeof row.redundant === "string"
+          ) {
+            return `${row.redundant} is already covered by ${row.suite}`;
+          }
+          return JSON.stringify(row);
+        }
+        return String(item);
+      })
+      .join(", ");
+  }
+  return JSON.stringify(value);
+};
+
 const workflowLabel: Record<string, string> = {
   unassigned: "Not planned",
   planned: "Planned",
@@ -28,6 +86,7 @@ export default async function FindingDetailPage({
 }) {
   const ctx = await requireAccess("viewer");
   const { id } = await params;
+  if (!UUID_PATTERN.test(id)) notFound();
   const [finding, members] = await Promise.all([
     db.query.findings.findFirst({
       where: and(eq(findings.id, id), eq(findings.tenantId, ctx.tenant.id)),
@@ -43,8 +102,12 @@ export default async function FindingDetailPage({
   );
   const canEdit =
     hasRole(ctx, "admin") && !ctx.tenant.isDemo && ctx.entitlement.active;
-  const details = Object.entries(finding.detail).filter(
+  const allDetails = Object.entries(finding.detail).filter(
     ([, value]) => value !== null && value !== undefined && value !== "",
+  );
+  const details = allDetails.filter(([key]) => !TECHNICAL_DETAIL_KEYS.has(key));
+  const technicalDetails = allDetails.filter(([key]) =>
+    TECHNICAL_DETAIL_KEYS.has(key),
   );
 
   return (
@@ -100,6 +163,19 @@ export default async function FindingDetailPage({
               {assignee?.name ?? assignee?.email ?? "Unassigned"}
             </dd>
           </div>
+          {finding.graphUserId && (
+            <div>
+              <dt className="text-ink-faint text-xs">Affected user</dt>
+              <dd className="mt-1 text-sm">
+                <Link
+                  href={`/app/users/${encodeURIComponent(finding.graphUserId)}`}
+                  className="hover:text-brand-text font-medium underline underline-offset-4"
+                >
+                  Open user profile
+                </Link>
+              </dd>
+            </div>
+          )}
           <div>
             <dt className="text-ink-faint text-xs">Due date</dt>
             <dd className="mt-1 text-sm">{fmtDate(finding.dueDate)}</dd>
@@ -122,16 +198,33 @@ export default async function FindingDetailPage({
           {details.map(([key, value]) => (
             <div key={key} className="min-w-0">
               <dt className="text-ink-faint text-xs">
-                {key.replaceAll("_", " ")}
+                {DETAIL_LABELS[key] ?? key.replaceAll("_", " ")}
               </dt>
-              <dd className="mt-1 font-mono text-xs break-words">
-                {typeof value === "string" || typeof value === "number"
-                  ? String(value)
-                  : JSON.stringify(value)}
+              <dd className="mt-1 text-sm break-words">
+                {formatDetailValue(key, value)}
               </dd>
             </div>
           ))}
         </dl>
+        {technicalDetails.length > 0 && (
+          <details className="border-line mt-5 border-t pt-3">
+            <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
+              Technical identifiers
+            </summary>
+            <dl className="mt-2 grid gap-3 sm:grid-cols-2">
+              {technicalDetails.map(([key, value]) => (
+                <div key={key} className="min-w-0">
+                  <dt className="text-ink-faint text-xs">
+                    {key.replaceAll("_", " ")}
+                  </dt>
+                  <dd className="mt-1 font-mono text-xs break-words">
+                    {formatDetailValue(key, value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        )}
         {finding.workflowNote && (
           <div className="border-line mt-5 border-t pt-4">
             <h3 className="text-ink-faint text-xs font-medium uppercase">
@@ -161,6 +254,19 @@ export default async function FindingDetailPage({
               }))}
             />
           </div>
+        </section>
+      )}
+
+      {ctx.tenant.isDemo && finding.status !== "resolved" && (
+        <section className="rise rise-3 border-line bg-card border p-5">
+          <h2 className="text-ink-faint text-xs font-medium tracking-[0.16em] uppercase">
+            Workflow preview
+          </h2>
+          <p className="text-ink-soft mt-2 text-sm leading-relaxed">
+            In a live workspace, admins can assign an owner, set a due date, add
+            an external ticket, leave notes, and move this finding through
+            remediation. Demo data is read-only so you can explore safely.
+          </p>
         </section>
       )}
 

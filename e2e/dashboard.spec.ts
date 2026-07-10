@@ -1,17 +1,20 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const openDemo = async (page: Page) => {
+  await page.goto("http://localhost:3100/");
+  await page
+    .getByRole("button", { name: "Open the sample tenant" })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/app$/);
+};
 
 test("sample dashboard exposes the action-first overview and renewal calendar", async ({
   page,
 }) => {
   // Next's dev server canonicalizes form redirects to localhost. Starting on
   // that host keeps the demo session cookie on the same origin.
-  await page.goto("http://localhost:3100/");
-  await page
-    .getByRole("button", { name: "Open the sample tenant" })
-    .first()
-    .click();
-
-  await expect(page).toHaveURL(/\/app$/);
+  await openDemo(page);
   await expect(
     page.getByRole("heading", { level: 1, name: "Overview" }),
   ).toBeVisible();
@@ -31,8 +34,9 @@ test("sample dashboard exposes the action-first overview and renewal calendar", 
   await expect(
     page.getByRole("heading", { level: 1, name: "Renewals" }),
   ).toBeVisible();
+  await expect(page.getByText("Microsoft Customer Agreement")).toBeVisible();
   await expect(
-    page.getByText("No contract renewals recorded yet."),
+    page.getByText(/Decision due in|Notice deadline/).first(),
   ).toBeVisible();
 
   await page.setViewportSize({ width: 375, height: 812 });
@@ -40,4 +44,66 @@ test("sample dashboard exposes the action-first overview and renewal calendar", 
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test("portfolio and malformed finding routes recover inside the app shell", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await page.goto("http://localhost:3100/app/portfolio");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Portfolio" }),
+  ).toBeVisible();
+  await expect(page.getByText("One workspace connected")).toBeVisible();
+
+  await page.goto("http://localhost:3100/app/findings/not-a-real-id");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Not found" }),
+  ).toBeVisible();
+  await expect(page.getByText(/failed to load/i)).toHaveCount(0);
+});
+
+test("dense dashboard pages do not overflow a 320px viewport", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await page.setViewportSize({ width: 320, height: 640 });
+  for (const path of [
+    "/app",
+    "/app/licenses",
+    "/app/ai-costs",
+    "/app/findings",
+  ]) {
+    await page.goto(`http://localhost:3100${path}`);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow, `${path} has horizontal overflow`).toBeLessThanOrEqual(1);
+  }
+});
+
+test("finding details expose friendly data and link to the affected user", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await page.goto("http://localhost:3100/app/findings");
+  await page
+    .getByRole("link", { name: /user profile/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/app\/users\//);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Findings for this user" }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: /Disabled|activity|licensed|Copilot/i })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/app\/findings\/[0-9a-f-]+$/);
+  await expect(
+    page.getByRole("heading", { name: "Finding details" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Workflow preview" }),
+  ).toBeVisible();
 });
