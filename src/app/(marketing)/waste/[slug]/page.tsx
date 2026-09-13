@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { DemoClip } from "~/components/landing/DemoClip";
 import { SignInButtons } from "~/components/SignInButtons";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 import { WASTE_EXPLAINERS, wasteExplainer } from "../content";
 
@@ -203,8 +202,8 @@ export default async function WasteExplainerPage({
             primaryLabel="Run my free scan"
           />
           <p className="text-ink-faint mt-3 text-xs">
-            After the free scan, {TRIAL_DAYS} days of full monitoring, free. No
-            credit card, read-only access.
+            Free scans and continuous monitoring. No credit card, read-only
+            access.
           </p>
         </div>
       </section>

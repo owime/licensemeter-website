@@ -30,9 +30,9 @@ export default async function AiCostsPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
   const isAdmin = hasRole(ctx, "admin");
-  // CSV/scan trials never get syncRuns rows and cannot sync connectors;
+  // CSV/scan imports never get syncRuns rows and cannot sync connectors;
   // their freshness signal is the import time on the user snapshots.
-  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
+  const isImported = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
   const [rows, aiConns, lastRun, importedUser] = await Promise.all([
     db.query.aiSpendDaily.findMany({
@@ -54,7 +54,7 @@ export default async function AiCostsPage() {
       where: eq(syncRuns.tenantId, tenantId),
       orderBy: desc(syncRuns.startedAt),
     }),
-    isTrial
+    isImported
       ? db.query.tenantUsers.findFirst({
           where: eq(tenantUsers.tenantId, tenantId),
           orderBy: desc(tenantUsers.syncedAt),
@@ -133,7 +133,7 @@ export default async function AiCostsPage() {
     lastRun?.steps.filter(
       (s) => s.status === "warning" || s.status === "failed",
     ).length ?? 0;
-  // Admins on a connected (non-trial) workspace get a manual sync, matching the
+  // Admins on a connected workspace with sync enabled get a manual sync, matching the
   // Overview header.
   const canSync = isAdmin && Boolean(ctx.tenant.consentedAt);
 
@@ -179,7 +179,7 @@ export default async function AiCostsPage() {
           <p className="text-ink-soft mt-1 text-sm">
             {lastRun?.status === "running"
               ? "Sync running…"
-              : isTrial
+              : isImported
                 ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
                 : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
@@ -210,7 +210,7 @@ export default async function AiCostsPage() {
                 Entra ID, so departed people who still hold live API keys
                 surface as findings.
               </p>
-              {isTrial ? (
+              {isImported ? (
                 <>
                   <p className="text-ink-soft max-w-2xl text-sm">
                     Connect your Microsoft 365 tenant first, then add the AI

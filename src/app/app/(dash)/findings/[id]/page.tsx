@@ -100,8 +100,7 @@ export default async function FindingDetailPage({
   const assignee = members.find(
     (member) => member.id === finding.assigneeMembershipId,
   );
-  const canEdit =
-    hasRole(ctx, "admin") && !ctx.tenant.isDemo && ctx.entitlement.active;
+  const canEdit = hasRole(ctx, "admin") && !ctx.tenant.isDemo;
   const allDetails = Object.entries(finding.detail).filter(
     ([, value]) => value !== null && value !== undefined && value !== "",
   );

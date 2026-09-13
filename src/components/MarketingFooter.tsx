@@ -29,7 +29,6 @@ const ENGLISH = {
       title: "Product",
       links: [
         ["/#get-started", "Start free"],
-        ["/pricing", "Pricing"],
         ["/msp", "For MSPs"],
         ["/connectors", "Connectors"],
         ["/security", "Security"],
@@ -77,7 +76,6 @@ const GERMAN = {
         ["/de/security", "Sicherheit"],
         ["/de/trust-center", "Trust Center"],
         ["/connectors", "Konnektoren (EN)"],
-        ["/pricing", "Preise (EN)"],
       ],
     },
     {

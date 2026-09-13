@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { MarketingMobileNav } from "~/components/MarketingMobileNav";
 
 const ENGLISH = [
-  { href: "/pricing", label: "Pricing" },
   { href: "/msp", label: "MSP" },
   { href: "/trust-center", label: "Trust Center" },
   { href: "/faq", label: "FAQ" },

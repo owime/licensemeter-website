@@ -1,5 +1,5 @@
 /**
- * Pure parsing/mapping for the zero-consent CSV trial: turns the two
+ * Pure parsing/mapping for the zero-consent CSV import: turns the two
  * Microsoft 365 admin center exports a Reports Reader can produce into the
  * same shapes the Graph sync stores, without touching env or the database.
  *

@@ -116,7 +116,7 @@ export default async function ConnectPage({
 
       <div className="border-line bg-card mt-4 border p-4">
         <p className="text-ink-soft text-sm">
-          No admin with consent rights at hand? Start with the CSV trial: two
+          No admin with consent rights at hand? Start with the CSV import: two
           admin-center exports, no consent at all.
         </p>
         <div className="mt-3">

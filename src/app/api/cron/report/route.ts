@@ -15,7 +15,7 @@ export const maxDuration = 300;
 /**
  * Monthly PDF waste report to workspace owners/admins, for workspaces that
  * opted in via Settings. Runs on the 1st right after the nightly sync, so
- * the numbers are hours old at most. Trial workspaces (consentedAt null)
+ * the numbers are hours old at most. Imported workspaces (consentedAt null)
  * are included: their imported data is valid and the report is the
  * retention hook. But tenants with no stored data at all are skipped.
  * No-op until Resend is configured.

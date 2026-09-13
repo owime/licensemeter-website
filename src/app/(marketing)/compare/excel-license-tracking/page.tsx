@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 export const metadata: Metadata = {
   title: "LicenseMeter vs tracking licenses in Excel",
@@ -26,7 +25,7 @@ const COMPARISON_ROWS = [
     spreadsheet:
       "Free, apart from the hours spent keeping it honest - and those hours are the whole product.",
     licensemeter:
-      "Flat monthly price per tenant, sized by seat count. The first scan is free.",
+      "Free for every tenant, including continuous monitoring and exports.",
   },
   {
     dimension: "Freshness",
@@ -245,7 +244,7 @@ export default function ExcelLicenseTrackingComparePage() {
             href={`${signInPath()}?returnTo=${encodeURIComponent("/app/connect/csv")}`}
             className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
-            CSV trial
+            CSV import
           </a>{" "}
           computes your waste number from two Microsoft 365 admin center
           exports, with no consent at all. The link signs you in with Microsoft
@@ -279,8 +278,8 @@ export default function ExcelLicenseTrackingComparePage() {
             primaryLabel="Run my free scan"
           />
           <p className="text-ink-faint mt-3 text-xs">
-            After the free scan, {TRIAL_DAYS} days of full monitoring, free. No
-            credit card, read-only access.
+            Free scans and continuous monitoring. No credit card, read-only
+            access.
           </p>
         </div>
       </section>

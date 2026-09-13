@@ -31,18 +31,7 @@ import type {
   WorkloadActivity,
 } from "~/server/types";
 
-/**
- * One row per MSP account: the billing entity for a managed-service provider
- * that owns many client workspaces (tenants). Billed by ONE quantity-based
- * Stripe subscription (unit = MSP_PRICE_EUR per connected client tenant), so
- * the subscription columns mirror the relevant tenant billing fields. INERT
- * until mspEnabled(): no tenant carries an mspAccountId today, so this table is
- * never read on the live single-tenant path.
- *
- * TODO(phase-2): MSP account creation + cross-workspace membership; the Stripe
- * quantity-subscription create/sync (on tenant connect/disconnect) and the
- * webhook handling that mirrors subscriptionStatus/paidUntil onto this row.
- */
+/** Historical MSP billing records retained for database compatibility. Unused by the free service. */
 export const mspAccounts = pgTable(
   "msp_accounts",
   {
@@ -171,10 +160,8 @@ export const tenants = pgTable(
     isDemo: boolean("is_demo").notNull().default(false),
     consentedAt: timestamp("consented_at", { withTimezone: true }),
     /**
-     * Immutable trial anchor, written once at tenant creation and NEVER
-     * updated (unlike consentedAt, which is re-stamped on every reconnect and
-     * would reset the trial clock). entitlementOf anchors on
-     * trialStartedAt ?? createdAt.
+     * Historical billing fields retained for database compatibility.
+     * No new trial timestamps are written and none of these fields restrict access.
      */
     trialStartedAt: timestamp("trial_started_at", { withTimezone: true }),
     /** Stripe customer id (cus_…); created lazily at first Checkout, null on trial. */

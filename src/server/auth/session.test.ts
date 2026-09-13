@@ -134,7 +134,7 @@ describe("validateReturnTo", () => {
     expect(validateReturnTo(undefined)).toBeNull();
     expect(validateReturnTo("")).toBeNull();
     expect(validateReturnTo("/")).toBeNull();
-    expect(validateReturnTo("/pricing")).toBeNull();
+    expect(validateReturnTo("/faq")).toBeNull();
     expect(validateReturnTo("app/connect")).toBeNull();
   });
 

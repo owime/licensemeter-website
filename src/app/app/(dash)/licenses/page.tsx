@@ -6,7 +6,7 @@ import { ImportPricesForm } from "./ImportPricesForm";
 import { EmptyState } from "~/components/workspace/EmptyState";
 import { PriceEditor } from "~/components/workspace/PriceRow";
 import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
-import { ButtonAnchor, ButtonLink, Pill, buttonClass } from "~/components/ui";
+import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { CONNECTORS } from "~/lib/connectors";
 import { fmtMoney, fmtNumber } from "~/lib/format";
 import { calculatePriceCoverage } from "~/lib/priceCoverage";
@@ -53,12 +53,11 @@ export default async function LicensesPage({
     ? requestedFilter
     : "all";
   const isAdmin = hasRole(ctx, "admin");
-  const locked = !ctx.entitlement.active;
   const currency = ctx.tenant.currency;
-  // Trial workspaces (consentedAt null, never the demo) have no sync button,
+  // Imported workspaces (consentedAt null, never the demo) have no sync button,
   // so do not tell them to run one.
-  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
-  const emptyMessage = isTrial
+  const isImported = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
+  const emptyMessage = isImported
     ? "No license data yet. Upload a fresh export to update this workspace."
     : "No license data yet. Run a sync.";
 
@@ -229,11 +228,7 @@ export default async function LicensesPage({
               Bulk Import Prices
             </a>
           )}
-          {locked ? (
-            <ButtonLink href="/app/billing">Upgrade to Export</ButtonLink>
-          ) : (
-            <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
-          )}
+          <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
         </div>
       </header>
 
@@ -607,14 +602,13 @@ export default async function LicensesPage({
             <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
               Bulk price import
             </h2>
-            {!locked && (
-              <a
-                href="/api/export/pricebook"
-                className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
-              >
-                Export price book CSV
-              </a>
-            )}
+
+            <a
+              href="/api/export/pricebook"
+              className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
+            >
+              Export price book CSV
+            </a>
           </div>
           <p className="text-ink-soft mt-1 max-w-2xl text-sm">
             Maintaining prices for many products or workspaces? Export the price

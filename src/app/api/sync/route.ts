@@ -44,8 +44,6 @@ export const POST = async (req: Request) => {
   const ctx = await apiAccess("admin");
   if (!ctx)
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!ctx.entitlement.active)
-    return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
   // runSync holds its own concurrency lock; this only blunts hammering the
   // endpoint with costly Graph pulls.
   if (!(await rateLimitDurable(`sync:${ctx.tenant.id}`, 3, 10 * 60 * 1000))) {

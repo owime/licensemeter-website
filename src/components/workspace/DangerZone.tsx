@@ -8,18 +8,9 @@ import type { ActionResult } from "~/server/actions";
 /**
  * Owner-only workspace deletion behind a type-the-name confirmation: the delete
  * button stays disabled until the workspace name is typed exactly, the strongest
- * guard for an irreversible "delete everything" action. When the workspace has a
- * live subscription (active, trialing or past_due — the same set teardown
- * cancels), the copy warns that it is cancelled immediately with no refund for
- * the remaining period.
+ * guard for an irreversible deletion.
  */
-export const DangerZone = ({
-  tenantName,
-  activeSubscription = false,
-}: {
-  tenantName: string;
-  activeSubscription?: boolean;
-}) => {
+export const DangerZone = ({ tenantName }: { tenantName: string }) => {
   const [confirmText, setConfirmText] = useState("");
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null) => disconnectTenant(),
@@ -40,13 +31,6 @@ export const DangerZone = ({
           Disconnecting deletes every synced record for {tenantName}: users,
           findings, prices, history. The admin consent in your tenant can then
           be revoked under Enterprise applications.
-          {activeSubscription && (
-            <span className="text-danger-text">
-              {" "}
-              Your current subscription is cancelled immediately, with no refund
-              for the remaining period.
-            </span>
-          )}
         </p>
         <form
           action={formAction}

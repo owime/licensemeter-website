@@ -274,10 +274,6 @@ const EN: DpaDoc = {
           kind: "p",
           text: "On termination of the processing, and at the Controller's choice, the Processor deletes or returns all personal data processed on the Controller's behalf and deletes existing copies, unless Union or Member State law requires storage. Disconnecting a workspace in the Service deletes all synchronized data immediately and irreversibly; remaining copies in routine encrypted backups are overwritten within the backup rotation window (currently around seven days).",
         },
-        {
-          kind: "p",
-          text: "Where the Service involves billing, the payment subprocessor named in Annex 3 retains invoice and transaction data for the period required by statutory tax and commercial-law retention duties, even after deletion of the workspace.",
-        },
       ],
     },
     {
@@ -424,7 +420,7 @@ const EN: DpaDoc = {
         {
           title: "Deletion and separation",
           items: [
-            "Disconnecting a workspace deletes all synchronized data immediately and irreversibly (cascade delete), including the audit log and, where billing applies, the payment-provider customer record.",
+            "Disconnecting a workspace deletes all synchronized data immediately and irreversibly (cascade delete), including the audit log.",
             "Customer data is logically separated per tenant throughout storage and processing.",
           ],
         },
@@ -477,13 +473,6 @@ const EN: DpaDoc = {
             basis: "EU Standard Contractual Clauses (WorkOS DPA)",
           },
           {
-            name: "Stripe (Stripe Payments Europe Ltd. / Stripe, Inc.)",
-            purpose: "Billing and subscription management (for paid plans)",
-            location: "EU and US",
-            basis:
-              "EU Standard Contractual Clauses (Stripe DPA); retains invoice data to meet statutory tax-retention duties",
-          },
-          {
             name: "Resend Inc.",
             purpose: "Transactional and notification email delivery",
             location: "EU (Ireland region)",
@@ -527,7 +516,7 @@ const EN: DpaDoc = {
     eyebrow: "Data protection",
     pageTitle: "Data Processing Agreement (DPA / AVV)",
     pageIntro:
-      "LicenseMeter processes directory and license metadata on your behalf, so a data processing agreement under Art. 28 GDPR is part of every subscription. The full text is below; download the pre-signed PDF in English or German for your records and procurement checklist.",
+      "LicenseMeter processes directory and license metadata on your behalf, so a data processing agreement under Art. 28 GDPR is included for every workspace. The full text is below; download the pre-signed PDF in English or German for your records and procurement checklist.",
     metaLine: `Version ${VERSION} · Effective ${EFFECTIVE_EN}`,
     howToTitle: "How to put this DPA in place",
     howToSteps: [
@@ -716,10 +705,6 @@ const DE: DpaDoc = {
           kind: "p",
           text: "Nach Beendigung der Verarbeitung löscht der Auftragsverarbeiter nach Wahl des Verantwortlichen alle im Auftrag verarbeiteten personenbezogenen Daten oder gibt sie zurück und löscht vorhandene Kopien, sofern nicht nach dem Recht der Union oder der Mitgliedstaaten eine Aufbewahrung vorgeschrieben ist. Das Trennen eines Arbeitsbereichs im Dienst löscht alle synchronisierten Daten unmittelbar und unwiderruflich; verbleibende Kopien in routinemäßigen verschlüsselten Backups werden innerhalb des Backup-Rotationszeitraums (derzeit etwa sieben Tage) überschrieben.",
         },
-        {
-          kind: "p",
-          text: "Soweit der Dienst eine Abrechnung umfasst, bewahrt der in Anlage 3 genannte Zahlungs-Unterauftragsverarbeiter Rechnungs- und Transaktionsdaten für den Zeitraum auf, der nach den gesetzlichen steuer- und handelsrechtlichen Aufbewahrungspflichten erforderlich ist, auch nach Löschung des Arbeitsbereichs.",
-        },
       ],
     },
     {
@@ -866,7 +851,7 @@ const DE: DpaDoc = {
         {
           title: "Löschung und Trennung",
           items: [
-            "Das Trennen eines Arbeitsbereichs löscht alle synchronisierten Daten unmittelbar und unwiderruflich (Cascade Delete), einschließlich des Audit-Protokolls und - soweit eine Abrechnung erfolgt - des Kundendatensatzes beim Zahlungsdienstleister.",
+            "Das Trennen eines Arbeitsbereichs löscht alle synchronisierten Daten unmittelbar und unwiderruflich (Cascade Delete), einschließlich des Audit-Protokolls.",
             "Kundendaten werden über Speicherung und Verarbeitung hinweg je Mandant logisch getrennt.",
           ],
         },
@@ -919,14 +904,6 @@ const DE: DpaDoc = {
             basis: "EU-Standardvertragsklauseln (WorkOS DPA)",
           },
           {
-            name: "Stripe (Stripe Payments Europe Ltd. / Stripe, Inc.)",
-            purpose:
-              "Abrechnung und Abonnementverwaltung (bei kostenpflichtigen Plänen)",
-            location: "EU und USA",
-            basis:
-              "EU-Standardvertragsklauseln (Stripe DPA); Aufbewahrung von Rechnungsdaten zur Erfüllung gesetzlicher steuerlicher Aufbewahrungspflichten",
-          },
-          {
             name: "Resend Inc.",
             purpose: "Versand transaktionaler und Benachrichtigungs-E-Mails",
             location: "EU (Region Irland)",
@@ -970,7 +947,7 @@ const DE: DpaDoc = {
     eyebrow: "Datenschutz",
     pageTitle: "Auftragsverarbeitungsvertrag (AVV / DPA)",
     pageIntro:
-      "LicenseMeter verarbeitet Verzeichnis- und Lizenzmetadaten in Ihrem Auftrag, daher ist ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO Bestandteil jedes Abonnements. Der vollständige Text steht unten; laden Sie das vorunterzeichnete PDF auf Deutsch oder Englisch für Ihre Unterlagen und Ihre Beschaffungs-Checkliste herunter.",
+      "LicenseMeter verarbeitet Verzeichnis- und Lizenzmetadaten in Ihrem Auftrag, daher ist ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO Bestandteil jedes Arbeitsbereichs. Der vollständige Text steht unten; laden Sie das vorunterzeichnete PDF auf Deutsch oder Englisch für Ihre Unterlagen und Ihre Beschaffungs-Checkliste herunter.",
     metaLine: `Version ${VERSION} · Gültig ab ${EFFECTIVE_DE}`,
     howToTitle: "So setzen Sie diesen AVV in Kraft",
     howToSteps: [

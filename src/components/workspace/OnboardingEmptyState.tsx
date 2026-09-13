@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { buttonClass } from "~/components/ui";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 /**
  * Shown on the dashboard when a workspace has connected no service yet. Sign-in
@@ -72,7 +71,7 @@ export const OnboardingEmptyState = () => (
         LicenseMeter reads your seats read-only and prices every wasted,
         inactive or orphaned license in euros. Connect Microsoft 365 for the
         complete analysis, or upload its license export for a no-admin preview.
-        Your {TRIAL_DAYS}-day trial only starts once data is added.
+        All features are free, with no time limit.
       </p>
     </header>
 

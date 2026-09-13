@@ -145,7 +145,7 @@ export const SaasConnectorPage = async ({
               </details>
             </div>
           ) : microsoftDisconnected && !hasConnector ? (
-            /* CSV-trial / disconnected workspace with nothing imported yet: a
+            /* CSV-import / disconnected workspace with nothing imported yet: a
                connector can never sync without the Microsoft connection, so
                don't collect credentials that would sit idle. An existing
                connector falls through to its normal card with a reconnect

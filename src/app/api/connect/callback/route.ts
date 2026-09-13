@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, sql } from "drizzle-orm";
+import { and, eq, isNull, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { after, type NextRequest } from "next/server";
@@ -130,8 +130,6 @@ export const GET = async (req: NextRequest) => {
         .set({
           tid: grantedTid!,
           consentedAt: new Date(),
-          // Trial starts on first connect; coalesce never resets it on reconnect.
-          trialStartedAt: sql`coalesce(${tenants.trialStartedAt}, now())`,
         })
         .where(eq(tenants.id, target.id));
       await tx
@@ -147,8 +145,7 @@ export const GET = async (req: NextRequest) => {
     // Entra mode: the login IS the Microsoft tenant, so the workspace is keyed
     // by the granted tid (created on first consent) and the initiator is bound
     // as its owner — all in one transaction so a partial write can't leave a
-    // consented tenant with no connection or owner. trialStartedAt is written
-    // once on insert and never on the reconnect update.
+    // consented tenant with no connection or owner.
     tenantId = await db.transaction(async (tx) => {
       const existing = await tx.query.tenants.findFirst({
         where: eq(tenants.tid, grantedTid!),
@@ -160,7 +157,6 @@ export const GET = async (req: NextRequest) => {
           .update(tenants)
           .set({
             consentedAt: new Date(),
-            trialStartedAt: sql`coalesce(${tenants.trialStartedAt}, now())`,
           })
           .where(eq(tenants.id, id));
       } else {
@@ -169,7 +165,6 @@ export const GET = async (req: NextRequest) => {
           .values({
             tid: grantedTid!,
             consentedAt: new Date(),
-            trialStartedAt: new Date(),
           })
           .returning({ id: tenants.id });
         id = inserted!.id;

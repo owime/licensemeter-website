@@ -49,18 +49,19 @@ test("home metadata and conversion labels describe the product consistently", as
   expect(openGraphUrl).toMatch(/^https?:\/\//);
 });
 
-test("pricing interval is keyboard-accessible and updates its state", async ({
-  page,
-}) => {
-  await page.goto("/pricing");
-
-  const monthly = page.getByRole("button", { name: "Monthly" });
-  const annual = page.getByRole("button", { name: /Annual/ });
-  await expect(monthly).toHaveAttribute("aria-pressed", "true");
-  await annual.focus();
-  await page.keyboard.press("Enter");
-  await expect(annual).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/billed annually/).first()).toBeVisible();
+test("pricing pages and references are removed", async ({ page }) => {
+  for (const path of ["/", "/msp", "/de/security"]) {
+    await page.goto(path);
+    await expect(page.locator('a[href*="pricing"]')).toHaveCount(0);
+    await expect(page.locator("#pricing")).toHaveCount(0);
+  }
+  const removed = await page.request.get("/pricing");
+  expect(removed.status()).toBe(404);
+  for (const path of ["/sitemap.xml", "/llms.txt"]) {
+    const response = await page.request.get(path);
+    expect(response.ok()).toBe(true);
+    expect(await response.text()).not.toContain("/pricing");
+  }
 });
 
 test("feature tabs support arrow keys and the modal restores focus", async ({
@@ -126,7 +127,9 @@ test("ROI calculator responds to user assumptions", async ({ page }) => {
   const before = await output.textContent();
   await page.getByLabel("Paid seats").fill("500");
   await expect(output).not.toHaveText(before ?? "");
-  await expect(page.getByText(/At 500 seats/)).toBeVisible();
+  await expect(
+    page.getByText(/LicenseMeter is free at every seat count/),
+  ).toBeVisible();
 });
 
 test("German trust pages localize the shell and document language", async ({

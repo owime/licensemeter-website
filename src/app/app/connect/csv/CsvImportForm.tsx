@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 
 import { Button } from "~/components/ui";
-import { submitCsvTrial, type CsvTrialResult } from "./actions";
+import { submitCsvImport, type CsvImportResult } from "./actions";
 
 const inputClass =
   "min-h-11 w-full border border-line bg-card px-3 py-2 text-sm file:mr-3 file:cursor-pointer file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-canvas focus:border-ink";
@@ -13,10 +13,10 @@ const inputClass =
  * parse/guard failures land in the aria-live region (ImportPricesForm
  * pattern). Success never returns: the action redirects to /app.
  */
-export const CsvTrialForm = () => {
+export const CsvImportForm = () => {
   const [result, formAction, pending] = useActionState(
-    async (_prev: CsvTrialResult | null, formData: FormData) =>
-      submitCsvTrial(formData),
+    async (_prev: CsvImportResult | null, formData: FormData) =>
+      submitCsvImport(formData),
     null,
   );
 
@@ -27,11 +27,11 @@ export const CsvTrialForm = () => {
       className="mt-8 flex flex-col gap-6"
     >
       <div className="flex flex-col gap-2">
-        <label htmlFor="csv-trial-directory" className="text-sm font-medium">
+        <label htmlFor="csv-import-directory" className="text-sm font-medium">
           User export <span className="text-brand-text">(required)</span>
         </label>
         <input
-          id="csv-trial-directory"
+          id="csv-import-directory"
           name="directory"
           type="file"
           required
@@ -46,11 +46,11 @@ export const CsvTrialForm = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="csv-trial-usage" className="text-sm font-medium">
+        <label htmlFor="csv-import-usage" className="text-sm font-medium">
           Usage export <span className="text-ink-faint">(optional)</span>
         </label>
         <input
-          id="csv-trial-usage"
+          id="csv-import-usage"
           name="usage"
           type="file"
           disabled={pending}
@@ -64,11 +64,11 @@ export const CsvTrialForm = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="csv-trial-org-name" className="text-sm font-medium">
+        <label htmlFor="csv-import-org-name" className="text-sm font-medium">
           Workspace name <span className="text-ink-faint">(optional)</span>
         </label>
         <input
-          id="csv-trial-org-name"
+          id="csv-import-org-name"
           name="orgName"
           type="text"
           maxLength={200}

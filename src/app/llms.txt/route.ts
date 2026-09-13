@@ -18,13 +18,12 @@ Operated by UgurLabs UG and maintained by Ugur Koc, Microsoft MVP for Intune and
 - Read-only by design: the connector app holds no write scopes; remediation ships as generated PowerShell scripts that admins review and run themselves.
 - Never reads content: no mailboxes, files or messages. License assignments, sign-in activity and usage metadata only.
 - EU data residency (Postgres, Frankfurt); disconnecting a workspace deletes all synced data immediately.
-- Flat pricing per tenant: Starter € 79/month (up to 250 seats), Growth € 199/month (up to 1.000 seats), Scale € 499/month (up to 2.500 seats). The first waste scan is free.
+- Free for every workspace: all connectors, waste rules, continuous monitoring, reports and exports. No subscription or time limit. MSP portfolios are free too.
 - Works with and without Entra ID P1: detection falls back to Microsoft 365 usage reports when precise sign-in timestamps are unavailable.
 
 ## Pages
 
 - [Home](${base}/): product overview, live demo entry and the free waste scan
-- [Pricing](${base}/pricing): flat per-tenant tiers and what every plan includes
 - [For MSPs](${base}/msp): portfolio view across client tenants, consultant consent flow, per-client price books and QBR-ready reports
 - [ROI calculator](${base}/roi): estimate the monthly license waste for a tenant by seat count and per-seat cost, computed entirely in the browser
 - [Waste patterns](${base}/waste): explainer per detection rule (disabled accounts still licensed, never active, inactive 90+ days, unassigned seats, unused Copilot, licensed guests) with manual PowerShell detection and how LicenseMeter automates it

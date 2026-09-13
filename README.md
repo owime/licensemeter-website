@@ -102,6 +102,6 @@ charts, MSP multi-workspace, per-workspace activity log, weekly digest
 
 Open:
 
-- Stripe billing and seat-band entitlements
+- Free access to every feature, with no subscriptions or trial limits
 - Opt-in write remediation as a separate consent step (deliberately excluded
   while the product promise is strictly read-only)

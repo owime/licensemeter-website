@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 export const metadata: Metadata = {
   title: "LicenseMeter vs the Microsoft 365 admin center",
@@ -28,7 +27,7 @@ const COMPARISON_ROWS = [
     adminCenter:
       "Included with every tenant. The only spend is the admin time it takes to walk the reports.",
     licensemeter:
-      "Flat monthly price per tenant, sized by seat count. The first scan is free.",
+      "Free for every tenant, including continuous monitoring and exports.",
   },
   {
     dimension: "Assignment counts",
@@ -277,8 +276,8 @@ export default function M365AdminCenterComparePage() {
             primaryLabel="Run my free scan"
           />
           <p className="text-ink-faint mt-3 text-xs">
-            After the free scan, {TRIAL_DAYS} days of full monitoring, free. No
-            credit card, read-only access.
+            Free scans and continuous monitoring. No credit card, read-only
+            access.
           </p>
         </div>
       </section>

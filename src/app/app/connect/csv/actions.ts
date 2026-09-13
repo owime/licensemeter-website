@@ -24,15 +24,15 @@ import {
   parseUsageExport,
   type CsvSku,
   type UsageRow,
-} from "~/server/csvTrial";
+} from "~/server/csvImport";
 import { skuDefaultPriceCents } from "~/server/graph/skuCatalog";
 import { rateLimitDurable } from "~/server/rateLimit";
 import { runAnalysis } from "~/server/sync/runSync";
 import type { UserLicense, WorkloadActivity } from "~/server/types";
 
-export type CsvTrialResult = { ok: boolean; error?: string };
+export type CsvImportResult = { ok: boolean; error?: string };
 
-const fail = (error: string): CsvTrialResult => ({ ok: false, error });
+const fail = (error: string): CsvImportResult => ({ ok: false, error });
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 // Upper bound on parsed users: the 5 MB file cap already limits input, but this
@@ -65,30 +65,30 @@ const dominantDomain = (upns: string[]): string | null => {
 };
 
 /**
- * Zero-consent trial: parse the two admin-center exports, store them in the
+ * Zero-consent import: parse the two admin-center exports, store them in the
  * exact shapes the Graph sync uses (tenants.consentedAt null marks the
- * workspace as a trial), prefill prices and run the rules engine. When an
+ * workspace for manual imports), prefill prices and run the rules engine. When an
  * admin later completes the real consent flow, the first sync's
  * upsert-and-prune storage replaces every csv:-prefixed row automatically.
  *
  * No audit entries are written here: the audit helper needs the full
  * AccessContext of an existing workspace, which does not exist before the
  * tenant row is created, and the frozen AuditAction union has no action that
- * truthfully describes a CSV trial import.
+ * truthfully describes a CSV import.
  */
-export const submitCsvTrial = async (
+export const submitCsvImport = async (
   formData: FormData,
-): Promise<CsvTrialResult> => {
+): Promise<CsvImportResult> => {
   const session = await requireSession();
   const { oid, tid, upn, name, email } = session.user;
   const workosUserId = session.user.workosUserId;
 
-  // Either provider may run the CSV trial. entra keys the workspace on the
+  // Either provider may run the CSV import. entra keys the workspace on the
   // signer's Microsoft tenant id (colleagues share one); workos has no Microsoft
-  // tenant, so the trial workspace is keyed on the WorkOS user (a personal
-  // trial — org sharing arrives later with WorkOS organizations).
+  // tenant, so the imported workspace is keyed on the WorkOS user (a personal
+  // workspace; org sharing arrives later with WorkOS organizations).
   if (!oid && !workosUserId) {
-    return fail("Please sign in again to start a CSV trial.");
+    return fail("Please sign in again to start a CSV import.");
   }
 
   // --- Input guards (order: session, sizes, rate limit, parse) ------------
@@ -109,7 +109,7 @@ export const submitCsvTrial = async (
 
   // Keyed by organization (entra tenant) or by user (workos): one uploader gets
   // 10 uploads per hour either way.
-  const rlKey = tid ? `csvtrial:${tid}` : `csvtrial:ws:${workosUserId}`;
+  const rlKey = tid ? `csvimport:${tid}` : `csvimport:ws:${workosUserId}`;
   if (!(await rateLimitDurable(rlKey, 10, 60 * 60 * 1000))) {
     return fail(
       "Too many uploads for your organization. Please try again later.",
@@ -151,7 +151,7 @@ export const submitCsvTrial = async (
   // The owner membership is matched/created by whichever identity the session
   // carries. entra resolves the workspace by Microsoft tenant id (shared across
   // colleagues); workos has none, so it resolves this user's own non-consented
-  // trial workspace, or creates a fresh tid-less one.
+  // imported workspace, or creates a fresh tid-less one.
   const matchActor = oid
     ? eq(memberships.oid, oid)
     : eq(memberships.workosUserId, workosUserId!);
@@ -173,12 +173,12 @@ export const submitCsvTrial = async (
       ? typedName
       : (existing?.name ??
         dominantDomain(directoryRows.map((r) => r.upn)) ??
-        "CSV trial workspace");
+        "CSV import workspace");
 
   let tenantId: string;
   if (existing) {
     if (existing.isDemo) {
-      return fail("The CSV trial is not available for the demo workspace.");
+      return fail("The CSV import is not available for the demo workspace.");
     }
     const membership = await db.query.memberships.findFirst({
       where: and(eq(memberships.tenantId, existing.id), matchActor),
@@ -192,7 +192,7 @@ export const submitCsvTrial = async (
     }
     if (!membership) {
       return fail(
-        "A trial workspace for your organization already exists. Ask the colleague who created it for an invite.",
+        "An imported workspace for your organization already exists. Ask the colleague who created it for an invite.",
       );
     }
     // Replacing the stored data is destructive, so viewers may not re-upload;
@@ -203,7 +203,7 @@ export const submitCsvTrial = async (
       );
     }
     tenantId = existing.id;
-    // Replace the previous upload: in a trial workspace every stored user and
+    // Replace the previous upload: in an imported workspace every stored user and
     // SKU row came from CSV, so clearing both tables (price book untouched,
     // edited prices survive) and repopulating is exact.
     await db.delete(tenantUsers).where(eq(tenantUsers.tenantId, tenantId));
@@ -219,8 +219,7 @@ export const submitCsvTrial = async (
           tid: tid ?? null,
           name: orgName,
           consentedAt: null,
-          // Trial clock starts the moment the workspace is created.
-          trialStartedAt: new Date(),
+
           concealedNames: false,
           hasP1: false,
           activitySignal: hasUsage ? "full" : "none",
@@ -401,9 +400,6 @@ export const submitCsvTrial = async (
       copilotSignal: "none",
       usageAggregate: null,
       copilotAggregate: null,
-      // Start the trial on first connect; coalesce so a re-upload never resets it
-      // (and stamps it when reusing the auto-provisioned, never-connected workspace).
-      trialStartedAt: sql`coalesce(${tenants.trialStartedAt}, now())`,
     })
     .where(eq(tenants.id, tenantId));
 

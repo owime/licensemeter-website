@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteUrl } from "~/env";
-import { MSP_PRICE_EUR } from "~/lib/plans";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { SUPPORT_MAILTO } from "~/lib/support";
 
@@ -47,19 +46,19 @@ const FAQS = [
   },
   {
     q: "Does connecting really require a Global Administrator?",
-    a: `Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's ${CONNECTOR_SCOPES.length} read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV trial computes your waste number from two Microsoft 365 admin center exports.`,
+    a: `Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's ${CONNECTOR_SCOPES.length} read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV import computes your waste number from two Microsoft 365 admin center exports.`,
   },
   {
     q: "Do you offer a DPA (AVV)?",
-    a: "Yes. LicenseMeter acts as a data processor under Art. 28 GDPR; a signed DPA is part of every subscription and available before you connect production data.",
+    a: "Yes. LicenseMeter acts as a data processor under Art. 28 GDPR; a signed DPA is included for every workspace and available before you connect production data.",
   },
   {
     q: "What exactly do you charge for?",
-    a: "The first scan is free. You see your waste number before paying anything. The subscription covers continuous monitoring: nightly syncs, new findings as people join and leave, exports and remediation scripts.",
+    a: "LicenseMeter is free to use, including continuous monitoring, nightly syncs, new findings as people join and leave, exports and remediation scripts. There is no subscription, time limit or credit card requirement.",
   },
   {
     q: "We are an MSP. Can we manage several client tenants?",
-    a: `Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Pricing is € ${MSP_PRICE_EUR} per connected client tenant a month, billed by quantity across your portfolio on one subscription - self-serve, no sales call. See the MSP page for details.`,
+    a: `Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Every client workspace and the portfolio are free. See the MSP page for details.`,
   },
 ] as const;
 

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const openDemo = async (page: Page) => {
-  await page.goto("http://localhost:3100/");
+  await page.goto("/");
   await page
     .getByRole("button", { name: "Open the sample tenant" })
     .first()
@@ -50,13 +50,13 @@ test("portfolio and malformed finding routes recover inside the app shell", asyn
   page,
 }) => {
   await openDemo(page);
-  await page.goto("http://localhost:3100/app/portfolio");
+  await page.goto("/app/portfolio");
   await expect(
     page.getByRole("heading", { level: 1, name: "Portfolio" }),
   ).toBeVisible();
   await expect(page.getByText("One workspace connected")).toBeVisible();
 
-  await page.goto("http://localhost:3100/app/findings/not-a-real-id");
+  await page.goto("/app/findings/not-a-real-id");
   await expect(
     page.getByRole("heading", { level: 1, name: "Not found" }),
   ).toBeVisible();
@@ -74,7 +74,7 @@ test("dense dashboard pages do not overflow a 320px viewport", async ({
     "/app/ai-costs",
     "/app/findings",
   ]) {
-    await page.goto(`http://localhost:3100${path}`);
+    await page.goto(`${path}`);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
@@ -86,7 +86,7 @@ test("finding details expose friendly data and link to the affected user", async
   page,
 }) => {
   await openDemo(page);
-  await page.goto("http://localhost:3100/app/findings");
+  await page.goto("/app/findings");
   await page
     .getByRole("link", { name: /user profile/ })
     .first()
@@ -106,4 +106,43 @@ test("finding details expose friendly data and link to the affected user", async
   await expect(
     page.getByRole("heading", { name: "Workflow preview" }),
   ).toBeVisible();
+});
+
+test("free workspaces expose exports and retire billing routes", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await expect(
+    page.getByRole("link", { name: "Billing", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Upgrade/ })).toHaveCount(0);
+  for (const path of [
+    "findings",
+    "licenses",
+    "pricebook",
+    "report",
+    "remediation",
+    "audit",
+  ]) {
+    const response = await page.request.get(`/api/export/${path}`);
+    expect(response.status(), path).toBe(200);
+  }
+  await page.goto("/app/billing");
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goto("/app/msp");
+  await expect(page).toHaveURL(/\/app\/portfolio$/);
+  for (const path of [
+    "checkout",
+    "portal",
+    "msp/checkout",
+    "msp/portal",
+    "webhook",
+  ]) {
+    const response = await page.request.post(`/api/billing/${path}`, {
+      data: {},
+    });
+    expect(response.status(), path).toBe(404);
+  }
+  const reminders = await page.request.get("/api/cron/trial-reminders");
+  expect(reminders.status()).toBe(404);
 });

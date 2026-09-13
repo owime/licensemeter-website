@@ -9,7 +9,6 @@ import { LeakAlertsToggle } from "~/components/workspace/LeakAlertsToggle";
 import { MemberActions } from "~/components/workspace/MemberActions";
 import { MonthlyReportToggle } from "~/components/workspace/MonthlyReportToggle";
 import { ReplayTourButton } from "~/components/workspace/ReplayTourButton";
-import { TrialRemindersToggle } from "~/components/workspace/TrialRemindersToggle";
 import { RoleSelect } from "~/components/workspace/RoleSelect";
 import { Card, Pill } from "~/components/ui";
 import { fmtDate, fmtDateTime, workspaceLabel } from "~/lib/format";
@@ -165,7 +164,7 @@ export default async function SettingsPage() {
               <dt className="text-ink-faint">Connected since</dt>
               <dd className="mt-0.5">
                 {!ctx.tenant.consentedAt && !ctx.tenant.isDemo
-                  ? "Trial workspace, not connected yet"
+                  ? "Imported workspace, not connected yet"
                   : fmtDate(ctx.tenant.consentedAt)}
               </dd>
             </div>
@@ -228,18 +227,6 @@ export default async function SettingsPage() {
                 {canEdit ? (
                   <MonthlyReportToggle initial={ctx.tenant.monthlyReport} />
                 ) : ctx.tenant.monthlyReport ? (
-                  "On"
-                ) : (
-                  "Off"
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-ink-faint">Trial reminder emails</dt>
-              <dd className="mt-0.5">
-                {canEdit ? (
-                  <TrialRemindersToggle initial={ctx.tenant.trialReminders} />
-                ) : ctx.tenant.trialReminders ? (
                   "On"
                 ) : (
                   "Off"
@@ -491,12 +478,7 @@ export default async function SettingsPage() {
         )}
 
         {isOwner && !ctx.tenant.isDemo && (
-          <DangerZone
-            tenantName={workspaceLabel(ctx.tenant)}
-            activeSubscription={["active", "trialing", "past_due"].includes(
-              ctx.tenant.subscriptionStatus ?? "",
-            )}
-          />
+          <DangerZone tenantName={workspaceLabel(ctx.tenant)} />
         )}
         {ctx.tenant.isDemo && (
           <p className="text-ink-faint text-xs">

@@ -7,7 +7,7 @@ import { getStatusOverview } from "~/server/status";
 export const metadata: Metadata = {
   title: "System status",
   description:
-    "Live operational status for LicenseMeter and the infrastructure it relies on: Vercel, Supabase, WorkOS, Stripe and Resend.",
+    "Live operational status for LicenseMeter and the infrastructure it relies on: Vercel, Supabase, WorkOS and Resend.",
 };
 
 // Incremental static regeneration: probes run at most once a minute, shared

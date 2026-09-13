@@ -13,8 +13,6 @@ export const GET = async (req: NextRequest) => {
   const ctx = await apiAccess("admin");
   if (!ctx)
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!ctx.entitlement.active)
-    return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
 
   // Validate the requested rule against the canonical allow-list (lib/rules);
   // an unknown ?rule= is ignored and the script covers every applicable rule.

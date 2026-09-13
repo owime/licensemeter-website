@@ -92,7 +92,7 @@ const EN: SecurityContent = {
       "The connector application ID is shown on the connect page and in Microsoft’s consent dialog.",
     csv: {
       pre: "No role with consent rights at hand today? The ",
-      linkText: "CSV trial",
+      linkText: "CSV import",
       href: "/app/connect/csv",
       post: " computes your waste number from two Microsoft 365 admin center exports, with no consent at all. The link signs you in with Microsoft first.",
     },
@@ -137,7 +137,7 @@ const EN: SecurityContent = {
   dpa: {
     title: "DPA / Auftragsverarbeitung",
     body: {
-      pre: "LicenseMeter processes directory data on your behalf, so a data processing agreement under Art. 28 GDPR (AVV) is part of every subscription. The full text is published on our ",
+      pre: "LicenseMeter processes directory data on your behalf, so a data processing agreement under Art. 28 GDPR (AVV) is included for every workspace. The full text is published on our ",
       linkText: "Data Processing Agreement",
       href: "/dpa",
       post: " page, where you can download the pre-signed PDF in English or German, add your details and counter-sign it. No need to email and wait.",
@@ -205,7 +205,7 @@ const DE: SecurityContent = {
       "Die Connector-Anwendungs-ID wird auf der Verbindungsseite und im Einwilligungsdialog von Microsoft angezeigt.",
     csv: {
       pre: "Gerade keine Rolle mit Einwilligungsrechten zur Hand? Der ",
-      linkText: "CSV-Test",
+      linkText: "CSV-Import",
       href: "/app/connect/csv",
       post: " berechnet Ihre Verschwendungssumme aus zwei Exporten des Microsoft 365 Admin Centers, ganz ohne Einwilligung. Der Link meldet Sie zunächst mit Microsoft an.",
     },
@@ -250,7 +250,7 @@ const DE: SecurityContent = {
   dpa: {
     title: "AVV / Auftragsverarbeitung",
     body: {
-      pre: "LicenseMeter verarbeitet Verzeichnisdaten in Ihrem Auftrag, daher ist ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO (AVV) Bestandteil jedes Abonnements. Der vollständige Text ist auf unserer Seite ",
+      pre: "LicenseMeter verarbeitet Verzeichnisdaten in Ihrem Auftrag, daher ist ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO (AVV) Bestandteil jedes Arbeitsbereichs. Der vollständige Text ist auf unserer Seite ",
       linkText: "Auftragsverarbeitungsvertrag",
       href: "/de/dpa",
       post: " veröffentlicht; dort laden Sie das vorunterzeichnete PDF auf Deutsch oder Englisch herunter, ergänzen Ihre Angaben und gegenzeichnen es. Kein E-Mail-Verkehr, kein Warten.",

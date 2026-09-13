@@ -78,7 +78,7 @@ describe("welcomeHtml", () => {
     expect(html).toContain("No write access, ever.");
   });
 
-  it("names the accurate consent role and links the CSV trial", () => {
+  it("names the accurate consent role and links the CSV import", () => {
     expect(html).toContain("Privileged Role Administrator");
     expect(html).toContain("/app/connect/csv");
   });

@@ -14,7 +14,7 @@ export const GET = async (req: NextRequest) => {
   const denied = requireCronAuth(req);
   if (denied) return denied;
 
-  // CSV-trial workspaces (consentedAt null) have no Graph access. Syncing
+  // CSV-import workspaces (consentedAt null) have no Graph access. Syncing
   // them could only fail. The demo tenant has consentedAt set by its seed.
   const allTenants = await db.query.tenants.findMany({
     where: isNotNull(tenants.consentedAt),

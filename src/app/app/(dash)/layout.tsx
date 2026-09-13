@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BrandMark } from "~/components/BrandMark";
-import { EntitlementBanner } from "~/components/workspace/EntitlementBanner";
 import { MobileNav } from "~/components/workspace/MobileNav";
 import { NavLinks } from "~/components/workspace/NavLinks";
 import { WorkspaceSwitcher } from "~/components/workspace/WorkspaceSwitcher";
-import { authProvider, mspEnabled } from "~/env";
+import { authProvider } from "~/env";
 import { workspaceLabel } from "~/lib/format";
-import { hasRole, requireAccess } from "~/server/access";
+import { requireAccess } from "~/server/access";
 import { signOutAction } from "~/app/auth/actions";
 
 /* Auth already gates these routes; noindex closes the gap robots.txt leaves
@@ -24,9 +23,6 @@ export default async function WorkspaceLayout({
   const tenantName = workspaceLabel(ctx.tenant);
   // Self-service account page is WorkOS-only; entra users manage profile in Entra.
   const accountEnabled = authProvider() === "workos";
-  // MSP nav appears only when MSP quantity-billing is configured (mirrors how
-  // the route + checkout/portal gate on mspEnabled).
-  const showMsp = mspEnabled();
 
   return (
     <div className="bg-canvas min-h-screen lg:flex">
@@ -43,7 +39,6 @@ export default async function WorkspaceLayout({
         role={ctx.membership.role}
         accountEnabled={accountEnabled}
         showPortfolio={ctx.workspaces.length > 1}
-        showMsp={showMsp}
         workspaces={ctx.workspaces}
         activeId={ctx.tenant.id}
       />
@@ -73,10 +68,7 @@ export default async function WorkspaceLayout({
         </div>
 
         <div className="mt-4 flex-1">
-          <NavLinks
-            showPortfolio={ctx.workspaces.length > 1}
-            showMsp={showMsp}
-          />
+          <NavLinks showPortfolio={ctx.workspaces.length > 1} />
         </div>
 
         <div className="border-sidebar-line border-t px-5 py-4">
@@ -115,10 +107,6 @@ export default async function WorkspaceLayout({
         id="content"
         className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-12"
       >
-        <EntitlementBanner
-          entitlement={ctx.entitlement}
-          isOwner={hasRole(ctx, "owner")}
-        />
         {children}
       </main>
     </div>

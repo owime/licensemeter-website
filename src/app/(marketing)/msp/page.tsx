@@ -4,11 +4,6 @@ import Link from "next/link";
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { buttonClass } from "~/components/ui";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
-import {
-  MSP_LARGE_TENANT_SEATS,
-  MSP_PRICE_ANNUAL_EUR,
-  MSP_PRICE_EUR,
-} from "~/lib/plans";
 import { SUPPORT_MAILTO } from "~/lib/support";
 
 export const metadata: Metadata = {
@@ -64,12 +59,6 @@ const TRUST_ITEMS = [
 
 const BASE = siteUrl();
 
-/* Large-tenant guardrail seat count, German thousands separator (1.000) to
- * match the rest of the site's number formatting. */
-const MSP_LARGE_TENANT_SEATS_LABEL = new Intl.NumberFormat("de-DE").format(
-  MSP_LARGE_TENANT_SEATS,
-);
-
 /* Static breadcrumb; "<" escaped so nothing can terminate the script. */
 const MSP_LD = {
   "@context": "https://schema.org",
@@ -87,10 +76,8 @@ const MSP_LD = {
 
 /* CTA hierarchy mirrors the rest of the marketing site: the primary action is
  * self-serve sign-in (WorkOS AuthKit), landing the MSP on the portfolio page
- * where they create the account and attach their first client. The live demo is
- * the lower-commitment fallback; "Talk to us" stays available for the >1.000
- * seat outliers and security questions. When sign-in is unconfigured we fall
- * back to contact-sales as the primary. */
+ * where they can review connected client workspaces. The live demo and support
+ * are available when sign-in is not configured. */
 const Ctas = ({
   demoEnabled,
   signInOk,
@@ -138,8 +125,8 @@ export default function MspPage() {
   const demoEnabled = isDemoMode();
   const signInOk = signInEnabled();
   /* Land on the MSP portfolio: create the account, then attach the first
-   * client. Same returnTo pattern the homepage and pricing cards use. */
-  const startHref = `${signInPath()}?returnTo=${encodeURIComponent("/app/msp")}`;
+   * client. Same returnTo pattern the homepage use. */
+  const startHref = `${signInPath()}?returnTo=${encodeURIComponent("/app/portfolio")}`;
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
@@ -163,8 +150,8 @@ export default function MspPage() {
         {signInOk && (
           <p className="text-ink-faint mt-3 text-xs">
             Sign in, connect your first client read-only, and see their waste
-            number free. No credit card. Add tenants as you go - €{" "}
-            {MSP_PRICE_EUR} each a month.
+            number free. Add client tenants as you go, with no charge and no
+            credit card.
           </p>
         )}
       </div>
@@ -247,40 +234,13 @@ export default function MspPage() {
 
       <section className="mt-14">
         <h2 className="font-display text-2xl tracking-tight">
-          Simple, predictable per-tenant pricing.
+          Every client tenant, free.
         </h2>
         <p className="text-ink-soft mt-3 max-w-2xl text-sm leading-relaxed">
-          One flat price for each connected client tenant, billed across your
-          whole portfolio on a single subscription. No seat math for normal
-          client tenants, no surprises between QBRs.
+          Connect your client tenants, switch between their workspaces and
+          review your portfolio in one place. Monitoring, reports and exports
+          are included for every connected workspace.
         </p>
-        <div className="border-line bg-card mt-8 border px-6 py-6">
-          <p className="font-display text-3xl tracking-tight">
-            <span className="tnum font-mono">€ {MSP_PRICE_EUR}</span>{" "}
-            <span className="text-ink-soft text-lg">
-              per connected client tenant / month
-            </span>
-          </p>
-          <p className="text-ink-soft mt-3 text-sm leading-relaxed">
-            Or <span className="tnum font-mono">€ {MSP_PRICE_ANNUAL_EUR}</span>{" "}
-            per tenant a year - two months free. Billed by quantity across your
-            whole portfolio, not per workspace.
-          </p>
-          <p className="border-line text-ink-soft mt-4 border-t pt-4 text-sm leading-relaxed">
-            Client tenants over{" "}
-            <span className="tnum font-mono">
-              {MSP_LARGE_TENANT_SEATS_LABEL}
-            </span>{" "}
-            seats are rare enterprise outliers, priced separately -{" "}
-            <a
-              href={SUPPORT_MAILTO}
-              className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-            >
-              talk to us
-            </a>
-            .
-          </p>
-        </div>
         <div className="mt-8">
           <Ctas
             demoEnabled={demoEnabled}

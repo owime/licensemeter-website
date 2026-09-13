@@ -64,9 +64,8 @@ export const clearSessionCookie = async (): Promise<void> => {
 /**
  * GDPR teardown for a disconnecting tenant: delete its WorkOS Organization,
  * which also removes the IdP/Directory records and memberships WorkOS holds for
- * it. Best-effort and non-throwing (mirrors teardownTenantBilling): a WorkOS
- * outage must NOT block the local data deletion — unlike a live subscription
- * there is no ongoing charge — so a failure only logs and ops-alerts. Reuses the
+ * it. Best-effort and non-throwing: a WorkOS outage must not block local
+ * deletion, so a failure only logs and alerts operations. Reuses the
  * same lazy WorkOS client AuthKit constructs from WORKOS_API_KEY.
  */
 export const teardownTenantWorkosOrg = async (orgId: string): Promise<void> => {

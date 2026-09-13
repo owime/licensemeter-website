@@ -10,7 +10,7 @@ const config = {
   serverExternalPackages: ["@electric-sql/pglite"],
   experimental: {
     serverActions: {
-      // The CSV trial posts two admin-center exports (5 MB each, checked
+      // The CSV import posts two admin-center exports (5 MB each, checked
       // server-side) through a server action; the default limit is 1 MB.
       bodySizeLimit: "8mb",
     },

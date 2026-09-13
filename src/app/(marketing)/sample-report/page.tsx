@@ -8,7 +8,6 @@ import {
   DEMO_FIGURES,
   demoEuros,
 } from "~/lib/demoFigures";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 export const metadata: Metadata = {
   title: "Sample license waste report - synthetic demo tenant",
@@ -308,8 +307,8 @@ export default function SampleReportPage() {
 
       <p className="text-ink-faint mt-10 text-xs">
         All figures on this page describe the synthetic demo workspace, not a
-        customer environment. Trial terms: after the free scan, {TRIAL_DAYS}{" "}
-        days of full monitoring, free, no credit card.
+        customer environment. LicenseMeter is free, including continuous
+        monitoring. No credit card required.
       </p>
 
       <script

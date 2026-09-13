@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
-import { TRIAL_DAYS } from "~/lib/plans";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 
 export const metadata: Metadata = {
@@ -27,7 +26,7 @@ const COMPARISON_ROWS = [
     script:
       "Free, apart from the hours it takes to write, run and interpret the output.",
     licensemeter:
-      "Flat monthly price per tenant, sized by seat count. The first scan is free.",
+      "Free for every tenant, including continuous monitoring and exports.",
   },
   {
     dimension: "Data gathering",
@@ -266,8 +265,8 @@ export default function PowershellAuditComparePage() {
             primaryLabel="Run my free scan"
           />
           <p className="text-ink-faint mt-3 text-xs">
-            After the free scan, {TRIAL_DAYS} days of full monitoring, free. No
-            credit card, read-only access.
+            Free scans and continuous monitoring. No credit card, read-only
+            access.
           </p>
         </div>
       </section>

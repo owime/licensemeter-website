@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { getAccessContext, requireSession } from "~/server/access";
-import { CsvTrialForm } from "./CsvTrialForm";
+import { CsvImportForm } from "./CsvImportForm";
 
 export const metadata = {
-  title: "CSV trial",
+  title: "CSV import",
   robots: { index: false, follow: false },
 };
 // The submit action parses, bulk-writes and runs the rules engine before
@@ -17,7 +17,7 @@ export const maxDuration = 300;
  * Reader rights only. Standalone (outside the dash layout) so it is reachable
  * even by an entra-mode user who has no workspace yet.
  */
-export default async function CsvTrialPage() {
+export default async function CsvImportPage() {
   const session = await requireSession();
   // Users without a workspace can't reach /app/settings/* (it bounces to
   // /app/connect); point them there instead so the link doesn't dead-end.
@@ -54,7 +54,7 @@ export default async function CsvTrialPage() {
         </p>
       </div>
 
-      <CsvTrialForm />
+      <CsvImportForm />
 
       <p className="text-ink-faint mt-8 text-xs">
         Have consent rights?{" "}

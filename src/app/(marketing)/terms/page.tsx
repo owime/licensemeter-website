@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { TRIAL_DAYS } from "~/lib/plans";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const metadata: Metadata = {
@@ -23,24 +22,15 @@ const Section = ({
   </section>
 );
 
-/*
- * Provider details are filled. Billing is live: the Service runs on a free scan
- * + TRIAL_DAYS-day trial + paid subscription model (see /pricing, ~/lib/plans),
- * so section 6 describes the trial and paid plans rather than a pre-billing
- * "free of charge" phase. Sign-in is WorkOS AuthKit (multi-method); Microsoft
- * Entra ID is one sign-in option and the tenant data connector. Pricing wording
- * must stay consistent with /pricing and the Privacy Policy. Still to do: have
- * the final text reviewed by a lawyer (this is a structured draft, not legal
- * advice). German law applies; the English text is provided for the product's
- * English-speaking audience.
- */
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <h1 className="font-display text-4xl tracking-tight">
         Terms and Conditions
       </h1>
-      <p className="text-ink-faint mt-3 text-xs">Last updated: June 2026</p>
+      <p className="text-ink-faint mt-3 text-xs">
+        Last updated: September 2026
+      </p>
 
       <Section title="1. Scope and provider">
         <p>
@@ -118,26 +108,12 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section title="6. Prices and billing">
+      <Section title="6. Free access">
         <p>
-          Every workspace starts with a free license scan and a {TRIAL_DAYS}-day
-          trial of the full Service that begins when the first connector is
-          connected; no payment method is required for the trial. Continued use
-          beyond the trial requires a paid subscription, which the Customer
-          selects expressly. Subscriptions are billed per connected Microsoft
-          365 tenant at the plan prices shown on the{" "}
-          <a
-            href="/pricing"
-            className="hover:text-ink underline underline-offset-4"
-          >
-            pricing page
-          </a>{" "}
-          at the time of order; all prices are net and exclusive of any
-          statutory VAT, which is added where applicable. Billing and payment
-          are handled by our payment processor (Stripe); the Provider does not
-          store full card details. If the Customer does not subscribe, access to
-          the paid functions is restricted after the trial while the workspace
-          itself remains viewable.
+          The Service is provided free of charge. All features, including
+          continuous monitoring, reports and exports, are available without a
+          paid subscription or time-limited trial. No payment method is
+          required.
         </p>
       </Section>
 
@@ -169,10 +145,8 @@ export default function TermsPage() {
           The usage relationship runs for an indefinite period. The Customer may
           end it at any time by disconnecting the workspace; on disconnect, all
           synchronized data is deleted immediately and in full (see Privacy
-          Policy). A paid subscription can be cancelled at any time and then
-          runs until the end of the current billing period; it is managed
-          through the billing portal. The right to extraordinary termination for
-          good cause remains unaffected for both parties.
+          Policy). The right to extraordinary termination for good cause remains
+          unaffected for both parties.
         </p>
       </Section>
 

@@ -82,7 +82,7 @@ export const welcomeHtml = (args: {
   const connectUrl = `${args.baseUrl}/app/connect?${UTM}`;
   const securityUrl = `${args.baseUrl}/security?${UTM}`;
   const homeUrl = `${args.baseUrl}/?${UTM}`;
-  const csvTrialUrl = `${args.baseUrl}/app/connect/csv?${UTM}`;
+  const csvImportUrl = `${args.baseUrl}/app/connect/csv?${UTM}`;
   const demoWaste = `€ ${demoEuros(DEMO_FIGURES.monthlyWasteCents)}`;
 
   return `
@@ -118,7 +118,7 @@ export const welcomeHtml = (args: {
     <a href="${escapeHtml(homeUrl)}" style="color:#1c1a16">live demo</a> is a
     155-person tenant wasting ${demoWaste} a month. One click, no account.
     No admin with consent rights at hand? Start with the
-    <a href="${escapeHtml(csvTrialUrl)}" style="color:#1c1a16">CSV trial</a>:
+    <a href="${escapeHtml(csvImportUrl)}" style="color:#1c1a16">CSV import</a>:
     your number from two admin-center exports, no consent at all.
     An Application Administrator? The
     <a href="${escapeHtml(connectUrl)}" style="color:#1c1a16">instant scan</a>
@@ -160,7 +160,7 @@ export const welcomeHtml = (args: {
   </div>
 
   <p style="${sans};font-size:14px;color:#1c1a16;line-height:1.55;margin:0 0 4px">
-    I read every reply. Questions about scopes, pricing or your setup land
+    I read every reply. Questions about scopes, features or your setup land
     directly with me.
   </p>
   <p style="${sans};font-size:13px;color:#6b665d;margin:0 0 32px">
@@ -169,8 +169,7 @@ export const welcomeHtml = (args: {
 
   <p style="${sans};font-size:11px;color:#a39d8f;line-height:1.6;border-top:1px solid #e7e2d6;padding-top:14px;margin:0">
     You get this one email because ${escapeHtml(args.email)} was entered on
-    licensemeter.com. One short note follows when billing starts,
-    or <a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#a39d8f">unsubscribe</a>
+    licensemeter.com. LicenseMeter is free to use. You can <a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#a39d8f">unsubscribe</a>
     any time. LicenseMeter · EU-hosted in Frankfurt.
   </p>
 </div>`;

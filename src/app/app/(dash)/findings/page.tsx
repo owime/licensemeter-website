@@ -12,7 +12,6 @@ import {
   FindingsBulkForm,
   SelectAllFindings,
 } from "~/components/workspace/FindingsSelectionBar";
-import { PaywallCard } from "~/components/workspace/PaywallCard";
 import { PriceAccuracyCard } from "~/components/workspace/PriceAccuracyCard";
 import { ButtonAnchor, Pill, buttonClass } from "~/components/ui";
 import { fmtDate, fmtMoney } from "~/lib/format";
@@ -67,10 +66,7 @@ export default async function FindingsPage({
       ? sp.sort
       : "impact";
   const isAdmin = hasRole(ctx, "admin");
-  const locked = !ctx.entitlement.active;
-  // Acknowledge/bulk/export require an active entitlement; the list itself stays
-  // readable when locked so Overview links here don't dead-end on a paywall.
-  const canAct = isAdmin && !locked;
+  const canAct = isAdmin;
   const currency = ctx.tenant.currency;
 
   // Status + rule filtering, counts and pagination all run in Postgres so a
@@ -243,33 +239,23 @@ export default async function FindingsPage({
               : `${rowCount} findings worth ${fmtMoney(shownImpact, currency)}/mo`}
           </p>
         </div>
-        {!locked && (
-          <div className="flex flex-wrap items-center gap-2">
-            {isAdmin && (
-              <>
-                <CopyScriptButton
-                  url={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
-                />
-                <ButtonAnchor
-                  href={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
-                >
-                  Download .ps1
-                </ButtonAnchor>
-              </>
-            )}
-            <ButtonAnchor href="/api/export/findings">Export CSV</ButtonAnchor>
-          </div>
-        )}
-      </header>
 
-      {locked && (
-        <div className="rise rise-2 mt-8">
-          <PaywallCard
-            isOwner={hasRole(ctx, "owner")}
-            state={ctx.entitlement.state}
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && (
+            <>
+              <CopyScriptButton
+                url={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
+              />
+              <ButtonAnchor
+                href={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
+              >
+                Download .ps1
+              </ButtonAnchor>
+            </>
+          )}
+          <ButtonAnchor href="/api/export/findings">Export CSV</ButtonAnchor>
         </div>
-      )}
+      </header>
 
       <div className="rise rise-2 bg-canvas sticky top-16 z-10 -mx-2 mt-6 space-y-3 px-2 py-2 md:static md:mx-0 md:mt-8 md:p-0">
         <form

@@ -2,7 +2,7 @@
 
 import { X509Certificate } from "node:crypto";
 
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -59,10 +59,9 @@ import { maybeSendWelcome } from "~/server/welcome";
 import {
   sendWorkspaceDeleted,
   workspaceAdminEmails,
-} from "~/server/billingEmail";
+} from "~/server/workspaceEmail";
 import { teardownTenantWorkosOrg } from "~/server/auth/workos";
-import { billingEnabled, byoConnectorEnabled, siteUrl } from "~/env";
-import { teardownTenantBilling } from "~/server/stripe";
+import { byoConnectorEnabled, siteUrl } from "~/env";
 import { runAnalysis, runSync } from "~/server/sync/runSync";
 import { fetchEcbReferenceRates } from "~/server/exchangeRates";
 import type { MembershipRole, RemediationStatus } from "~/server/types";
@@ -73,19 +72,6 @@ const fail = (error: string): ActionResult => ({ ok: false, error });
 const ok = (): ActionResult => ({ ok: true });
 
 const revalidateApp = () => revalidatePath("/app", "layout");
-
-/**
- * Start the 14-day trial on first connector connect. Idempotent: stamps
- * trialStartedAt only when still null, so the clock begins the moment the
- * workspace gets its first service and reconnecting never resets it. An empty
- * (never-connected) workspace keeps trialStartedAt null = full access.
- */
-const startTrialOnFirstConnect = async (tenantId: string): Promise<void> => {
-  await db
-    .update(tenants)
-    .set({ trialStartedAt: new Date() })
-    .where(and(eq(tenants.id, tenantId), isNull(tenants.trialStartedAt)));
-};
 
 const chunk = <T>(arr: T[], size: number): T[][] => {
   const out: T[][] = [];
@@ -501,7 +487,7 @@ export const addMember = async (formData: FormData): Promise<ActionResult> => {
   // An invite must never change the role of someone who has already signed
   // in (that would bypass the owner-removal rule below); only an UNCLAIMED
   // invite may be re-sent with a corrected role, restarting its expiry.
-  // Case-insensitive match: trial-created memberships can store mixed case.
+  // Case-insensitive match: import-created memberships can store mixed case.
   const existing = await db.query.memberships.findFirst({
     where: and(
       eq(memberships.tenantId, ctx.tenant.id),
@@ -747,21 +733,6 @@ export const setMonthlyReport = async (
   return ok();
 };
 
-export const setTrialReminders = async (
-  enabled: boolean,
-): Promise<ActionResult> => {
-  const ctx = await apiAccess("admin");
-  if (!ctx) return fail("Not allowed");
-  if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
-  await db
-    .update(tenants)
-    .set({ trialReminders: enabled === true })
-    .where(eq(tenants.id, ctx.tenant.id));
-  await audit(ctx, "trial_reminders_changed", { enabled: enabled === true });
-  revalidateApp();
-  return ok();
-};
-
 /** Mark one phase of the per-user dashboard tour complete. */
 export const markTourDone = async (
   phase: "welcome" | "data",
@@ -909,8 +880,6 @@ export const triggerSync = async (): Promise<ActionResult> => {
   const ctx = await apiAccess("admin");
   if (!ctx) return fail("Not allowed");
   if (ctx.tenant.isDemo) return fail(DEMO_READONLY);
-  if (!ctx.entitlement.active)
-    return fail("Your trial has ended. Upgrade to run a sync.");
   await audit(ctx, "sync_triggered", {});
   const result = await runSync(ctx.tenant.id);
   revalidateApp();
@@ -970,7 +939,6 @@ export const connectAdobe = async (
       },
     });
   await audit(ctx, "adobe_connected", { orgId });
-  await startTrialOnFirstConnect(ctx.tenant.id);
   // Sync after the response, not inline; see connectSaasConnector.
   after(() => runSync(ctx.tenant.id));
   revalidateApp();
@@ -1073,7 +1041,6 @@ export const connectSaasConnector = async (
       },
     });
   await audit(ctx, "connector_connected", { provider, orgRef });
-  await startTrialOnFirstConnect(ctx.tenant.id);
   // Credentials were validated above; the first sync (a full Graph pull plus
   // every connector) runs after the response rather than blocking it, so the
   // connect button is not held pending for the whole sync and cannot outlive
@@ -1297,14 +1264,13 @@ export const connectMicrosoftByo = async (
         });
 
       // Bind the Microsoft tenant to the workspace so tid-scoped paths resolve.
-      // consentedAt / trialStartedAt are stamped once, never reset on reconnect
+      // Consent is recorded on connection.
       // (coalesce is atomic DB-side, not dependent on a possibly-stale ctx read).
       await tx
         .update(tenants)
         .set({
           tid,
           consentedAt: sql`coalesce(${tenants.consentedAt}, now())`,
-          trialStartedAt: sql`coalesce(${tenants.trialStartedAt}, now())`,
         })
         .where(eq(tenants.id, ctx.tenant.id));
     });
@@ -1460,7 +1426,6 @@ export const importSeats = async (
     imported: rows.length,
     invalid: parsed.invalid.length,
   });
-  await startTrialOnFirstConnect(ctx.tenant.id);
   await runAnalysis(ctx.tenant.id);
   revalidateApp();
   return { ok: true, imported: rows.length, invalid: parsed.invalid.length };
@@ -1557,24 +1522,6 @@ export const disconnectTenant = async (): Promise<ActionResult> => {
   if (ctx.tenant.isDemo)
     return fail("The demo workspace cannot be disconnected");
 
-  // Cancel the Stripe subscription and erase the Stripe customer BEFORE the
-  // local delete, while we still hold the ids. A failed subscription cancel is
-  // a billing-continuation risk: ABORT so the row reconcileTenantSubscription
-  // needs to retry is not lost and the card stops being charged on retry. A
-  // customer-PII-delete failure stays best-effort (invoices are retained
-  // anyway) and does not block. The late customer.subscription.deleted webhook
-  // no-ops once the tenant row is gone.
-  if (billingEnabled()) {
-    const { subscriptionCancelFailed } = await teardownTenantBilling(
-      ctx.tenant,
-    );
-    if (subscriptionCancelFailed) {
-      return fail(
-        "We couldn't cancel your Stripe subscription right now — your workspace was NOT deleted so you won't keep being billed. Please try again in a minute or contact support.",
-      );
-    }
-  }
-
   const actor = ctx.membership.name ?? ctx.membership.email;
   // Resolve the OTHER admins/owners NOW, while the memberships still exist (they
   // cascade-delete with the tenant). Exclude the actor — they triggered it. The
@@ -1597,8 +1544,7 @@ export const disconnectTenant = async (): Promise<ActionResult> => {
   );
 
   // Erase the WorkOS Organization + its IdP/Directory records (GDPR). Only set
-  // under workos auth. Best-effort and non-throwing: unlike a live subscription
-  // there is no ongoing charge, so a WorkOS outage must not block local delete.
+  // under WorkOS auth. A WorkOS outage must not block local deletion.
   if (ctx.tenant.workosOrgId) {
     await teardownTenantWorkosOrg(ctx.tenant.workosOrgId);
   }

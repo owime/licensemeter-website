@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { RoiCalculator } from "~/components/RoiCalculator";
 import { SignInButtons } from "~/components/SignInButtons";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
-import { TRIAL_DAYS } from "~/lib/plans";
 
 export const metadata: Metadata = {
   title: "Microsoft 365 license waste calculator",
@@ -110,18 +108,8 @@ export default function RoiPage() {
           <p className="text-ink-soft mt-3 text-sm leading-relaxed">
             Seats times monthly cost per seat times your assumed waste share: no
             more, no less. The math runs in integer cents, the annual figure is
-            twelve times the monthly one, and the plan comparison uses the same
-            published tiers as the{" "}
-            <Link
-              href="/pricing"
-              className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-            >
-              pricing page
-            </Link>
-            , including the break-even seat count at which a plan would pay for
-            itself under your assumption. Above 2.500 seats the estimate still
-            runs, but published pricing hands over to a tenant-specific
-            conversation. Nothing you type is sent anywhere.
+            twelve times the monthly one. LicenseMeter is free regardless of
+            seat count. Nothing you type is sent anywhere.
           </p>
         </div>
         <div className="border-line bg-card border px-6 py-6">
@@ -167,8 +155,8 @@ export default function RoiPage() {
             primaryLabel="Run my free scan"
           />
           <p className="text-ink-faint mt-3 text-xs">
-            After the free scan, {TRIAL_DAYS} days of full monitoring, free. No
-            credit card, read-only access.
+            Free scans and continuous monitoring. No credit card, read-only
+            access.
           </p>
         </div>
       </section>

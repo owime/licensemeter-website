@@ -8,7 +8,7 @@ import {
   type CsvHeaderError,
   type DirectoryRow,
   type UsageRow,
-} from "./csvTrial";
+} from "./csvImport";
 
 const dirRow = (overrides: Partial<DirectoryRow>): DirectoryRow => ({
   upn: "a@contoso.com",

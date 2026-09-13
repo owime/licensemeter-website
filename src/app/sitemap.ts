@@ -11,7 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   return [
     "",
-    "/pricing",
     "/msp",
     "/roi",
     "/sample-report",

@@ -17,10 +17,8 @@ import { FeatureShowcase } from "~/components/landing/FeatureShowcase";
 import { HeroVisual } from "~/components/landing/HeroVisual";
 import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
-import { MSP_PRICE_EUR, PLANS, TRIAL_DAYS } from "~/lib/plans";
 import { DEMO_FIGURES } from "~/lib/demoFigures";
 import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
-import { SUPPORT_MAILTO } from "~/lib/support";
 
 /* Plain-text names by design: referencing compatibility is nominative use;
  * official logos would need each vendor's permission (see footer notice). */
@@ -59,15 +57,6 @@ const HERO_TRUST = [
   "Never reads mailbox, files or content",
   "EU data residency (Frankfurt)",
   "Disconnect deletes everything",
-] as const;
-
-const INCLUDED = [
-  "Every connector: Microsoft 365, Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT, Claude",
-  "All waste rules, priced in euros per month",
-  "Nightly sync, full history and offboarding-leak alerts",
-  "CSV + PowerShell exports and board-ready PDF reports",
-  "Unlimited workspace members, finance viewers included",
-  "EU-hosted, read-only, disconnect deletes everything",
 ] as const;
 
 const PROOF = [
@@ -115,10 +104,7 @@ export const metadata: Metadata = {
   },
 };
 
-/* Page-level JSON-LD for SEO/GEO. SoftwareApplication reuses the same @id as
- * the pricing page so answer engines treat them as one entity; offers come
- * straight from PLANS (monthly, EUR). "<" escaped so nothing can terminate the
- * script. */
+/* Page-level JSON-LD describes the free application. */
 const HOME_LD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -131,28 +117,19 @@ const HOME_LD = {
       url: BASE,
       description: SITE_DEFINITION,
       publisher: { "@id": `${BASE}/#organization` },
-      offers: PLANS.map((plan) => ({
-        "@type": "Offer",
-        name: plan.name,
-        price: String(plan.monthly),
-        priceCurrency: "EUR",
-        availability: "https://schema.org/InStock",
-        description: `Per tenant, per month, ${plan.seats}`,
-        url: `${BASE}/pricing`,
-      })),
+      isAccessibleForFree: true,
     },
   ],
 };
 
 /* Fully static marketing page; daily revalidation is a safe default that keeps
- * it CDN-cacheable while letting copy/pricing edits propagate within a day. */
+ * it CDN-cacheable while letting content edits propagate within a day. */
 export const revalidate = 86400;
 
 export default async function LandingPage() {
   const signInOk = signInEnabled();
   const signInHref = signInPath();
   const demoEnabled = isDemoMode();
-  const trialHref = signInOk ? signInHref : "#get-started";
 
   return (
     <main>
@@ -186,8 +163,8 @@ export default async function LandingPage() {
                   primaryLabel="Run my free scan"
                 />
                 <p className="text-ink-faint mt-3 text-xs">
-                  After the free scan, {TRIAL_DAYS} days of full monitoring,
-                  free. No credit card, read-only access.
+                  Free scans and continuous monitoring. No credit card,
+                  read-only access.
                 </p>
               </div>
             </div>
@@ -343,112 +320,10 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* 5 — Pricing */}
-      <section id="pricing" className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
-        <div className="max-w-2xl">
-          <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
-            Pricing
-          </p>
-          <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
-            Flat pricing, sized by seats, not by how much waste we find.
-          </h2>
-          <p className="text-ink-soft mt-3 leading-relaxed">
-            Every plan includes every connector and every rule. You only pay for
-            the size of your tenant.
-          </p>
-          <div className="bg-brand-soft text-brand-deep mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
-            <Check className="size-4 shrink-0" />
-            Every plan starts with a {TRIAL_DAYS}-day free trial, no card
-            required
-          </div>
-        </div>
-
-        <div className="mt-10 grid gap-5 lg:grid-cols-3 lg:items-stretch">
-          {PLANS.map((p) => (
-            <article
-              key={p.name}
-              className={`relative flex h-full flex-col rounded-2xl border p-6 ${
-                p.featured
-                  ? "border-brand ring-brand/30 bg-card shadow-float ring-2"
-                  : "border-line bg-card shadow-card"
-              }`}
-            >
-              {p.featured && (
-                <span className="bg-brand-deep absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
-                  Most popular
-                </span>
-              )}
-              <p className="text-ink-faint text-xs font-medium tracking-[0.12em] uppercase">
-                {p.name}
-              </p>
-              <div className="font-display mt-3 text-4xl font-semibold tracking-tight">
-                € {p.monthly}
-                <span className="text-ink-soft text-base font-normal">
-                  {" "}
-                  / month
-                </span>
-              </div>
-              <p className="text-ink-soft mt-1 text-sm">{p.seats}</p>
-              <a
-                href={trialHref}
-                className={buttonClass(
-                  p.featured ? "primary" : "secondary",
-                  "mt-5 w-full",
-                )}
-              >
-                Start free — no card
-              </a>
-              <p className="text-ink-faint mt-3 text-xs">
-                First scan free, then free for {TRIAL_DAYS} days, then €{" "}
-                {p.monthly}/month.
-              </p>
-            </article>
-          ))}
-        </div>
-
-        <div className="border-line bg-subtle mt-6 rounded-2xl border p-6">
-          <p className="text-ink-faint text-xs font-medium tracking-[0.12em] uppercase">
-            Every plan includes
-          </p>
-          <ul className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            {INCLUDED.map((item) => (
-              <li key={item} className="text-ink-soft flex gap-3">
-                <Check className="text-good mt-0.5 size-4 shrink-0" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-ink-soft text-sm">
-            Running Microsoft 365 for many client tenants?{" "}
-            <Link
-              href="/msp"
-              className="text-brand-text font-medium underline underline-offset-4 hover:opacity-80"
-            >
-              € {MSP_PRICE_EUR} per tenant on the MSP plan →
-            </Link>
-            <br className="hidden sm:block" />
-            <span className="text-ink-faint">
-              Over 2.500 seats in one tenant?{" "}
-              <a
-                href={SUPPORT_MAILTO}
-                className="font-medium underline underline-offset-4 hover:opacity-80"
-              >
-                Talk to us →
-              </a>
-            </span>
-          </p>
-          <Link
-            href="/pricing"
-            className="text-brand-text inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4 hover:opacity-80"
-          >
-            Compare plans in detail →
-          </Link>
-        </div>
-
-        {/* Free, open-source PowerShell option (the open-core entry point) */}
+      <section
+        className="mx-auto max-w-6xl px-6 py-16 lg:py-24"
+        aria-label="Open-source PowerShell module"
+      >
         <div className="border-line bg-card mt-6 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-4">
             <span className="bg-ink-panel text-canvas inline-flex size-10 shrink-0 items-center justify-center rounded-xl">
@@ -462,7 +337,7 @@ export default async function LandingPage() {
                 LicenseMeter Scan is a free PowerShell module that scans the
                 Microsoft 365 part locally and writes a self-contained HTML
                 report. No account, nothing leaves your tenant. Connectors,
-                history and alerts are the hosted upgrade.
+                history and alerts are also available in the free hosted app.
               </p>
             </div>
           </div>
@@ -518,8 +393,8 @@ export default async function LandingPage() {
                 primaryLabel="Run my free scan"
               />
               <p className="text-ink-faint mt-3 text-xs">
-                Start free with a {TRIAL_DAYS}-day trial. No credit card,
-                read-only access.
+                Free to use, with no time limit. No credit card, read-only
+                access.
               </p>
             </div>
           </div>

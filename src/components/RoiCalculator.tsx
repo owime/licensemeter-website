@@ -7,28 +7,16 @@ import { demoEuros } from "~/lib/demoFigures";
 import {
   computeRoi,
   DEMO_WASTE_PCT,
-  OVER_CAP,
   parseEuroToCents,
   parseSeats,
 } from "~/components/roiMath";
-
-/** "1.250": seat counts in the same German convention as the money. */
-const fmtSeats = (n: number): string =>
-  new Intl.NumberFormat("de-DE").format(n);
-
-const fmtMultiplier = (n: number): string =>
-  new Intl.NumberFormat("de-DE", {
-    maximumFractionDigits: 1,
-    minimumFractionDigits: 1,
-  }).format(n);
 
 const inputClass =
   "tnum mt-1.5 block min-h-11 w-full rounded-lg border border-line bg-card px-3 py-2.5 text-sm focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:ring-offset-card focus-visible:outline-none";
 
 /**
  * Interactive waste estimate for the landing page. Every number on screen is
- * the visitor's own assumption: we assert nothing; the math (integer cents,
- * plan pick, break-even) lives in roiMath.ts where it is unit-tested.
+ * the visitor's own assumption: we assert nothing; the math (integer cents) lives in roiMath.ts where it is unit-tested.
  */
 export const RoiCalculator = () => {
   const seatsId = useId();
@@ -152,39 +140,15 @@ export const RoiCalculator = () => {
               year before remediation
             </div>
             <p className="border-line text-ink-soft mt-5 border-t pt-4 text-sm leading-relaxed">
-              {result.plan === OVER_CAP ? (
-                <>
-                  More than 2.500 seats: the waste estimate still runs locally,
-                  but published pricing moves to a tenant-specific conversation.
-                </>
-              ) : result.paysOff ? (
-                <>
-                  At {fmtSeats(seats)} seats the {result.plan.name} plan is €{" "}
-                  {result.plan.priceEur}/month. Your assumed waste is{" "}
-                  {fmtMultiplier(
-                    result.monthlyWasteCents / (result.plan.priceEur * 100),
-                  )}
-                  x that monthly plan cost.
-                </>
-              ) : result.breakEvenSeats !== null ? (
-                <>
-                  At this assumption, published pricing only pays back above{" "}
-                  {fmtSeats(result.breakEvenSeats)} seats. Run the free scan
-                  before buying and use the real tenant result.
-                </>
-              ) : (
-                <>
-                  Enter a seat cost and the estimate compares your assumed waste
-                  with the published plans.
-                </>
-              )}
+              LicenseMeter is free at every seat count. Run a scan to replace
+              this estimate with findings from your own workspace.
             </p>
           </div>
           <Link
             href="/#get-started"
             className="text-brand-text mt-4 inline-block text-sm font-medium underline underline-offset-4 hover:opacity-80"
           >
-            Start free instead →
+            Run my free scan →
           </Link>
         </div>
       </div>

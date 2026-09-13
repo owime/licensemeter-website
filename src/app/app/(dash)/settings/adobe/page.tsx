@@ -108,7 +108,7 @@ export default async function AdobeConnectorPage() {
               </details>
             </div>
           ) : microsoftDisconnected && !adobeConn ? (
-            /* CSV-trial / disconnected workspace with no Adobe connection yet:
+            /* CSV-import / disconnected workspace with no Adobe connection yet:
                a connector can never sync without Microsoft, so don't collect
                credentials that would sit idle. An existing connection falls
                through to its card with a reconnect notice instead. */

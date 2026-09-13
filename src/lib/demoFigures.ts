@@ -1,8 +1,8 @@
 /**
  * Figures of the deterministic demo tenant ("Meridian Industries GmbH"),
  * the single worked example quoted across the marketing pages. The landing
- * ledger card and the pricing payback box both render from these constants so
- * the two pages can never contradict each other; demoFigures.test.ts
+ * ledger card and sample report both render from these constants so
+ * the pages can never contradict each other; demoFigures.test.ts
  * recomputes every value from the demo fixtures and the rules engine, so the
  * marketing numbers cannot silently drift from what the live demo shows.
  */

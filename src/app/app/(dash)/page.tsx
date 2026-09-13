@@ -65,11 +65,9 @@ export default async function OverviewPage() {
     );
   }
   const currency = ctx.tenant.currency;
-  // Soft-locked workspaces keep the read-only dashboard but lose exports/sync.
-  const locked = !ctx.entitlement.active;
-  // CSV/scan trials never get syncRuns rows; their freshness signal is the
+  // CSV/scan imports never get syncRuns rows; their freshness signal is the
   // import time on the user snapshots.
-  const isTrial = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
+  const isImported = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
   const openFindingsWhere = and(
     eq(findings.tenantId, tenantId),
@@ -112,7 +110,7 @@ export default async function OverviewPage() {
       where: eq(syncRuns.tenantId, tenantId),
       orderBy: desc(syncRuns.startedAt),
     }),
-    isTrial
+    isImported
       ? db.query.tenantUsers.findFirst({
           where: eq(tenantUsers.tenantId, tenantId),
           orderBy: desc(tenantUsers.syncedAt),
@@ -211,8 +209,8 @@ export default async function OverviewPage() {
       (s) => s.status === "warning" || s.status === "failed",
     ).length ?? 0;
 
-  // Trial workspaces have no sync button, so do not tell them to run one.
-  const emptyInventory = isTrial
+  // Imported workspaces have no sync button, so do not tell them to run one.
+  const emptyInventory = isImported
     ? "No license data yet. Upload a fresh export to update this workspace."
     : "No license data yet. Run a sync.";
 
@@ -410,7 +408,7 @@ export default async function OverviewPage() {
           <p className="text-ink-soft mt-1 text-sm">
             {lastRun?.status === "running"
               ? "Sync running…"
-              : isTrial
+              : isImported
                 ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
                 : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
             {lastRun?.status === "failed" && (
@@ -430,24 +428,16 @@ export default async function OverviewPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {locked ? (
-            <ButtonLink href="/app/billing">Upgrade to export</ButtonLink>
-          ) : (
-            <>
-              <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
-              {/* Trial workspaces (consentedAt null) have no Graph access: a
+          <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
+          {/* Imported workspaces (consentedAt null) have no Graph access: a
                   manual sync could only fail. Demo tenants have consentedAt set. */}
-              {hasRole(ctx, "admin") && ctx.tenant.consentedAt && (
-                <SyncNowButton />
-              )}
-            </>
-          )}
+          {hasRole(ctx, "admin") && ctx.tenant.consentedAt && <SyncNowButton />}
         </div>
       </header>
 
       {!ctx.tenant.consentedAt && !ctx.tenant.isDemo && (
         <section className="rise rise-2 mt-8">
-          <Card title="Trial workspace">
+          <Card title="Imported workspace">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-ink-soft max-w-2xl text-sm">
                 Figures come from your last instant scan or CSV upload. Connect
@@ -580,7 +570,6 @@ export default async function OverviewPage() {
       <InventoryTable
         rows={inventoryRows}
         currency={currency}
-        locked={locked}
         emptyText={emptyInventory}
       />
     </div>

@@ -72,7 +72,7 @@ const EN: TrustContent = {
       {
         label: "GDPR DPA, pre-signed",
         detail:
-          "An Art. 28 GDPR data processing agreement is part of every subscription, downloadable and pre-signed.",
+          "An Art. 28 GDPR data processing agreement is included for every workspace, downloadable and pre-signed.",
       },
       {
         label: "Encrypted throughout",
@@ -126,7 +126,7 @@ const EN: TrustContent = {
   lifecycle: {
     title: "Data lifecycle",
     linked: {
-      pre: "Data is collected only by the read-only sync, retained only while your tenant is connected, and deleted on disconnect. Disconnecting a workspace (Settings → Danger zone) deletes all synced data immediately and irreversibly: users, findings, prices, history and the audit log. Revoking the enterprise application in your Entra ID additionally cuts our access at the source. The one exception is the billing provider, which retains invoice data for the period required by statutory tax law. See the ",
+      pre: "Data is collected only by the read-only sync, retained only while your tenant is connected, and deleted on disconnect. Disconnecting a workspace (Settings → Danger zone) deletes all synced data immediately and irreversibly: users, findings, prices, history and the audit log. Revoking the enterprise application in your Entra ID additionally cuts our access at the source. See the ",
       linkText: "Privacy Policy",
       href: "/privacy",
       post: " for retention detail and your data subject rights.",
@@ -213,7 +213,7 @@ const DE: TrustContent = {
       {
         label: "DSGVO-AVV, vorunterzeichnet",
         detail:
-          "Ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO gehört zu jedem Abonnement - herunterladbar und vorunterzeichnet.",
+          "Ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO gehört zu jedem Arbeitsbereich - herunterladbar und vorunterzeichnet.",
       },
       {
         label: "Durchgängig verschlüsselt",
@@ -267,7 +267,7 @@ const DE: TrustContent = {
   lifecycle: {
     title: "Datenlebenszyklus",
     linked: {
-      pre: "Daten werden ausschließlich durch die nur lesende Synchronisierung erhoben, nur gespeichert, solange Ihr Tenant verbunden ist, und bei der Trennung gelöscht. Das Trennen eines Workspace (Einstellungen → Gefahrenzone) löscht alle synchronisierten Daten sofort und unwiderruflich: Benutzer, Ergebnisse, Preise, Verlauf und das Audit-Log. Das Widerrufen der Unternehmensanwendung in Ihrem Entra ID unterbindet unseren Zugriff zusätzlich an der Quelle. Die einzige Ausnahme ist der Zahlungsdienstleister, der Rechnungsdaten für den gesetzlich vorgeschriebenen steuerlichen Zeitraum aufbewahrt. Einzelheiten zur Aufbewahrung und Ihre Betroffenenrechte finden Sie in der ",
+      pre: "Daten werden ausschließlich durch die nur lesende Synchronisierung erhoben, nur gespeichert, solange Ihr Tenant verbunden ist, und bei der Trennung gelöscht. Das Trennen eines Workspace (Einstellungen → Gefahrenzone) löscht alle synchronisierten Daten sofort und unwiderruflich: Benutzer, Ergebnisse, Preise, Verlauf und das Audit-Log. Das Widerrufen der Unternehmensanwendung in Ihrem Entra ID unterbindet unseren Zugriff zusätzlich an der Quelle. Einzelheiten zur Aufbewahrung und Ihre Betroffenenrechte finden Sie in der ",
       linkText: "Datenschutzerklärung",
       href: "/privacy",
       post: ".",

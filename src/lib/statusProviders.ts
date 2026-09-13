@@ -55,14 +55,6 @@ export const STATUS_PROVIDERS: StatusProvider[] = [
     statusPageUrl: "https://status.workos.com",
   },
   {
-    key: "stripe",
-    name: "Stripe",
-    purpose: "Billing and payments",
-    location: "EU and US",
-    statusApiUrl: "https://www.stripestatus.com/api/v2/status.json",
-    statusPageUrl: "https://status.stripe.com",
-  },
-  {
     key: "resend",
     name: "Resend",
     purpose: "Transactional email",

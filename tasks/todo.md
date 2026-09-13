@@ -1,3 +1,7 @@
+# Current service model
+
+LicenseMeter is free. The subscription, trial, paid MSP and Stripe tasks below are historical and superseded by the free-service change described in `BILLING.md`. Do not re-enable billing or trial gates from this backlog.
+
 # Security review + fix plan (2026-07-02) - DONE (uncommitted, awaiting owner commit)
 
 Four parallel security reviewers covered: (A) auth/API routes, (B) server actions & data

@@ -8,8 +8,8 @@ import { runSync } from "~/server/sync/runSync";
 /**
  * Delegated instant scan: a signed-in admin runs the regular sync pipeline
  * once with their OWN delegated Graph token instead of the connector's
- * standing application permissions. The workspace it produces is a trial
- * workspace (tenants.consentedAt stays null) exactly like the CSV trial:
+ * standing application permissions. The workspace it produces is an imported
+ * workspace (tenants.consentedAt stays null) exactly like the CSV import:
  * when the tenant later completes real admin consent, the first app-only
  * sync's upsert-and-prune storage replaces the scan data automatically.
  */
@@ -23,8 +23,8 @@ export type ScanTenantResult =
         | "scan_demo"
         | "scan_already_synced"
         | "scan_already_synced_invite"
-        | "scan_trial_invite"
-        | "scan_trial_role";
+        | "scan_workspace_invite"
+        | "scan_workspace_role";
     };
 
 /**
@@ -42,9 +42,9 @@ export type ScanIdentity = {
 
 /**
  * Resolves (or creates) the workspace an instant scan may write to. Same
- * matrix as the CSV trial (connect/csv/actions.ts): demo never; a consented
- * tenant already syncs nightly; an existing trial workspace is only
- * re-scannable by its admins and owners; otherwise a fresh trial tenant is
+ * matrix as the CSV import (connect/csv/actions.ts): demo never; a consented
+ * tenant already syncs nightly; an existing imported workspace is only
+ * re-scannable by its admins and owners; otherwise a fresh imported tenant is
  * created with the caller as owner, conflict-safe against a colleague racing.
  */
 export const resolveScanTenant = async (
@@ -76,12 +76,12 @@ export const resolveScanTenant = async (
           : "scan_already_synced_invite",
       };
     }
-    if (!membership) return { ok: false, error: "scan_trial_invite" };
+    if (!membership) return { ok: false, error: "scan_workspace_invite" };
     // Replacing the stored data is destructive, so viewers may not re-scan.
     if (membership.role !== "owner" && membership.role !== "admin") {
-      return { ok: false, error: "scan_trial_role" };
+      return { ok: false, error: "scan_workspace_role" };
     }
-    // Trial workspace admin/owner: re-scan allowed. The sync's
+    // Imported workspace admin/owner: re-scan allowed. The sync's
     // upsert-and-prune storage replaces the previous scan or CSV upload
     // exactly.
     return { ok: true, tenantId: existing.id };
@@ -100,8 +100,7 @@ export const resolveScanTenant = async (
         // Placeholder until the scan reads the real name from /organization.
         name: ms.upn.split("@")[1] ?? null,
         consentedAt: null,
-        // Trial clock starts the moment the workspace is created.
-        trialStartedAt: new Date(),
+
         concealedNames: false,
         hasP1: false,
         activitySignal: "none",
@@ -109,7 +108,8 @@ export const resolveScanTenant = async (
       })
       .onConflictDoNothing()
       .returning({ id: tenants.id });
-    if (!inserted) return { ok: false, error: "scan_trial_invite" } as const;
+    if (!inserted)
+      return { ok: false, error: "scan_workspace_invite" } as const;
 
     await tx
       .insert(memberships)

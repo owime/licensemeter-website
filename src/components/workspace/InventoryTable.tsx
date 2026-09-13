@@ -78,12 +78,10 @@ const UtilizationBar = ({
 export const InventoryTable = ({
   rows,
   currency,
-  locked,
   emptyText,
 }: {
   rows: InventoryRow[];
   currency: string;
-  locked: boolean;
   emptyText: string;
 }) => {
   // Default view matches the previous server-rendered order: spend, descending.
@@ -167,14 +165,13 @@ export const InventoryTable = ({
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
           License inventory
         </h2>
-        {!locked && (
-          <a
-            href="/api/export/licenses"
-            className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
-          >
-            Export CSV
-          </a>
-        )}
+
+        <a
+          href="/api/export/licenses"
+          className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
+        >
+          Export CSV
+        </a>
       </div>
 
       {/* Desktop table */}

@@ -22,22 +22,13 @@ const Section = ({
   </section>
 );
 
-/*
- * Controller details are filled (UgurLabs UG, Düsseldorf). The subprocessor
- * list in section 6 is rendered from the definitive list in the DPA
- * (~/lib/dpa SUBPROCESSORS), so it cannot drift from /dpa, /security or
- * /trust-center. Sign-in is WorkOS AuthKit (multi-method; WorkOS is a US
- * subprocessor on SCCs) with Microsoft as one option; billing is live (Stripe),
- * so there is a dedicated billing-data section. The landing page no longer
- * collects visitor emails, so the old "email notification" section was removed.
- * Still to do: have the final text reviewed by a lawyer (this is a structured
- * draft, not legal advice).
- */
 export default function PrivacyPolicyPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <h1 className="font-display text-4xl tracking-tight">Privacy Policy</h1>
-      <p className="text-ink-faint mt-3 text-xs">Last updated: June 2026</p>
+      <p className="text-ink-faint mt-3 text-xs">
+        Last updated: September 2026
+      </p>
 
       <Section title="1. Controller">
         <p>
@@ -136,17 +127,10 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
-      <Section title="5. Billing data">
+      <Section title="5. Free service">
         <p>
-          If an organization subscribes to a paid plan, our payment processor
-          (Stripe) processes the data needed to bill it: contact and billing
-          details, the selected plan, and payment information. This is necessary
-          to perform the contract (Art. 6(1)(b) GDPR). We store the subscription
-          status and invoice metadata; we do not store full card numbers. Stripe
-          retains invoice and transaction data for the period required by
-          statutory tax and commercial-law retention duties, even after a
-          workspace is disconnected. Stripe is listed among the subprocessors
-          below.
+          LicenseMeter is free to use. We do not collect payment methods or
+          process subscription payments for the Service.
         </p>
       </Section>
 

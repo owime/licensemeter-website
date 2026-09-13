@@ -153,7 +153,7 @@ const SHELFWARE_CAPACITY_THRESHOLD = 5000;
  * True for free/viral/capacity SKUs that Microsoft auto-provisions into every
  * tenant (e.g. WINDOWS_STORE's 1,000,000 prepaid units, FLOW_FREE). These carry
  * no cost and represent no purchase, so they are excluded from shelfware
- * findings, the Stripe seat-tier gate, and the dashboard license inventory.
+ * findings and the dashboard license inventory.
  */
 export const isShelfwareExempt = (
   skuPartNumber: string,
@@ -163,10 +163,10 @@ export const isShelfwareExempt = (
   prepaidEnabled >= SHELFWARE_CAPACITY_THRESHOLD;
 
 /**
- * Purchased seats for billing: prepaid (enabled) seats summed only over SKUs
+ * Purchased seats for reporting: prepaid (enabled) seats summed only over SKUs
  * that represent a real purchase. Excludes the same free/viral/capacity SKUs as
  * the shelfware rule, so Microsoft's sentinel allotments (e.g. WINDOWS_STORE's
- * 1,000,000 prepaid units) never inflate the Stripe seat-tier gate (knownSeats).
+ * 1,000,000 prepaid units) never inflate the purchased seat count.
  */
 export const purchasedSeatsOf = (
   skus: readonly { skuPartNumber: string; prepaidEnabled: number }[],

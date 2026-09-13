@@ -111,15 +111,15 @@ export default async function PortfolioPage() {
 
   const rows = ctx.workspaces.map((ws) => {
     const tenant = tenantById.get(ws.id);
-    // CSV/scan trials never get syncRuns rows; show their import date.
-    const isTrial = !tenant?.consentedAt && !ws.isDemo;
+    // CSV/scan imports never get syncRuns rows; show their import date.
+    const isImported = !tenant?.consentedAt && !ws.isDemo;
     const lastRun = runById.get(ws.id);
-    const importedAt = isTrial ? (importById.get(ws.id) ?? null) : null;
+    const importedAt = isImported ? (importById.get(ws.id) ?? null) : null;
     const syncFailed = lastRun?.status === "failed";
     // Plain data, not JSX, so the row stays serializable; the cell decides tone.
     const syncText = syncFailed
       ? "failed"
-      : isTrial
+      : isImported
         ? importedAt
           ? `imported ${fmtDate(importedAt)}`
           : "-"
@@ -129,7 +129,7 @@ export default async function PortfolioPage() {
       currency: tenant?.currency ?? "EUR",
       currencyRatePpm: tenant?.currencyRatePpm ?? 1_000_000,
       snapshot: snapById.get(ws.id),
-      isTrial,
+      isImported,
       syncFailed,
       syncText,
       openFindings: findingsById.get(ws.id) ?? 0,
@@ -251,7 +251,7 @@ export default async function PortfolioPage() {
                 ws,
                 currency,
                 snapshot,
-                isTrial,
+                isImported,
                 syncFailed,
                 syncText,
                 openFindings,
@@ -266,7 +266,7 @@ export default async function PortfolioPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{ws.name}</span>
                       {ws.isDemo && <Pill tone="slate">demo</Pill>}
-                      {isTrial && <Pill tone="gold">trial</Pill>}
+                      {isImported && <Pill tone="gold">imported</Pill>}
                       {ws.id === ctx.tenant.id && (
                         <span className="text-ink-faint text-xs">
                           (current)
@@ -339,7 +339,7 @@ export default async function PortfolioPage() {
             ws,
             currency,
             snapshot,
-            isTrial,
+            isImported,
             syncFailed,
             syncText,
             openFindings,
@@ -352,7 +352,7 @@ export default async function PortfolioPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{ws.name}</span>
                     {ws.isDemo && <Pill tone="slate">demo</Pill>}
-                    {isTrial && <Pill tone="gold">trial</Pill>}
+                    {isImported && <Pill tone="gold">imported</Pill>}
                     {ws.id === ctx.tenant.id && (
                       <span className="text-ink-faint text-xs">(current)</span>
                     )}

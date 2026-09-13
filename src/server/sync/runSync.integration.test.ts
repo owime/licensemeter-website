@@ -15,12 +15,12 @@ import type {
 /**
  * Integration test for the sync lifecycle racing tenant teardown.
  *
- * Harness mirrors the Stripe webhook integration test: the DB is a REAL
+ * The DB is a real
  * Drizzle/PGlite instance (fresh in-memory database per test, schema generated
  * straight from the Drizzle definitions), so the sync_runs_one_running_idx
  * partial unique index, the FK cascade rules and the diffFindings transaction
  * all execute with genuine Postgres semantics. Everything that leaves the
- * process is stubbed: Graph (injected fake client), MSAL, Stripe teardown,
+ * process is stubbed: Graph (injected fake client), MSAL,
  * WorkOS teardown, email and ops notifications, and the Next.js request
  * surface (apiAccess, headers, revalidate, redirect, after).
  *
@@ -33,13 +33,12 @@ import type {
  *  - disconnectMicrosoft during a running sync: dataset purged, the running
  *    sync_runs row and findings are left in place (tenant survives)
  *  - disconnectTenant during a running sync: the delete SUCCEEDS and the
- *    running run cascades away; a failed Stripe cancel blocks the delete
+ *    running run cascades away regardless of historical payment state
  */
 
 // --- mutable test state, captured by the vi.mock factories below ------------
 
 let currentDb: ReturnType<typeof makeDb>;
-let billingOn = false;
 
 /** Minimal AccessContext shape; apiAccess is mocked to return this. */
 type TestCtx = {
@@ -67,9 +66,6 @@ type TestCtx = {
 let currentCtx: TestCtx | null = null;
 
 const notifyOpsMock = vi.fn(() => Promise.resolve());
-const teardownTenantBillingMock = vi.fn(() =>
-  Promise.resolve({ subscriptionCancelFailed: false }),
-);
 const sendWorkspaceDeletedMock = vi.fn(() => Promise.resolve());
 const workspaceAdminEmailsMock = vi.fn(() => Promise.resolve([] as string[]));
 const teardownWorkosMock = vi.fn(() => Promise.resolve());
@@ -84,10 +80,7 @@ const redirectMock = vi.fn((url: string): never => {
 
 vi.mock("~/env", () => ({
   env: { NODE_ENV: "test", AUTH_SECRET: "test-secret-test-secret-test-secret" },
-  billingEnabled: () => billingOn,
   byoConnectorEnabled: () => true,
-  mspEnabled: () => false,
-  taxEnabled: () => false,
   authProvider: () => "entra",
   siteUrl: () => "http://localhost:3000",
   appBaseUrl: () => "http://localhost:3000",
@@ -122,7 +115,7 @@ vi.mock("~/server/email", () => ({
   inviteHtml: () => "",
 }));
 
-vi.mock("~/server/billingEmail", () => ({
+vi.mock("~/server/workspaceEmail", () => ({
   sendWorkspaceDeleted: (...args: unknown[]) =>
     sendWorkspaceDeletedMock(...(args as [])),
   workspaceAdminEmails: (...args: unknown[]) =>
@@ -136,11 +129,6 @@ vi.mock("~/server/welcome", () => ({
 vi.mock("~/server/auth/workos", () => ({
   teardownTenantWorkosOrg: (...args: unknown[]) =>
     teardownWorkosMock(...(args as [])),
-}));
-
-vi.mock("~/server/stripe", () => ({
-  teardownTenantBilling: (...args: unknown[]) =>
-    teardownTenantBillingMock(...(args as [])),
 }));
 
 // actions.ts is imported for disconnect coverage; currency conversion itself
@@ -328,17 +316,12 @@ const getRuns = () => currentDb.select().from(schema.syncRuns);
 // --- per-test setup ----------------------------------------------------------
 
 beforeEach(async () => {
-  billingOn = false;
   currentCtx = null;
   const client = new PGlite();
   await seedSchema(client);
   currentDb = makeDb(client);
 
   notifyOpsMock.mockClear();
-  teardownTenantBillingMock.mockClear();
-  teardownTenantBillingMock.mockResolvedValue({
-    subscriptionCancelFailed: false,
-  });
   sendWorkspaceDeletedMock.mockClear();
   workspaceAdminEmailsMock.mockClear();
   teardownWorkosMock.mockClear();
@@ -475,7 +458,6 @@ describe("disconnectMicrosoft during a running sync", () => {
 
 describe("disconnectTenant during a running sync", () => {
   it("the delete succeeds and cascades away the running run, users and findings", async () => {
-    billingOn = true;
     const tenant = await seedTenant({ tid: TID, consentedAt: new Date() });
     await seedMicrosoftData();
     await seedRunningRun();
@@ -496,31 +478,22 @@ describe("disconnectTenant during a running sync", () => {
     ]) {
       expect(await countRows(table)).toBe(0);
     }
-    // Stripe teardown ran before the local delete; ops got the durable signal.
-    expect(teardownTenantBillingMock).toHaveBeenCalledTimes(1);
+    // Ops receives the durable deletion signal.
     expect(notifyOpsMock).toHaveBeenCalledWith(
       expect.stringContaining("workspace deleted"),
     );
   });
 
-  it("a failed Stripe cancel blocks the delete; the running run is untouched", async () => {
-    billingOn = true;
-    teardownTenantBillingMock.mockResolvedValue({
-      subscriptionCancelFailed: true,
+  it("historical payment state cannot block workspace deletion", async () => {
+    const tenant = await seedTenant({
+      subscriptionStatus: "past_due",
+      trialStartedAt: new Date("2020-01-01"),
+      paidUntil: new Date("2020-01-15"),
     });
-    const tenant = await seedTenant();
-    const runId = await seedRunningRun();
+    await seedRunningRun();
     currentCtx = makeCtx(tenant, "owner");
-
-    const res = await disconnectTenant();
-
-    expect(res.ok).toBe(false);
-    expect(redirectMock).not.toHaveBeenCalled();
-    // Workspace and the in-flight run both survive the aborted delete.
-    expect(await countRows(schema.tenants)).toBe(1);
-    const runs = await getRuns();
-    expect(runs).toHaveLength(1);
-    expect(runs[0]!.id).toBe(runId);
-    expect(runs[0]!.status).toBe("running");
+    await expect(disconnectTenant()).rejects.toThrow("NEXT_REDIRECT:/");
+    expect(await countRows(schema.tenants)).toBe(0);
+    expect(await getRuns()).toHaveLength(0);
   });
 });

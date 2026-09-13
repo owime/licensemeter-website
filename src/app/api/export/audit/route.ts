@@ -11,9 +11,6 @@ export const GET = async () => {
   const ctx = await apiAccess("admin");
   if (!ctx)
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!ctx.entitlement.active) {
-    return NextResponse.json({ error: "upgrade_required" }, { status: 402 });
-  }
   const entries = await db.query.auditLog.findMany({
     where: eq(auditLog.tenantId, ctx.tenant.id),
     orderBy: desc(auditLog.createdAt),
