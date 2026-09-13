@@ -67,6 +67,14 @@ production alike; there is no migrations directory. Production's
 `scripts/db-*.sql` files are the idempotent RLS/grants scripts run separately
 against production; PGlite is never the production data store.
 
+The durable submission limiter requires `public.rate_limits`. For an existing
+production database missing this table, run `scripts/db-create-rate-limits.sql`
+as `postgres`; it creates only that table and its application-role grants/RLS.
+This repair was applied to the LicenseMeter production project on 2026-09-14.
+Support returns HTTP 503 if the limiter is unavailable and HTTP 429 only when
+an actual quota is exhausted. PostgreSQL query parameters must serialize dates
+explicitly in raw SQL, because PGlite accepts Date objects that Postgres.js rejects.
+
 ## Connecting real tenants
 
 See [SETUP.md](SETUP.md): create the two app registrations with

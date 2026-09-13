@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { rateLimitDurable } from "~/server/rateLimit";
+import {
+  rateLimitDurable,
+  RateLimitUnavailableError,
+} from "~/server/rateLimit";
 vi.mock("~/server/rateLimit", () => ({
+  RateLimitUnavailableError: class extends Error {},
   rateLimitDurable: vi.fn(),
   clientIp: () => "test-ip",
 }));
@@ -126,12 +130,21 @@ describe("support submissions", () => {
     expect(
       vi
         .mocked(rateLimitDurable)
-        .mock.calls.every((call) => call[3] === "deny"),
+        .mock.calls.every((call) => call[3] === "throw"),
     ).toBe(true);
   });
   it("blocks email delivery when a submission limit is reached", async () => {
     vi.mocked(rateLimitDurable).mockResolvedValue(false);
     expect((await POST(request())).status).toBe(429);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("reports limiter outages as service errors, without contacting mail providers", async () => {
+    vi.mocked(rateLimitDurable).mockRejectedValue(
+      new RateLimitUnavailableError(),
+    );
+    const response = await POST(request());
+    expect(response.status).toBe(503);
+    expect(await response.text()).toContain("temporarily unavailable");
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("requires both Turnstile settings if either is enabled", async () => {

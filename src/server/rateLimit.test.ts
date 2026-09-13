@@ -10,6 +10,7 @@ import * as schema from "~/server/db/schema";
 // in-memory PGlite per test, seeded from the live Drizzle schema (same harness
 // pattern as the webhook integration test).
 let currentDb: ReturnType<typeof drizzle>;
+let queryParameters: unknown[][] = [];
 
 vi.mock("~/server/db", () => {
   const proxy = new Proxy(
@@ -32,15 +33,26 @@ async function seedSchema(client: PGlite): Promise<void> {
 }
 
 // Imported after the mock is registered (top-level vi.mock is hoisted).
-const { rateLimitDurable } = await import("./rateLimit");
+const { rateLimitDurable, RateLimitUnavailableError } =
+  await import("./rateLimit");
 
 beforeEach(async () => {
   const client = new PGlite();
   await seedSchema(client);
-  currentDb = drizzle(client, { schema });
+  queryParameters = [];
+  currentDb = drizzle(client, {
+    schema,
+    logger: { logQuery: (_query, params) => queryParameters.push(params) },
+  });
 });
 
 describe("rateLimitDurable", () => {
+  it("encodes timestamp parameters for the production Postgres.js driver", async () => {
+    expect(await rateLimitDurable("test:encoding", 3, 60_000)).toBe(true);
+    const parameters = queryParameters.at(-1)!;
+    expect(parameters.length).toBeGreaterThan(3);
+    expect(parameters.some((value) => value instanceof Date)).toBe(false);
+  });
   it("allows up to max then blocks within the window", async () => {
     const key = "test:allow";
     // max=3: first three allowed, fourth blocked.
@@ -76,6 +88,9 @@ describe("rateLimitDurable", () => {
         false,
       );
       expect(await rateLimitDurable("existing:test", 3, 60000)).toBe(true);
+      await expect(
+        rateLimitDurable("support:test", 3, 60000, "throw"),
+      ).rejects.toBeInstanceOf(RateLimitUnavailableError);
     } finally {
       insert.mockRestore();
       log.mockRestore();

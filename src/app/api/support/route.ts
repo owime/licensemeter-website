@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { clientIp, rateLimitDurable } from "~/server/rateLimit";
+import {
+  clientIp,
+  rateLimitDurable,
+  RateLimitUnavailableError,
+} from "~/server/rateLimit";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const runtime = "nodejs";
@@ -87,21 +91,20 @@ export async function POST(request: Request) {
         `support:ip:${hash(clientIp(request.headers))}`,
         5,
         3_600_000,
-        "deny",
+        "throw",
       ),
       rateLimitDurable(
         `support:email:${hash(data.email.toLowerCase())}`,
         3,
         3_600_000,
-        "deny",
+        "throw",
       ),
-      rateLimitDurable("support:global", 100, 3_600_000, "deny"),
+      rateLimitDurable("support:global", 100, 3_600_000, "throw"),
     ]);
     if (limits.some((allowed) => !allowed))
       return reply(
         {
-          error:
-            "Too many requests. Please try again later or email us directly.",
+          error: `Too many requests. Please try again in an hour or email ${SUPPORT_EMAIL}.`,
         },
         429,
       );
@@ -157,7 +160,14 @@ export async function POST(request: Request) {
         502,
       );
     return reply({ success: true });
-  } catch {
+  } catch (error) {
+    if (error instanceof RateLimitUnavailableError)
+      return reply(
+        {
+          error: `The support form is temporarily unavailable. Please try again shortly or email ${SUPPORT_EMAIL}.`,
+        },
+        503,
+      );
     return reply(
       {
         error: `We could not confirm your request was sent. Try again or email ${SUPPORT_EMAIL}.`,

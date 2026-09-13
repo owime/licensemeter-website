@@ -3,6 +3,13 @@ import { sql } from "drizzle-orm";
 import { db } from "~/server/db";
 import { rateLimits } from "~/server/db/schema";
 
+export class RateLimitUnavailableError extends Error {
+  constructor() {
+    super("The submission limiter is unavailable.");
+    this.name = "RateLimitUnavailableError";
+  }
+}
+
 /**
  * Durable fixed-window rate limiter backed by Postgres, so a limit holds across
  * serverless instances and cold starts (the in-memory limiter resets per
@@ -11,13 +18,14 @@ import { rateLimits } from "~/server/db/schema";
  * the previous one expired) or increment the live one, returning the new count.
  * Returns true when the request is within the limit. On a DB error it fails open
  * (returns true) by default. Public mail endpoints can choose "deny" to stop
- * sending when the limiter is unavailable.
+ * sending when the limiter is unavailable, or "throw" to distinguish a service
+ * failure from an exhausted quota.
  */
 export const rateLimitDurable = async (
   key: string,
   max: number,
   windowMs: number,
-  failureMode: "allow" | "deny" = "allow",
+  failureMode: "allow" | "deny" | "throw" = "allow",
 ): Promise<boolean> => {
   const now = new Date();
   const resetAt = new Date(now.getTime() + windowMs);
@@ -28,14 +36,17 @@ export const rateLimitDurable = async (
       .onConflictDoUpdate({
         target: rateLimits.key,
         set: {
-          count: sql`case when ${rateLimits.resetAt} < ${now} then 1 else ${rateLimits.count} + 1 end`,
-          resetAt: sql`case when ${rateLimits.resetAt} < ${now} then ${resetAt} else ${rateLimits.resetAt} end`,
+          // Raw SQL parameters bypass Drizzle's column date encoder. Postgres.js
+          // needs strings here; PGlite also accepts Dates and hid this bug.
+          count: sql`case when ${rateLimits.resetAt} <= ${now.toISOString()}::timestamptz then 1 else ${rateLimits.count} + 1 end`,
+          resetAt: sql`case when ${rateLimits.resetAt} <= ${now.toISOString()}::timestamptz then ${resetAt.toISOString()}::timestamptz else ${rateLimits.resetAt} end`,
         },
       })
       .returning({ count: rateLimits.count });
     return (row?.count ?? 1) <= max;
   } catch (err) {
     console.error(`rateLimitDurable failed for ${key}`, err);
+    if (failureMode === "throw") throw new RateLimitUnavailableError();
     return failureMode === "allow";
   }
 };
