@@ -66,6 +66,22 @@ describe("rateLimitDurable", () => {
     expect(await rateLimitDurable(key, 1, 60_000)).toBe(false);
   });
 
+  it("can fail closed for public email forms without changing the default", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const insert = vi.spyOn(currentDb, "insert").mockImplementation(() => {
+      throw new Error("database unavailable");
+    });
+    try {
+      expect(await rateLimitDurable("support:test", 3, 60000, "deny")).toBe(
+        false,
+      );
+      expect(await rateLimitDurable("existing:test", 3, 60000)).toBe(true);
+    } finally {
+      insert.mockRestore();
+      log.mockRestore();
+    }
+  });
+
   it("counts keys independently", async () => {
     expect(await rateLimitDurable("test:a", 1, 60_000)).toBe(true);
     expect(await rateLimitDurable("test:a", 1, 60_000)).toBe(false);

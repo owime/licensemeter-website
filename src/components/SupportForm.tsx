@@ -14,12 +14,13 @@ export function SupportForm({
   siteKey,
   nonce,
 }: {
-  siteKey: string;
+  siteKey?: string;
   nonce?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
   const submitting = useRef(false);
+  const requestId = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [token, setToken] = useState("");
   const [pending, setPending] = useState(false);
@@ -29,7 +30,7 @@ export function SupportForm({
 
   useEffect(() => {
     const turnstile = api();
-    if (!ready || !container.current || !turnstile || sent) return;
+    if (!siteKey || !ready || !container.current || !turnstile || sent) return;
     widget.current = turnstile.render(container.current, {
       sitekey: siteKey,
       action: "support",
@@ -53,11 +54,12 @@ export function SupportForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting.current || !token) return;
+    if (submitting.current || (siteKey && !token)) return;
     submitting.current = true;
     setPending(true);
     setError("");
     const data = new FormData(event.currentTarget);
+    requestId.current ??= crypto.randomUUID();
     try {
       const response = await fetch("/api/support", {
         method: "POST",
@@ -69,6 +71,7 @@ export function SupportForm({
           message: data.get("message"),
           website: data.get("website"),
           token,
+          requestId: requestId.current,
         }),
         signal: AbortSignal.timeout(30000),
       });
@@ -119,16 +122,18 @@ export function SupportForm({
     "mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-base text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700";
   return (
     <>
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-        nonce={nonce}
-        onReady={() => setReady(true)}
-        onError={() =>
-          setError(
-            "Verification could not load. Please email customer-care@ugurlabs.odoo.com.",
-          )
-        }
-      />
+      {siteKey && (
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          nonce={nonce}
+          onReady={() => setReady(true)}
+          onError={() =>
+            setError(
+              "Verification could not load. Please email customer-care@ugurlabs.odoo.com.",
+            )
+          }
+        />
+      )}
       <form onSubmit={submit} className="space-y-6" aria-busy={pending}>
         <fieldset disabled={pending} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
@@ -222,7 +227,7 @@ export function SupportForm({
         </p>
         <button
           type="submit"
-          disabled={pending || !token}
+          disabled={pending || Boolean(siteKey && !token)}
           className="min-h-12 rounded-lg bg-teal-800 px-6 py-3 font-semibold text-white transition-colors hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Sending…" : "Send support request"}

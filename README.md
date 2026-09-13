@@ -108,16 +108,22 @@ Open:
 
 ## Support
 
-`/support` offers Crisp chat and a direct email link. The Crisp widget is mounted
-once in the root layout and stays available across public and dashboard pages.
-It uses website ID `d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4` and a light theme.
-The integration does not automatically identify signed-in users or send scan data.
-Its network requirements are included in `next.config.js` using the
-[Crisp domain documentation](https://docs.crisp.chat/guides/others/whitelisting-our-systems/crisp-domain-names/).
+`/support` provides a contact form with name, email, subject and message fields.
+Messages are sent through the existing `RESEND_API_KEY` and `EMAIL_FROM` settings
+to the support address in `src/lib/support.ts`, with the visitor's email as
+Reply-To. `SUPPORT_FROM_EMAIL` can optionally override the verified sender.
+Requests are validated, checked for same-origin submission and honeypot values,
+and limited per IP, email address and globally using the shared Postgres rate
+limiter. Support sends stop if that limiter is unavailable. A request ID keeps
+retries idempotent at the email provider.
 
-To enable the support form, set `RESEND_API_KEY`, `SUPPORT_FROM_EMAIL` (a verified
-Resend sender), `SUPPORT_TURNSTILE_SITE_KEY`, and `SUPPORT_TURNSTILE_SECRET_KEY`.
-Register the deployed hostname with the Turnstile widget and redeploy after
-changing these settings. Requests go to the address in `src/lib/support.ts`, with
-the visitor's email as Reply-To. Until these settings are present, the page uses
-chat and email. Tests mock both providers and send no real support requests.
+Optional Cloudflare Turnstile verification can be enabled with both
+`SUPPORT_TURNSTILE_SITE_KEY` and `SUPPORT_TURNSTILE_SECRET_KEY`. Register the deployed
+hostname with that widget and redeploy after changing the settings.
+
+Crisp is separate from the form. Its floating widget is mounted once in the root
+layout and remains available across public and dashboard pages, using website ID
+`d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4` and light mode. The integration does not
+automatically identify signed-in users or send scan data. Its network requirements
+follow the [Crisp domain documentation](https://docs.crisp.chat/guides/others/whitelisting-our-systems/crisp-domain-names/).
+Tests mock providers and send no real support requests.

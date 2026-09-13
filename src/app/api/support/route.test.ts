@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { rateLimitDurable } from "~/server/rateLimit";
+vi.mock("~/server/rateLimit", () => ({
+  rateLimitDurable: vi.fn(),
+  clientIp: () => "test-ip",
+}));
 import { POST } from "./route";
 const origin = "https://licensemeter.com";
 const payload = {
@@ -8,6 +13,7 @@ const payload = {
   message: "My export failed",
   website: "",
   token: "challenge-token",
+  requestId: "36da2bfe-e342-42ea-b856-1f2868b13ec4",
 };
 const request = (data: unknown = payload, source = origin, host = origin) =>
   new Request(`${host}/api/support`, {
@@ -23,6 +29,8 @@ const verified = () =>
     action: "support",
   });
 beforeEach(() => {
+  vi.mocked(rateLimitDurable).mockResolvedValue(true);
+  vi.stubEnv("EMAIL_FROM", "LicenseMeter <support@licensemeter.com>");
   vi.stubEnv("RESEND_API_KEY", "test-key");
   vi.stubEnv("SUPPORT_FROM_EMAIL", "Support <customer-care@ugurlabs.odoo.com>");
   vi.stubEnv("SUPPORT_TURNSTILE_SECRET_KEY", "test-secret");
@@ -33,6 +41,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   fetchMock.mockReset();
+  vi.mocked(rateLimitDurable).mockReset();
 });
 describe("support submissions", () => {
   it("sends only after verification with a fixed recipient and visitor Reply-To", async () => {
@@ -100,6 +109,35 @@ describe("support submissions", () => {
     const response = await POST(request());
     expect(response.status).toBe(502);
     expect(await response.json()).not.toHaveProperty("success");
+  });
+  it("uses the existing email sender without requiring Turnstile", async () => {
+    vi.stubEnv("SUPPORT_FROM_EMAIL", "");
+    vi.stubEnv("SUPPORT_TURNSTILE_SITE_KEY", "");
+    vi.stubEnv("SUPPORT_TURNSTILE_SECRET_KEY", "");
+    fetchMock.mockResolvedValueOnce(Response.json({ id: "email-id" }));
+    expect((await POST(request({ ...payload, token: "" }))).status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(
+      JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string),
+    ).toMatchObject({
+      from: "LicenseMeter <support@licensemeter.com>",
+      reply_to: payload.email,
+    });
+    expect(
+      vi
+        .mocked(rateLimitDurable)
+        .mock.calls.every((call) => call[3] === "deny"),
+    ).toBe(true);
+  });
+  it("blocks email delivery when a submission limit is reached", async () => {
+    vi.mocked(rateLimitDurable).mockResolvedValue(false);
+    expect((await POST(request())).status).toBe(429);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("requires both Turnstile settings if either is enabled", async () => {
+    vi.stubEnv("SUPPORT_TURNSTILE_SECRET_KEY", "");
+    expect((await POST(request())).status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
   it("handles provider timeouts without exposing internals", async () => {
     fetchMock.mockRejectedValueOnce(new Error("secret provider details"));

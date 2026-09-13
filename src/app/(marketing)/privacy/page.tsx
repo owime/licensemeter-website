@@ -145,10 +145,10 @@ export default function PrivacyPolicyPage() {
           chat.
         </p>
         <p>
-          When the support form is available, Cloudflare Turnstile verifies
-          submissions to prevent spam and Resend delivers the request by email.
-          Please do not include passwords, access tokens or tenant exports in
-          support messages.
+          Resend delivers support form submissions by email. Submission limits
+          and a hidden spam field help prevent abuse. Where enabled, Cloudflare
+          Turnstile additionally verifies submissions. Please do not include
+          passwords, access tokens or tenant exports in support messages.
         </p>
         <p>
           For details about the chat provider, see{" "}

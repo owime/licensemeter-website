@@ -10,12 +10,14 @@ import { rateLimits } from "~/server/db/schema";
  * check: insert a fresh window, or on key conflict either start a new window (if
  * the previous one expired) or increment the live one, returning the new count.
  * Returns true when the request is within the limit. On a DB error it fails open
- * (returns true) so a limiter outage never hard-blocks a legitimate action.
+ * (returns true) by default. Public mail endpoints can choose "deny" to stop
+ * sending when the limiter is unavailable.
  */
 export const rateLimitDurable = async (
   key: string,
   max: number,
   windowMs: number,
+  failureMode: "allow" | "deny" = "allow",
 ): Promise<boolean> => {
   const now = new Date();
   const resetAt = new Date(now.getTime() + windowMs);
@@ -34,7 +36,7 @@ export const rateLimitDurable = async (
     return (row?.count ?? 1) <= max;
   } catch (err) {
     console.error(`rateLimitDurable failed for ${key}`, err);
-    return true;
+    return failureMode === "allow";
   }
 };
 

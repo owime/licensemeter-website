@@ -31,9 +31,9 @@ export default defineConfig({
     // Exercise the support form with mocked providers, never real email delivery.
     env: {
       RESEND_API_KEY: "test-support-key",
-      SUPPORT_FROM_EMAIL: "Support <support@example.com>",
-      SUPPORT_TURNSTILE_SITE_KEY: "test-support-site",
-      SUPPORT_TURNSTILE_SECRET_KEY: "test-support-secret",
+      EMAIL_FROM: "Support <support@example.com>",
+      SUPPORT_TURNSTILE_SITE_KEY: "",
+      SUPPORT_TURNSTILE_SECRET_KEY: "",
     },
   },
 });

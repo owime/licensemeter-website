@@ -213,7 +213,7 @@ test("light mode persists under a dark system preference across public and dashb
   ).toBeVisible();
 });
 
-test("Crisp loads once across navigation and support opens the chat", async ({
+test("Crisp loads once across navigation and remains separate from the support form", async ({
   page,
 }) => {
   let loads = 0;
@@ -234,16 +234,16 @@ test("Crisp loads once across navigation and support opens the chat", async ({
   await expect(
     page.getByRole("heading", { name: "Contact support", exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Open support chat", exact: true })
-    .click();
+  await expect(page.getByLabel("Name", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Open support chat", exact: true }),
+  ).toHaveCount(0);
   const config = await page.evaluate(() => ({
     id: window.CRISP_WEBSITE_ID,
     queue: window.$crisp,
   }));
   expect(config.id).toBe("d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4");
   expect(config.queue).toContainEqual(["config", "color:mode", ["light"]]);
-  expect(config.queue).toContainEqual(["do", "chat:open"]);
   expect(loads).toBe(1);
   await expect(
     page.locator('a[href="mailto:customer-care@ugurlabs.odoo.com"]').first(),
@@ -276,7 +276,7 @@ test("support form handles delivery failure and successful retry", async ({
     expect(route.request().postDataJSON()).toMatchObject({
       name: "Test Visitor",
       email: "visitor@example.com",
-      token: "test-token",
+      token: "",
       website: "",
     });
     await route.fulfill({

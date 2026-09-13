@@ -130,8 +130,8 @@ export default function CookiesPage() {
           for its cookie names and purposes.
         </p>
         <p>
-          When the support form is available, Cloudflare Turnstile also
-          processes browser information to verify that submissions are
+          Where additional spam verification is enabled, Cloudflare Turnstile
+          also processes browser information to verify that submissions are
           legitimate.
         </p>
       </Section>

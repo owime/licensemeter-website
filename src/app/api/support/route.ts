@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { clientIp, rateLimitDurable } from "~/server/rateLimit";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
 export const runtime = "nodejs";
@@ -21,7 +22,8 @@ const submission = z.object({
   subject: singleLine(160),
   message: z.string().trim().min(1).max(10000),
   website: z.string().max(0),
-  token: z.string().min(1).max(2048),
+  token: z.string().max(2048).optional(),
+  requestId: z.string().uuid(),
 });
 const reply = (body: object, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -31,9 +33,15 @@ export async function POST(request: Request) {
   if (request.headers.get("origin") !== origin.origin)
     return reply({ error: "Please submit the form from this site." }, 403);
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.SUPPORT_FROM_EMAIL;
+  const from = process.env.SUPPORT_FROM_EMAIL?.trim()
+    ? process.env.SUPPORT_FROM_EMAIL
+    : process.env.EMAIL_FROM;
   const secret = process.env.SUPPORT_TURNSTILE_SECRET_KEY;
-  if (!key || !from || !secret || !process.env.SUPPORT_TURNSTILE_SITE_KEY)
+  if (
+    !key ||
+    !from ||
+    Boolean(secret) !== Boolean(process.env.SUPPORT_TURNSTILE_SITE_KEY)
+  )
     return reply(
       {
         error:
@@ -73,33 +81,62 @@ export async function POST(request: Request) {
     );
   const data = parsed.data;
   try {
-    const verification = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secret, response: data.token }),
-        signal: AbortSignal.timeout(10000),
-      },
-    );
-    const verdict = z
-      .object({
-        success: z.literal(true),
-        hostname: z.literal(origin.hostname),
-        action: z.literal("support"),
-      })
-      .safeParse(await verification.json());
-    if (!verification.ok || !verdict.success)
+    const hash = (value: string) =>
+      createHash("sha256").update(value).digest("hex");
+    const limits = await Promise.all([
+      rateLimitDurable(
+        `support:ip:${hash(clientIp(request.headers))}`,
+        5,
+        3_600_000,
+        "deny",
+      ),
+      rateLimitDurable(
+        `support:email:${hash(data.email.toLowerCase())}`,
+        3,
+        3_600_000,
+        "deny",
+      ),
+      rateLimitDurable("support:global", 100, 3_600_000, "deny"),
+    ]);
+    if (limits.some((allowed) => !allowed))
       return reply(
-        { error: "Spam verification failed or expired. Please try again." },
-        400,
+        {
+          error:
+            "Too many requests. Please try again later or email us directly.",
+        },
+        429,
       );
+    if (secret) {
+      if (!data.token)
+        return reply({ error: "Please complete the spam verification." }, 400);
+      const verification = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ secret, response: data.token }),
+          signal: AbortSignal.timeout(10000),
+        },
+      );
+      const verdict = z
+        .object({
+          success: z.literal(true),
+          hostname: z.literal(origin.hostname),
+          action: z.literal("support"),
+        })
+        .safeParse(await verification.json());
+      if (!verification.ok || !verdict.success)
+        return reply(
+          { error: "Spam verification failed or expired. Please try again." },
+          400,
+        );
+    }
     const email = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        "Idempotency-Key": `support-${createHash("sha256").update(data.token).digest("hex")}`,
+        "Idempotency-Key": `support-${hash(JSON.stringify({ requestId: data.requestId, name: data.name, email: data.email, subject: data.subject, message: data.message }))}`,
       },
       body: JSON.stringify({
         from,
