@@ -246,7 +246,7 @@ test("Crisp loads once across navigation and remains separate from the support f
   expect(config.queue).toContainEqual(["config", "color:mode", ["light"]]);
   expect(loads).toBe(1);
   await expect(
-    page.locator('a[href="mailto:customer-care@ugurlabs.odoo.com"]').first(),
+    page.locator('a[href="mailto:support@ugurlabs.com"]').first(),
   ).toBeVisible();
   await page.setViewportSize({ width: 320, height: 568 });
   expect(

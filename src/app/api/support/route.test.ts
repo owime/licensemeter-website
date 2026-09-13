@@ -32,7 +32,7 @@ beforeEach(() => {
   vi.mocked(rateLimitDurable).mockResolvedValue(true);
   vi.stubEnv("EMAIL_FROM", "LicenseMeter <support@licensemeter.com>");
   vi.stubEnv("RESEND_API_KEY", "test-key");
-  vi.stubEnv("SUPPORT_FROM_EMAIL", "Support <customer-care@ugurlabs.odoo.com>");
+  vi.stubEnv("SUPPORT_FROM_EMAIL", "Support <support@ugurlabs.com>");
   vi.stubEnv("SUPPORT_TURNSTILE_SECRET_KEY", "test-secret");
   vi.stubEnv("SUPPORT_TURNSTILE_SITE_KEY", "test-site");
   vi.stubGlobal("fetch", fetchMock);
@@ -52,9 +52,9 @@ describe("support submissions", () => {
     expect(await response.json()).toEqual({ success: true });
     const options = fetchMock.mock.calls[1]![1] as RequestInit;
     expect(JSON.parse(options.body as string)).toMatchObject({
-      to: ["customer-care@ugurlabs.odoo.com"],
+      to: ["support@ugurlabs.com"],
       reply_to: payload.email,
-      from: "Support <customer-care@ugurlabs.odoo.com>",
+      from: "Support <support@ugurlabs.com>",
     });
   });
   it.each([

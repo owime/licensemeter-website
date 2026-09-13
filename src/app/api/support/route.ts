@@ -44,8 +44,7 @@ export async function POST(request: Request) {
   )
     return reply(
       {
-        error:
-          "The support form is unavailable. Please email customer-care@ugurlabs.odoo.com.",
+        error: `The support form is unavailable. Please email ${SUPPORT_EMAIL}.`,
       },
       503,
     );
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
   const parsed = submission.safeParse(input);
   if (!parsed.success)
     return reply(
-      { error: "Please check all fields and complete the spam verification." },
+      { error: "Please check all required fields and try again." },
       400,
     );
   const data = parsed.data;
@@ -153,8 +152,7 @@ export async function POST(request: Request) {
     if (!email.ok || !accepted.success)
       return reply(
         {
-          error:
-            "Your request could not be sent. Please try again or email customer-care@ugurlabs.odoo.com.",
+          error: `Your request could not be sent. Please try again or email ${SUPPORT_EMAIL}.`,
         },
         502,
       );
@@ -162,8 +160,7 @@ export async function POST(request: Request) {
   } catch {
     return reply(
       {
-        error:
-          "We could not confirm your request was sent. Try again or email customer-care@ugurlabs.odoo.com.",
+        error: `We could not confirm your request was sent. Try again or email ${SUPPORT_EMAIL}.`,
       },
       502,
     );

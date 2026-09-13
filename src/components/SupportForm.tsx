@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "~/lib/support";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type Turnstile = {
@@ -42,7 +43,7 @@ export function SupportForm({
       "error-callback": () => {
         setToken("");
         setError(
-          "Verification could not load. Try again or email customer-care@ugurlabs.odoo.com.",
+          `Verification could not load. Try again or email ${SUPPORT_EMAIL}.`,
         );
       },
     });
@@ -88,7 +89,7 @@ export function SupportForm({
       setError(
         cause instanceof Error && cause.name === "Error"
           ? cause.message
-          : "We could not confirm your request was sent. Try again or email customer-care@ugurlabs.odoo.com.",
+          : `We could not confirm your request was sent. Try again or email ${SUPPORT_EMAIL}.`,
       );
       setToken("");
       if (widget.current !== null) api()?.reset(widget.current);
@@ -129,7 +130,7 @@ export function SupportForm({
           onReady={() => setReady(true)}
           onError={() =>
             setError(
-              "Verification could not load. Please email customer-care@ugurlabs.odoo.com.",
+              `Verification could not load. Please email ${SUPPORT_EMAIL}.`,
             )
           }
         />
