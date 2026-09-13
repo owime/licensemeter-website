@@ -1,3 +1,4 @@
+import { CrispChat } from "~/components/CrispChat";
 import "~/styles/globals.css";
 
 import { type Metadata, type Viewport } from "next";
@@ -82,7 +83,10 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = { themeColor: "#fbfcfc" };
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  colorScheme: "light",
+};
 
 export default function RootLayout({
   children,
@@ -91,6 +95,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
         <AuthKitProvider>{children}</AuthKitProvider>
+        <CrispChat />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

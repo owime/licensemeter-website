@@ -1,5 +1,22 @@
 import { expect, test, type Page } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("https://client.crisp.chat/l.js", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: "/* Isolated chat service for browser tests. */",
+    }),
+  );
+  await page.route(
+    "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
+    (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: `window.turnstile = { render: function(element, options) { window.__verifySupport = function() { options.callback("test-token"); }; window.__verifySupport(); return "widget"; }, reset: function() { window.__verifySupport(); }, remove: function() {} };`,
+      }),
+  );
+});
+
 const openDemo = async (page: Page) => {
   await page.goto("/");
   await page

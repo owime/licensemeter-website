@@ -105,3 +105,19 @@ Open:
 - Free access to every feature, with no subscriptions or trial limits
 - Opt-in write remediation as a separate consent step (deliberately excluded
   while the product promise is strictly read-only)
+
+## Support
+
+`/support` offers Crisp chat and a direct email link. The Crisp widget is mounted
+once in the root layout and stays available across public and dashboard pages.
+It uses website ID `d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4` and a light theme.
+The integration does not automatically identify signed-in users or send scan data.
+Its network requirements are included in `next.config.js` using the
+[Crisp domain documentation](https://docs.crisp.chat/guides/others/whitelisting-our-systems/crisp-domain-names/).
+
+To enable the support form, set `RESEND_API_KEY`, `SUPPORT_FROM_EMAIL` (a verified
+Resend sender), `SUPPORT_TURNSTILE_SITE_KEY`, and `SUPPORT_TURNSTILE_SECRET_KEY`.
+Register the deployed hostname with the Turnstile widget and redeploy after
+changing these settings. Requests go to the address in `src/lib/support.ts`, with
+the visitor's email as Reply-To. Until these settings are present, the page uses
+chat and email. Tests mock both providers and send no real support requests.

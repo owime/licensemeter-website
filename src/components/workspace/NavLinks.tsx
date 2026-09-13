@@ -34,6 +34,7 @@ const ITEMS: NavItem[] = [
       { href: "/app/settings/claude", label: "Claude" },
     ],
   },
+  { href: "/support", label: "Support" },
 ];
 
 const PORTFOLIO_ITEM: NavItem = { href: "/app/portfolio", label: "Portfolio" };
@@ -87,10 +88,10 @@ export const NavLinks = ({
               aria-current={parentCurrent ? "page" : undefined}
               className={`border-l-2 px-[18px] py-2.5 text-sm transition ${
                 parentCurrent
-                  ? "border-brand bg-sidebar-line/70 text-canvas font-medium"
+                  ? "border-brand bg-brand-soft text-ink font-medium"
                   : sectionActive
-                    ? "text-canvas border-transparent"
-                    : "text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-transparent"
+                    ? "text-ink border-transparent"
+                    : "text-sidebar-soft hover:border-sidebar-soft hover:text-ink border-transparent"
               }`}
             >
               {item.label}
@@ -102,13 +103,13 @@ export const NavLinks = ({
                     href={childCurrent.href}
                     onClick={onNavigate}
                     aria-current="page"
-                    className="border-brand bg-sidebar-line/70 text-canvas block border-l-2 py-2 pr-4 pl-4 text-[13px] font-medium"
+                    className="border-brand bg-brand-soft text-ink block border-l-2 py-2 pr-4 pl-4 text-[13px] font-medium"
                   >
                     {childCurrent.label}
                   </Link>
                 )}
                 <details>
-                  <summary className="text-sidebar-soft hover:text-canvas flex min-h-11 cursor-pointer touch-manipulation items-center px-4 text-[13px] font-medium">
+                  <summary className="text-sidebar-soft hover:text-ink flex min-h-11 cursor-pointer touch-manipulation items-center px-4 text-[13px] font-medium">
                     {childCurrent ? "Other connectors" : "Connectors"}
                     <span className="ml-auto text-[11px]">
                       {item.children.length}
@@ -122,7 +123,7 @@ export const NavLinks = ({
                           key={child.href}
                           href={child.href}
                           onClick={onNavigate}
-                          className="text-sidebar-soft hover:border-sidebar-soft hover:text-canvas border-l-2 border-transparent py-2 pr-4 pl-4 text-[13px] transition-colors"
+                          className="text-sidebar-soft hover:border-sidebar-soft hover:text-ink border-l-2 border-transparent py-2 pr-4 pl-4 text-[13px] transition-colors"
                         >
                           {child.label}
                         </Link>

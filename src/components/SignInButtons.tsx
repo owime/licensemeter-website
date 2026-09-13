@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { buttonClass } from "~/components/ui";
+import { buttonClass, type ButtonVariant } from "~/components/ui";
 
 /**
  * Sign-in CTA hierarchy: the primary action is sign-in (WorkOS AuthKit, which
@@ -16,6 +16,8 @@ export const SignInButtons = ({
   demoEnabled,
   showNote = true,
   primaryLabel = "Sign in",
+  centered = false,
+  primaryVariant = "primary",
 }: {
   /** Whether sign-in is configured on this deployment. */
   signInEnabled: boolean;
@@ -25,20 +27,24 @@ export const SignInButtons = ({
   showNote?: boolean;
   /** Primary CTA text. Defaults to "Sign in"; the hero echoes the free-scan offer. */
   primaryLabel?: string;
+  centered?: boolean;
+  primaryVariant?: ButtonVariant;
 }) => (
   <div>
-    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+    <div
+      className={`flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center ${centered ? "sm:justify-center" : ""}`}
+    >
       {signInEnabled ? (
         <a
           href={signInHref}
-          className={buttonClass("primary", "w-full sm:w-auto")}
+          className={buttonClass(primaryVariant, "w-full sm:w-auto")}
         >
           {primaryLabel}
         </a>
       ) : (
         <Link
           href="/#get-started"
-          className={buttonClass("primary", "w-full sm:w-auto")}
+          className={buttonClass(primaryVariant, "w-full sm:w-auto")}
         >
           Request scan access
         </Link>

@@ -8,13 +8,13 @@
 
 @theme {
   /* Surfaces — cool, bright. */
-  --color-canvas: #fbfcfc;
+  --color-canvas: #f7f8fa;
   --color-card: #ffffff;
   --color-subtle: #f3f6f5;
-  --color-ink: #0c1a17;
-  --color-ink-soft: #3a4541;
-  --color-ink-faint: #5c6b67;
-  --color-line: #e4eae8;
+  --color-ink: #171b23;
+  --color-ink-soft: #555e69;
+  --color-ink-faint: #67717e;
+  --color-line: #e8ebef;
   --color-line-strong: #d0d9d6;
 
   /* Brand — teal: trust, action, savings. Button fill uses brand-strong so
@@ -43,10 +43,6 @@
   --color-danger-bright: #f87171;
   --color-danger-soft: #fdecec;
 
-  /* Dark ink panel (scan rail, dark CTA, dashboard sidebar). */
-  --color-ink-panel: #0c1a17;
-  --color-ink-soft-text: #a7b4b0;
-
   /* Categorical ramp — finding categories on the dashboard / ledger / PDF.
      Re-hued brighter; mapping preserved. Distinct from the brand teal. */
   --color-moss: #047857;
@@ -61,10 +57,10 @@
   --color-teal-ink: #0e7490;
   --color-teal-soft: #def2f7;
 
-  /* Dashboard dark chrome. */
-  --color-sidebar: #0c1a17;
-  --color-sidebar-line: #20302c;
-  --color-sidebar-soft: #b8c4c0;
+  /* Light dashboard navigation. */
+  --color-sidebar: #ffffff;
+  --color-sidebar-line: #e8ebef;
+  --color-sidebar-soft: #626d7a;
 
   /* Soft, modern elevation. */
   --shadow-card: 0 2px 8px -2px rgba(12, 26, 23, 0.08);
@@ -73,52 +69,7 @@
 }
 
 :root {
-  color-scheme: light;
-}
-
-/* System dark mode uses the same semantic tokens and hierarchy rather than
- * inverting pixels. Native controls and scrollbars follow via color-scheme. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --color-canvas: #081310;
-    --color-card: #0d1b17;
-    --color-subtle: #12231e;
-    --color-ink: #edf7f3;
-    --color-ink-soft: #bdd0ca;
-    --color-ink-faint: #91aaa2;
-    --color-line: #243832;
-    --color-line-strong: #345048;
-    --color-brand: #2dd4bf;
-    --color-brand-strong: #0f766e;
-    --color-brand-text: #5eead4;
-    --color-brand-deep: #ccfbf1;
-    --color-brand-soft: #123c35;
-    --color-waste: #f59e0b;
-    --color-waste-text: #fbbf24;
-    --color-waste-deep: #fde68a;
-    --color-waste-soft: #3a2a0b;
-    --color-good: #34d399;
-    --color-good-text: #6ee7b7;
-    --color-good-soft: #103529;
-    --color-danger: #f87171;
-    --color-danger-text: #fca5a5;
-    --color-danger-soft: #3a1719;
-    --color-moss: #34d399;
-    --color-moss-soft: #103529;
-    --color-gold: #fbbf24;
-    --color-gold-text: #fde68a;
-    --color-gold-soft: #3a2a0b;
-    --color-slate-ink: #cbd5e1;
-    --color-slate-soft: #263340;
-    --color-plum: #c4b5fd;
-    --color-plum-soft: #302451;
-    --color-teal-ink: #67e8f9;
-    --color-teal-soft: #123944;
-    --shadow-card: 0 2px 10px -2px rgba(0, 0, 0, 0.28);
-    --shadow-float: 0 12px 30px -10px rgba(0, 0, 0, 0.48);
-    --shadow-hero: 0 24px 56px -18px rgba(0, 0, 0, 0.62);
-  }
+  color-scheme: only light;
 }
 
 /* Visible keyboard focus everywhere; teal ring on light, canvas ring on ink. */
@@ -126,9 +77,7 @@
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
-.bg-sidebar :where(a, button, select):focus-visible,
-.bg-ink :where(a, button):focus-visible,
-.bg-ink-panel :where(a, button):focus-visible {
+.bg-ink :where(a, button):focus-visible {
   outline-color: var(--color-canvas);
 }
 
@@ -151,31 +100,6 @@ body {
   outline: 2px solid var(--color-brand);
   outline-offset: 4px;
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-brand) 18%, transparent);
-}
-
-/* Hero waste total: a negative, danger-red figure with a soft static glow so
- * it instantly reads as money bleeding out. No animation, so it is inherently
- * reduced-motion-safe. */
-.waste-total {
-  color: var(--color-danger);
-  text-shadow:
-    0 0 16px rgba(220, 38, 38, 0.35),
-    0 0 2px rgba(220, 38, 38, 0.25);
-}
-
-/* Soft brand glow, replaces the old enterprise grid behind hero / CTA bands. */
-.brand-radial {
-  background:
-    radial-gradient(
-      62% 60% at 18% 0%,
-      color-mix(in srgb, var(--color-brand) 14%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      55% 55% at 100% 10%,
-      color-mix(in srgb, var(--color-waste) 10%, transparent),
-      transparent 68%
-    );
 }
 
 .meter-bar {
@@ -285,4 +209,224 @@ body {
 ::selection {
   background: var(--color-brand-soft);
   color: var(--color-brand-deep);
+}
+
+/* Fine orbits frame the centered hero without intercepting any interaction. */
+.marketing-frame > footer {
+  border-radius: 0 0 32px 32px;
+}
+.orbit-hero {
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+}
+.orbit-copy {
+  padding-top: 88px;
+}
+.orbit-scene {
+  position: absolute;
+  inset: -100px 0 100px;
+  pointer-events: none;
+  mask-image: linear-gradient(#000 65%, transparent 100%);
+}
+.orbit-ring {
+  position: absolute;
+  top: 385px;
+  left: 50%;
+  width: var(--orbit-size);
+  height: var(--orbit-size);
+  border: 1px solid #eef0f3;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.orbit-ring-1 {
+  --orbit-size: 680px;
+}
+.orbit-ring-2 {
+  --orbit-size: 880px;
+}
+.orbit-ring-3 {
+  --orbit-size: 1080px;
+}
+.orbit-ring-4 {
+  --orbit-size: 1280px;
+}
+.orbit-ring-5 {
+  --orbit-size: 1480px;
+}
+.orbit-ring-2::after,
+.orbit-ring-4::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-left-color: #a9bdff;
+  clip-path: inset(50% 50% 28% 0);
+}
+.orbit-logo {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  background: white;
+  border: 1px solid #edf0f3;
+  border-radius: 50%;
+  box-shadow: 0 4px 5px -3px #17202c20;
+}
+.orbit-logo-1 {
+  left: calc(50% - 430px);
+  top: 165px;
+}
+.orbit-logo-2 {
+  right: calc(50% - 450px);
+  top: 170px;
+}
+.orbit-logo-3 {
+  left: calc(50% - 550px);
+  top: 360px;
+}
+.orbit-logo-4 {
+  right: calc(50% - 560px);
+  top: 365px;
+}
+.orbit-logo-5 {
+  left: calc(50% - 400px);
+  top: 500px;
+}
+.orbit-logo-6 {
+  right: calc(50% - 395px);
+  top: 510px;
+}
+.orbit-logo-7 {
+  left: calc(50% - 520px);
+  top: 625px;
+}
+.orbit-logo-8 {
+  right: calc(50% - 515px);
+  top: 635px;
+}
+.sample-stack {
+  position: relative;
+  height: 216px;
+  max-width: 470px;
+}
+.sample-glow {
+  position: absolute;
+  inset: -40px -50px -30px;
+  background:
+    radial-gradient(ellipse at 40% 50%, #e2e8ff 0%, transparent 65%),
+    radial-gradient(ellipse at 65% 50%, #d9f4ff 0%, transparent 65%);
+  filter: blur(22px);
+  z-index: -1;
+}
+.sample-finding {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 80px;
+  border: 1px solid #f0f2f5;
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 30px -16px #37466535;
+}
+.sample-finding-front {
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+}
+.sample-finding-middle {
+  top: 72px;
+  left: 24px;
+  right: 24px;
+  z-index: 2;
+  background: #ffffffed;
+}
+.sample-finding-back {
+  top: 144px;
+  left: 48px;
+  right: 48px;
+  z-index: 1;
+  height: 72px;
+  background: #ffffffcf;
+}
+@media (max-width: 1023px) {
+  .orbit-logo {
+    width: 50px;
+    height: 50px;
+  }
+  .orbit-logo-1 {
+    left: 7%;
+    top: 135px;
+  }
+  .orbit-logo-2 {
+    right: 7%;
+    top: 140px;
+  }
+  .orbit-logo-3,
+  .orbit-logo-4,
+  .orbit-logo-7,
+  .orbit-logo-8 {
+    display: none;
+  }
+  .orbit-logo-5 {
+    left: 3%;
+    top: 590px;
+  }
+  .orbit-logo-6 {
+    right: 3%;
+    top: 600px;
+  }
+}
+@media (max-width: 639px) {
+  .orbit-copy {
+    padding-top: 75px;
+  }
+  .orbit-scene {
+    inset: -85px -150px 130px;
+    opacity: 0.75;
+  }
+  .orbit-logo {
+    width: 42px;
+    height: 42px;
+  }
+  .orbit-logo img {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .orbit-logo-1 {
+    left: calc(50% - 100px);
+    top: 115px;
+  }
+  .orbit-logo-2 {
+    right: calc(50% - 100px);
+    top: 110px;
+  }
+  .orbit-logo-5,
+  .orbit-logo-6 {
+    display: none;
+  }
+  .sample-finding {
+    padding: 12px;
+    gap: 9px;
+  }
+  .sample-finding-middle {
+    left: 12px;
+    right: 12px;
+  }
+  .sample-finding-back {
+    left: 24px;
+    right: 24px;
+  }
+  .marketing-header {
+    gap: 4px;
+  }
+  .marketing-header > a {
+    gap: 6px;
+    font-size: 16px;
+  }
 }

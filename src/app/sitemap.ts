@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/trust-center",
     "/de/trust-center",
     "/faq",
+    "/support",
     "/connectors",
     ...CONNECTOR_GUIDES.map((g) => `/connectors/${g.slug}`),
     "/status",

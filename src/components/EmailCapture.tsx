@@ -5,22 +5,14 @@ import { useRef, useState, useTransition } from "react";
 import { buttonClass } from "~/components/ui";
 import { captureEmail } from "~/server/actions";
 
-export const EmailCapture = ({
-  statusTone = "light",
-}: {
-  statusTone?: "light" | "dark";
-}) => {
+export const EmailCapture = () => {
   const [state, setState] = useState<"idle" | "done" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
   const statusRef = useRef<HTMLParagraphElement>(null);
-  const doneClass =
-    statusTone === "dark" ? "text-sm text-good" : "text-sm text-good-text";
-  const errorClass =
-    statusTone === "dark"
-      ? "w-full text-xs text-danger-bright"
-      : "w-full text-xs text-danger-text";
+  const doneClass = "text-sm text-good-text";
+  const errorClass = "w-full text-xs text-danger-text";
 
   return (
     <form

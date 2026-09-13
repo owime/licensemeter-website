@@ -22,27 +22,20 @@ const Section = ({
   </section>
 );
 
-/*
- * Structured draft, not legal advice. LicenseMeter sets only first-party,
- * strictly necessary cookies and measures reach with cookieless Vercel Web
- * Analytics, so no consent banner is legally required (Section 25(2) no. 2
- * TDDDG, the German ePrivacy implementation). The categories below mirror the
- * standard cookie-policy layout; the "we don't use these" statements are
- * deliberate and accurate.
- */
 export default function CookiesPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <h1 className="font-display text-4xl tracking-tight">Cookie Policy</h1>
-      <p className="text-ink-faint mt-3 text-xs">Last updated: June 2026</p>
+      <p className="text-ink-faint mt-3 text-xs">
+        Last updated: September 2026
+      </p>
 
       <Section title="In short">
         <p>
-          LicenseMeter sets only strictly necessary first-party cookies that are
-          required for sign-in and workspace selection. We set no analytics,
-          marketing or tracking cookies, and we measure reach with a cookieless
-          method. For that reason no cookie banner and no consent is required
-          (Section 25(2) no. 2 TDDDG).
+          LicenseMeter uses cookies for sign-in, workspace selection and support
+          chat. Crisp keeps your support conversation available as you move
+          between pages. We use cookieless Vercel Web Analytics for reach
+          measurement and do not embed advertising pixels.
         </p>
       </Section>
 
@@ -52,7 +45,8 @@ export default function CookiesPage() {
           website. Among other things, they let an authenticated session persist
           across page loads. Cookies set by the website you are visiting are
           first-party cookies; cookies from other providers are third-party
-          cookies. LicenseMeter sets no third-party cookies.
+          cookies. Our support provider Crisp also uses cookies to maintain chat
+          sessions.
         </p>
       </Section>
 
@@ -122,7 +116,24 @@ export default function CookiesPage() {
       </Section>
 
       <Section title="3. Functionality cookies">
-        <p>We set no functionality or personalization cookies.</p>
+        <p>
+          Crisp uses a session cookie (whose name starts with{" "}
+          <code>crisp-client/session/</code>) to restore your conversation when
+          you navigate between pages or return later. Crisp documents a default
+          session-cookie lifetime of six months. See{" "}
+          <a
+            href="https://help.crisp.chat/en/article/crisp-cookie-policy-1147xor/"
+            className="underline underline-offset-4"
+          >
+            Crisp’s cookie policy
+          </a>{" "}
+          for its cookie names and purposes.
+        </p>
+        <p>
+          When the support form is available, Cloudflare Turnstile also
+          processes browser information to verify that submissions are
+          legitimate.
+        </p>
       </Section>
 
       <Section title="4. Analytics / performance cookies">
@@ -143,11 +154,10 @@ export default function CookiesPage() {
 
       <Section title="6. Managing cookies">
         <p>
-          Because only strictly necessary cookies are used, no consent is
-          required and no cookie banner is shown. You can view, restrict or
-          delete cookies at any time in your browser settings. Deleting the
-          necessary cookies means you will have to sign in again and your
-          workspace selection is reset; this may impair the service.
+          You can view, restrict or delete cookies at any time in your browser
+          settings. Deleting the necessary cookies means you will have to sign
+          in again and your workspace selection is reset. Deleting Crisp cookies
+          can prevent the chat from restoring a previous conversation.
         </p>
       </Section>
 

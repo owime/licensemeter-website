@@ -43,11 +43,11 @@ export default async function WorkspaceLayout({
         activeId={ctx.tenant.id}
       />
 
-      <aside className="bg-sidebar sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto lg:flex">
+      <aside className="bg-sidebar border-line sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r lg:flex">
         <Link href="/app" className="flex items-center gap-2 px-5 pt-6 pb-7">
-          <BrandMark size={20} tone="dark" />
-          <span className="font-display text-canvas text-lg tracking-tight">
-            License<span className="text-brand-bright">Meter</span>
+          <BrandMark size={20} tone="light" />
+          <span className="font-display text-ink text-lg tracking-tight">
+            License<span className="text-brand-text">Meter</span>
           </span>
         </Link>
 
@@ -58,7 +58,7 @@ export default async function WorkspaceLayout({
               activeId={ctx.tenant.id}
             />
           ) : (
-            <div className="text-canvas truncate text-sm font-medium">
+            <div className="text-ink truncate text-sm font-medium">
               {tenantName}
             </div>
           )}
@@ -78,7 +78,7 @@ export default async function WorkspaceLayout({
               className="group block"
               aria-label="Account settings"
             >
-              <div className="text-canvas truncate text-sm underline-offset-4 group-hover:underline">
+              <div className="text-ink truncate text-sm underline-offset-4 group-hover:underline">
                 {ctx.user.name}
               </div>
               <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
@@ -87,16 +87,14 @@ export default async function WorkspaceLayout({
             </Link>
           ) : (
             <>
-              <div className="text-canvas truncate text-sm">
-                {ctx.user.name}
-              </div>
+              <div className="text-ink truncate text-sm">{ctx.user.name}</div>
               <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
                 {ctx.membership.role}
               </div>
             </>
           )}
           <form action={signOutAction}>
-            <button className="text-sidebar-soft hover:text-canvas mt-1 inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
+            <button className="text-sidebar-soft hover:text-ink mt-1 inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
               Sign out
             </button>
           </form>

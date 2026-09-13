@@ -52,8 +52,8 @@ export default function PrivacyPolicyPage() {
           Contractual Clauses is in place with Vercel.
         </p>
         <p>
-          This website uses only technically necessary session cookies for
-          sign-in. No tracking or marketing cookies are set. See our{" "}
+          This website uses session cookies for sign-in and workspace selection,
+          and Crisp cookies to maintain support conversations. See our{" "}
           <a
             href="/cookies"
             className="hover:text-ink underline underline-offset-4"
@@ -134,6 +134,35 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
+      <Section title="Support conversations">
+        <p>
+          Crisp provides the support chat available across our website and
+          dashboard. Loading the chat connects your browser to Crisp and shares
+          technical connection information, including your IP address and the
+          page URL. Messages and contact details you choose to provide are
+          processed to respond to your request. We do not automatically attach
+          your account profile, connector credentials or scan results to the
+          chat.
+        </p>
+        <p>
+          When the support form is available, Cloudflare Turnstile verifies
+          submissions to prevent spam and Resend delivers the request by email.
+          Please do not include passwords, access tokens or tenant exports in
+          support messages.
+        </p>
+        <p>
+          For details about the chat provider, see{" "}
+          <a
+            href="https://crisp.chat/en/privacy/"
+            className="underline underline-offset-4"
+          >
+            Crisp’s privacy policy
+          </a>
+          . Contact {SUPPORT_EMAIL} for questions about or deletion of your
+          support conversation.
+        </p>
+      </Section>
+
       <Section title="6. Subprocessors">
         <p>
           We engage the following subprocessors to process personal data on your
@@ -177,10 +206,9 @@ export default function PrivacyPolicyPage() {
           Account and product data is stored for as long as the workspace is
           connected. On disconnect, all synchronized data is deleted; remaining
           copies in routine encrypted backups are overwritten within the backup
-          rotation window (currently around seven days). Invoice and transaction
-          data is retained by the payment processor for the statutory periods
-          described in section 5. The hosting provider&rsquo;s server logs are
-          subject to that provider&rsquo;s deletion periods.
+          rotation window (currently around seven days). The hosting
+          provider&rsquo;s server logs are subject to that provider&rsquo;s
+          deletion periods.
         </p>
       </Section>
 

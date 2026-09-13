@@ -7,6 +7,7 @@ import Link from "next/link";
  * area to 44px for touch without disturbing table-row layouts.
  */
 const BUTTON_VARIANTS = {
+  ink: "inline-flex min-h-11 cursor-pointer touch-manipulation items-center justify-center gap-2.5 rounded-xl bg-ink px-5 py-3 text-sm font-medium text-white shadow-card transition hover:bg-ink-soft hover:shadow-float disabled:cursor-not-allowed disabled:opacity-40",
   primary:
     "inline-flex min-h-11 cursor-pointer touch-manipulation items-center justify-center gap-2.5 rounded-xl bg-brand-strong px-5 py-3 text-sm font-medium text-white shadow-card transition hover:bg-brand-deep hover:shadow-float disabled:cursor-not-allowed disabled:opacity-40",
   secondary:

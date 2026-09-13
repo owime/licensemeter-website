@@ -56,7 +56,10 @@ const ENGLISH = {
     },
     {
       title: "Contact",
-      links: [["/trust-center#subprocessors", "Subprocessors"]],
+      links: [
+        ["/support", "Contact support"],
+        ["/trust-center#subprocessors", "Subprocessors"],
+      ],
     },
   ],
   copyright: "operated by UgurLabs",
@@ -96,7 +99,10 @@ const GERMAN = {
     },
     {
       title: "Kontakt",
-      links: [["/de/trust-center#subprocessors", "Unterauftragsverarbeiter"]],
+      links: [
+        ["/support", "Support (EN)"],
+        ["/de/trust-center#subprocessors", "Unterauftragsverarbeiter"],
+      ],
     },
   ],
   copyright: "betrieben von UgurLabs",

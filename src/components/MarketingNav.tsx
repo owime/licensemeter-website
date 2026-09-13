@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation";
 import { MarketingMobileNav } from "~/components/MarketingMobileNav";
 
 const ENGLISH = [
+  { href: "/#product-tour", label: "Product" },
+  { href: "/connectors", label: "Connectors" },
   { href: "/msp", label: "MSP" },
   { href: "/trust-center", label: "Trust Center" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/support", label: "Support" },
 ];
 
 const GERMAN = [
@@ -24,7 +26,7 @@ export const MarketingNav = () => {
   const navLabel = pathname.startsWith("/de/") ? "Hauptnavigation" : "Main";
   return (
     <>
-      <nav aria-label={navLabel} className="hidden items-center gap-5 sm:flex">
+      <nav aria-label={navLabel} className="hidden items-center gap-5 lg:flex">
         {items.map((item) => (
           <Link
             key={item.href}

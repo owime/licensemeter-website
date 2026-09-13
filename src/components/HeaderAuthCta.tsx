@@ -35,7 +35,7 @@ export const HeaderAuthCta = () => {
      the action keeps its header slot. The compact labels below 341px keep
      brand + CTA + burger on one line through the 320px reflow target. */
   return signedIn ? (
-    <ButtonLink href="/app" variant="secondary">
+    <ButtonLink href="/app" variant="ink">
       <span className="min-[341px]:hidden">App</span>
       <span className="hidden min-[341px]:inline sm:hidden">Dashboard</span>
       <span className="hidden sm:inline">
@@ -43,7 +43,7 @@ export const HeaderAuthCta = () => {
       </span>
     </ButtonLink>
   ) : (
-    <ButtonLink href="/#get-started" variant="secondary">
+    <ButtonLink href="/#get-started" variant="ink">
       <span className="min-[341px]:hidden">Start</span>
       <span className="hidden min-[341px]:inline">
         {german ? "Kostenlos starten" : "Start free"}

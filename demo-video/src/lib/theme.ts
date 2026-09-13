@@ -3,13 +3,13 @@
  * video is pixel-faithful to the product. Keep in sync manually.
  */
 export const C = {
-  canvas: "#fbfcfc",
+  canvas: "#f7f8fa",
   card: "#ffffff",
   subtle: "#f3f6f5",
-  ink: "#0c1a17",
-  inkSoft: "#3a4541",
-  inkFaint: "#5c6b67",
-  line: "#e4eae8",
+  ink: "#171b23",
+  inkSoft: "#555e69",
+  inkFaint: "#67717e",
+  line: "#e8ebef",
   lineStrong: "#d0d9d6",
 
   brand: "#0d9488",
@@ -32,9 +32,9 @@ export const C = {
   dangerText: "#b91c1c",
   dangerSoft: "#fdecec",
 
-  sidebar: "#0c1a17",
-  sidebarLine: "#20302c",
-  sidebarSoft: "#b8c4c0",
+  sidebar: "#ffffff",
+  sidebarLine: "#e8ebef",
+  sidebarSoft: "#626d7a",
 
   gold: "#a16207",
   goldSoft: "#fbf0d4",

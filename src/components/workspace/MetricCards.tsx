@@ -79,7 +79,7 @@ const InfoButton = ({
       <span
         id={tipId}
         role="tooltip"
-        className="border-line bg-ink-panel text-canvas shadow-float pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 transition-opacity duration-150 group-focus-within/info:opacity-100 group-hover/info:opacity-100"
+        className="border-line bg-card text-ink shadow-float pointer-events-none absolute top-full right-0 z-10 mt-2 w-56 rounded-lg border px-3 py-2 text-left text-xs leading-snug font-normal tracking-normal normal-case opacity-0 transition-opacity duration-150 group-focus-within/info:opacity-100 group-hover/info:opacity-100"
       >
         {explainer}
       </span>

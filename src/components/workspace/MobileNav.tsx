@@ -79,15 +79,18 @@ export const MobileNav = ({
   }, [open]);
 
   return (
-    <header ref={headerRef} className="bg-sidebar sticky top-0 z-40 lg:hidden">
+    <header
+      ref={headerRef}
+      className="bg-sidebar border-line sticky top-0 z-40 border-b lg:hidden"
+    >
       <div className="flex items-center justify-between px-4 py-3">
         <Link
           href="/app"
-          className="font-display text-canvas flex items-center gap-2 text-lg tracking-tight"
+          className="font-display text-ink flex items-center gap-2 text-lg tracking-tight"
         >
-          <BrandMark size={18} tone="dark" />
+          <BrandMark size={18} tone="light" />
           <span>
-            License<span className="text-brand-bright">Meter</span>
+            License<span className="text-brand-text">Meter</span>
           </span>
         </Link>
         <button
@@ -96,7 +99,7 @@ export const MobileNav = ({
           aria-expanded={open}
           aria-controls="mobile-nav-drawer"
           aria-label={open ? "Close menu" : "Open menu"}
-          className="text-canvas -my-1 flex size-11 items-center justify-center"
+          className="text-ink -my-1 flex size-11 items-center justify-center"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
             {open ? (
@@ -129,13 +132,13 @@ export const MobileNav = ({
         tabIndex={-1}
         hidden={!open}
         inert={!open}
-        className="border-sidebar-line focus-visible:ring-canvas flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4 focus-visible:ring-2 focus-visible:ring-inset"
+        className="border-sidebar-line focus-visible:ring-brand flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-y-auto overscroll-contain border-t pb-4 focus-visible:ring-2 focus-visible:ring-inset"
       >
         <div className="px-4 py-3">
           {workspaces.length > 1 ? (
             <WorkspaceSwitcher workspaces={workspaces} activeId={activeId} />
           ) : (
-            <div className="text-canvas truncate text-sm font-medium">
+            <div className="text-ink truncate text-sm font-medium">
               {tenantName}
             </div>
           )}
@@ -157,7 +160,7 @@ export const MobileNav = ({
                 className="group block"
                 aria-label="Account settings"
               >
-                <div className="text-canvas truncate text-sm underline-offset-4 group-hover:underline">
+                <div className="text-ink truncate text-sm underline-offset-4 group-hover:underline">
                   {userName}
                 </div>
                 <div className="text-sidebar-soft text-[11px] tracking-wider uppercase">
@@ -166,7 +169,7 @@ export const MobileNav = ({
               </Link>
             ) : (
               <>
-                <div className="text-canvas truncate text-sm">{userName}</div>
+                <div className="text-ink truncate text-sm">{userName}</div>
                 <div className="text-sidebar-soft text-[11px] tracking-wider uppercase">
                   {role}
                 </div>
@@ -174,7 +177,7 @@ export const MobileNav = ({
             )}
           </div>
           <form action={signOutAction}>
-            <button className="text-sidebar-soft hover:text-canvas inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
+            <button className="text-sidebar-soft hover:text-ink inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
               Sign out
             </button>
           </form>

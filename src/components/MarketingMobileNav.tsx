@@ -35,7 +35,7 @@ export const MarketingMobileNav = ({
         aria-expanded={open}
         aria-controls="marketing-nav-drawer"
         aria-label={open ? "Close menu" : "Open menu"}
-        className="text-ink -my-1 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center sm:hidden"
+        className="text-ink -my-1 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center lg:hidden"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
           {open ? (
@@ -58,7 +58,7 @@ export const MarketingMobileNav = ({
       <div
         id="marketing-nav-drawer"
         hidden={!open}
-        className="border-line bg-canvas absolute inset-x-0 top-full z-40 border-y sm:hidden"
+        className="border-line bg-canvas absolute inset-x-0 top-full z-40 border-y lg:hidden"
       >
         <nav aria-label={navLabel} className="py-2">
           {items.map((item) => (

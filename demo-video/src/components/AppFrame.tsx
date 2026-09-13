@@ -7,8 +7,8 @@ const NAV = [
   "Overview",
   "Findings",
   "Licenses & prices",
+  "Renewals",
   "AI costs",
-  "Billing",
   "Settings",
 ] as const;
 
@@ -25,7 +25,7 @@ const SETTINGS_CHILDREN = [
 ] as const;
 
 /**
- * The static app chrome: dark sidebar with nav and the canvas content area.
+ * The static app chrome: light sidebar with nav and the canvas content area.
  * `active` marks the current section (Settings expands its connector
  * children), `scrollY` shifts the page content to simulate scrolling, and
  * `activeChild` highlights a connector sub-item.
@@ -51,6 +51,7 @@ export const AppFrame: React.FC<{
         width: SIDEBAR_W,
         flexShrink: 0,
         background: C.sidebar,
+        borderRight: `1px solid ${C.sidebarLine}`,
         display: "flex",
         flexDirection: "column",
         zIndex: 2,
@@ -65,12 +66,12 @@ export const AppFrame: React.FC<{
           borderBottom: `1px solid ${C.sidebarLine}`,
         }}
       >
-        <BrandMark size={26} tone="dark" />
-        <Wordmark size={23} tone="dark" />
+        <BrandMark size={26} tone="light" />
+        <Wordmark size={23} tone="light" />
       </div>
 
       <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.sidebarLine}` }}>
-        <div style={{ color: C.canvas, fontSize: 17, fontWeight: 500 }}>
+        <div style={{ color: C.ink, fontSize: 17, fontWeight: 500 }}>
           Meridian Industries GmbH
         </div>
         <div
@@ -95,9 +96,9 @@ export const AppFrame: React.FC<{
                 style={{
                   padding: "11px 24px",
                   fontSize: 17,
-                  color: isActive ? C.canvas : C.sidebarSoft,
+                  color: isActive ? C.ink : C.sidebarSoft,
                   fontWeight: isActive ? 500 : 400,
-                  background: isActive ? "rgba(32, 48, 44, 0.7)" : "transparent",
+                  background: isActive ? C.brandSoft : "transparent",
                   borderLeft: `3px solid ${isActive ? C.brand : "transparent"}`,
                 }}
               >
@@ -113,7 +114,7 @@ export const AppFrame: React.FC<{
                       style={{
                         padding: "7px 24px 7px 46px",
                         fontSize: 15,
-                        color: childActive ? C.canvas : C.sidebarSoft,
+                        color: childActive ? C.ink : C.sidebarSoft,
                         fontWeight: childActive ? 500 : 400,
                         borderLeft: `3px solid ${childActive ? C.brand : "transparent"}`,
                       }}
@@ -128,7 +129,7 @@ export const AppFrame: React.FC<{
       </nav>
 
       <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.sidebarLine}` }}>
-        <div style={{ color: C.canvas, fontSize: 16, fontWeight: 500 }}>Demo Admin</div>
+        <div style={{ color: C.ink, fontSize: 16, fontWeight: 500 }}>Demo Admin</div>
         <div
           style={{
             marginTop: 5,
