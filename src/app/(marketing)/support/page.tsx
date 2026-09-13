@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SupportForm } from "~/components/SupportForm";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
 
 export const metadata: Metadata = {
   title: "Contact support",
@@ -23,16 +22,6 @@ export default function SupportPage() {
         you got stuck.
       </p>
       <SupportForm siteKey={process.env.SUPPORT_TURNSTILE_SITE_KEY} />
-      <p className="text-ink-soft mt-8 text-sm">
-        You can also email{" "}
-        <a
-          href={SUPPORT_MAILTO}
-          className="text-brand-text break-all underline underline-offset-4"
-        >
-          {SUPPORT_EMAIL}
-        </a>
-        .
-      </p>
     </main>
   );
 }

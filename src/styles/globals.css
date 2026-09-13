@@ -265,6 +265,7 @@ body {
   clip-path: inset(50% 50% 28% 0);
 }
 .orbit-logo {
+  --orbit-depth: 1;
   position: absolute;
   display: grid;
   place-items: center;
@@ -274,6 +275,24 @@ body {
   border: 1px solid #edf0f3;
   border-radius: 50%;
   box-shadow: 0 4px 5px -3px #17202c20;
+  transform: translate(
+      calc(var(--orbit-x, 0px) * var(--orbit-depth)),
+      calc(var(--orbit-y, 0px) * var(--orbit-depth))
+    )
+    rotate(calc(var(--orbit-tilt, 0deg) * var(--orbit-depth)));
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.orbit-logo:nth-of-type(3n) {
+  --orbit-depth: 0.65;
+}
+.orbit-logo:nth-of-type(3n + 1) {
+  --orbit-depth: 1.25;
+}
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .orbit-logo {
+    transform: none;
+    transition: none;
+  }
 }
 .orbit-logo-1 {
   left: calc(50% - 430px);

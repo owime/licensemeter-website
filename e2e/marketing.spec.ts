@@ -17,6 +17,27 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test("hero logos follow the pointer, settle on exit, and respect reduced motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const logo = page.locator(".orbit-logo-1");
+  const transform = () =>
+    logo.evaluate((element) => getComputedStyle(element).transform);
+  const resting = await transform();
+  const hero = await page.locator(".orbit-hero").boundingBox();
+  expect(hero).not.toBeNull();
+  await page.mouse.move(hero!.x + hero!.width * 0.85, hero!.y + 150);
+  await expect.poll(transform).not.toBe(resting);
+  await page.mouse.move(1, 1);
+  await expect.poll(transform).toBe(resting);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.mouse.move(hero!.x + hero!.width * 0.85, hero!.y + 150);
+  await expect.poll(transform).toBe("none");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
+
 test("home page fits a mobile viewport and menu closes with Escape", async ({
   page,
 }) => {
@@ -245,9 +266,6 @@ test("Crisp loads once across navigation and remains separate from the support f
   expect(config.id).toBe("d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4");
   expect(config.queue).toContainEqual(["config", "color:mode", ["light"]]);
   expect(loads).toBe(1);
-  await expect(
-    page.locator('a[href="mailto:support@ugurlabs.com"]').first(),
-  ).toBeVisible();
   await page.setViewportSize({ width: 320, height: 568 });
   expect(
     await page.evaluate(

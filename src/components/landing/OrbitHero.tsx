@@ -7,6 +7,7 @@ import {
 } from "~/components/ConnectorLogo";
 import { SignInButtons } from "~/components/SignInButtons";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
+import { OrbitMotion } from "./OrbitMotion";
 
 const ORBIT_BRANDS: ConnectorBrand[] = [
   "microsoft",
@@ -34,7 +35,7 @@ export function OrbitHero({
       className="orbit-hero"
       aria-labelledby="hero-heading"
     >
-      <div className="orbit-scene" aria-hidden="true">
+      <OrbitMotion>
         {[1, 2, 3, 4, 5].map((ring) => (
           <div key={ring} className={`orbit-ring orbit-ring-${ring}`} />
         ))}
@@ -43,7 +44,7 @@ export function OrbitHero({
             <ConnectorLogo brand={brand} size={32} />
           </div>
         ))}
-      </div>
+      </OrbitMotion>
 
       <div className="orbit-copy relative z-10 mx-auto max-w-3xl px-5 text-center">
         <div className="rise rise-1 text-ink-soft inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs sm:text-sm">
