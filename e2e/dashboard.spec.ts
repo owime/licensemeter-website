@@ -26,6 +26,52 @@ const openDemo = async (page: Page) => {
   await expect(page).toHaveURL(/\/app$/);
 };
 
+test("AI demo pages show current sample costs and members without API keys", async ({
+  page,
+}) => {
+  await openDemo(page);
+  const content = page.locator("#content");
+  await page.goto("/app/ai-costs");
+  await expect(
+    content.getByRole("complementary", { name: "Sample data notice" }),
+  ).toBeVisible();
+  await expect(
+    content.getByText("Total AI spend this month", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    content.getByRole("img", { name: /Daily API spend over 60 days/ }),
+  ).toBeVisible();
+  await expect(
+    content.locator('a[download="licensemeter-ai-spend-sample.csv"]'),
+  ).toBeVisible();
+  await expect(
+    content.getByRole("button", { name: "Sync now", exact: true }),
+  ).toHaveCount(0);
+  for (const provider of ["openai", "anthropic"]) {
+    await page.goto(`/app/connectors/${provider}`);
+    await expect(
+      content.getByRole("complementary", { name: "Sample data notice" }),
+    ).toBeVisible();
+    await expect(content.getByText(/No live connection/)).toBeVisible();
+    await expect(
+      content.getByRole("heading", {
+        name: "Sample console members",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      content.getByRole("img", { name: /Daily API spend over 60 days/ }),
+    ).toBeVisible();
+    await expect(content.getByRole("textbox")).toHaveCount(0);
+    await page.setViewportSize({ width: 375, height: 812 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - innerWidth,
+      ),
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
 test("connectors are discoverable from the sidebar with branded cards and mobile search", async ({
   page,
 }) => {

@@ -397,5 +397,5 @@ export const buildSaasClient = async (
   }
 };
 
-export const demoSaasClient = (provider: SaasProvider): SaasClient =>
+export const demoSaasClient = (provider: SaasProvider): AiSpendClient =>
   new DemoSaasClient(provider);

@@ -16,6 +16,12 @@ import {
   tenantUsers,
 } from "~/server/db/schema";
 import type { SaasProvider } from "~/server/types";
+import {
+  AI_PREVIEW_PROVIDERS,
+  getAiPreview,
+  shouldPreviewAi,
+} from "~/server/demo/aiPreview";
+import { AiSampleNotice } from "~/components/workspace/AiSampleNotice";
 
 export const metadata: Metadata = { title: "AI costs" };
 
@@ -26,7 +32,11 @@ const AI_PROVIDERS: SaasProvider[] = ["openai", "anthropic"];
 const dayAgo = (days: number): string =>
   new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 
-export default async function AiCostsPage() {
+export default async function AiCostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
   const isAdmin = hasRole(ctx, "admin");
@@ -34,7 +44,7 @@ export default async function AiCostsPage() {
   // their freshness signal is the import time on the user snapshots.
   const isImported = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
 
-  const [rows, aiConns, lastRun, importedUser] = await Promise.all([
+  const [storedRows, aiConns, lastRun, importedUser] = await Promise.all([
     db.query.aiSpendDaily.findMany({
       where: and(
         eq(aiSpendDaily.tenantId, tenantId),
@@ -61,6 +71,18 @@ export default async function AiCostsPage() {
         })
       : Promise.resolve(undefined),
   ]);
+
+  const isPreview = shouldPreviewAi({
+    isDemo: ctx.tenant.isDemo,
+    requested: (await searchParams).preview === "sample",
+    hasConnection: aiConns.length > 0,
+    hasData: storedRows.length > 0,
+  });
+  const rows = isPreview
+    ? (await Promise.all(AI_PREVIEW_PROVIDERS.map(getAiPreview))).flatMap(
+        (p) => p.spend,
+      )
+    : storedRows;
 
   const monthPrefix = new Date().toISOString().slice(0, 7);
   const cutoff30 = dayAgo(30);
@@ -135,7 +157,7 @@ export default async function AiCostsPage() {
     ).length ?? 0;
   // Admins on a connected workspace with sync enabled get a manual sync, matching the
   // Overview header.
-  const canSync = isAdmin && Boolean(ctx.tenant.consentedAt);
+  const canSync = !isPreview && isAdmin && Boolean(ctx.tenant.consentedAt);
 
   // One chart series per provider: spend summed across categories per day.
   const series = providers.map((p) => ({
@@ -177,15 +199,17 @@ export default async function AiCostsPage() {
         <div>
           <h1 className="font-display text-3xl tracking-tight">AI costs</h1>
           <p className="text-ink-soft mt-1 text-sm">
-            {lastRun?.status === "running"
-              ? "Sync running…"
-              : isImported
-                ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
-                : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
-            {lastRun?.status === "failed" && (
+            {isPreview
+              ? "Explore 60 days of sample OpenAI and Anthropic usage"
+              : lastRun?.status === "running"
+                ? "Sync running…"
+                : isImported
+                  ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
+                  : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+            {!isPreview && lastRun?.status === "failed" && (
               <span className="text-danger-text ml-2">(last sync failed)</span>
             )}
-            {lastRun?.status === "partial" && (
+            {!isPreview && lastRun?.status === "partial" && (
               <span className="text-gold-text ml-2">
                 (completed with warnings
                 {degradedSteps > 0
@@ -199,10 +223,36 @@ export default async function AiCostsPage() {
         {canSync && rows.length > 0 && <SyncNowButton />}
       </header>
 
+      {isPreview && (
+        <>
+          <AiSampleNotice
+            exitHref={ctx.tenant.isDemo ? undefined : "/app/ai-costs"}
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            {AI_PREVIEW_PROVIDERS.map((provider) => (
+              <ButtonLink
+                key={provider}
+                href={`/app/connectors/${provider}${ctx.tenant.isDemo ? "" : "?preview=sample"}`}
+              >
+                Explore {CONNECTOR_LABELS[provider]} sample
+              </ButtonLink>
+            ))}
+          </div>
+        </>
+      )}
+
       {rows.length === 0 && aiConns.length === 0 ? (
         <section className="rise rise-2 mt-8">
           <Card title="Connect an AI provider">
             <div className="flex flex-col gap-4">
+              <div>
+                <ButtonLink
+                  href="/app/ai-costs?preview=sample"
+                  variant="secondary"
+                >
+                  Preview sample data
+                </ButtonLink>
+              </div>
               <p className="text-ink-soft max-w-2xl text-sm">
                 Connect OpenAI or Anthropic to see what your organization spends
                 on their APIs: daily totals by model and line item, exactly as
@@ -300,7 +350,7 @@ export default async function AiCostsPage() {
             ))}
           </section>
 
-          <SpendChart series={series} />
+          <SpendChart series={series} sample={isPreview} />
 
           <section className="rise rise-4 mt-10">
             <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
@@ -310,7 +360,8 @@ export default async function AiCostsPage() {
             <div className="border-line bg-card mt-3 hidden overflow-x-auto border md:block">
               <table className="w-full text-sm">
                 <caption className="sr-only">
-                  Top AI cost categories over the last 30 days, billed in USD.
+                  Top AI cost categories over the last 30 days, in USD
+                  {isPreview ? " (sample data)" : ""}.
                 </caption>
                 <thead>
                   <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
@@ -403,8 +454,9 @@ export default async function AiCostsPage() {
       )}
 
       <p className="rise rise-4 text-ink-faint mt-8 mb-8 text-xs">
-        Billed by the providers in USD. Shown as billed, never converted to your
-        workspace currency.
+        {isPreview
+          ? "Illustrative amounts in USD for demonstration only. These are not actual charges."
+          : "Billed by the providers in USD. Shown as billed, never converted to your workspace currency."}
       </p>
     </div>
   );

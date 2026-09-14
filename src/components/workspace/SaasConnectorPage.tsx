@@ -19,6 +19,9 @@ import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { saasConnections, saasSeats } from "~/server/db/schema";
 import type { SaasProvider } from "~/server/types";
+import { getAiPreview, shouldPreviewAi } from "~/server/demo/aiPreview";
+import { AiSampleNotice } from "~/components/workspace/AiSampleNotice";
+import { AiConnectorPreview } from "~/components/workspace/AiConnectorPreview";
 
 /**
  * Shared settings subpage for the generic SaaS connectors: one route per
@@ -27,8 +30,10 @@ import type { SaasProvider } from "~/server/types";
  */
 export const SaasConnectorPage = async ({
   provider,
+  previewRequested = false,
 }: {
   provider: SaasProvider;
+  previewRequested?: boolean;
 }) => {
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
@@ -55,7 +60,19 @@ export const SaasConnectorPage = async ({
       )
       .then((r) => r[0] ?? { n: 0, lastImportAt: null }),
   ]);
-  const seatCount = seats.n;
+  const aiProvider =
+    provider === "openai" || provider === "anthropic" ? provider : null;
+  const preview =
+    aiProvider &&
+    shouldPreviewAi({
+      isDemo: ctx.tenant.isDemo,
+      requested: previewRequested,
+      hasConnection: Boolean(conn),
+      hasData: seats.n > 0,
+    })
+      ? await getAiPreview(aiProvider)
+      : null;
+  const seatCount = preview?.members.length ?? seats.n;
   /* AI connectors store a fixed sentinel as orgRef. Only show the value
      when the spec actually collects one. */
   const showOrgRef = spec.fields.some((f) => f.name === "orgRef");
@@ -106,13 +123,39 @@ export const SaasConnectorPage = async ({
         </h1>
       </header>
 
+      {preview && (
+        <AiSampleNotice
+          exitHref={
+            ctx.tenant.isDemo ? undefined : `/app/connectors/${provider}`
+          }
+        />
+      )}
+      {aiProvider &&
+        !ctx.tenant.isDemo &&
+        !conn &&
+        seats.n === 0 &&
+        !preview && (
+          <div className="border-line bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4">
+            <p className="text-ink-soft text-sm">
+              Explore sample spend and console members before connecting.
+            </p>
+            <Link
+              href={`/app/connectors/${provider}?preview=sample`}
+              className={buttonClass("secondary")}
+            >
+              Preview sample data
+            </Link>
+          </div>
+        )}
+
       <div className="rise rise-2 flex flex-col gap-6">
         <Card title="Connection">
-          {ctx.tenant.isDemo ? (
+          {ctx.tenant.isDemo || preview ? (
             <div className="flex flex-col gap-4">
               <p className="text-ink-soft text-sm">
-                Connected with demo data: {seatCount} {spec.seatNoun}
-                correlated against the directory.
+                {preview
+                  ? `Sample workspace: ${seatCount} ${spec.seatNoun}. No live connection.`
+                  : `Connected with demo data: ${seatCount} ${spec.seatNoun} correlated against the directory.`}
               </p>
               <details className="border-line border-t pt-3">
                 <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
@@ -244,6 +287,10 @@ export const SaasConnectorPage = async ({
             </p>
           )}
         </Card>
+
+        {preview && (
+          <AiConnectorPreview preview={preview} isDemo={ctx.tenant.isDemo} />
+        )}
 
         <Card title="What it detects">
           <ul className="text-ink-soft flex flex-col gap-2 text-sm">

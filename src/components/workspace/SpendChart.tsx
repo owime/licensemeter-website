@@ -27,7 +27,13 @@ const SWATCHES = ["bg-ink-soft", "bg-brand"];
  * up to two series share one y-scale, the x-axis is the union of both
  * series' days, and amounts are USD cents exactly as billed.
  */
-export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
+export const SpendChart = ({
+  series,
+  sample = false,
+}: {
+  series: SpendSeries[];
+  sample?: boolean;
+}) => {
   // A line needs three days to mean anything; freshly connected tenants see
   // a note instead of a silently missing section.
   if (series.every((s) => s.points.length < 3))
@@ -75,7 +81,10 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
         `${s.label} ${fmtMoney(s.points[s.points.length - 1]!.cents, "USD")}`,
     );
   const csv = [
-    ["date", ...series.map((item) => item.label)].join(","),
+    [
+      "date",
+      ...series.map((item) => `${item.label}${sample ? " (sample)" : ""}`),
+    ].join(","),
     ...days.map((day) =>
       [
         day,
@@ -241,7 +250,11 @@ export const SpendChart = ({ series }: { series: SpendSeries[] }) => {
           </details>
           <a
             href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
-            download="licensemeter-ai-spend.csv"
+            download={
+              sample
+                ? "licensemeter-ai-spend-sample.csv"
+                : "licensemeter-ai-spend.csv"
+            }
             className="text-ink-soft hover:text-ink inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
           >
             Export Chart CSV
