@@ -336,7 +336,9 @@ export default async function AiCostsPage({
         </section>
       ) : (
         <>
-          <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+          <section
+            className={`rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 ${statCards.length > 4 ? "lg:grid-cols-3" : ""}`}
+          >
             {statCards.map((card) => (
               <div key={card.label} className="bg-card p-5">
                 <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
