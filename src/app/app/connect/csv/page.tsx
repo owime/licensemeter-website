@@ -22,7 +22,7 @@ export default async function CsvImportPage() {
   // Users without a workspace can't reach /app/settings/* (it bounces to
   // /app/connect); point them there instead so the link doesn't dead-end.
   const ctx = await getAccessContext();
-  const connectHref = ctx ? "/app/settings/microsoft" : "/app/connect";
+  const connectHref = ctx ? "/app/connectors/microsoft" : "/app/connect";
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">

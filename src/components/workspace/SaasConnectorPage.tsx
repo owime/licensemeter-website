@@ -74,7 +74,7 @@ export const SaasConnectorPage = async ({
       Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
       seats against your directory or run new syncs.{" "}
       <Link
-        href="/app/settings/microsoft"
+        href="/app/connectors/microsoft"
         className="hover:text-ink underline underline-offset-4"
       >
         Reconnect Microsoft
@@ -91,14 +91,7 @@ export const SaasConnectorPage = async ({
           className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
         >
           <Link
-            href="/app/settings"
-            className="hover:text-ink underline-offset-4 hover:underline"
-          >
-            Settings
-          </Link>{" "}
-          /{" "}
-          <Link
-            href="/app/settings#connectors"
+            href="/app/connectors"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
             Connectors
@@ -154,7 +147,7 @@ export const SaasConnectorPage = async ({
               Connectors cross-check seats against your Microsoft 365 directory,
               so{" "}
               <Link
-                href="/app/settings/microsoft"
+                href="/app/connectors/microsoft"
                 className="hover:text-ink underline underline-offset-4"
               >
                 connect your tenant
@@ -237,7 +230,7 @@ export const SaasConnectorPage = async ({
                   Microsoft connector's post-connect experience. Stay on this
                   settings page rather than bouncing to the dashboard. */}
               {!conn.lastSyncAt && !microsoftDisconnected && (
-                <ConnectPoller redirectTo={`/app/settings/${provider}`} />
+                <ConnectPoller redirectTo={`/app/connectors/${provider}`} />
               )}
             </div>
           ) : isAdmin ? (

@@ -217,7 +217,7 @@ export default async function AiCostsPage() {
                     connectors.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <ButtonLink href="/app/settings/microsoft">
+                    <ButtonLink href="/app/connectors/microsoft">
                       Connect the read-only sync
                     </ButtonLink>
                   </div>
@@ -226,14 +226,14 @@ export default async function AiCostsPage() {
                 <p className="text-ink-soft max-w-2xl text-sm">
                   Connecting needs an admin. Ask a workspace admin to connect{" "}
                   <Link
-                    href="/app/settings/openai"
+                    href="/app/connectors/openai"
                     className="hover:text-ink underline underline-offset-4"
                   >
                     OpenAI
                   </Link>{" "}
                   or{" "}
                   <Link
-                    href="/app/settings/anthropic"
+                    href="/app/connectors/anthropic"
                     className="hover:text-ink underline underline-offset-4"
                   >
                     Anthropic
@@ -242,10 +242,10 @@ export default async function AiCostsPage() {
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  <ButtonLink href="/app/settings/openai">
+                  <ButtonLink href="/app/connectors/openai">
                     Connect OpenAI
                   </ButtonLink>
-                  <ButtonLink href="/app/settings/anthropic">
+                  <ButtonLink href="/app/connectors/anthropic">
                     Connect Anthropic
                   </ButtonLink>
                 </div>
@@ -268,7 +268,7 @@ export default async function AiCostsPage() {
                     className="text-ink-soft flex flex-wrap items-center justify-between gap-2"
                   >
                     <Link
-                      href={`/app/settings/${c.provider}`}
+                      href={`/app/connectors/${c.provider}`}
                       className="text-ink font-medium underline-offset-4 hover:underline"
                     >
                       {CONNECTOR_LABELS[c.provider] ?? c.provider}

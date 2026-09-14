@@ -33,7 +33,7 @@ export default async function ConnectPage({
   // no-workspace fallback renders below.
   if (ctx) {
     redirect(
-      `/app/settings/microsoft${error ? `?error=${encodeURIComponent(error)}` : ""}`,
+      `/app/connectors/microsoft${error ? `?error=${encodeURIComponent(error)}` : ""}`,
     );
   }
   const connectorConfigured = Boolean(env.CONNECTOR_CLIENT_ID);

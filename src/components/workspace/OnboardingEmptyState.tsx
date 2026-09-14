@@ -24,28 +24,28 @@ const SECONDARY: Tile[] = [
   {
     name: "Adobe",
     blurb: "Creative Cloud / Acrobat seats",
-    href: "/app/settings/adobe",
+    href: "/app/connectors/adobe",
   },
-  { name: "Zoom", blurb: "Licensed Zoom seats", href: "/app/settings/zoom" },
+  { name: "Zoom", blurb: "Licensed Zoom seats", href: "/app/connectors/zoom" },
   {
     name: "Atlassian",
     blurb: "Jira & Confluence seats",
-    href: "/app/settings/atlassian",
+    href: "/app/connectors/atlassian",
   },
   {
     name: "Salesforce",
     blurb: "User licenses",
-    href: "/app/settings/salesforce",
+    href: "/app/connectors/salesforce",
   },
   {
     name: "ChatGPT",
     blurb: "Workspace seats (CSV)",
-    href: "/app/settings/chatgpt",
+    href: "/app/connectors/chatgpt",
   },
   {
     name: "Claude",
     blurb: "Workspace seats (CSV)",
-    href: "/app/settings/claude",
+    href: "/app/connectors/claude",
   },
 ];
 
@@ -77,7 +77,7 @@ export const OnboardingEmptyState = () => (
 
     {/* Microsoft 365 is the directory all SaaS seats are correlated against. */}
     <Link
-      href="/app/settings/microsoft"
+      href="/app/connectors/microsoft"
       data-tour="connect-cta"
       className="rise rise-2 group border-line bg-card hover:border-ink-soft mt-6 block border p-5 transition"
     >

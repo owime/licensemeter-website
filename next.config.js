@@ -17,6 +17,16 @@ const config = {
   },
   // The floating dev badge sits exactly over the sidebar's sign-out button.
   devIndicators: false,
+  async redirects() {
+    return [
+      {
+        source:
+          "/app/settings/:provider(microsoft|adobe|zoom|atlassian|salesforce|openai|anthropic|chatgpt|claude)",
+        destination: "/app/connectors/:provider",
+        permanent: false,
+      },
+    ];
+  },
   // Serve the status page at status.licensemeter.com/ once the subdomain is
   // pointed at this project. Other paths on the subdomain fall through to the
   // normal app; the subdomain is only meant as an entry point to /status.

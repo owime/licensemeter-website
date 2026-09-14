@@ -34,9 +34,9 @@ export const dataTourSteps: TourStep[] = [
     placement: "right",
   },
   {
-    anchor: "nav-settings",
+    anchor: "nav-connectors",
     title: "Cover your whole stack",
-    body: "Add more connectors — Adobe, Zoom, Atlassian, Salesforce and more — under Settings.",
+    body: "Open Connectors to connect Adobe, Zoom, Atlassian, Salesforce and the rest of your stack.",
     placement: "right",
   },
   {

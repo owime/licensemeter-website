@@ -151,14 +151,7 @@ export default async function MicrosoftConnectorPage({
           className="text-ink-faint text-xs font-medium tracking-[0.2em] uppercase"
         >
           <Link
-            href="/app/settings"
-            className="hover:text-ink underline-offset-4 hover:underline"
-          >
-            Settings
-          </Link>{" "}
-          /{" "}
-          <Link
-            href="/app/settings#connectors"
+            href="/app/connectors"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
             Connectors
@@ -180,7 +173,7 @@ export default async function MicrosoftConnectorPage({
         >
           <span>{connectErrorText(error)}</span>
           <Link
-            href="/app/settings/microsoft"
+            href="/app/connectors/microsoft"
             className="hover:text-ink shrink-0 text-xs font-medium underline underline-offset-4"
           >
             Dismiss

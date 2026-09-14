@@ -215,6 +215,13 @@ body {
 .marketing-frame > footer {
   border-radius: 0 0 32px 32px;
 }
+.connector-tile {
+  background-image: radial-gradient(ellipse at top left, var(--connector-accent), transparent 60%);
+}
+.connector-tile-logo {
+  background: var(--connector-accent);
+  box-shadow: inset 0 0 0 1px #17202c08;
+}
 .orbit-hero {
   position: relative;
   overflow: clip;

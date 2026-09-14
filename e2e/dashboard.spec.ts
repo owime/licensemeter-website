@@ -26,6 +26,101 @@ const openDemo = async (page: Page) => {
   await expect(page).toHaveURL(/\/app$/);
 };
 
+test("connectors are discoverable from the sidebar with branded cards and mobile search", async ({
+  page,
+}) => {
+  await openDemo(page);
+  const nav = page.getByRole("navigation", {
+    name: "Workspace navigation",
+    exact: true,
+  });
+  await nav.getByRole("link", { name: "Connectors", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/connectors$/);
+  await expect(
+    nav.getByRole("link", { name: "Connectors", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.locator(".connector-tile")).toHaveCount(9);
+  await expect(page.locator(".connector-tile img")).toHaveCount(9);
+  await expect(page.getByText("Sample data", { exact: true })).toHaveCount(9);
+  await page.getByRole("button", { name: "AI & usage", exact: true }).click();
+  await expect(page.locator(".connector-tile")).toHaveCount(4);
+  await page
+    .getByRole("searchbox", { name: "Search connectors" })
+    .fill("Claude");
+  await expect(
+    page.getByRole("link", { name: "Explore connector: Claude", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("searchbox", { name: "Search connectors" })
+    .fill("does not exist");
+  await expect(
+    page.getByRole("heading", { name: "No connectors found" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Show all connectors" }).click();
+  await expect(page.locator(".connector-tile")).toHaveCount(9);
+  await page
+    .getByRole("link", { name: "Explore connector: Adobe", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/app\/connectors\/adobe$/);
+  await expect(
+    nav.getByRole("link", { name: "Connectors", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    nav.getByRole("link", { name: "Settings", exact: true }),
+  ).not.toHaveAttribute("aria-current", "page");
+  await page
+    .getByRole("navigation", { name: "Breadcrumb" })
+    .getByRole("link", { name: "Connectors", exact: true })
+    .click();
+  await page.setViewportSize({ width: 320, height: 700 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - innerWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Mobile workspace navigation" })
+    .getByRole("link", { name: "Connectors", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Open menu", exact: true }),
+  ).toHaveAttribute("aria-expanded", "false");
+});
+
+test("old connector bookmarks retain query parameters and settings no longer contains the directory", async ({
+  page,
+}) => {
+  await openDemo(page);
+  for (const provider of [
+    "microsoft",
+    "adobe",
+    "zoom",
+    "atlassian",
+    "salesforce",
+    "openai",
+    "anthropic",
+    "chatgpt",
+    "claude",
+  ]) {
+    const response = await page.request.get(
+      `/app/settings/${provider}?source=bookmark`,
+    );
+    expect(response.status()).toBe(200);
+    expect(new URL(response.url()).pathname).toBe(
+      `/app/connectors/${provider}`,
+    );
+    expect(new URL(response.url()).searchParams.get("source")).toBe("bookmark");
+  }
+  await page.goto("/app/settings");
+  await expect(
+    page.getByRole("heading", { name: "Settings", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Connectors", exact: true }),
+  ).toHaveCount(0);
+});
+
 test("sample dashboard exposes the action-first overview and renewal calendar", async ({
   page,
 }) => {

@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import Link from "next/link";
 
 import { CurrencySelect } from "~/components/workspace/CurrencySelect";
@@ -15,17 +15,8 @@ import { fmtDate, fmtDateTime, workspaceLabel } from "~/lib/format";
 import { ROLE_DESCRIPTION } from "~/lib/roles";
 import { hasRole, inviteExpiry, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
-import {
-  adobeConnections,
-  auditLog,
-  memberships,
-  msConnections,
-  saasConnections,
-  saasSeats,
-  syncRuns,
-} from "~/server/db/schema";
+import { auditLog, memberships, syncRuns } from "~/server/db/schema";
 import { emailEnabled } from "~/server/email";
-import { CONNECTORS } from "~/lib/connectors";
 import { syncStepLabel } from "~/lib/activityLabels";
 
 const Capability = ({
@@ -71,73 +62,23 @@ export default async function SettingsPage() {
   const canEdit = isAdmin && !ctx.tenant.isDemo;
   const inviteEmailsActive = emailEnabled() && !ctx.tenant.isDemo;
 
-  const [members, runs, activity, msConn, adobeConn, saasConns, importedSeats] =
-    await Promise.all([
-      db.query.memberships.findMany({
-        where: eq(memberships.tenantId, ctx.tenant.id),
-      }),
-      db.query.syncRuns.findMany({
-        where: eq(syncRuns.tenantId, ctx.tenant.id),
-        orderBy: desc(syncRuns.startedAt),
-        limit: 8,
-      }),
-      isAdmin
-        ? db.query.auditLog.findMany({
-            where: eq(auditLog.tenantId, ctx.tenant.id),
-            orderBy: desc(auditLog.createdAt),
-            limit: 30,
-          })
-        : Promise.resolve([]),
-      db.query.msConnections.findFirst({
-        where: eq(msConnections.tenantId, ctx.tenant.id),
-      }),
-      db.query.adobeConnections.findFirst({
-        where: eq(adobeConnections.tenantId, ctx.tenant.id),
-      }),
-      db.query.saasConnections.findMany({
-        where: eq(saasConnections.tenantId, ctx.tenant.id),
-      }),
-      // Import-kind connectors have no connection row: seats are the signal.
-      db
-        .select({ provider: saasSeats.provider, n: sql<number>`count(*)::int` })
-        .from(saasSeats)
-        .where(eq(saasSeats.tenantId, ctx.tenant.id))
-        .groupBy(saasSeats.provider),
-    ]);
-
-  const msConnected = Boolean(msConn);
-  const statusOf = (connected: boolean) =>
-    ctx.tenant.isDemo
-      ? "Connected with demo data"
-      : connected
-        ? "Connected"
-        : "Not connected";
-  const connectorRows = [
-    {
-      label: "Microsoft 365",
-      href: "/app/settings/microsoft",
-      connected: msConnected,
-      status: statusOf(msConnected),
-    },
-    {
-      label: "Adobe",
-      href: "/app/settings/adobe",
-      connected: Boolean(adobeConn),
-      status: statusOf(Boolean(adobeConn)),
-    },
-    ...CONNECTORS.map((c) => {
-      const connected =
-        c.kind === "import"
-          ? importedSeats.some((s) => s.provider === c.provider)
-          : saasConns.some((s) => s.provider === c.provider);
-      return {
-        label: c.label,
-        href: `/app/settings/${c.provider}`,
-        connected,
-        status: statusOf(connected),
-      };
+  const [members, runs, activity] = await Promise.all([
+    db.query.memberships.findMany({
+      where: eq(memberships.tenantId, ctx.tenant.id),
     }),
-  ];
+    db.query.syncRuns.findMany({
+      where: eq(syncRuns.tenantId, ctx.tenant.id),
+      orderBy: desc(syncRuns.startedAt),
+      limit: 8,
+    }),
+    isAdmin
+      ? db.query.auditLog.findMany({
+          where: eq(auditLog.tenantId, ctx.tenant.id),
+          orderBy: desc(auditLog.createdAt),
+          limit: 30,
+        })
+      : Promise.resolve([]),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
@@ -391,41 +332,6 @@ export default async function SettingsPage() {
             </p>
           )}
         </Card>
-
-        {/* Anchor for the connector subpages' breadcrumb. */}
-        <div id="connectors" className="scroll-mt-24">
-          <Card title="Connectors">
-            <ul className="flex flex-col gap-2.5">
-              {connectorRows.map((row) => (
-                <li
-                  key={row.href}
-                  className="border-line flex flex-wrap items-center justify-between gap-3 border-b pb-2.5 text-sm last:border-b-0 last:pb-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{row.label}</span>
-                    <Pill tone={row.connected ? "good" : "outline"}>
-                      {row.status}
-                    </Pill>
-                  </div>
-                  <Link
-                    href={row.href}
-                    className="text-ink hover:text-brand-text text-xs font-medium underline-offset-4 hover:underline"
-                  >
-                    {!isAdmin
-                      ? "View →"
-                      : row.connected || ctx.tenant.isDemo
-                        ? "Manage →"
-                        : "Configure →"}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="text-ink-faint mt-3 text-xs">
-              Each connector has its own page under Settings. Seat assignments
-              only, never content.
-            </p>
-          </Card>
-        </div>
 
         {isAdmin && (
           <Card title="Activity">

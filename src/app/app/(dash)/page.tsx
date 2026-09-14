@@ -444,7 +444,7 @@ export default async function OverviewPage() {
                 the read-only sync for nightly updates, leak alerts and trends.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <ButtonLink variant="primary" href="/app/settings/microsoft">
+                <ButtonLink variant="primary" href="/app/connectors/microsoft">
                   Connect the read-only sync
                 </ButtonLink>
                 <ButtonAnchor href="/api/scan/start">

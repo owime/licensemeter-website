@@ -79,7 +79,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Anything writable: every permission is read-only (*.Read.All)",
     ],
     detects: MICROSOFT_CONNECTOR.detects.slice(),
-    settingsPath: "/app/settings/microsoft",
+    settingsPath: "/app/connectors/microsoft",
   },
   {
     slug: "adobe",
@@ -119,7 +119,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Creative Cloud seats held by accounts that are disabled in Entra ID.",
       "Seats with no matching directory account at all.",
     ],
-    settingsPath: "/app/settings/adobe",
+    settingsPath: "/app/connectors/adobe",
   },
   {
     slug: "zoom",
@@ -153,7 +153,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     ],
     neverReads: ["Meetings, recordings, chat or any content"],
     detects: detectsOf("zoom"),
-    settingsPath: "/app/settings/zoom",
+    settingsPath: "/app/connectors/zoom",
   },
   {
     slug: "atlassian",
@@ -187,7 +187,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
     ],
     neverReads: ["Issues, pages, projects or any content inside the products"],
     detects: detectsOf("atlassian"),
-    settingsPath: "/app/settings/atlassian",
+    settingsPath: "/app/connectors/atlassian",
   },
   {
     slug: "salesforce",
@@ -224,7 +224,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "CRM records: no accounts, contacts, opportunities or reports",
     ],
     detects: detectsOf("salesforce"),
-    settingsPath: "/app/settings/salesforce",
+    settingsPath: "/app/connectors/salesforce",
   },
   {
     slug: "openai",
@@ -261,7 +261,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Your project API keys' secrets or project data",
     ],
     detects: detectsOf("openai"),
-    settingsPath: "/app/settings/openai",
+    settingsPath: "/app/connectors/openai",
   },
   {
     slug: "anthropic",
@@ -302,7 +302,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Your workspace API keys' secrets",
     ],
     detects: detectsOf("anthropic"),
-    settingsPath: "/app/settings/anthropic",
+    settingsPath: "/app/connectors/anthropic",
   },
   {
     slug: "chatgpt",
@@ -337,7 +337,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Conversations, prompts or anything inside ChatGPT: no ChatGPT credentials are stored at all",
     ],
     detects: detectsOf("chatgpt"),
-    settingsPath: "/app/settings/chatgpt",
+    settingsPath: "/app/connectors/chatgpt",
   },
   {
     slug: "claude",
@@ -372,7 +372,7 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
       "Conversations, prompts or anything inside Claude: no Claude credentials are stored at all",
     ],
     detects: detectsOf("claude"),
-    settingsPath: "/app/settings/claude",
+    settingsPath: "/app/connectors/claude",
   },
 ];
 

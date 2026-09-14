@@ -126,7 +126,9 @@ describe("validateReturnTo", () => {
   it("accepts in-app paths", () => {
     expect(validateReturnTo("/app")).toBe("/app");
     expect(validateReturnTo("/app/connect/csv")).toBe("/app/connect/csv");
-    expect(validateReturnTo("/app/settings/zoom")).toBe("/app/settings/zoom");
+    expect(validateReturnTo("/app/connectors/zoom")).toBe(
+      "/app/connectors/zoom",
+    );
   });
 
   it("rejects absent values and anything outside /app", () => {

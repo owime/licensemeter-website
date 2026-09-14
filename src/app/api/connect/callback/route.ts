@@ -32,7 +32,7 @@ const GUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const fail = (code: string): never =>
-  redirect(`/app/settings/microsoft?error=${code}`);
+  redirect(`/app/connectors/microsoft?error=${code}`);
 
 /**
  * Admin-consent return leg. Validates the state nonce, requires the granted
@@ -208,5 +208,5 @@ export const GET = async (req: NextRequest) => {
     await runSync(tenantId);
   });
 
-  redirect("/app/settings/microsoft?status=syncing");
+  redirect("/app/connectors/microsoft?status=syncing");
 };

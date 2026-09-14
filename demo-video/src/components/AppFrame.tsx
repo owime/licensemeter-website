@@ -9,33 +9,19 @@ const NAV = [
   "Licenses & prices",
   "Renewals",
   "AI costs",
+  "Connectors",
   "Settings",
-] as const;
-
-const SETTINGS_CHILDREN = [
-  "Microsoft 365",
-  "Adobe",
-  "Zoom",
-  "Atlassian",
-  "Salesforce",
-  "OpenAI",
-  "Anthropic",
-  "ChatGPT",
-  "Claude",
 ] as const;
 
 /**
  * The static app chrome: light sidebar with nav and the canvas content area.
- * `active` marks the current section (Settings expands its connector
- * children), `scrollY` shifts the page content to simulate scrolling, and
- * `activeChild` highlights a connector sub-item.
+ * `active` marks the current section; `scrollY` shifts the page content.
  */
 export const AppFrame: React.FC<{
   scrollY?: number;
   active?: (typeof NAV)[number];
-  activeChild?: (typeof SETTINGS_CHILDREN)[number];
   children: React.ReactNode;
-}> = ({ scrollY = 0, active = "Settings", activeChild, children }) => (
+}> = ({ scrollY = 0, active = "Connectors", children }) => (
   <div
     style={{
       width: 1920,
@@ -104,25 +90,7 @@ export const AppFrame: React.FC<{
               >
                 {item}
               </div>
-              {isActive &&
-                item === "Settings" &&
-                SETTINGS_CHILDREN.map((child) => {
-                  const childActive = child === activeChild;
-                  return (
-                    <div
-                      key={child}
-                      style={{
-                        padding: "7px 24px 7px 46px",
-                        fontSize: 15,
-                        color: childActive ? C.ink : C.sidebarSoft,
-                        fontWeight: childActive ? 500 : 400,
-                        borderLeft: `3px solid ${childActive ? C.brand : "transparent"}`,
-                      }}
-                    >
-                      {child}
-                    </div>
-                  );
-                })}
+
             </React.Fragment>
           );
         })}

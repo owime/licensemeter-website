@@ -102,11 +102,11 @@ export const ConnectorDetail: React.FC = () => {
 
   return (
     <>
-      <AppFrame activeChild="Atlassian">
+      <AppFrame active="Connectors">
         {/* Breadcrumb + heading */}
         <div style={{ position: "absolute", left: CONTENT_X, top: PAD_TOP, ...enter(frame, 0) }}>
           <div style={{ fontFamily: FONT.sans, fontSize: 15, color: C.inkFaint }}>
-            Settings / Connectors / Atlassian
+            Connectors / Atlassian
           </div>
           <div
             style={{
