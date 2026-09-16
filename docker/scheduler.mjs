@@ -1,4 +1,8 @@
 import { pathToFileURL } from "node:url";
+import { writeFileSync } from "node:fs";
+
+const heartbeat = () =>
+  writeFileSync("/tmp/licensemeter-scheduler-heartbeat", String(Date.now()));
 
 // Same UTC schedule as vercel.json. No automatic retries for email jobs:
 // an ambiguous response must not send duplicate messages.
@@ -18,6 +22,7 @@ async function runScheduler() {
   const slots = new Map();
   const inFlight = new Set();
   const tick = () => {
+    heartbeat();
     const now = new Date();
     const slot = now.toISOString().slice(0, 13);
     for (const job of dueJobs(now)) {
@@ -40,6 +45,7 @@ async function runScheduler() {
         .finally(() => inFlight.delete(job));
     }
   };
+  heartbeat();
   // Start on the next tick. Restarting does not backfill missed schedules.
   const timer = setInterval(tick, 30_000);
   console.log(
