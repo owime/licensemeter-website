@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { siteUrl } from "~/env";
+import { connection } from "next/server";
 
 /*
  * AI answer-engine crawlers get an explicit rule with the same policy as the
@@ -25,7 +26,11 @@ const AI_CRAWLERS = [
   "meta-externalagent",
 ];
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  if (process.env.SELF_HOSTED === "true") {
+    await connection();
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
   const disallow = ["/app", "/api"];
   return {
     rules: [

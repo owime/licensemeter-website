@@ -16,8 +16,8 @@
 --
 -- How to run: as a privileged role (postgres), via the Supabase SQL editor or an
 -- admin connection. NOT part of the drizzle-kit chain, which connects as the
--- unprivileged `licensemeter_app`. First applied to production
--- (project licensemeter / tomugclophxlmnzrrcxp) on 2026-06-11.
+-- unprivileged `licensemeter_app`.
+-- Run these scripts for your own deployment.
 
 DO $$
 DECLARE

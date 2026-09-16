@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
@@ -33,9 +34,22 @@ const reply = (body: object, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 export async function POST(request: Request) {
-  const origin = new URL(request.url);
+  const origin = new URL(requestBaseUrl(request));
   if (request.headers.get("origin") !== origin.origin)
     return reply({ error: "Please submit the form from this site." }, 403);
+  const supportEmail = process.env.SUPPORT_TO_EMAIL?.trim()
+    ? process.env.SUPPORT_TO_EMAIL.trim()
+    : process.env.SELF_HOSTED === "true"
+      ? undefined
+      : SUPPORT_EMAIL;
+  if (!supportEmail || !z.string().email().safeParse(supportEmail).success)
+    return reply(
+      {
+        error:
+          "Support is not configured. Contact your instance administrator.",
+      },
+      503,
+    );
   const key = process.env.RESEND_API_KEY;
   const from = process.env.SUPPORT_FROM_EMAIL?.trim()
     ? process.env.SUPPORT_FROM_EMAIL
@@ -48,7 +62,7 @@ export async function POST(request: Request) {
   )
     return reply(
       {
-        error: `The support form is unavailable. Please email ${SUPPORT_EMAIL}.`,
+        error: `The support form is unavailable. Please email ${supportEmail}.`,
       },
       503,
     );
@@ -104,7 +118,7 @@ export async function POST(request: Request) {
     if (limits.some((allowed) => !allowed))
       return reply(
         {
-          error: `Too many requests. Please try again in an hour or email ${SUPPORT_EMAIL}.`,
+          error: `Too many requests. Please try again in an hour or email ${supportEmail}.`,
         },
         429,
       );
@@ -142,7 +156,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         from,
-        to: [SUPPORT_EMAIL],
+        to: [supportEmail],
         reply_to: data.email,
         subject: `[LicenseMeter support] ${data.subject}`,
         text: `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`,
@@ -155,7 +169,7 @@ export async function POST(request: Request) {
     if (!email.ok || !accepted.success)
       return reply(
         {
-          error: `Your request could not be sent. Please try again or email ${SUPPORT_EMAIL}.`,
+          error: `Your request could not be sent. Please try again or email ${supportEmail}.`,
         },
         502,
       );
@@ -164,13 +178,13 @@ export async function POST(request: Request) {
     if (error instanceof RateLimitUnavailableError)
       return reply(
         {
-          error: `The support form is temporarily unavailable. Please try again shortly or email ${SUPPORT_EMAIL}.`,
+          error: `The support form is temporarily unavailable. Please try again shortly or email ${supportEmail}.`,
         },
         503,
       );
     return reply(
       {
-        error: `We could not confirm your request was sent. Try again or email ${SUPPORT_EMAIL}.`,
+        error: `We could not confirm your request was sent. Try again or email ${supportEmail}.`,
       },
       502,
     );

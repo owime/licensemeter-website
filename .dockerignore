@@ -1,0 +1,24 @@
+# Allow-list: local secrets, Git history, database files, personal notes and
+# screenshots cannot become part of any build layer.
+**
+!package.json
+!package-lock.json
+!next.config.js
+!tsconfig.json
+!postcss.config.js
+!eslint.config.js
+!prettier.config.js
+!src/**
+!public/**
+!docker/**
+!Dockerfile
+.env*
+**/.env*
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.log
+**/*.test.ts
+docker/*.test.mjs
+!LICENSE
+!THIRD_PARTY_NOTICES.md

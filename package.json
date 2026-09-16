@@ -20,7 +20,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate --config docker/drizzle.config.ts",
+    "test:docker": "node --test docker/*.test.mjs"
   },
   "dependencies": {
     "@azure/msal-node": "^5.2.4",
@@ -36,7 +38,7 @@
     "geist": "^1.7.2",
     "jose": "^6.2.3",
     "lucide-react": "^1.21.0",
-    "next": "^15.5.20",
+    "next": "^15.5.24",
     "postgres": "^3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -57,11 +59,11 @@
     "@types/react-dom": "^19.0.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.5.20",
-    "postcss": "^8.5.10",
+    "eslint-config-next": "^15.5.24",
+    "postcss": "^8.5.23",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.0.15",
     "tsx": "^4.22.4",
     "typescript": "^5.8.2",
@@ -73,7 +75,9 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.23",
+    "sharp": "$sharp"
   },
-  "packageManager": "npm@11.6.2"
+  "packageManager": "npm@11.6.2",
+  "license": "MIT"
 }

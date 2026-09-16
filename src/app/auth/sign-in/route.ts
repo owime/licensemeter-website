@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { getSignInUrl, withAuth } from "@workos-inc/authkit-nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { redirect } from "next/navigation";
@@ -10,7 +11,9 @@ export const GET = async (req: NextRequest) => {
   // Already signed in: land directly, no auth round-trip needed.
   const { user } = await withAuth();
   if (user) {
-    return NextResponse.redirect(new URL(returnTo ?? "/app", req.url));
+    return NextResponse.redirect(
+      new URL(returnTo ?? "/app", requestBaseUrl(req)),
+    );
   }
 
   // returnTo must travel as `returnTo` (AuthKit seals it as returnPathname and

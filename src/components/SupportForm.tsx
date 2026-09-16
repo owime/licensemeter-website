@@ -14,9 +14,11 @@ type Turnstile = {
 export function SupportForm({
   siteKey,
   nonce,
+  supportEmail = SUPPORT_EMAIL,
 }: {
   siteKey?: string;
   nonce?: string;
+  supportEmail?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
@@ -43,7 +45,7 @@ export function SupportForm({
       "error-callback": () => {
         setToken("");
         setError(
-          `Verification could not load. Try again or email ${SUPPORT_EMAIL}.`,
+          `Verification could not load. Try again or email ${supportEmail}.`,
         );
       },
     });
@@ -51,7 +53,7 @@ export function SupportForm({
       if (widget.current !== null) turnstile.remove(widget.current);
       widget.current = null;
     };
-  }, [ready, siteKey, sent]);
+  }, [ready, siteKey, sent, supportEmail]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,7 +91,7 @@ export function SupportForm({
       setError(
         cause instanceof Error && cause.name === "Error"
           ? cause.message
-          : `We could not confirm your request was sent. Try again or email ${SUPPORT_EMAIL}.`,
+          : `We could not confirm your request was sent. Try again or email ${supportEmail}.`,
       );
       setToken("");
       if (widget.current !== null) api()?.reset(widget.current);
@@ -130,7 +132,7 @@ export function SupportForm({
           onReady={() => setReady(true)}
           onError={() =>
             setError(
-              `Verification could not load. Please email ${SUPPORT_EMAIL}.`,
+              `Verification could not load. Please email ${supportEmail}.`,
             )
           }
         />

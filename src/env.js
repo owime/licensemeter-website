@@ -14,6 +14,9 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
+    SELF_HOSTED: z.enum(["true", "false"]).optional(),
+    CRISP_WEBSITE_ID: z.string().uuid().optional(),
+    SUPPORT_TO_EMAIL: z.string().email().optional(),
 
     /**
      * Postgres connection string for production (Neon/Supabase EU etc.).
@@ -130,6 +133,9 @@ export const env = createEnv({
 
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    SELF_HOSTED: process.env.SELF_HOSTED,
+    CRISP_WEBSITE_ID: process.env.CRISP_WEBSITE_ID,
+    SUPPORT_TO_EMAIL: process.env.SUPPORT_TO_EMAIL,
     DATABASE_URL: process.env.DATABASE_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
     DATA_ENCRYPTION_KEY: process.env.DATA_ENCRYPTION_KEY,

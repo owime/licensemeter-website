@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { after, NextResponse, type NextRequest } from "next/server";
 
 import { env } from "~/env";
@@ -33,7 +34,9 @@ export const maxDuration = 300;
 
 const backToLanding = (req: NextRequest, reason: string) => {
   console.error(`[auth] sign-in failed: ${reason}`);
-  const res = NextResponse.redirect(new URL(`/?signin=failed`, req.url));
+  const res = NextResponse.redirect(
+    new URL(`/?signin=failed`, requestBaseUrl(req)),
+  );
   res.cookies.set(expiredOAuthCookie());
   return res;
 };
@@ -41,7 +44,7 @@ const backToLanding = (req: NextRequest, reason: string) => {
 const backToConnect = (req: NextRequest, code: string, reason: string) => {
   console.error(`[scan] instant scan aborted (${code}): ${reason}`);
   const res = NextResponse.redirect(
-    new URL(`/app/connectors/microsoft?error=${code}`, req.url),
+    new URL(`/app/connectors/microsoft?error=${code}`, requestBaseUrl(req)),
   );
   res.cookies.set(expiredOAuthCookie());
   return res;
@@ -69,7 +72,7 @@ const handleScanCallback = async (
   const session = await auth();
   const actorId = session?.user?.workosUserId ?? session?.user?.oid;
   if (!session?.user || !actorId) {
-    const res = NextResponse.redirect(new URL("/", req.url));
+    const res = NextResponse.redirect(new URL("/", requestBaseUrl(req)));
     res.cookies.set(expiredOAuthCookie());
     return res;
   }
@@ -150,7 +153,7 @@ const handleScanCallback = async (
   });
 
   const res = NextResponse.redirect(
-    new URL("/app/connectors/microsoft?status=syncing", req.url),
+    new URL("/app/connectors/microsoft?status=syncing", requestBaseUrl(req)),
   );
   res.cookies.set(expiredOAuthCookie());
   // Make the scanned workspace the active one so the poller (and /app)
@@ -240,7 +243,9 @@ export const GET = async (req: NextRequest) => {
 
   // returnTo was validated again inside readOAuthCookie; absent or invalid
   // values fall back to the default landing.
-  const res = NextResponse.redirect(new URL(oauth.returnTo ?? "/app", req.url));
+  const res = NextResponse.redirect(
+    new URL(oauth.returnTo ?? "/app", requestBaseUrl(req)),
+  );
   res.cookies.set(expiredOAuthCookie());
   res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
   return res;

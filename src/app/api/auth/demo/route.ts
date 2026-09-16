@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { NextResponse } from "next/server";
 
 import { isDemoMode } from "~/env";
@@ -38,7 +39,7 @@ export const POST = async (req: Request) => {
     email: DEMO_EMAIL,
     isDemo: true,
   });
-  const res = NextResponse.redirect(new URL("/app", req.url), 303);
+  const res = NextResponse.redirect(new URL("/app", requestBaseUrl(req)), 303);
   res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
   return res;
 };

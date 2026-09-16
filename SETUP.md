@@ -1,141 +1,68 @@
-# LicenseMeter production setup
+# Deployment configuration
 
-This guide takes you from a fresh clone to a deployment that real Microsoft
-365 tenants can connect to.
+For Docker, start with [docs/self-hosting.md](docs/self-hosting.md). This reference also covers Vercel and other Node.js hosts.
 
-## 1. Prerequisites
+## Authentication
 
-- An Entra tenant that owns the app registrations. Use a dedicated product
-  tenant, not a customer tenant.
-- For consent from customer tenants: publisher verification. Unverified
-  multi-tenant apps are blocked from consent in most tenants. You need a
-  Microsoft AI Cloud Partner Program account and a verified publisher domain
-  matching the app. Start early. This gates everything.
-  https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview
-- A Postgres database in the EU (e.g. Neon `eu-central-1` or Supabase
-  Frankfurt).
-- A Vercel project (or any Node 20+ host).
+The Microsoft connector is separate from sign-in.
 
-## 2. Create the app registrations
+| Provider        | Configuration                                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Microsoft Entra | `AUTH_PROVIDER=entra`, `AUTH_MICROSOFT_ENTRA_ID_ID`, `AUTH_MICROSOFT_ENTRA_ID_SECRET`                                                           |
+| WorkOS AuthKit  | `AUTH_PROVIDER=workos` (application default), `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` |
+
+Compose selects Entra and needs no WorkOS account. A sample instance runs without provider credentials when `AUTH_PROVIDER=entra` and `DEMO_MODE=true`.
+
+For WorkOS, register your deployment's `/auth/callback` URL and `/auth/sign-in` endpoint. The cookie password must contain at least 32 characters. Configure `NEXT_PUBLIC_WORKOS_REDIRECT_URI` before building. Follow the [AuthKit Next.js documentation](https://workos.com/docs/authkit/nextjs).
+
+## Microsoft registrations
+
+[scripts/setup-entra.ps1](scripts/setup-entra.ps1) creates separate sign-in and read-only connector applications in the tenant you select. Review the script and its requested permissions before running it.
 
 ```powershell
-# In the product tenant, as a user who can create applications
 Install-Module Microsoft.Graph.Applications -Scope CurrentUser
-./scripts/setup-entra.ps1 -BaseUrl "https://your-deployment.example"
+./scripts/setup-entra.ps1 -BaseUrl "https://licenses.example.com"
 ```
 
-The script creates:
+Register these Web redirect URIs for your deployment:
 
-- "LicenseMeter Sign-in": multi-tenant OIDC login app
-  (redirect: `/api/auth/callback/microsoft-entra-id`), no Graph permissions.
-- "LicenseMeter Connector": multi-tenant app-only connector
-  (redirect: `/api/connect/callback`) with read-only application permissions:
-  `User.Read.All`, `AuditLog.Read.All`, `Reports.Read.All`,
-  `LicenseAssignment.Read.All`, `ReportSettings.Read.All`.
+- Sign-in: `https://licenses.example.com/api/auth/callback/microsoft-entra-id`
+- Connector: `https://licenses.example.com/api/connect/callback`
 
-It prints the four env values. Secrets expire after 12 months; for production,
-replace the connector secret with a certificate credential when convenient.
+Store the generated IDs and secrets in deployment environment variables. The connector uses `CONNECTOR_CLIENT_ID` and `CONNECTOR_CLIENT_SECRET`, independently of the login provider. Its setup page also supports bringing your own app registration. `scripts/add-redirect-uris.ps1` requires your own sign-in and connector app IDs explicitly.
 
-For local development, run it again with `-BaseUrl "http://localhost:3000"`
-or add the localhost redirect URIs to the same apps.
+The managed connector requests `User.Read.All`, `AuditLog.Read.All`, `Reports.Read.All`, `LicenseAssignment.Read.All`, and `ReportSettings.Read.All`. Consent and publisher requirements depend on the target tenant's policies. See Microsoft's [admin-consent documentation](https://learn.microsoft.com/entra/identity-platform/v2-admin-consent) and [publisher verification overview](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview).
 
-## 3. Environment variables
+## Shared environment
 
-Set these locally in `.env` and in Vercel (Production + Preview):
+| Variable                                                     | Purpose                                                                     |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `DATABASE_URL`                                               | PostgreSQL connection using the limited runtime role                        |
+| `AUTH_SECRET`                                                | Session signing secret, at least 32 characters in production                |
+| `DATA_ENCRYPTION_KEY`                                        | Separate encryption key for connector credentials                           |
+| `APP_BASE_URL`                                               | Canonical deployment origin, HTTPS for public access                        |
+| `CRON_SECRET`                                                | Bearer secret for scheduled-job routes                                      |
+| `DEMO_MODE`                                                  | `true` enables credentials-free sample-workspace access                     |
+| `SELF_HOSTED`                                                | `true` enables runtime page configuration and disables hosted chat defaults |
+| `RESEND_API_KEY`, `EMAIL_FROM`                               | Optional transactional email                                                |
+| `SUPPORT_TO_EMAIL`                                           | Destination for the self-hosted support form                                |
+| `SUPPORT_TURNSTILE_SITE_KEY`, `SUPPORT_TURNSTILE_SECRET_KEY` | Optional spam verification; configure both for your hostname                |
+| `CRISP_WEBSITE_ID`                                           | Optional chat website ID for your instance                                  |
 
-| Variable                                 | Value                                                             |
-| ---------------------------------------- | ----------------------------------------------------------------- |
-| `DATABASE_URL`                           | Postgres connection string (EU region)                            |
-| `AUTH_SECRET`                            | `openssl rand -base64 32`                                         |
-| `AUTH_MICROSOFT_ENTRA_ID_ID` / `_SECRET` | from the setup script                                             |
-| `CONNECTOR_CLIENT_ID` / `_SECRET`        | from the setup script                                             |
-| `CRON_SECRET`                            | random string (16+ chars); Vercel Cron sends it as a Bearer token |
-| `APP_BASE_URL`                           | public URL, e.g. `https://app.licensemeter.example`               |
+Never commit environment files, database dumps, or private keys. `SKIP_ENV_VALIDATION` is for builds without secrets, not runtime deployment.
 
-`CRON_SECRET` and `APP_BASE_URL` are validated at build time on Vercel. A
-deploy without them fails instead of shipping a broken consent flow or an
-unprotected cron route.
-| `DEMO_MODE` | `"true"` to keep the public demo workspace, else `"false"` |
+## Database and hosting
 
-## 4. Database schema
+Docker initializes its dedicated database automatically. Do not point its initial migration at an existing hosted database; it creates a complete schema and requires an empty database.
 
-The deployed app connects as a dedicated least-privilege role
-(`licensemeter_app`, DML only). Schema pushes and the one-time security setup run
-as a privileged role (`postgres`). So you keep two connection strings: an admin
-one for setup, and the app one for runtime.
+For an independently managed PostgreSQL database, provision the schema as the database owner and use a separate login for runtime. Keep administrator connection strings out of the web environment.
 
-1. Create the tables, as the privileged role:
+The `scripts/db-*.sql` files describe the hosted Supabase deployment: RLS, application-role DML permissions, and denial of Supabase Data API access. Tenant isolation remains in application code. Review these files before applying them, and run `scripts/db-audit-posture.sql` after schema changes. The bundled PostgreSQL service has no Data API and does not need these Supabase-specific scripts.
 
-   ```bash
-   DATABASE_URL="postgres://postgres:...@db.<ref>.supabase.co:5432/postgres" npm run db:push
-   ```
+For Vercel, configure the database, authentication, encryption, `APP_BASE_URL`, and `CRON_SECRET`. `vercel.json` schedules the sync, digest, and monthly report. The hosted deployment retains its WorkOS and Crisp behavior; `SELF_HOSTED=true` is for instances you operate yourself.
 
-2. Create the least-privilege app role. Manual and out of repo -- it carries a
-   secret. Use a generated password; this is the password in the app's runtime
-   `DATABASE_URL`:
+## First connection
 
-   ```sql
-   CREATE ROLE licensemeter_app LOGIN PASSWORD '<generated>';
-   ```
+Sign in, open Connectors, and select Microsoft 365. Review the read-only permissions and complete consent with an account permitted to grant it. After syncing, review findings and set the license price book to your agreements. Invite colleagues through workspace membership controls.
 
-3. Lock the database down, as the privileged role, in this order (every script
-   is idempotent -- re-run after adding tables):
-
-   ```bash
-   psql "$ADMIN_DATABASE_URL" -f scripts/db-enable-rls-deny-all.sql
-   psql "$ADMIN_DATABASE_URL" -f scripts/db-app-role-grants-and-policies.sql
-   psql "$ADMIN_DATABASE_URL" -f scripts/db-revoke-public-api-grants.sql
-   psql "$ADMIN_DATABASE_URL" -f scripts/db-audit-posture.sql
-   ```
-
-   This enables RLS on every table (Supabase Data API deny-all), gives
-   `licensemeter_app` its permissive `app_all` policy, and revokes the default
-   anon/authenticated grants. Tenant isolation is enforced in application code,
-   not by RLS. The final read-only audit fails if a future schema change leaves
-   an RLS, grant, app-policy, or foreign-key-index gap.
-
-4. Point the deployed app's `DATABASE_URL` at `licensemeter_app`, not `postgres`.
-
-## 5. Deploy
-
-```bash
-vercel deploy --prod
-```
-
-`vercel.json` schedules the nightly sync (`/api/cron/sync`, 03:00 UTC). Confirm
-the cron job appears in the Vercel project settings and that `CRON_SECRET` is
-set, otherwise the route answers 401.
-
-## 6. Connect the first customer tenant
-
-1. Sign in at the deployment with a work account from the customer tenant.
-2. You land on `/app/connect`. Review the listed read-only scopes.
-3. Click "Grant admin consent". A Global Administrator of that tenant
-   completes the Microsoft dialog.
-4. The callback binds the consenting workspace, makes the initiator the owner,
-   and starts the first sync (licenses, users, usage reports, analysis).
-5. Invite finance colleagues as viewers under Settings > Members. They sign in
-   with Microsoft; access is invite-based, never tenant-wide.
-
-## 7. Tenant-side notes
-
-- Sign-in activity requires Entra ID P1/P2 in the customer tenant. Without it,
-  LicenseMeter automatically falls back to usage-report activity.
-- Usage reports conceal user names by default (Microsoft default since Sept
-  2021). Per-user usage findings need a Global Admin to disable concealment:
-  Microsoft 365 admin center > Settings > Org settings > Reports. The change
-  is recorded in the Purview audit log. LicenseMeter detects the setting and
-  degrades to aggregate findings when concealed.
-- Revoking access: delete the workspace in Settings (removes all synced data),
-  then remove "LicenseMeter Connector" under Entra ID > Enterprise applications
-  in the customer tenant.
-
-## Troubleshooting
-
-| Symptom                                         | Cause / fix                                                                                                                         |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Consent dialog warns about unverified publisher | Complete publisher verification (see prerequisites)                                                                                 |
-| `tenant_mismatch` error after consent           | The consenting admin belongs to a different tenant than the signed-in user; sign in with an account from the tenant being connected |
-| Sync step `signInActivity: skipped`             | Customer tenant has no Entra P1/P2 (expected fallback)                                                                              |
-| Findings show aggregate counts only             | Report concealment is on; see tenant-side notes                                                                                     |
-| `/api/cron/sync` returns 401                    | `CRON_SECRET` missing or not sent as `Authorization: Bearer <secret>`                                                               |
+Some activity signals require additional Microsoft licensing or identifiable reports. The application exposes missing signals and falls back where supported. It does not change report privacy settings on your behalf.

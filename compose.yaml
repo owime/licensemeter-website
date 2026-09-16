@@ -1,0 +1,84 @@
+name: licensemeter
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: licensemeter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run node scripts/setup-docker.mjs first}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d licensemeter"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/licensemeter
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: licensemeter:local
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:${HTTP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://licensemeter_app:${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD}@db:5432/licensemeter
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Set DATA_ENCRYPTION_KEY}
+      CRON_SECRET: ${CRON_SECRET:?Set CRON_SECRET}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      AUTH_PROVIDER: entra
+      AUTH_MICROSOFT_ENTRA_ID_ID: ${AUTH_MICROSOFT_ENTRA_ID_ID:-}
+      AUTH_MICROSOFT_ENTRA_ID_SECRET: ${AUTH_MICROSOFT_ENTRA_ID_SECRET:-}
+      CONNECTOR_CLIENT_ID: ${CONNECTOR_CLIENT_ID:-}
+      CONNECTOR_CLIENT_SECRET: ${CONNECTOR_CLIENT_SECRET:-}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      MS_BYO_ENABLED: ${MS_BYO_ENABLED:-true}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      SUPPORT_TO_EMAIL: ${SUPPORT_TO_EMAIL:-}
+      SUPPORT_FROM_EMAIL: ${SUPPORT_FROM_EMAIL:-}
+      SUPPORT_TURNSTILE_SITE_KEY: ${SUPPORT_TURNSTILE_SITE_KEY:-}
+      SUPPORT_TURNSTILE_SECRET_KEY: ${SUPPORT_TURNSTILE_SECRET_KEY:-}
+      CRISP_WEBSITE_ID: ${CRISP_WEBSITE_ID:-}
+      ALERT_EMAIL: ${ALERT_EMAIL:-}
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+
+  scheduler:
+    image: licensemeter:local
+    restart: unless-stopped
+    init: true
+    command: [node, docker/scheduler.mjs]
+    healthcheck:
+      disable: true
+    environment:
+      CRON_SECRET: ${CRON_SECRET:?Set CRON_SECRET}
+      CRON_BASE_URL: http://web:3000
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

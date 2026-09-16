@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 
 import { siteUrl } from "~/env";
 import { WASTE_EXPLAINERS } from "~/app/(marketing)/waste/content";
@@ -7,7 +8,11 @@ import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
 /** Legal pages: indexable but low priority, they rarely change. */
 const LOW_PRIORITY = new Set(["/impressum", "/privacy", "/dpa", "/de/dpa"]);
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (process.env.SELF_HOSTED === "true") {
+    await connection();
+    return [];
+  }
   const base = siteUrl();
   return [
     "",

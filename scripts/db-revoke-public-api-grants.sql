@@ -21,8 +21,7 @@
 -- Prerequisite: the deny-all posture is already in place -- run
 -- db-enable-rls-deny-all.sql then db-app-role-grants-and-policies.sql first. The
 -- `licensemeter_app` role itself is created manually (out of repo: it carries
--- the DATABASE_URL password). Applied to production
--- (project licensemeter / tomugclophxlmnzrrcxp) on 2026-06-17.
+-- the DATABASE_URL password).
 
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
 

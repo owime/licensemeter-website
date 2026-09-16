@@ -35,6 +35,7 @@ yarn-error.log*
 # do not commit any .env files to git, except for the .env.example file. https://create.t3.gg/en/usage/env-variables#using-environment-variables
 .env*
 !.env.example
+!.env.docker.example
 
 # vercel
 .vercel
@@ -56,3 +57,13 @@ test-results/
 
 # local agent/screenshot output
 output/
+.claude/
+tasks/
+/desktop-*.png
+/mobile-*.png
+/sidebar-*.png
+/user-drilldown-*.png
+/backups/
+*.dump
+*.pfx
+*.key

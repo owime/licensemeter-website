@@ -11,6 +11,10 @@ const ENGLISH = [
   { href: "/msp", label: "MSP" },
   { href: "/trust-center", label: "Trust Center" },
   { href: "/support", label: "Support" },
+  {
+    href: "https://github.com/ugurkocde/licensemeter-website",
+    label: "GitHub",
+  },
 ];
 
 const GERMAN = [
@@ -18,6 +22,10 @@ const GERMAN = [
   { href: "/de/trust-center", label: "Trust Center" },
   { href: "/de/dpa", label: "AV-Vertrag" },
   { href: "/", label: "English" },
+  {
+    href: "https://github.com/ugurkocde/licensemeter-website",
+    label: "GitHub",
+  },
 ];
 
 export const MarketingNav = () => {

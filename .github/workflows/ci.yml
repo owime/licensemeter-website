@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -31,6 +34,39 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+      - run: npm run test:docker
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Create isolated Docker configuration
+        run: |
+          node scripts/setup-docker.mjs
+          sed -i 's/localhost:3000/localhost:3102/g; s/HTTP_PORT=3000/HTTP_PORT=3102/' .env.docker
+      - run: docker compose --env-file .env.docker build
+      - run: docker compose --env-file .env.docker up -d --wait --wait-timeout 180
+      - run: npx playwright install --with-deps chromium
+      - name: Test the production image without provider credentials
+        run: npm run test:e2e -- e2e/docker.spec.ts
+        env:
+          DOCKER_SMOKE: "true"
+          PLAYWRIGHT_PORT: "3102"
+      - name: Check migrations can run again without losing data
+        run: docker compose --env-file .env.docker run --rm migrate
+      - name: Container logs
+        if: failure()
+        run: docker compose --env-file .env.docker logs --tail 100 web migrate scheduler
+      - name: Remove disposable CI containers and volumes
+        if: always()
+        run: docker compose --env-file .env.docker down -v

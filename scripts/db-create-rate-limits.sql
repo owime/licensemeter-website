@@ -1,4 +1,4 @@
--- Target: LicenseMeter production (tomugclophxlmnzrrcxp).
+-- For deployments using Supabase and the dedicated application role.
 -- Run as postgres. Add only the counter table required by rateLimitDurable.
 -- Keep counters private to the trusted application role, matching the existing
 -- database access model. Safe to rerun; no existing rows are changed.

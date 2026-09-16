@@ -23,17 +23,19 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
-    url: `http://127.0.0.1:${port}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    // Exercise the support form with mocked providers, never real email delivery.
-    env: {
-      RESEND_API_KEY: "test-support-key",
-      EMAIL_FROM: "Support <support@example.com>",
-      SUPPORT_TURNSTILE_SITE_KEY: "",
-      SUPPORT_TURNSTILE_SECRET_KEY: "",
-    },
-  },
+  webServer: process.env.DOCKER_SMOKE
+    ? undefined
+    : {
+        command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
+        url: `http://127.0.0.1:${port}`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+        // Exercise the support form with mocked providers, never real email delivery.
+        env: {
+          RESEND_API_KEY: "test-support-key",
+          EMAIL_FROM: "Support <support@example.com>",
+          SUPPORT_TURNSTILE_SITE_KEY: "",
+          SUPPORT_TURNSTILE_SECRET_KEY: "",
+        },
+      },
 });

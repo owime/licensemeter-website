@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SupportForm } from "~/components/SupportForm";
+import { env } from "~/env";
 
 export const metadata: Metadata = {
   title: "Contact support",
@@ -21,7 +22,17 @@ export default function SupportPage() {
         Need a hand with LicenseMeter? Tell us what you’re working on and where
         you got stuck.
       </p>
-      <SupportForm siteKey={process.env.SUPPORT_TURNSTILE_SITE_KEY} />
+      {env.SELF_HOSTED === "true" && !env.SUPPORT_TO_EMAIL ? (
+        <p className="text-ink-soft border-line rounded-xl border p-5 text-sm">
+          Support is managed by the administrator of this self-hosted instance.
+          Contact them for help.
+        </p>
+      ) : (
+        <SupportForm
+          siteKey={process.env.SUPPORT_TURNSTILE_SITE_KEY}
+          supportEmail={env.SUPPORT_TO_EMAIL}
+        />
+      )}
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { NextResponse } from "next/server";
 
 import { env } from "~/env";
@@ -27,13 +28,13 @@ export const GET = async (req: Request) => {
   // delegated Microsoft consent below proves tenant access independently.
   const actorId = session?.user?.workosUserId ?? session?.user?.oid;
   if (!session?.user || !actorId) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/", requestBaseUrl(req)));
   }
   if (session.user.isDemo) {
-    return NextResponse.redirect(new URL("/app", req.url));
+    return NextResponse.redirect(new URL("/app", requestBaseUrl(req)));
   }
   if (!env.AUTH_MICROSOFT_ENTRA_ID_ID) {
-    return NextResponse.redirect(new URL("/app/connect", req.url));
+    return NextResponse.redirect(new URL("/app/connect", requestBaseUrl(req)));
   }
 
   const { verifier, challenge } = await msalCrypto.generatePkceCodes();

@@ -20,8 +20,8 @@
 -- IF EXISTS precedes each CREATE, and the GRANTs are safe to repeat. Run again
 -- after adding tables.
 --
--- How to run: as a privileged role (postgres). First applied to production
--- (project licensemeter / tomugclophxlmnzrrcxp) on 2026-06-11.
+-- How to run: as a privileged role (postgres).
+-- Run these scripts for your own deployment.
 
 GRANT USAGE ON SCHEMA public TO licensemeter_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO licensemeter_app;

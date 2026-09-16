@@ -6,8 +6,9 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/react";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
+import { connection } from "next/server";
 
-import { siteUrl } from "~/env";
+import { authProvider, env, siteUrl } from "~/env";
 import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
@@ -88,14 +89,26 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Docker images have no deployment secrets at build time. Render from the
+  // runtime environment; hosted marketing pages keep their static behavior.
+  if (env.SELF_HOSTED === "true") await connection();
+  const crispId =
+    env.CRISP_WEBSITE_ID ??
+    (env.SELF_HOSTED === "true"
+      ? undefined
+      : "d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4");
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
-        <AuthKitProvider>{children}</AuthKitProvider>
-        <CrispChat />
+        {authProvider() === "workos" ? (
+          <AuthKitProvider>{children}</AuthKitProvider>
+        ) : (
+          children
+        )}
+        {crispId && <CrispChat websiteId={crispId} />}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

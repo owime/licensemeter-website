@@ -3,7 +3,7 @@
   Appends a deployment's redirect URIs to both LicenseMeter app registrations.
 
 .EXAMPLE
-  ./add-redirect-uris.ps1 -BaseUrl "https://licensemeter.vercel.app"
+  ./add-redirect-uris.ps1 -BaseUrl "https://licenses.example.com" -SignInAppId "<your-sign-in-app-id>" -ConnectorAppId "<your-connector-app-id>"
 
 .NOTES
   Run as a user who can manage the applications in the product tenant.
@@ -13,8 +13,10 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$BaseUrl,
 
-  [string]$SignInAppId = "782cdfc5-6fdb-43a6-85b4-2940baf26ac5",
-  [string]$ConnectorAppId = "1a1a346a-05d5-4f54-87a5-5b5e63f9c610"
+  [Parameter(Mandatory = $true)]
+  [guid]$SignInAppId,
+  [Parameter(Mandatory = $true)]
+  [guid]$ConnectorAppId
 )
 
 $ErrorActionPreference = "Stop"

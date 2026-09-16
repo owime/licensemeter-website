@@ -1,137 +1,75 @@
 # LicenseMeter
 
-Find the Microsoft 365 licenses you pay for but nobody uses.
+Find unused software licenses, review SaaS access, and track AI API costs in one workspace.
 
-LicenseMeter is a multi-tenant micro-SaaS for IT and finance teams. It connects
-to a Microsoft 365 tenant with read-only application permissions, joins
-directory data, license assignments, sign-in activity and usage reports, and
-puts a monthly price on every wasted seat.
+[Hosted app](https://www.licensemeter.com) · [Self-host with Docker](docs/self-hosting.md) · [Report a bug](https://github.com/ugurkocde/licensemeter-website/issues)
 
-## What it detects
+LicenseMeter is free to use. There are no subscriptions, paid tiers, or trial limits.
 
-| Rule                            | Signal                                                                           |
-| ------------------------------- | -------------------------------------------------------------------------------- |
-| Disabled account still licensed | `accountEnabled = false` with assigned licenses (offboarding leak)               |
-| Licensed but never active       | No sign-in or workload activity, 30-day grace after account creation             |
-| Inactive for 90+ days           | Last activity (sign-ins + Exchange/OneDrive/SharePoint/Teams) older than 90 days |
-| Unassigned paid seats           | `prepaidUnits.enabled` minus `consumedUnits` per SKU (shelfware)                 |
-| Copilot seat unused             | Copilot license with no Copilot activity in 60 days                              |
-| Licensed guest account          | `userType = Guest` holding paid licenses                                         |
+## Features
 
-Every finding carries a monthly cost from an editable per-tenant price book
-(prefilled with list-price estimates, as there is no Microsoft API for tenant
-pricing), a CSV export for finance, and a generated PowerShell remediation
-script for IT. LicenseMeter itself never writes to the tenant.
+- Microsoft 365 findings for disabled or inactive licensed accounts, unassigned paid seats, and unused Copilot licenses.
+- Estimated monthly waste using an editable price book. Configure your contract prices to make estimates meaningful.
+- Connectors for Microsoft 365, Adobe, Zoom, Atlassian, Salesforce, OpenAI, and Anthropic. ChatGPT and Claude workspace membership is imported from CSV.
+- OpenAI and Anthropic daily API spend, kept separate from per-seat costs.
+- Findings workflows, renewal tracking, CSV/PDF exports, and multiple workspaces.
+- A sample workspace and clearly labeled AI previews that need no provider keys.
 
-## Graceful degradation
+Connectors read provider data. LicenseMeter does not automatically remove licenses or change tenant configuration. Exported remediation scripts require separate review and execution.
 
-Detection adapts to what the customer tenant allows:
+## Self-host with Docker
 
-- No Entra ID P1/P2: `signInActivity` is unavailable; inactivity detection
-  falls back to per-workload usage reports.
-- Concealed report names (Microsoft default since 2021): usage-based findings
-  become aggregate counts; directory-based findings (disabled accounts,
-  shelfware, guests) keep working per user. The settings page explains how to
-  enable identifiable names.
+Requirements: Docker Engine with Compose v2 or newer, or Docker Desktop. Node.js 24 is only needed on the host for the optional setup helper.
 
-## Stack
+```bash
+git clone https://github.com/ugurkocde/licensemeter-website.git
+cd licensemeter-website
+node scripts/setup-docker.mjs
+docker compose --env-file .env.docker up --build -d
+```
 
-- Next.js 15 (App Router) + Tailwind CSS 4, deployable on Vercel
-- MSAL auth-code flow with PKCE for multi-tenant Entra sign-in
-  (`/organizations`), jose-signed session cookies
-- Drizzle ORM: direct PostgreSQL connection to Supabase in production (no
-  Supabase browser SDK or Data API), embedded PGlite for local dev/demo
-- MSAL (client credentials) for app-only Graph access per customer tenant
-- Vitest unit tests for the waste engine, signal joining, and CSV parsing
+Open **http://localhost:3000** and choose **Open the sample tenant**. The helper creates unique secrets in a private, Git-ignored `.env.docker` and never overwrites an existing file. Without Node.js, copy `.env.docker.example` to `.env.docker` and replace every `__GENERATE_SECRET__` with a separate `openssl rand -hex 32` value.
+
+The stack includes a non-root web container, persistent PostgreSQL storage, versioned migrations, and a UTC scheduler. The application uses a limited database role; PostgreSQL has no published host port.
+
+For real tenants, configure your own Microsoft registrations, use HTTPS, and disable the public demo. Read the [self-hosting guide](docs/self-hosting.md) for authentication, backups, upgrades, proxy headers, and optional email/chat services.
 
 ## Local development
 
+Use Node.js 24 and npm:
+
 ```bash
-npm install
-npm run db:push        # creates the embedded PGlite database
+npm ci
+cp .env.example .env
+# Set AUTH_SECRET to a generated value (openssl rand -hex 32).
+npm run db:push
 npm run dev
 ```
 
-Open http://localhost:3000 and click "Explore the demo workspace". Demo mode
-(`DEMO_MODE=true` in `.env`) seeds a deterministic fixture tenant with ~155
-users and all six waste patterns, no Entra setup required.
+The example selects Microsoft sign-in (`AUTH_PROVIDER=entra`) and enables the sample workspace. Provider credentials are not needed for the demo. Without `DATABASE_URL`, development uses an ignored PGlite database in `.pglite/`.
 
 ```bash
-npm run test           # vitest
-npm run check          # eslint + tsc
+npm run check
+npm test
+npm run test:docker
+npm run test:e2e
 ```
 
-Schema changes deploy with `npm run db:push` (drizzle-kit push), locally and in
-production alike; there is no migrations directory. Production's
-`DATABASE_URL` points directly to the Supabase-hosted PostgreSQL database. The
-`scripts/db-*.sql` files are the idempotent RLS/grants scripts run separately
-against production; PGlite is never the production data store.
+Browser tests isolate chat and support services. Never run tests against a production database or use production credentials for testing.
 
-The durable submission limiter requires `public.rate_limits`. For an existing
-production database missing this table, run `scripts/db-create-rate-limits.sql`
-as `postgres`; it creates only that table and its application-role grants/RLS.
-This repair was applied to the LicenseMeter production project on 2026-09-14.
-Support returns HTTP 503 if the limiter is unavailable and HTTP 429 only when
-an actual quota is exhausted. PostgreSQL query parameters must serialize dates
-explicitly in raw SQL, because PGlite accepts Date objects that Postgres.js rejects.
+## Architecture and operations
 
-## Connecting real tenants
+- Next.js 15 App Router, React 19, TypeScript, Tailwind CSS.
+- PostgreSQL through Drizzle. Tenant isolation is enforced in application code.
+- Microsoft Entra sign-in in Docker. The hosted service uses WorkOS AuthKit; [SETUP.md](SETUP.md) describes both options.
+- Encrypted connector credentials. Retain `DATA_ENCRYPTION_KEY` with your secured backups.
+- [SECURITY.md](SECURITY.md) covers vulnerability reporting and deployment boundaries.
+- [CONTRIBUTING.md](CONTRIBUTING.md) covers validation and schema changes.
 
-See [SETUP.md](SETUP.md): create the two app registrations with
-[scripts/setup-entra.ps1](scripts/setup-entra.ps1), fill `.env`, deploy, and
-grant admin consent from the in-app Connect page.
+Historical billing columns remain for database compatibility. They do not grant or restrict access or activate billing.
 
-## Architecture
+The marketing, legal, trust, and provider-status pages describe licensemeter.com. They are not legal terms or infrastructure guarantees for self-hosted installations. Adapt them to your organization before publishing your own instance. Third-party names and logos remain the property of their owners.
 
-```
-Customer tenant (Entra ID + Graph)        Adobe Admin Console (planned)
-        |  one-time admin consent                 |
-        v  app-only token, read-only scopes       v
-   Sync worker (nightly cron + manual) ----> Postgres (tenant-scoped)
-        |                                         |
-        v                                         v
-   Signal join (P1 / concealment aware) ---> Waste engine (6 rules, EUR impact)
-                                                  |
-                                                  v
-   Next.js dashboard  <--- OIDC sign-in --- IT admins + finance viewers
-```
+## License
 
-- One workspace per Entra tenant (`tid`), every table scoped by `tenant_id`.
-- Membership is invite-based; signing in from the same tenant alone grants
-  nothing. The admin who completes consent becomes the workspace owner.
-- Sync runs are step-logged (`sync_runs.steps`); non-critical steps degrade to
-  warnings, and a partial unique index guarantees one running sync per tenant.
-
-## Roadmap
-
-Shipped since v1: Adobe connector (offboarding-leak detection), trend
-charts, MSP multi-workspace, per-workspace activity log, weekly digest
-(activates with a Resend key), ops alerting webhook, health endpoint.
-
-Open:
-
-- Free access to every feature, with no subscriptions or trial limits
-- Opt-in write remediation as a separate consent step (deliberately excluded
-  while the product promise is strictly read-only)
-
-## Support
-
-`/support` provides a contact form with name, email, subject and message fields.
-Messages are sent through the existing `RESEND_API_KEY` and `EMAIL_FROM` settings
-to the support address in `src/lib/support.ts`, with the visitor's email as
-Reply-To. `SUPPORT_FROM_EMAIL` can optionally override the verified sender.
-Requests are validated, checked for same-origin submission and honeypot values,
-and limited per IP, email address and globally using the shared Postgres rate
-limiter. Support sends stop if that limiter is unavailable. A request ID keeps
-retries idempotent at the email provider.
-
-Optional Cloudflare Turnstile verification can be enabled with both
-`SUPPORT_TURNSTILE_SITE_KEY` and `SUPPORT_TURNSTILE_SECRET_KEY`. Register the deployed
-hostname with that widget and redeploy after changing the settings.
-
-Crisp is separate from the form. Its floating widget is mounted once in the root
-layout and remains available across public and dashboard pages, using website ID
-`d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4` and light mode. The integration does not
-automatically identify signed-in users or send scan data. Its network requirements
-follow the [Crisp domain documentation](https://docs.crisp.chat/guides/others/whitelisting-our-systems/crisp-domain-names/).
-Tests mock providers and send no real support requests.
+LicenseMeter is available under the [MIT License](LICENSE), allowing reuse, modification, distribution, and self-hosting. See [third-party notices](THIRD_PARTY_NOTICES.md) for bundled assets.

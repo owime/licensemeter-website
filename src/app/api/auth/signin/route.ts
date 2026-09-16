@@ -1,3 +1,4 @@
+import { requestBaseUrl } from "~/server/auth/requestBaseUrl";
 import { NextResponse } from "next/server";
 
 import { authProvider, env } from "~/env";
@@ -30,17 +31,19 @@ export const GET = async (req: Request) => {
     const target = returnTo
       ? `/auth/sign-in?returnTo=${encodeURIComponent(returnTo)}`
       : "/auth/sign-in";
-    return NextResponse.redirect(new URL(target, req.url));
+    return NextResponse.redirect(new URL(target, requestBaseUrl(req)));
   }
 
   // Already signed in: land directly, no Entra round-trip needed.
   const session = await auth();
   if (session?.user) {
-    return NextResponse.redirect(new URL(returnTo ?? "/app", req.url));
+    return NextResponse.redirect(
+      new URL(returnTo ?? "/app", requestBaseUrl(req)),
+    );
   }
 
   if (!env.AUTH_MICROSOFT_ENTRA_ID_ID) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/", requestBaseUrl(req)));
   }
 
   const { verifier, challenge } = await msalCrypto.generatePkceCodes();
