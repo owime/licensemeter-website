@@ -1,0 +1,22 @@
+{
+  "connectErrors": {
+    "not_configured": "Koblingens appregistrering er ikke konfigurert på denne utrullingen (CONNECTOR_CLIENT_ID mangler).",
+    "missing_state": "Samtykkesvaret manglet state-verdien sin. Prøv på nytt.",
+    "invalid_state": "Den lenken er allerede brukt eller har utløpt. Start på nytt fra denne siden.",
+    "expired_state": "Samtykkelenken utløp (15 minutter). Prøv på nytt.",
+    "consent_declined": "Samtykke ble avslått i Microsoft-dialogen.",
+    "consent_incomplete": "Microsoft bekreftet ikke samtykket. Prøv på nytt.",
+    "not_allowed": "Du må være administrator eller eier av dette arbeidsområdet for å koble til Microsoft. Be en arbeidsområdeeier om å koble det til.",
+    "tenant_taken": "Den Microsoft-leietakeren er allerede koblet til et annet LicenseMeter-arbeidsområde. Be en administrator der om en invitasjon.",
+    "already_connected": "Dette arbeidsområdet er allerede koblet til en annen Microsoft-leietaker. Koble fra den først, og prøv på nytt.",
+    "scan_declined": "Microsofts tillatelsesdialog ble avbrutt eller avslått, så ingen skanning ble kjørt. Du kan prøve igjen når som helst.",
+    "scan_needs_admin": "Organisasjonen din krever administratorgodkjenning for skanningens delegerte tillatelser. En applikasjonsadministrator eller skyapplikasjonsadministrator kan kjøre den, eller du kan starte med CSV-importen nedenfor.",
+    "scan_demo": "Direkteskanning er ikke tilgjengelig for demoarbeidsområdet.",
+    "scan_already_synced": "Organisasjonen din har allerede et tilkoblet arbeidsområde med nattlig synkronisering. Åpne det fra arbeidsområdevelgeren.",
+    "scan_already_synced_invite": "Organisasjonen din har allerede et tilkoblet arbeidsområde. Be en administrator der om en invitasjon.",
+    "scan_workspace_invite": "Et importert arbeidsområde for organisasjonen din finnes allerede. Be kollegaen som opprettet det om en invitasjon.",
+    "scan_workspace_role": "Dette importerte arbeidsområdet har allerede data, og oppdatering krever en administratorrolle. Be en arbeidsområdeadministrator om å oppdatere det.",
+    "scan_mismatch": "Kontoen som godkjente skanningen samsvarer ikke med den innloggede kontoen din. Logg inn med kontoen du vil skanne med, og prøv på nytt.",
+    "generic": "Noe gikk galt. Prøv på nytt."
+  }
+}

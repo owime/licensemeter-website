@@ -6,6 +6,8 @@
 import "@radix-ui/themes/styles.css";
 import "@workos-inc/widgets/styles.css";
 
+import { useTranslations } from "next-intl";
+
 import { UserProfile, UserSecurity, WorkOsWidgets } from "@workos-inc/widgets";
 
 /**
@@ -17,18 +19,17 @@ import { UserProfile, UserSecurity, WorkOsWidgets } from "@workos-inc/widgets";
  * talk to WorkOS directly from the browser (the site origin must be allow-listed
  * in the WorkOS dashboard, Authentication > Sessions, or these requests CORS-fail).
  */
-export const AccountWidgets = ({ accessToken }: { accessToken: string }) => (
-  <WorkOsWidgets theme={{ appearance: "light", accentColor: "teal" }}>
-    <div className="flex flex-col gap-6">
-      <UserProfile authToken={accessToken} />
-      <div className="flex flex-col gap-2">
-        <p className="text-ink-soft text-sm">
-          You can sign in with a connected account (like Google) or your
-          password — both reach the same account, and either keeps working on
-          its own.
-        </p>
-        <UserSecurity authToken={accessToken} />
+export const AccountWidgets = ({ accessToken }: { accessToken: string }) => {
+  const t = useTranslations("dashboardHome.accountWidgets");
+  return (
+    <WorkOsWidgets theme={{ appearance: "light", accentColor: "teal" }}>
+      <div className="flex flex-col gap-6">
+        <UserProfile authToken={accessToken} />
+        <div className="flex flex-col gap-2">
+          <p className="text-ink-soft text-sm">{t("signInNote")}</p>
+          <UserSecurity authToken={accessToken} />
+        </div>
       </div>
-    </div>
-  </WorkOsWidgets>
-);
+    </WorkOsWidgets>
+  );
+};

@@ -1,0 +1,47 @@
+{
+  "portfolio": {
+    "pageTitle": "Portefølje",
+    "unavailable": {
+      "title": "Portefølje",
+      "description": "Porteføljerapportering blir tilgjengelig når du har tilgang til 2 eller flere arbeidsområder. Ditt nåværende arbeidsområde er klart på oversikten.",
+      "cardTitle": "Ett arbeidsområde tilkoblet",
+      "cardDescription": "Legg til et annet kundearbeidsområde fra MSP-området for å sammenligne forbruk, sløsing, funn og synkroniseringsstatus i én visning.",
+      "openOverview": "Åpne oversikt",
+      "setUpMsp": "Sett opp MSP-portefølje"
+    },
+    "header": {
+      "title": "Portefølje",
+      "subtitle": "Alle {count} arbeidsområder, normalisert til {currency} og sortert etter sløsing."
+    },
+    "stats": {
+      "monthlySpend": "Månedlig forbruk",
+      "monthlyWaste": "Månedlig sløsing",
+      "openFindings": "Åpne funn"
+    },
+    "table": {
+      "caption": "Arbeidsområder du kan åpne, med lisenser, forbruk, sløsing, åpne funn og synkroniseringsstatus.",
+      "columnWorkspace": "Arbeidsområde",
+      "columnSeats": "Lisenser",
+      "columnSpend": "Forbruk / mnd",
+      "columnWaste": "Sløsing / mnd",
+      "columnFindings": "Funn",
+      "columnLastSync": "Sist synkronisert",
+      "columnOpen": "Åpne",
+      "current": "(nåværende)",
+      "demo": "demo",
+      "imported": "importert"
+    },
+    "sync": {
+      "failed": "mislyktes",
+      "imported": "importert {date}",
+      "none": "-"
+    },
+    "mobile": {
+      "seats": "Lisenser",
+      "findings": "Funn",
+      "spendPerMonth": "Forbruk/mnd",
+      "wastePerMonth": "Sløsing/mnd",
+      "lastSync": "Sist synkronisert"
+    }
+  }
+}

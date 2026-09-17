@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 import { buttonClass } from "~/components/ui";
 import type { ActionResult } from "~/server/actions";
@@ -49,6 +50,7 @@ export const FindingsBulkForm = ({
   className?: string;
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
+  const t = useTranslations("findings.selectionBar");
   const [{ count, total }, setSelection] = useState({ count: 0, total: 0 });
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null, formData: FormData) => action(formData),
@@ -92,11 +94,13 @@ export const FindingsBulkForm = ({
             >
               {result
                 ? result.ok
-                  ? "Updated."
-                  : (result.error ?? "Something went wrong.")
+                  ? t("updated")
+                  : (result.error ?? t("genericError"))
                 : ""}
             </p>
-            <span className="tnum text-ink-soft text-xs">{count} selected</span>
+            <span className="tnum text-ink-soft text-xs">
+              {t("selectedCount", { count })}
+            </span>
             {/* The submitter's name/value picks the target status. */}
             <button
               name="status"
@@ -104,7 +108,7 @@ export const FindingsBulkForm = ({
               disabled={pending || count === 0}
               className={buttonClass("micro")}
             >
-              Reopen selected
+              {t("reopenSelected")}
             </button>
             <button
               name="status"
@@ -112,7 +116,7 @@ export const FindingsBulkForm = ({
               disabled={pending || count === 0}
               className={buttonClass("micro")}
             >
-              Acknowledge selected
+              {t("acknowledgeSelected")}
             </button>
           </div>
         )}
@@ -142,6 +146,7 @@ export const CheckboxHitArea = ({
 export const SelectAllFindings = () => {
   const { count, total, setAll } = useContext(SelectionContext);
   const ref = useRef<HTMLInputElement>(null);
+  const t = useTranslations("findings.list");
   useEffect(() => {
     if (ref.current) ref.current.indeterminate = count > 0 && count < total;
   }, [count, total]);
@@ -150,7 +155,7 @@ export const SelectAllFindings = () => {
       <input
         ref={ref}
         type="checkbox"
-        aria-label="Select all findings"
+        aria-label={t("selectAllAria")}
         checked={total > 0 && count === total}
         onChange={(e) => setAll(e.target.checked)}
       />

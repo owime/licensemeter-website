@@ -1,0 +1,106 @@
+{
+  "licenses": {
+    "pageTitle": "Licenses & prices",
+    "priceSource": {
+      "setAPrice": "Set a price",
+      "yourPrice": "Your price",
+      "listEstimate": "List estimate"
+    },
+    "emptyImported": "No license data yet. Upload a fresh export to update this workspace.",
+    "emptySync": "No license data yet. Run a sync.",
+    "page": {
+      "heading": "Licenses & prices",
+      "subheading": "Prices start as list-price estimates. Enter what you actually pay per seat and month. Every impact figure recalculates from your numbers. There is no Microsoft API for tenant pricing.",
+      "adminHint": "Changed rows show an enabled Save button. For many prices, use the bulk import below.",
+      "bulkImportButton": "Bulk Import Prices",
+      "exportCsv": "Export CSV",
+      "searchLabel": "Search products",
+      "searchPlaceholder": "Product, SKU or connector…",
+      "priceStatusLabel": "Price status",
+      "priceStatus": {
+        "all": "All products",
+        "unpriced": "Unpriced only",
+        "estimate": "List estimates only",
+        "custom": "Contract prices only"
+      },
+      "applyFilters": "Apply filters",
+      "table": {
+        "product": "Product",
+        "purchased": "Purchased",
+        "assigned": "Assigned",
+        "unassigned": "Unassigned",
+        "spendPerMonth": "Spend / mo",
+        "priceSource": "Price source",
+        "pricePerSeatPerMonth": "Price / seat / mo",
+        "total": "Total"
+      },
+      "mobile": {
+        "purchased": "Purchased",
+        "assigned": "Assigned",
+        "unassigned": "Unassigned",
+        "spendPerMonth": "Spend/mo",
+        "totalPurchased": "Total purchased",
+        "totalAssigned": "Total assigned",
+        "totalUnassigned": "Total unassigned",
+        "totalSpendPerMonth": "Total spend/mo",
+        "perSeatPerMonth": "{price} / seat / mo"
+      },
+      "emptyHeadingFiltered": "No matching Microsoft products in this section.",
+      "emptyHeadingDefault": "No license data yet.",
+      "emptyMessageFiltered": "Try a broader search or a different price status.",
+      "seatsCount": "{count} seats",
+      "adobe": {
+        "heading": "Adobe products",
+        "description": "Seat counts come from the Adobe Admin Console; Adobe publishes no price API, so enter your per-seat price to put a number on the offboarding leaks."
+      },
+      "saas": {
+        "heading": "{label} products",
+        "description": "Seat counts come from the {label} connector; {label} publishes no price API, so enter your per-seat price to put a number on the findings."
+      },
+      "perSeatPerMonth": "{price} / seat / mo",
+      "bulkImport": {
+        "heading": "Bulk price import",
+        "exportPriceBook": "Export price book CSV",
+        "description": "Maintaining prices for many products or workspaces? Export the price book, fill in what you pay in a spreadsheet, and paste the result back here."
+      }
+    },
+    "importForm": {
+      "label": "One product per line: <code>key,monthly price</code>. The key is an M365 SKU id or part number, or a connector key like <code>adobe:Photoshop</code>. Prices accept 14.90 and 14,90; unknown keys are skipped.",
+      "importing": "Importing…",
+      "submit": "Import prices",
+      "importFailed": "Import failed.",
+      "applied": "Applied {count, plural, one {# price} other {# prices}}.",
+      "skipped": "Skipped {count, plural, one {# unknown key} other {# unknown keys}}: {shown}{more}.",
+      "andMore": " and {count} more",
+      "invalid": "{count, plural, one {# line} other {# lines}} could not be parsed."
+    },
+    "priceEditor": {
+      "ariaLabel": "Monthly price for {name}",
+      "save": "Save",
+      "saving": "…",
+      "unsaved": "Unsaved",
+      "saved": "Saved",
+      "saveFailed": "Could not save. Please retry."
+    },
+    "priceAccuracy": {
+      "title": "Price accuracy",
+      "summary": "{customProducts} of {totalProducts} product prices use your contract values.",
+      "spendCovered": "{spendPercent}% of current spend is covered by custom prices",
+      "useListEstimates": "; {count} use list estimates",
+      "areUnpriced": "; {count} are unpriced",
+      "coverageAriaLabel": "Contract price coverage",
+      "setYourPrices": "Set your prices"
+    },
+    "currencySelect": {
+      "ariaLabel": "Workspace reporting currency",
+      "convert": "Convert",
+      "converting": "Converting…",
+      "converted": "Converted at 1 {from} = {rate} {to} ({asOf}).",
+      "updated": "Currency updated.",
+      "conversionFailed": "Currency conversion failed.",
+      "conversionFailedRetry": "Currency conversion failed. Please retry.",
+      "description": "Changing currency converts prices, findings, trend history and renewal contract values using the latest ECB reference rate. Review negotiated prices afterwards.",
+      "noChangeInProgress": "No currency change in progress."
+    }
+  }
+}

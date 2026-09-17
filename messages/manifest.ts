@@ -5,6 +5,7 @@
  */
 export const MESSAGE_NAMESPACES = [
   "common",
+  "connectErrors",
   "home",
   "connectors",
   "msp",

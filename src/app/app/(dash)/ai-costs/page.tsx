@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { ButtonLink, Card } from "~/components/ui";
 import { SpendChart } from "~/components/workspace/SpendChart";
@@ -37,6 +38,7 @@ export default async function AiCostsPage({
 }: {
   searchParams: Promise<{ preview?: string }>;
 }) {
+  const t = await getTranslations("aiCosts");
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
   const isAdmin = hasRole(ctx, "admin");
@@ -100,20 +102,20 @@ export default async function AiCostsPage({
 
   const perProviderCards = providers.flatMap((p) => [
     {
-      label: `${CONNECTOR_LABELS[p]} this month`,
+      label: t("stats.thisMonth", { provider: CONNECTOR_LABELS[p] }),
       value: fmtMoney(
         totalFor(p, (d) => d.startsWith(monthPrefix)),
         "USD",
       ),
-      sub: "calendar month, UTC",
+      sub: t("stats.calendarMonthSub"),
     },
     {
-      label: `${CONNECTOR_LABELS[p]} last 30 days`,
+      label: t("stats.last30Days", { provider: CONNECTOR_LABELS[p] }),
       value: fmtMoney(
         totalFor(p, (d) => d >= cutoff30),
         "USD",
       ),
-      sub: "rolling window",
+      sub: t("stats.rollingWindowSub"),
     },
   ]);
 

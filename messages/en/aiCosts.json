@@ -1,0 +1,70 @@
+{
+  "aiCosts": {
+    "pageTitle": "AI costs",
+    "header": {
+      "title": "AI costs",
+      "previewSubtitle": "Explore 60 days of sample OpenAI and Anthropic usage",
+      "syncRunning": "Sync running…",
+      "imported": "Imported {date}",
+      "lastSynced": "Last synced {when}",
+      "syncFailed": "(last sync failed)",
+      "completedWithWarnings": "(completed with warnings{detail})",
+      "stepsDegraded": " · {count, plural, one {# step} other {# steps}} degraded"
+    },
+    "exploreSample": "Explore {label} sample",
+    "connect": {
+      "title": "Connect an AI provider",
+      "previewButton": "Preview sample data",
+      "description": "Connect OpenAI or Anthropic to see what your organization spends on their APIs: daily totals by model and line item, exactly as billed. The same connector correlates console members against Entra ID, so departed people who still hold live API keys surface as findings.",
+      "connectM365First": "Connect your Microsoft 365 tenant first, then add the AI connectors.",
+      "connectReadOnlySync": "Connect the read-only sync",
+      "adminRequired": "Connecting needs an admin. Ask a workspace admin to connect {openai} or {anthropic}.",
+      "connectOpenAI": "Connect OpenAI",
+      "connectAnthropic": "Connect Anthropic"
+    },
+    "connection": {
+      "title": "Connection",
+      "description": "Connected. The first sync brings in each provider's cost history.",
+      "lastSync": "last sync {date} ({status})",
+      "firstSyncPending": "first sync pending"
+    },
+    "stats": {
+      "thisMonth": "{provider} this month",
+      "last30Days": "{provider} last 30 days",
+      "calendarMonthSub": "calendar month, UTC",
+      "rollingWindowSub": "rolling window",
+      "totalThisMonth": "Total AI spend this month",
+      "totalLast30Days": "Total AI spend last 30 days",
+      "totalCalendarMonthSub": "all providers, calendar month",
+      "totalRollingWindowSub": "all providers, rolling window"
+    },
+    "categories": {
+      "title": "Top cost categories",
+      "tableCaption": "Top AI cost categories over the last 30 days, in USD{sample}.",
+      "sampleDataSuffix": " (sample data)",
+      "columnCategory": "Category",
+      "columnProvider": "Provider",
+      "columnLast30Days": "Last 30 days",
+      "other": "Other",
+      "noSpend": "No spend in the last 30 days."
+    },
+    "footerNote": {
+      "preview": "Illustrative amounts in USD for demonstration only. These are not actual charges.",
+      "live": "Billed by the providers in USD. Shown as billed, never converted to your workspace currency."
+    },
+    "sampleNotice": {
+      "title": "Sample data",
+      "description": "Fictional spend and members for your demo. No API keys required.",
+      "exitPreview": "Exit preview"
+    },
+    "connectorPreview": {
+      "sampleOverviewLabel": "{label} sample overview",
+      "sampleSpendTitle": "{label} sample spend",
+      "last30DaysUsd": "Last 30 days · USD",
+      "sampleMembersTitle": "Sample console members",
+      "sampleMembersDescription": "Fictional console memberships. API activity is not available from these member lists.",
+      "consoleMember": "Console member",
+      "viewAllCosts": "View all AI costs"
+    }
+  }
+}
