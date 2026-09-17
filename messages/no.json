@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "ariaLabel": "Hovedmeny",
+    "product": "Produkt",
+    "connectors": "Koblinger",
+    "msp": "MSP",
+    "trustCenter": "Tillitssenter",
+    "support": "Support",
+    "github": "GitHub"
+  },
+  "languageSwitcher": {
+    "label": "Språk",
+    "en": "English",
+    "no": "Norsk"
+  },
+  "footer": {
+    "description": "Analyse av lisensavfall for Microsoft 365 og tilkoblede SaaS-tjenester. Skrivebeskyttet, EU-hostet, laget for IT og økonomi.",
+    "hosted": "Hostet i EU",
+    "support": "Support på e-post",
+    "columns": {
+      "product": {
+        "title": "Produkt",
+        "startFree": "Kom i gang gratis",
+        "forMsps": "For MSP-er",
+        "connectors": "Koblinger",
+        "security": "Sikkerhet",
+        "faq": "Ofte stilte spørsmål"
+      },
+      "learn": {
+        "title": "Lær mer",
+        "wastePatterns": "Mønstre for sløsing",
+        "sampleReport": "Eksempelrapport",
+        "roiCalculator": "ROI-kalkulator",
+        "vsM365": "vs. M365 admin-senter"
+      },
+      "legal": {
+        "title": "Juridisk",
+        "trustCenter": "Tillitssenter",
+        "imprint": "Om oss",
+        "privacy": "Personvern",
+        "terms": "Vilkår",
+        "dpa": "Databehandleravtale"
+      },
+      "contact": {
+        "title": "Kontakt",
+        "contactSupport": "Kontakt support",
+        "subprocessors": "Underleverandører"
+      }
+    },
+    "copyright": "driftet av UgurLabs",
+    "legal": "Uavhengig verktøy, ikke tilknyttet leverandørene som nevnes på dette nettstedet. Alle produktnavn er varemerker tilhørende sine respektive eiere."
+  }
+}

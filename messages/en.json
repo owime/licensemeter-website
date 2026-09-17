@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "ariaLabel": "Main",
+    "product": "Product",
+    "connectors": "Connectors",
+    "msp": "MSP",
+    "trustCenter": "Trust Center",
+    "support": "Support",
+    "github": "GitHub"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "no": "Norsk"
+  },
+  "footer": {
+    "description": "License waste analytics for Microsoft 365 and connected SaaS. Read-only, EU-hosted, built for IT and finance.",
+    "hosted": "Hosted in the EU",
+    "support": "Email support",
+    "columns": {
+      "product": {
+        "title": "Product",
+        "startFree": "Start free",
+        "forMsps": "For MSPs",
+        "connectors": "Connectors",
+        "security": "Security",
+        "faq": "FAQ"
+      },
+      "learn": {
+        "title": "Learn",
+        "wastePatterns": "Waste patterns",
+        "sampleReport": "Sample report",
+        "roiCalculator": "ROI calculator",
+        "vsM365": "vs M365 admin center"
+      },
+      "legal": {
+        "title": "Legal",
+        "trustCenter": "Trust Center",
+        "imprint": "Imprint",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "dpa": "Data Processing Agreement"
+      },
+      "contact": {
+        "title": "Contact",
+        "contactSupport": "Contact support",
+        "subprocessors": "Subprocessors"
+      }
+    },
+    "copyright": "operated by UgurLabs",
+    "legal": "Independent tool, not affiliated with the vendors named on this site. All product names are trademarks of their respective owners."
+  }
+}

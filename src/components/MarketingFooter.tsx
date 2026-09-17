@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { BrandMark } from "~/components/BrandMark";
 import { SUPPORT_MAILTO } from "~/lib/support";
@@ -18,54 +19,6 @@ const SOCIAL_LINKS = [
     path: "M18.9 1.5h3.68l-8.04 9.19L24 22.5h-7.4l-5.8-7.58-6.64 7.58H.48l8.6-9.83L0 1.5h7.59l5.24 6.93L18.9 1.5Zm-1.29 18.79h2.04L6.49 3.6H4.3l13.31 16.69Z",
   },
 ];
-
-const ENGLISH = {
-  description:
-    "License waste analytics for Microsoft 365 and connected SaaS. Read-only, EU-hosted, built for IT and finance.",
-  hosted: "Hosted in the EU",
-  support: "Email support",
-  columns: [
-    {
-      title: "Product",
-      links: [
-        ["/#get-started", "Start free"],
-        ["/msp", "For MSPs"],
-        ["/connectors", "Connectors"],
-        ["/security", "Security"],
-        ["/faq", "FAQ"],
-      ],
-    },
-    {
-      title: "Learn",
-      links: [
-        ["/waste", "Waste patterns"],
-        ["/sample-report", "Sample report"],
-        ["/roi", "ROI calculator"],
-        ["/compare/m365-admin-center", "vs M365 admin center"],
-      ],
-    },
-    {
-      title: "Legal",
-      links: [
-        ["/trust-center", "Trust Center"],
-        ["/impressum", "Imprint"],
-        ["/privacy", "Privacy"],
-        ["/terms", "Terms"],
-        ["/dpa", "Data Processing Agreement"],
-      ],
-    },
-    {
-      title: "Contact",
-      links: [
-        ["/support", "Contact support"],
-        ["/trust-center#subprocessors", "Subprocessors"],
-      ],
-    },
-  ],
-  copyright: "operated by UgurLabs",
-  legal:
-    "Independent tool, not affiliated with the vendors named on this site. All product names are trademarks of their respective owners.",
-} as const;
 
 const GERMAN = {
   description:
@@ -112,7 +65,57 @@ const GERMAN = {
 
 export const MarketingFooter = () => {
   const german = usePathname().startsWith("/de/");
-  const copy = german ? GERMAN : ENGLISH;
+  const t = useTranslations("footer");
+  const copy = german
+    ? GERMAN
+    : {
+        description: t("description"),
+        hosted: t("hosted"),
+        support: t("support"),
+        columns: [
+          {
+            title: t("columns.product.title"),
+            links: [
+              ["/#get-started", t("columns.product.startFree")],
+              ["/msp", t("columns.product.forMsps")],
+              ["/connectors", t("columns.product.connectors")],
+              ["/security", t("columns.product.security")],
+              ["/faq", t("columns.product.faq")],
+            ],
+          },
+          {
+            title: t("columns.learn.title"),
+            links: [
+              ["/waste", t("columns.learn.wastePatterns")],
+              ["/sample-report", t("columns.learn.sampleReport")],
+              ["/roi", t("columns.learn.roiCalculator")],
+              ["/compare/m365-admin-center", t("columns.learn.vsM365")],
+            ],
+          },
+          {
+            title: t("columns.legal.title"),
+            links: [
+              ["/trust-center", t("columns.legal.trustCenter")],
+              ["/impressum", t("columns.legal.imprint")],
+              ["/privacy", t("columns.legal.privacy")],
+              ["/terms", t("columns.legal.terms")],
+              ["/dpa", t("columns.legal.dpa")],
+            ],
+          },
+          {
+            title: t("columns.contact.title"),
+            links: [
+              ["/support", t("columns.contact.contactSupport")],
+              [
+                "/trust-center#subprocessors",
+                t("columns.contact.subprocessors"),
+              ],
+            ],
+          },
+        ],
+        copyright: t("copyright"),
+        legal: t("legal"),
+      };
   return (
     <footer className="border-line bg-card border-t">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-5">
@@ -155,12 +158,12 @@ export const MarketingFooter = () => {
             ))}
           </div>
         </div>
-        {copy.columns.map((column) => (
+        {copy.columns.map((column, index) => (
           <div key={column.title}>
             <h3 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
               {column.title}
             </h3>
-            {column.title === (german ? "Kontakt" : "Contact") && (
+            {index === copy.columns.length - 1 && (
               <a
                 href={SUPPORT_MAILTO}
                 className="border-line-strong text-ink hover:border-brand bg-canvas mt-3 inline-flex min-h-11 items-center rounded-xl border px-4 py-2 text-sm font-medium"

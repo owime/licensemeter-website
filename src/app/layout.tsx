@@ -7,8 +7,10 @@ import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/react";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import { connection } from "next/server";
+import { NextIntlClientProvider } from "next-intl";
 
 import { authProvider, env, siteUrl } from "~/env";
+import { getUserLocale } from "~/i18n/locale";
 import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
 import { SUPPORT_EMAIL } from "~/lib/support";
 
@@ -100,14 +102,20 @@ export default async function RootLayout({
     (env.SELF_HOSTED === "true"
       ? undefined
       : "d8cf4fcb-0dbe-42ee-b94c-3bbc415d58f4");
+  const locale = await getUserLocale();
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html
+      lang={locale}
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+    >
       <body className="font-sans antialiased">
-        {authProvider() === "workos" ? (
-          <AuthKitProvider>{children}</AuthKitProvider>
-        ) : (
-          children
-        )}
+        <NextIntlClientProvider>
+          {authProvider() === "workos" ? (
+            <AuthKitProvider>{children}</AuthKitProvider>
+          ) : (
+            children
+          )}
+        </NextIntlClientProvider>
         {crispId && <CrispChat websiteId={crispId} />}
         <script
           type="application/ld+json"
