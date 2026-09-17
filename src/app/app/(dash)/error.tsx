@@ -1,9 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Button, ButtonLink } from "~/components/ui";
 
 /** Dash-level error boundary. No internals on screen, just a way back. */
 export default function DashError({ reset }: { reset: () => void }) {
+  const t = useTranslations("dashLayout.error");
   return (
     <div className="mx-auto max-w-4xl">
       <div
@@ -34,17 +37,14 @@ export default function DashError({ reset }: { reset: () => void }) {
         </svg>
         <div>
           <h1 className="font-display text-2xl tracking-tight">
-            Something went wrong
+            {t("title")}
           </h1>
-          <p className="mt-1 max-w-md text-sm">
-            This page failed to load. Your data is unaffected. Try again, and if
-            it keeps happening, sign out and back in.
-          </p>
+          <p className="mt-1 max-w-md text-sm">{t("description")}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button onClick={() => reset()}>Try again</Button>
-            <ButtonLink href="/app">Open Overview</ButtonLink>
+            <Button onClick={() => reset()}>{t("tryAgain")}</Button>
+            <ButtonLink href="/app">{t("openOverview")}</ButtonLink>
             <ButtonLink href="/app/settings/sync-history">
-              Check Sync History
+              {t("checkSyncHistory")}
             </ButtonLink>
           </div>
         </div>

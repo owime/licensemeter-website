@@ -18,7 +18,7 @@
       "description": "Koble til OpenAI eller Anthropic for å se hva organisasjonen bruker på API-ene deres: daglige totaler per modell og linjepost, akkurat som fakturert. Den samme kilden kobler console-medlemmer mot Entra ID, slik at personer som har sluttet, men fortsatt har aktive API-nøkler, dukker opp som funn.",
       "connectM365First": "Koble til Microsoft 365-leietakeren din først, og legg deretter til AI-kildene.",
       "connectReadOnlySync": "Koble til den skrivebeskyttede synkroniseringen",
-      "adminRequired": "Tilkobling krever en administrator. Be en administrator i arbeidsområdet koble til {openai} eller {anthropic}.",
+      "adminRequired": "Tilkobling krever en administrator. Be en administrator i arbeidsområdet koble til <openai>OpenAI</openai> eller <anthropic>Anthropic</anthropic>.",
       "connectOpenAI": "Koble til OpenAI",
       "connectAnthropic": "Koble til Anthropic"
     },

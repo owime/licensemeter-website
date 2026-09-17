@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   useActionState,
   useEffect,
@@ -14,20 +15,21 @@ import { connectAdobe, disconnectAdobe } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
 
 const FIELDS = [
-  {
-    name: "orgId",
-    label: "Organization ID",
-    placeholder: "1234ABCD…@AdobeOrg",
-  },
+  { name: "orgId", labelKey: "orgId", placeholder: "1234ABCD…@AdobeOrg" },
   {
     name: "clientId",
-    label: "Client ID (API key)",
+    labelKey: "clientId",
     placeholder: "a1b2c3d4e5f6…",
   },
-  { name: "clientSecret", label: "Client secret", placeholder: "p8e-AbCdEf…" },
+  {
+    name: "clientSecret",
+    labelKey: "clientSecret",
+    placeholder: "p8e-AbCdEf…",
+  },
 ] as const;
 
 export const AdobeConnectForm = () => {
+  const t = useTranslations("connectorsDash.adobeForm");
   /* Object identity changes per failure so repeated identical errors re-focus. */
   const [error, setError] = useState<{ message: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -50,7 +52,7 @@ export const AdobeConnectForm = () => {
           setError(null);
           const result = await connectAdobe(data);
           if (!result.ok) {
-            setError({ message: result.error ?? "Connection failed" });
+            setError({ message: result.error ?? t("connectionFailed") });
             return;
           }
           router.refresh();
@@ -60,8 +62,8 @@ export const AdobeConnectForm = () => {
       {FIELDS.map((f) => (
         <label key={f.name} className="flex flex-col gap-1 text-sm">
           <span className="text-ink-faint text-xs">
-            {f.label} <span aria-hidden="true">*</span>
-            <span className="sr-only"> (required)</span>
+            {t(`fields.${f.labelKey}`)} <span aria-hidden="true">*</span>
+            <span className="sr-only">{t("requiredSuffix")}</span>
           </span>
           <span className="relative">
             <input
@@ -86,9 +88,13 @@ export const AdobeConnectForm = () => {
                 type="button"
                 onClick={() => setShowSecret((value) => !value)}
                 className="text-ink-soft hover:text-ink absolute inset-y-0 right-0 inline-flex min-h-11 items-center px-3 text-xs font-medium"
-                aria-label={`${showSecret ? "Hide" : "Show"} client secret`}
+                aria-label={
+                  showSecret
+                    ? t("hideField", { field: t("fields.clientSecret") })
+                    : t("showField", { field: t("fields.clientSecret") })
+                }
               >
-                {showSecret ? "Hide" : "Show"}
+                {showSecret ? t("hide") : t("show")}
               </button>
             )}
           </span>
@@ -96,7 +102,7 @@ export const AdobeConnectForm = () => {
       ))}
       <div className="flex items-center gap-3">
         <Button variant="primary" disabled={pending} className="px-4 py-2">
-          {pending ? "Validating with Adobe…" : "Connect Adobe"}
+          {pending ? t("connecting") : t("connectButton")}
         </Button>
         <span
           ref={errorRef}
@@ -117,6 +123,7 @@ export const AdobeConnectForm = () => {
  * live region instead of being discarded.
  */
 export const AdobeDisconnectButton = () => {
+  const t = useTranslations("connectorsDash.adobeForm");
   const [armed, setArmed] = useState(false);
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null) => disconnectAdobe(),
@@ -131,9 +138,9 @@ export const AdobeDisconnectButton = () => {
   }, [armed]);
 
   const message = armed
-    ? "This removes the connection and its synced Adobe seats. Press again to confirm."
+    ? t("disconnectConfirm")
     : result && !result.ok
-      ? (result.error ?? "Something went wrong")
+      ? (result.error ?? t("somethingWrong"))
       : null;
 
   return (
@@ -152,10 +159,10 @@ export const AdobeDisconnectButton = () => {
     >
       <Button disabled={pending} onBlur={() => setArmed(false)}>
         {pending
-          ? "Removing…"
+          ? t("removing")
           : armed
-            ? "Confirm disconnect"
-            : "Disconnect Adobe"}
+            ? t("confirmDisconnect")
+            : t("disconnectButton")}
       </Button>
       <span
         role="status"

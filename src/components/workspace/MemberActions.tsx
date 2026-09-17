@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { removeMember, resendInvite } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
@@ -13,12 +14,13 @@ const ActionStatus = ({
   result: ActionResult | null;
   success: string;
 }) => {
+  const t = useTranslations("settings.memberActions");
   const message =
     result === null
       ? null
       : result.ok
         ? success
-        : (result.error ?? "Something went wrong");
+        : (result.error ?? t("somethingWentWrong"));
   return (
     <span
       role="status"
@@ -48,6 +50,7 @@ export const MemberActions = ({
   canResend: boolean;
   canRemove: boolean;
 }) => {
+  const t = useTranslations("settings.memberActions");
   const [armed, setArmed] = useState(false);
 
   const [resendResult, resendAction, resendPending] = useActionState(
@@ -77,7 +80,7 @@ export const MemberActions = ({
               disabled={resendPending}
               className="text-ink-faint hover:text-ink inline-flex min-h-11 items-center text-xs underline-offset-4 hover:underline disabled:opacity-50"
             >
-              {resendPending ? "Sending…" : "Resend"}
+              {resendPending ? t("sending") : t("resend")}
             </button>
           </form>
         )}
@@ -104,22 +107,22 @@ export const MemberActions = ({
               }`}
             >
               {removePending
-                ? "Removing…"
+                ? t("removing")
                 : armed
-                  ? "Confirm remove"
-                  : "Remove"}
+                  ? t("confirmRemove")
+                  : t("remove")}
             </button>
             <span role="status" aria-live="polite" className="sr-only">
-              {armed ? "Press again to confirm removal." : null}
+              {armed ? t("pressAgainToConfirm") : null}
             </span>
           </form>
         )}
       </div>
       {canResend && (
-        <ActionStatus result={resendResult} success="Invite re-sent." />
+        <ActionStatus result={resendResult} success={t("inviteResent")} />
       )}
       {canRemove && (
-        <ActionStatus result={removeResult} success="Member removed." />
+        <ActionStatus result={removeResult} success={t("memberRemoved")} />
       )}
     </div>
   );

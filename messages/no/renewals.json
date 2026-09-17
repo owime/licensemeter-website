@@ -1,0 +1,46 @@
+{
+  "renewals": {
+    "title": "Fornyelser",
+    "description": "Hold oversikt over kontraktsdatoer, oppsigelsesfrister, eiere og årlig verdi for alle leverandører.",
+    "addRenewal": {
+      "title": "Legg til kontraktsfornyelse"
+    },
+    "form": {
+      "vendor": "Leverandør",
+      "vendorPlaceholder": "Microsoft 365 …",
+      "contractName": "Kontraktsnavn",
+      "contractNamePlaceholder": "Enterprise-avtale …",
+      "renewalDate": "Fornyelsesdato",
+      "noticeDays": "Oppsigelsesfrist (dager)",
+      "annualValue": "Årlig kontraktsverdi ({currency})",
+      "contractOwner": "Kontrakteier",
+      "unassigned": "Ikke tildelt",
+      "notes": "Notater",
+      "notesPlaceholder": "Oppsigelsesvilkår, forhandlingskontekst eller innkjøpsansvarlig …",
+      "saveRenewal": "Lagre fornyelse",
+      "addRenewalButton": "Legg til fornyelse",
+      "savingRenewal": "Lagrer fornyelse…",
+      "renewalSaved": "Fornyelse lagret.",
+      "saveFailed": "Kunne ikke lagre. Prøv igjen.",
+      "noRenewalSubmitted": "Ingen fornyelse sendt inn."
+    },
+    "delete": {
+      "delete": "Slett",
+      "confirmDelete": "Bekreft sletting",
+      "deleting": "Sletter…",
+      "deleteFailed": "Kunne ikke slette. Prøv igjen.",
+      "notRequested": "Sletting ikke forespurt."
+    },
+    "calendar": {
+      "title": "Fornyelseskalender",
+      "emptyHeading": "Ingen kontraktsfornyelser registrert ennå.",
+      "emptyHintEditable": "Legg til den første kontrakten med skjemaet over, så vises varselfristen på Oversikt.",
+      "emptyHintReadonly": "En arbeidsområdeadministrator kan legge til kontrakter og varselfrister her.",
+      "noticePeriod": "{days} dagers oppsigelsesfrist",
+      "noticeDeadlinePassed": "Varselfristen gikk ut for {days} dager siden",
+      "decisionDue": "Beslutning må tas innen {days} dager",
+      "annualValue": "{amount} årlig verdi",
+      "editContract": "Rediger kontrakt"
+    }
+  }
+}

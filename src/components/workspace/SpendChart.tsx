@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { fmtMoney } from "~/lib/format";
 
 export type SpendPoint = { day: string; cents: number };
@@ -27,23 +29,24 @@ const SWATCHES = ["bg-ink-soft", "bg-brand"];
  * up to two series share one y-scale, the x-axis is the union of both
  * series' days, and amounts are USD cents exactly as billed.
  */
-export const SpendChart = ({
+export const SpendChart = async ({
   series,
   sample = false,
 }: {
   series: SpendSeries[];
   sample?: boolean;
 }) => {
+  const t = await getTranslations("dashboardHome.spendChart");
   // A line needs three days to mean anything; freshly connected tenants see
   // a note instead of a silently missing section.
   if (series.every((s) => s.points.length < 3))
     return (
       <section className="rise rise-3 mt-10">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Daily API spend
+          {t("heading")}
         </h2>
         <p className="border-line bg-card text-ink-soft mt-3 border p-4 text-sm">
-          The spend chart appears once three or more days of cost data are in.
+          {t("placeholder")}
         </p>
       </section>
     );
@@ -83,7 +86,9 @@ export const SpendChart = ({
   const csv = [
     [
       "date",
-      ...series.map((item) => `${item.label}${sample ? " (sample)" : ""}`),
+      ...series.map(
+        (item) => `${item.label}${sample ? t("sampleSuffix") : ""}`,
+      ),
     ].join(","),
     ...days.map((day) =>
       [
@@ -99,10 +104,10 @@ export const SpendChart = ({
     <section className="rise rise-3 mt-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Daily API spend ({days.length} days)
+          {t("headingWithDays", { count: days.length })}
         </h2>
         <span className="text-ink-soft text-xs">
-          Latest: {latestParts.join(" · ")}
+          {t("latest", { parts: latestParts.join(" · ") })}
         </span>
       </div>
       <div className="border-line bg-card mt-3 border p-4">
@@ -110,7 +115,10 @@ export const SpendChart = ({
           width="100%"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label={`Daily API spend over ${days.length} days. Latest daily totals: ${latestParts.join(", ")}.`}
+          aria-label={t("ariaLabel", {
+            count: days.length,
+            parts: latestParts.join(", "),
+          })}
         >
           {Y_TICKS.map((ratio) => {
             const y = H - PAD.bottom - ratio * (H - PAD.top - PAD.bottom);
@@ -163,9 +171,19 @@ export const SpendChart = ({
                 r="5"
                 fill={STROKES[index] ?? "var(--color-brand)"}
                 tabIndex={0}
-                aria-label={`${item.label} on ${fmtAxisDate(point.day)}: ${fmtMoney(point.cents, "USD")}`}
+                aria-label={t("pointAriaLabel", {
+                  label: item.label,
+                  date: fmtAxisDate(point.day),
+                  amount: fmtMoney(point.cents, "USD"),
+                })}
               >
-                <title>{`${item.label}: ${fmtMoney(point.cents, "USD")} on ${fmtAxisDate(point.day)}`}</title>
+                <title>
+                  {t("pointTitle", {
+                    label: item.label,
+                    amount: fmtMoney(point.cents, "USD"),
+                    date: fmtAxisDate(point.day),
+                  })}
+                </title>
               </circle>
             );
           })}
@@ -205,17 +223,15 @@ export const SpendChart = ({
         <div className="border-line mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
           <details className="min-w-0 text-sm">
             <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
-              View daily values
+              {t("viewDailyValues")}
             </summary>
             <div className="max-w-full overflow-x-auto">
               <table className="mt-2 w-full table-fixed text-left text-xs">
-                <caption className="sr-only">
-                  Daily API spend per provider.
-                </caption>
+                <caption className="sr-only">{t("caption")}</caption>
                 <thead className="text-ink-faint">
                   <tr>
                     <th scope="col" className="py-2 pr-4 font-medium">
-                      Date
+                      {t("date")}
                     </th>
                     {series.map((item) => (
                       <th
@@ -257,7 +273,7 @@ export const SpendChart = ({
             }
             className="text-ink-soft hover:text-ink inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
           >
-            Export Chart CSV
+            {t("exportCsv")}
           </a>
         </div>
       </div>

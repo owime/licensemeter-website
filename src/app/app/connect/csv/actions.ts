@@ -3,6 +3,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import {
   requireSession,
@@ -79,6 +80,7 @@ const dominantDomain = (upns: string[]): string | null => {
 export const submitCsvImport = async (
   formData: FormData,
 ): Promise<CsvImportResult> => {
+  const t = await getTranslations("connect.csv.errors");
   const session = await requireSession();
   const { oid, tid, upn, name, email } = session.user;
   const workosUserId = session.user.workosUserId;
@@ -88,15 +90,13 @@ export const submitCsvImport = async (
   // tenant, so the imported workspace is keyed on the WorkOS user (a personal
   // workspace; org sharing arrives later with WorkOS organizations).
   if (!oid && !workosUserId) {
-    return fail("Please sign in again to start a CSV import.");
+    return fail(t("signInAgain"));
   }
 
   // --- Input guards (order: session, sizes, rate limit, parse) ------------
   const directoryFile = formData.get("directory");
   if (!(directoryFile instanceof File) || directoryFile.size === 0) {
-    return fail(
-      "Please choose the user export file (Users > Active users > Export users).",
-    );
+    return fail(t("missingDirectory"));
   }
   const usageFile = formData.get("usage");
   const hasUsage = usageFile instanceof File && usageFile.size > 0;
@@ -104,28 +104,24 @@ export const submitCsvImport = async (
     directoryFile.size > MAX_FILE_BYTES ||
     (hasUsage && usageFile.size > MAX_FILE_BYTES)
   ) {
-    return fail("Each file must be 5 MB or smaller.");
+    return fail(t("fileTooLarge"));
   }
 
   // Keyed by organization (entra tenant) or by user (workos): one uploader gets
   // 10 uploads per hour either way.
   const rlKey = tid ? `csvimport:${tid}` : `csvimport:ws:${workosUserId}`;
   if (!(await rateLimitDurable(rlKey, 10, 60 * 60 * 1000))) {
-    return fail(
-      "Too many uploads for your organization. Please try again later.",
-    );
+    return fail(t("tooManyUploads"));
   }
 
   const directoryParsed = parseDirectoryExport(await directoryFile.text());
   if (!directoryParsed.ok) return fail(directoryParsed.error);
   const directoryRows = directoryParsed.rows;
   if (directoryRows.length === 0) {
-    return fail("The user export contains no users.");
+    return fail(t("noUsers"));
   }
   if (directoryRows.length > MAX_USER_ROWS) {
-    return fail(
-      "The user export is unusually large. Connect the read-only sync for tenants this size.",
-    );
+    return fail(t("tooManyUsers"));
   }
 
   let usageRows: UsageRow[] = [];
@@ -134,12 +130,7 @@ export const submitCsvImport = async (
     if (!usageParsed.ok) return fail(usageParsed.error);
     usageRows = usageParsed.rows;
     if (detectConcealment(directoryRows, usageRows)) {
-      return fail(
-        "The usage report does not join to your users: report identities are " +
-          "concealed. In the Microsoft 365 admin center, turn off Reports > " +
-          "Settings > display concealed names, re-export, and upload again " +
-          "(or leave the usage file out).",
-      );
+      return fail(t("concealedNames"));
     }
   }
 
@@ -178,7 +169,7 @@ export const submitCsvImport = async (
   let tenantId: string;
   if (existing) {
     if (existing.isDemo) {
-      return fail("The CSV import is not available for the demo workspace.");
+      return fail(t("demoNotAvailable"));
     }
     const membership = await db.query.memberships.findFirst({
       where: and(eq(memberships.tenantId, existing.id), matchActor),
@@ -186,21 +177,17 @@ export const submitCsvImport = async (
     if (existing.consentedAt) {
       return fail(
         membership
-          ? "Your organization already has a connected workspace. Open it from the workspace switcher."
-          : "Your organization already has a connected workspace. Ask an admin there for an invite.",
+          ? t("alreadyConnectedMember")
+          : t("alreadyConnectedNonMember"),
       );
     }
     if (!membership) {
-      return fail(
-        "An imported workspace for your organization already exists. Ask the colleague who created it for an invite.",
-      );
+      return fail(t("importExistsNoMembership"));
     }
     // Replacing the stored data is destructive, so viewers may not re-upload;
     // first-time creation below still makes the uploader the owner.
     if (membership.role !== "owner" && membership.role !== "admin") {
-      return fail(
-        "Your role in this workspace is view only. Ask a workspace admin to refresh the data.",
-      );
+      return fail(t("viewOnlyRole"));
     }
     tenantId = existing.id;
     // Replace the previous upload: in an imported workspace every stored user and
@@ -247,9 +234,7 @@ export const submitCsvImport = async (
       return inserted.id;
     });
     if (!created) {
-      return fail(
-        "Someone in your organization created this workspace just now. Ask them for an invite.",
-      );
+      return fail(t("raceCreated"));
     }
     tenantId = created;
   }

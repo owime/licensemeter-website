@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { setMonthlyReport } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
@@ -12,6 +13,7 @@ import type { ActionResult } from "~/server/actions";
  * result is announced instead of discarded.
  */
 export const MonthlyReportToggle = ({ initial }: { initial: boolean }) => {
+  const t = useTranslations("settings.monthlyReport");
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(initial);
   const [lastValue, setLastValue] = useState(initial);
@@ -59,7 +61,7 @@ export const MonthlyReportToggle = ({ initial }: { initial: boolean }) => {
           }}
           className="accent-ink size-4 shrink-0"
         />
-        <span>Email me the PDF report monthly</span>
+        <span>{t("label")}</span>
       </label>
       <span
         role="status"
@@ -73,8 +75,8 @@ export const MonthlyReportToggle = ({ initial }: { initial: boolean }) => {
         {result === null
           ? null
           : result.ok
-            ? "Saved."
-            : (result.error ?? "Save failed")}
+            ? t("saved")
+            : (result.error ?? t("saveFailed"))}
       </span>
     </div>
   );

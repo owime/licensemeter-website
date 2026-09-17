@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { CURRENCY_LABELS, SUPPORTED_CURRENCIES } from "~/lib/currency";
 import { setCurrency } from "~/server/actions";
 
 export const CurrencySelect = ({ value }: { value: string }) => {
+  const t = useTranslations("licenses");
   const [pending, startTransition] = useTransition();
   const [selected, setSelected] = useState(value);
   const [message, setMessage] = useState("");
@@ -30,21 +32,26 @@ export const CurrencySelect = ({ value }: { value: string }) => {
             const result = await setCurrency(selected);
             if (!result.ok) {
               setFailed(true);
-              setMessage(result.error ?? "Currency conversion failed.");
+              setMessage(result.error ?? t("currencySelect.conversionFailed"));
               return;
             }
             const rate = result.rate?.toLocaleString(undefined, {
               maximumFractionDigits: 6,
             });
             setMessage(
-              rate && result.from && result.to
-                ? `Converted at 1 ${result.from} = ${rate} ${result.to} (${result.asOf}).`
-                : "Currency updated.",
+              rate && result.from && result.to && result.asOf
+                ? t("currencySelect.converted", {
+                    from: result.from,
+                    rate,
+                    to: result.to,
+                    asOf: result.asOf,
+                  })
+                : t("currencySelect.updated"),
             );
             router.refresh();
           } catch {
             setFailed(true);
-            setMessage("Currency conversion failed. Please retry.");
+            setMessage(t("currencySelect.conversionFailedRetry"));
           }
         });
       }}
@@ -56,7 +63,7 @@ export const CurrencySelect = ({ value }: { value: string }) => {
           autoComplete="off"
           disabled={pending}
           aria-busy={pending || undefined}
-          aria-label="Workspace reporting currency"
+          aria-label={t("currencySelect.ariaLabel")}
           onChange={(event) => {
             setSelected(event.target.value);
             setMessage("");
@@ -76,14 +83,14 @@ export const CurrencySelect = ({ value }: { value: string }) => {
             disabled={pending}
             className="border-ink bg-ink text-paper hover:bg-ink-soft border px-2.5 py-1.5 text-xs font-medium disabled:opacity-60"
           >
-            {pending ? "Converting…" : "Convert"}
+            {pending
+              ? t("currencySelect.converting")
+              : t("currencySelect.convert")}
           </button>
         )}
       </div>
       <p className="text-ink-faint text-xs leading-relaxed">
-        Changing currency converts prices, findings, trend history and renewal
-        contract values using the latest ECB reference rate. Review negotiated
-        prices afterwards.
+        {t("currencySelect.description")}
       </p>
       <p
         role="status"
@@ -94,7 +101,7 @@ export const CurrencySelect = ({ value }: { value: string }) => {
             : "sr-only"
         }
       >
-        {message || "No currency change in progress."}
+        {message || t("currencySelect.noChangeInProgress")}
       </p>
     </form>
   );

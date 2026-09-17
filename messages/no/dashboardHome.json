@@ -1,6 +1,7 @@
 {
   "dashboardHome": {
     "page": {
+      "title": "Oversikt",
       "syncRunning": "Synkroniserer…",
       "importedOn": "Importert {date}",
       "lastSynced": "Sist synkronisert {time}",
@@ -131,7 +132,7 @@
       "heading": "Trend",
       "headingWithDays": "Trend ({count} dager)",
       "placeholder": "Kostnads- og avfallstrender vises her etter noen dagers synkronisering.",
-      "wasteRange": "Lisensavfall {from} → {to}/mnd",
+      "wasteFrom": "Lisensavfall {from} →",
       "ariaLabel": "Månedlig kostnads- og avfallstrend over {count} dager. Kostnad {spend}, lisensavfall {waste} per måned.",
       "monthlySpend": "Månedlig kostnad",
       "monthlyWaste": "Månedlig lisensavfall",

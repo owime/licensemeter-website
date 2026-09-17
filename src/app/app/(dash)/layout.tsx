@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { BrandMark } from "~/components/BrandMark";
 import { MobileNav } from "~/components/workspace/MobileNav";
@@ -20,6 +21,7 @@ export default async function WorkspaceLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const ctx = await requireAccess("viewer");
+  const t = await getTranslations("dashLayout");
   const tenantName = workspaceLabel(ctx.tenant);
   // Self-service account page is WorkOS-only; entra users manage profile in Entra.
   const accountEnabled = authProvider() === "workos";
@@ -30,7 +32,7 @@ export default async function WorkspaceLayout({
         href="#content"
         className="focus:border-ink focus:bg-canvas focus:text-ink sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:border focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
       >
-        Skip to content
+        {t("skipToContent")}
       </a>
       <MobileNav
         tenantName={tenantName}
@@ -63,7 +65,7 @@ export default async function WorkspaceLayout({
             </div>
           )}
           <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
-            {ctx.tenant.isDemo ? "Demo workspace" : "Connected tenant"}
+            {ctx.tenant.isDemo ? t("demoWorkspace") : t("connectedTenant")}
           </div>
         </div>
 
@@ -76,13 +78,13 @@ export default async function WorkspaceLayout({
             <Link
               href="/app/account"
               className="group block"
-              aria-label="Account settings"
+              aria-label={t("accountSettings")}
             >
               <div className="text-ink truncate text-sm underline-offset-4 group-hover:underline">
                 {ctx.user.name}
               </div>
               <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
-                {ctx.membership.role} · Account
+                {ctx.membership.role} · {t("accountLabel")}
               </div>
             </Link>
           ) : (
@@ -95,7 +97,7 @@ export default async function WorkspaceLayout({
           )}
           <form action={signOutAction}>
             <button className="text-sidebar-soft hover:text-ink mt-1 inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
-              Sign out
+              {t("signOut")}
             </button>
           </form>
         </div>

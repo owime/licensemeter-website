@@ -151,7 +151,7 @@ export const SecurityView = async ({ lang }: { lang: DpaLang }) => {
             >
               <code className="text-ink font-mono text-xs">{s.scope}</code>
               <span className="text-xs">
-                {c.access.scopeWhy[s.scope] ?? s.why}
+                {c.access.scopeWhy[s.scope.replaceAll(".", "_")] ?? s.why}
               </span>
             </li>
           ))}

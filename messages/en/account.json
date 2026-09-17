@@ -1,0 +1,21 @@
+{
+  "account": {
+    "title": "Account",
+    "demo": {
+      "cardTitle": "Demo workspace",
+      "description": "This shared demo has no personal identity to edit. A real account exposes the following self-service security controls.",
+      "items": ["Profile & name", "Password", "Multi-factor authentication"],
+      "note": "Changes apply to your login across every workspace. The demo remains read-only so one visitor cannot affect another.",
+      "backToOverview": "Back to Overview"
+    },
+    "entra": {
+      "description": "Your profile, password and sign-in security are managed by Microsoft Entra ID. Update them in your Microsoft account — changes apply across every workspace you belong to."
+    },
+    "loadError": {
+      "description": "We couldn't load your account details. Signing out and back in usually fixes this.",
+      "signOut": "Sign out",
+      "backHome": "Back to home"
+    },
+    "description": "Manage your name, password and sign-in security. These apply to your personal login across every workspace you belong to."
+  }
+}

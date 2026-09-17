@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "~/components/ui";
 
 /** Fetches the generated remediation script and copies it to the clipboard. */
 export const CopyScriptButton = ({ url }: { url: string }) => {
+  const t = useTranslations("connectorsDash.copyScript");
   const [state, setState] = useState<"idle" | "copied" | "error">("idle");
 
   return (
@@ -25,17 +27,17 @@ export const CopyScriptButton = ({ url }: { url: string }) => {
         }}
       >
         {state === "copied"
-          ? "Copied"
+          ? t("copied")
           : state === "error"
-            ? "Copy failed"
-            : "Copy PowerShell"}
+            ? t("copyFailed")
+            : t("copyPowerShell")}
       </Button>
       {/* Label changes alone are not announced; mirror them in a live region. */}
       <span role="status" aria-live="polite" className="sr-only">
         {state === "copied"
-          ? "Copied to clipboard"
+          ? t("copiedToClipboard")
           : state === "error"
-            ? "Copy failed"
+            ? t("copyFailed")
             : ""}
       </span>
     </>

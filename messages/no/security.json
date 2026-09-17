@@ -12,11 +12,11 @@
         "post": ". LicenseMeter synkroniserer deretter hver natt med sitt eget legitimasjonssett: ingen tjenestekonto i din tenant, ingen agent, ingen postboks-plugin. Du kan når som helst tilbakekalle applikasjonen i Entra ID, uavhengig av oss."
       },
       "scopeWhy": {
-        "User.Read.All": "katalogbrukere, kontostatus, tildelte lisenser",
-        "AuditLog.Read.All": "tidspunkt for siste innlogging (krever Entra ID P1)",
-        "Reports.Read.All": "bruks- og Copilot-aktivitetsrapporter",
-        "LicenseAssignment.Read.All": "kjøpte vs. tildelte lisensplasser",
-        "ReportSettings.Read.All": "om navn er skjult i rapporter"
+        "User_Read_All": "katalogbrukere, kontostatus, tildelte lisenser",
+        "AuditLog_Read_All": "tidspunkt for siste innlogging (krever Entra ID P1)",
+        "Reports_Read_All": "bruks- og Copilot-aktivitetsrapporter",
+        "LicenseAssignment_Read_All": "kjøpte vs. tildelte lisensplasser",
+        "ReportSettings_Read_All": "om navn er skjult i rapporter"
       },
       "consentNote": "Samtykket registreres i tenantens revisjonslogg. Innlogging til selve dashbordet bruker en separat appregistrering med kun openid, profile og email."
     },

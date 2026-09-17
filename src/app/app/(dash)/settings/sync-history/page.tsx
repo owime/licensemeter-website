@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Card, buttonClass } from "~/components/ui";
 import { fmtDateTime } from "~/lib/format";
@@ -30,6 +31,8 @@ export default async function SyncHistoryPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("settings.syncHistory");
+  const ta = await getTranslations("settings.activity");
   const ctx = await requireAccess("viewer");
   const sp = await searchParams;
 
@@ -67,25 +70,28 @@ export default async function SyncHistoryPage({
             href="/app/settings"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
-            Settings
+            {t("breadcrumbSettings")}
           </Link>{" "}
           /{" "}
           <span aria-current="page" className="text-ink-soft">
-            Sync history
+            {t("breadcrumbCurrent")}
           </span>
         </nav>
         <h1 className="font-display mt-2 text-3xl tracking-tight">
-          Sync history
+          {t("title")}
         </h1>
         <p className="text-ink-soft mt-1 text-sm">
-          {total} {total === 1 ? "run" : "runs"} recorded for this workspace.
+          {t("runsRecorded", {
+            count: total,
+            unit: total === 1 ? t("run") : t("runs"),
+          })}
         </p>
       </header>
 
       <div className="rise rise-2">
-        <Card title="Runs">
+        <Card title={t("runsCardTitle")}>
           {runs.length === 0 ? (
-            <p className="text-ink-soft text-sm">No syncs yet.</p>
+            <p className="text-ink-soft text-sm">{t("noSyncs")}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {runs.map((run) => (
@@ -107,7 +113,7 @@ export default async function SyncHistoryPage({
                     {run.steps
                       .map(
                         (s) =>
-                          `${syncStepLabel(s.step)}${s.count !== undefined ? `: ${s.count}` : ""}${
+                          `${syncStepLabel(ta, s.step)}${s.count !== undefined ? `: ${s.count}` : ""}${
                             s.status === "ok" ? "" : ` · ${s.status}`
                           }`,
                       )
@@ -127,18 +133,21 @@ export default async function SyncHistoryPage({
           className="flex flex-wrap items-center justify-between gap-3"
         >
           <span className="tnum text-ink-soft text-xs">
-            Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-            {Math.min(page * PAGE_SIZE, total)} of {total}
+            {t("showing", {
+              from: (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, total),
+              count: total,
+            })}
           </span>
           <div className="flex items-center gap-2">
             {page > 1 && (
               <Link href={pageHref(page - 1)} className={buttonClass("micro")}>
-                ← Previous
+                {t("previous")}
               </Link>
             )}
             {page < totalPages && (
               <Link href={pageHref(page + 1)} className={buttonClass("micro")}>
-                Next →
+                {t("next")}
               </Link>
             )}
           </div>

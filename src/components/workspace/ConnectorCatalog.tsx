@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   ArrowRight,
   Check,
@@ -17,17 +18,29 @@ import {
   type ConnectorSummary,
 } from "~/lib/workspaceConnectors";
 
-const STATUS: Record<ConnectorStatus, { label: string; className: string }> = {
-  available: { label: "Not connected", className: "bg-subtle text-ink-soft" },
-  connected: { label: "Connected", className: "bg-good-soft text-good-text" },
-  imported: { label: "Imported", className: "bg-good-soft text-good-text" },
-  attention: {
-    label: "Needs attention",
-    className: "bg-gold-soft text-gold-text",
-  },
-  demo: { label: "Sample data", className: "bg-subtle text-ink-soft" },
+const STATUS_KEYS: Record<ConnectorStatus, string> = {
+  available: "statusNotConnected",
+  connected: "statusConnected",
+  imported: "statusImported",
+  attention: "statusAttention",
+  demo: "statusDemo",
 };
+const STATUS_CLASS: Record<ConnectorStatus, string> = {
+  available: "bg-subtle text-ink-soft",
+  connected: "bg-good-soft text-good-text",
+  imported: "bg-good-soft text-good-text",
+  attention: "bg-gold-soft text-gold-text",
+  demo: "bg-subtle text-ink-soft",
+};
+/* Category values must match connector.category from workspaceConnectors
+   (untranslated data), so the array stays in English for the filter logic;
+   FILTER_KEYS maps each value to its translated display label. */
 const FILTERS = ["All connectors", "Licenses", "AI & usage"] as const;
+const FILTER_KEYS: Record<(typeof FILTERS)[number], string> = {
+  "All connectors": "filterAll",
+  Licenses: "filterLicenses",
+  "AI & usage": "filterAiUsage",
+};
 
 export function ConnectorCatalog({
   summaries,
@@ -40,6 +53,7 @@ export function ConnectorCatalog({
   canManage: boolean;
   microsoftConnected: boolean;
 }) {
+  const t = useTranslations("connectorsDash.catalog");
   const [query, setQuery] = useState("");
   const [filter, setFilter] =
     useState<(typeof FILTERS)[number]>("All connectors");
@@ -59,15 +73,14 @@ export function ConnectorCatalog({
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="text-brand-text text-[11px] font-semibold tracking-[0.16em] uppercase">
-            Your connected workspace
+            {t("eyebrow")}
           </p>
           <h1 className="font-display mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">
-            Connectors
+            {t("title")}
           </h1>
           <p className="text-ink-soft mt-3 max-w-xl text-base leading-7">
-            All your tools. One place to find the waste.
-            <br className="hidden sm:block" /> Connect your stack and see what
-            you could save.
+            {t("subtitleLine1")}
+            <br className="hidden sm:block" /> {t("subtitleLine2")}
           </p>
         </div>
         <div className="border-line flex gap-7 rounded-2xl border bg-white px-6 py-4">
@@ -75,14 +88,16 @@ export function ConnectorCatalog({
             <p className="font-display text-2xl font-semibold tabular-nums">
               {String(WORKSPACE_CONNECTORS.length).padStart(2, "0")}
             </p>
-            <p className="text-ink-faint mt-1 text-xs">Available connectors</p>
+            <p className="text-ink-faint mt-1 text-xs">
+              {t("availableConnectors")}
+            </p>
           </div>
           <div className="border-line border-l pl-7">
             <p className="font-display text-brand-text text-2xl font-semibold tabular-nums">
-              {isDemo ? "Demo" : String(active).padStart(2, "0")}
+              {isDemo ? t("demoLabel") : String(active).padStart(2, "0")}
             </p>
             <p className="text-ink-faint mt-1 text-xs">
-              {isDemo ? "Sample workspace" : "Added to workspace"}
+              {isDemo ? t("sampleWorkspace") : t("addedToWorkspace")}
             </p>
           </div>
         </div>
@@ -97,17 +112,17 @@ export function ConnectorCatalog({
           <div>
             <p className="text-ink text-sm font-medium">
               {isDemo
-                ? "Explore your stack with sample data"
+                ? t("bannerTitleDemo")
                 : !microsoftConnected
-                  ? "Start with Microsoft 365"
-                  : "Connected for insight. Read-only by design."}
+                  ? t("bannerTitleStartMicrosoft")
+                  : t("bannerTitleConnected")}
             </p>
             <p className="text-ink-soft mt-1 max-w-2xl text-xs leading-5">
               {isDemo
-                ? "Preview every connector here. Real connections and imports are disabled in this shared workspace."
+                ? t("bannerBodyDemo")
                 : !microsoftConnected
-                  ? "Connect your directory first so other tools can match seats to active and departed employees."
-                  : "API connectors read license, member and usage data. CSV imports work with the files you provide."}
+                  ? t("bannerBodyStartMicrosoft")
+                  : t("bannerBodyConnected")}
             </p>
           </div>
         </div>
@@ -116,7 +131,7 @@ export function ConnectorCatalog({
             href="/app/connectors/microsoft"
             className="text-brand-text inline-flex min-h-11 items-center gap-2 text-sm font-semibold"
           >
-            View Microsoft 365{" "}
+            {t("viewMicrosoft")}{" "}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         )}
@@ -125,7 +140,7 @@ export function ConnectorCatalog({
       <div className="mt-9 flex flex-wrap items-center justify-between gap-4">
         <div
           className="bg-subtle flex max-w-full flex-wrap gap-1 rounded-xl p-1"
-          aria-label="Filter connectors"
+          aria-label={t("filterAriaLabel")}
         >
           {FILTERS.map((value) => (
             <button
@@ -135,7 +150,7 @@ export function ConnectorCatalog({
               onClick={() => setFilter(value)}
               className={`min-h-10 rounded-lg px-3 text-xs font-medium transition-colors sm:px-4 sm:text-sm ${filter === value ? "text-ink bg-white shadow-sm" : "text-ink-soft hover:text-ink"}`}
             >
-              {value}
+              {t(FILTER_KEYS[value])}
             </button>
           ))}
         </div>
@@ -148,8 +163,8 @@ export function ConnectorCatalog({
             type="search"
             name="connector-search"
             autoComplete="off"
-            aria-label="Search connectors"
-            placeholder="Find a connector…"
+            aria-label={t("searchAriaLabel")}
+            placeholder={t("searchPlaceholder")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="border-line text-ink placeholder:text-ink-faint h-10 w-full rounded-xl border bg-white pr-3 pl-9 text-sm"
@@ -157,34 +172,39 @@ export function ConnectorCatalog({
         </div>
       </div>
       <p className="text-ink-faint mt-5 text-xs" role="status">
-        {connectors.length}{" "}
-        {connectors.length === 1 ? "connector" : "connectors"}
         {filter !== "All connectors"
-          ? ` in ${filter.toLowerCase()}`
-          : " available"}
+          ? t("countInFilter", {
+              count: connectors.length,
+              filter: t(FILTER_KEYS[filter]).toLowerCase(),
+            })
+          : t("countAvailable", { count: connectors.length })}
       </p>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {connectors.map((connector) => {
           const summary = summaries.find((item) => item.id === connector.id)!;
-          const state = STATUS[summary.status];
+          const statusClass = STATUS_CLASS[summary.status];
+          const statusLabel = t(STATUS_KEYS[summary.status]);
           const action = isDemo
-            ? "Explore connector"
+            ? t("actionExplore")
             : !canManage
-              ? "View connector"
+              ? t("actionView")
               : summary.status === "attention"
-                ? "Review connection"
+                ? t("actionReview")
                 : summary.status === "connected" ||
                     summary.status === "imported"
-                  ? "Manage connector"
+                  ? t("actionManage")
                   : connector.method === "CSV import"
-                    ? "Import members"
-                    : "Set up connector";
+                    ? t("actionImport")
+                    : t("actionSetup");
           return (
             <Link
               key={connector.id}
               href={`/app/connectors/${connector.id}`}
-              aria-label={`${action}: ${connector.name}`}
+              aria-label={t("cardAriaLabel", {
+                action,
+                name: connector.name,
+              })}
               aria-describedby={`connector-${connector.id}-status connector-${connector.id}-description`}
               className="connector-tile group border-line hover:border-brand/35 flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-white p-6 transition-[border-color,box-shadow] hover:shadow-lg"
               style={
@@ -197,13 +217,13 @@ export function ConnectorCatalog({
                 </span>
                 <span
                   id={`connector-${connector.id}-status`}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${state.className}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${statusClass}`}
                 >
                   {(summary.status === "connected" ||
                     summary.status === "imported") && (
                     <Check className="size-3" aria-hidden="true" />
                   )}
-                  {state.label}
+                  {statusLabel}
                 </span>
               </div>
               <h2 className="font-display mt-5 text-xl font-semibold tracking-tight">
@@ -253,10 +273,8 @@ export function ConnectorCatalog({
             className="text-ink-faint mx-auto size-6"
             aria-hidden="true"
           />
-          <h2 className="mt-4 text-lg font-medium">No connectors found</h2>
-          <p className="text-ink-soft mt-2 text-sm">
-            Try another name or browse all available connectors.
-          </p>
+          <h2 className="mt-4 text-lg font-medium">{t("noResultsTitle")}</h2>
+          <p className="text-ink-soft mt-2 text-sm">{t("noResultsBody")}</p>
           <button
             type="button"
             onClick={() => {
@@ -265,17 +283,17 @@ export function ConnectorCatalog({
             }}
             className="text-brand-text mt-4 min-h-11 text-sm font-semibold underline underline-offset-4"
           >
-            Show all connectors
+            {t("showAll")}
           </button>
         </div>
       )}
       <p className="text-ink-faint mt-8 text-center text-xs leading-6">
-        Missing a tool from your stack?{" "}
+        {t("missingTool")}{" "}
         <Link
           href="/support"
           className="text-brand-text font-medium underline underline-offset-4"
         >
-          Suggest a connector
+          {t("suggestConnector")}
         </Link>
       </p>
     </div>

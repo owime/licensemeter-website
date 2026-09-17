@@ -1,6 +1,7 @@
 import { and, desc, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { OpenWorkspaceButton } from "~/components/workspace/OpenWorkspaceButton";
 import { Card, Pill, buttonClass } from "~/components/ui";
@@ -23,29 +24,30 @@ export const metadata: Metadata = { title: "Portfolio" };
  * that matter for a QBR: seats, spend, waste, open findings, sync health.
  */
 export default async function PortfolioPage() {
+  const t = await getTranslations("portfolio");
   const ctx = await requireAccess("viewer");
   if (ctx.workspaces.length < 2) {
     return (
       <div className="mx-auto max-w-3xl pb-8">
         <header className="rise rise-1">
-          <h1 className="font-display text-3xl tracking-tight">Portfolio</h1>
+          <h1 className="font-display text-3xl tracking-tight">
+            {t("unavailable.title")}
+          </h1>
           <p className="text-ink-soft mt-2 max-w-2xl text-sm leading-relaxed">
-            Portfolio reporting becomes available when you can access 2 or more
-            workspaces. Your current workspace is ready on the overview.
+            {t("unavailable.description")}
           </p>
         </header>
         <div className="rise rise-2 mt-8">
-          <Card title="One workspace connected">
+          <Card title={t("unavailable.cardTitle")}>
             <p className="text-ink-soft text-sm">
-              Add another client workspace from the MSP area to compare spend,
-              waste, findings, and sync health in one view.
+              {t("unavailable.cardDescription")}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/app" className={buttonClass("primary")}>
-                Open Overview
+                {t("unavailable.openOverview")}
               </Link>
               <Link href="/app/msp" className={buttonClass("secondary")}>
-                Set Up MSP Portfolio
+                {t("unavailable.setUpMsp")}
               </Link>
             </div>
           </Card>
@@ -118,11 +120,11 @@ export default async function PortfolioPage() {
     const syncFailed = lastRun?.status === "failed";
     // Plain data, not JSX, so the row stays serializable; the cell decides tone.
     const syncText = syncFailed
-      ? "failed"
+      ? t("sync.failed")
       : isImported
         ? importedAt
-          ? `imported ${fmtDate(importedAt)}`
-          : "-"
+          ? t("sync.imported", { date: fmtDate(importedAt) })
+          : t("sync.none")
         : fmtAgo(lastRun?.finishedAt ?? null);
     return {
       ws,
@@ -173,11 +175,14 @@ export default async function PortfolioPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1">
-        <h1 className="font-display text-3xl tracking-tight">Portfolio</h1>
+        <h1 className="font-display text-3xl tracking-tight">
+          {t("header.title")}
+        </h1>
         <p className="text-ink-soft mt-1 text-sm">
-          All {ctx.workspaces.length} workspaces, normalized to{" "}
-          {reportingCurrency}
-          and sorted by waste.
+          {t("header.subtitle", {
+            count: ctx.workspaces.length,
+            currency: reportingCurrency,
+          })}
         </p>
       </header>
 
@@ -185,15 +190,15 @@ export default async function PortfolioPage() {
         <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              label: "Monthly spend",
+              label: t("stats.monthlySpend"),
               value: fmtMoney(totals.spendCents, reportingCurrency),
             },
             {
-              label: "Monthly waste",
+              label: t("stats.monthlyWaste"),
               value: fmtMoney(totals.wasteCents, reportingCurrency),
               waste: true,
             },
-            { label: "Open findings", value: fmtNumber(totalFindings) },
+            { label: t("stats.openFindings"), value: fmtNumber(totalFindings) },
           ].map((c) => (
             <div key={c.label} className="bg-card p-5">
               <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
@@ -214,34 +219,31 @@ export default async function PortfolioPage() {
       {/* Desktop table */}
       <div className="rise rise-2 border-line bg-card mt-8 mb-8 hidden overflow-x-auto border md:block">
         <table className="w-full text-sm">
-          <caption className="sr-only">
-            Workspaces you can open with seats, spend, waste, open findings and
-            sync status.
-          </caption>
+          <caption className="sr-only">{t("table.caption")}</caption>
           <thead>
             <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
               <th scope="col" className="px-4 py-3 font-medium">
-                Workspace
+                {t("table.columnWorkspace")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Seats
+                {t("table.columnSeats")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Spend / mo
+                {t("table.columnSpend")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Waste / mo
+                {t("table.columnWaste")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Findings
+                {t("table.columnFindings")}
               </th>
               <th scope="col" className="px-4 py-3 font-medium">
-                Last sync
+                {t("table.columnLastSync")}
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-right font-medium"
-                aria-label="Open"
+                aria-label={t("table.columnOpen")}
               />
             </tr>
           </thead>
@@ -265,11 +267,15 @@ export default async function PortfolioPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{ws.name}</span>
-                      {ws.isDemo && <Pill tone="slate">demo</Pill>}
-                      {isImported && <Pill tone="gold">imported</Pill>}
+                      {ws.isDemo && (
+                        <Pill tone="slate">{t("table.demo")}</Pill>
+                      )}
+                      {isImported && (
+                        <Pill tone="gold">{t("table.imported")}</Pill>
+                      )}
                       {ws.id === ctx.tenant.id && (
                         <span className="text-ink-faint text-xs">
-                          (current)
+                          {t("table.current")}
                         </span>
                       )}
                     </div>
@@ -351,10 +357,14 @@ export default async function PortfolioPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{ws.name}</span>
-                    {ws.isDemo && <Pill tone="slate">demo</Pill>}
-                    {isImported && <Pill tone="gold">imported</Pill>}
+                    {ws.isDemo && <Pill tone="slate">{t("table.demo")}</Pill>}
+                    {isImported && (
+                      <Pill tone="gold">{t("table.imported")}</Pill>
+                    )}
                     {ws.id === ctx.tenant.id && (
-                      <span className="text-ink-faint text-xs">(current)</span>
+                      <span className="text-ink-faint text-xs">
+                        {t("table.current")}
+                      </span>
                     )}
                   </div>
                   <div className="text-ink-faint text-[11px] tracking-wider uppercase">
@@ -365,17 +375,23 @@ export default async function PortfolioPage() {
               </div>
               <dl className="tnum mt-3 grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Seats</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("mobile.seats")}
+                  </dt>
                   <dd>
                     {snapshot ? fmtNumber(snapshot.seats, currency) : "-"}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Findings</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("mobile.findings")}
+                  </dt>
                   <dd>{fmtNumber(openFindings)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("mobile.spendPerMonth")}
+                  </dt>
                   <dd>
                     {snapshot
                       ? fmtMoney(reportingSpendCents ?? 0, reportingCurrency)
@@ -383,7 +399,9 @@ export default async function PortfolioPage() {
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Waste/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("mobile.wastePerMonth")}
+                  </dt>
                   <dd className="text-waste-text font-medium">
                     {snapshot
                       ? fmtMoney(reportingWasteCents ?? 0, reportingCurrency)
@@ -392,7 +410,7 @@ export default async function PortfolioPage() {
                 </div>
                 <div className="col-span-2 flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
-                    Last sync
+                    {t("mobile.lastSync")}
                   </dt>
                   <dd
                     className={`font-sans ${syncFailed ? "text-danger-text" : ""}`}

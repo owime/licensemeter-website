@@ -1,0 +1,35 @@
+{
+  "users": {
+    "backToFindings": "← Back to findings",
+    "enabled": "enabled",
+    "disabled": "disabled",
+    "guest": "guest",
+    "stats": {
+      "monthlyLicenseCost": "Monthly license cost",
+      "lastActivity": "Last activity",
+      "accountCreated": "Account created"
+    },
+    "licenses": {
+      "title": "Licenses",
+      "assignedByGroup": "Assigned by group",
+      "groupId": "Group ID: {id}",
+      "plansDisabled": "{count} plans disabled",
+      "perMonth": "{amount}/mo",
+      "noLicenses": "No licenses assigned."
+    },
+    "activityByWorkload": {
+      "title": "Activity by workload",
+      "exchange": "Exchange",
+      "oneDrive": "OneDrive",
+      "sharePoint": "SharePoint",
+      "teams": "Teams",
+      "copilot": "Copilot",
+      "footer": "Last interactive sign-in {interactive} · non-interactive {nonInteractive} · synced {synced}"
+    },
+    "findings": {
+      "title": "Findings for this user",
+      "noFindings": "No findings for this user.",
+      "perMonth": "{amount}/mo"
+    }
+  }
+}

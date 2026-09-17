@@ -18,7 +18,7 @@
       "description": "Connect OpenAI or Anthropic to see what your organization spends on their APIs: daily totals by model and line item, exactly as billed. The same connector correlates console members against Entra ID, so departed people who still hold live API keys surface as findings.",
       "connectM365First": "Connect your Microsoft 365 tenant first, then add the AI connectors.",
       "connectReadOnlySync": "Connect the read-only sync",
-      "adminRequired": "Connecting needs an admin. Ask a workspace admin to connect {openai} or {anthropic}.",
+      "adminRequired": "Connecting needs an admin. Ask a workspace admin to connect <openai>OpenAI</openai> or <anthropic>Anthropic</anthropic>.",
       "connectOpenAI": "Connect OpenAI",
       "connectAnthropic": "Connect Anthropic"
     },

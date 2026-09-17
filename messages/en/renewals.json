@@ -1,0 +1,46 @@
+{
+  "renewals": {
+    "title": "Renewals",
+    "description": "Track contract dates, cancellation notice periods, owners and annual value across every vendor.",
+    "addRenewal": {
+      "title": "Add contract renewal"
+    },
+    "form": {
+      "vendor": "Vendor",
+      "vendorPlaceholder": "Microsoft 365…",
+      "contractName": "Contract name",
+      "contractNamePlaceholder": "Enterprise agreement…",
+      "renewalDate": "Renewal date",
+      "noticeDays": "Cancellation notice (days)",
+      "annualValue": "Annual contract value ({currency})",
+      "contractOwner": "Contract owner",
+      "unassigned": "Unassigned",
+      "notes": "Notes",
+      "notesPlaceholder": "Notice terms, negotiation context or procurement owner…",
+      "saveRenewal": "Save renewal",
+      "addRenewalButton": "Add renewal",
+      "savingRenewal": "Saving renewal…",
+      "renewalSaved": "Renewal saved.",
+      "saveFailed": "Could not save. Please retry.",
+      "noRenewalSubmitted": "No renewal submitted."
+    },
+    "delete": {
+      "delete": "Delete",
+      "confirmDelete": "Confirm delete",
+      "deleting": "Deleting…",
+      "deleteFailed": "Could not delete. Please retry.",
+      "notRequested": "Deletion not requested."
+    },
+    "calendar": {
+      "title": "Renewal calendar",
+      "emptyHeading": "No contract renewals recorded yet.",
+      "emptyHintEditable": "Add the first contract using the form above so its notice deadline appears on Overview.",
+      "emptyHintReadonly": "A workspace admin can add contracts and notice deadlines here.",
+      "noticePeriod": "{days}-day notice period",
+      "noticeDeadlinePassed": "Notice deadline passed {days} days ago",
+      "decisionDue": "Decision due in {days} days",
+      "annualValue": "{amount} annual value",
+      "editContract": "Edit contract"
+    }
+  }
+}

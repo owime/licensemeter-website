@@ -1,7 +1,10 @@
+import { getTranslations } from "next-intl/server";
+
 /** Skeleton while a dash page streams in. Pulse only when motion is allowed.
  * Mirrors the Overview layout (header, metric cards, trend, inventory table,
  * findings list) so the page does not jump as each section streams in. */
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations("dashLayout.loading");
   return (
     <div className="mx-auto max-w-5xl" aria-busy="true">
       {/* Header: title + freshness line */}
@@ -51,7 +54,7 @@ export default function Loading() {
         ))}
       </div>
 
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{t("srLabel")}</span>
     </div>
   );
 }

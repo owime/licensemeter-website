@@ -1,0 +1,39 @@
+{
+  "tour": {
+    "stepIndicator": "Steg {current} av {total}",
+    "skip": "Hopp over omvisning",
+    "next": "Neste",
+    "done": "Ferdig",
+    "welcome": {
+      "title": "Velkommen til LicenseMeter",
+      "body": "Start her — koble til Microsoft 365 (eller last opp en CSV), så finner LicenseMeter lisenssløsingen din automatisk."
+    },
+    "data": {
+      "waste": {
+        "title": "Sløsingen din, akkurat nå",
+        "body": "Dette er hva du betaler for mye for denne måneden. Årlig sløsing projiserer dette over 12 måneder."
+      },
+      "trend": {
+        "title": "Forbruk og sløsing over tid",
+        "body": "Se dette synke etter hvert som du handler på funn."
+      },
+      "findings": {
+        "title": "Funn er konkrete besparelser",
+        "body": "Hvert funn er én handlingsrettet besparelse: en inaktiv bruker, en duplisert lisens, et ubrukt sete."
+      },
+      "connectors": {
+        "title": "Dekk hele stacken din",
+        "body": "Åpne Konnektorer for å koble til Adobe, Zoom, Atlassian, Salesforce og resten av stacken din."
+      },
+      "metricInfo": {
+        "title": "Forklaringer overalt",
+        "body": "Usikker på hva et nøkkeltall betyr? Hvert kort har en forklaring bak i-knappen."
+      }
+    },
+    "replay": {
+      "label": "Spill av omvisningen på nytt",
+      "success": "Omvisningen er tilbakestilt.",
+      "failure": "Tilbakestilling mislyktes"
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import type { useTranslations } from "next-intl";
+
 export type TourStep = {
   anchor: string;
   title: string;
@@ -5,44 +7,49 @@ export type TourStep = {
   placement?: "top" | "bottom" | "left" | "right";
 };
 
-export const welcomeTourSteps: TourStep[] = [
+/** Translator scoped to the "tour" namespace (from useTranslations("tour")
+ * or getTranslations("tour")), passed in by the caller so step titles/bodies
+ * are localized. */
+type TourTranslator = ReturnType<typeof useTranslations<"tour">>;
+
+export const getWelcomeTourSteps = (t: TourTranslator): TourStep[] => [
   {
     anchor: "connect-cta",
-    title: "Welcome to LicenseMeter",
-    body: "Start here — connect Microsoft 365 (or upload a CSV) and LicenseMeter finds your license waste automatically.",
+    title: t("welcome.title"),
+    body: t("welcome.body"),
     placement: "bottom",
   },
 ];
 
-export const dataTourSteps: TourStep[] = [
+export const getDataTourSteps = (t: TourTranslator): TourStep[] => [
   {
     anchor: "waste-card",
-    title: "Your waste, right now",
-    body: "This is what you're overpaying this month. Annualized waste projects it over 12 months.",
+    title: t("data.waste.title"),
+    body: t("data.waste.body"),
     placement: "bottom",
   },
   {
     anchor: "trend",
-    title: "Spend and waste over time",
-    body: "Watch this drop as you act on findings.",
+    title: t("data.trend.title"),
+    body: t("data.trend.body"),
     placement: "top",
   },
   {
     anchor: "nav-findings",
-    title: "Findings are concrete savings",
-    body: "Each finding is one actionable saving: an inactive user, a duplicate license, an unused seat.",
+    title: t("data.findings.title"),
+    body: t("data.findings.body"),
     placement: "right",
   },
   {
     anchor: "nav-connectors",
-    title: "Cover your whole stack",
-    body: "Open Connectors to connect Adobe, Zoom, Atlassian, Salesforce and the rest of your stack.",
+    title: t("data.connectors.title"),
+    body: t("data.connectors.body"),
     placement: "right",
   },
   {
     anchor: "metric-info",
-    title: "Explainers everywhere",
-    body: "Unsure what a metric means? Every card has an explainer behind the i button.",
+    title: t("data.metricInfo.title"),
+    body: t("data.metricInfo.body"),
     placement: "bottom",
   },
 ];

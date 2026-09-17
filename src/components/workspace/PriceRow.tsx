@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { buttonClass } from "~/components/ui";
 import { updatePrice } from "~/server/actions";
@@ -18,6 +19,7 @@ export const PriceEditor = ({
   initial: string;
   currency: string;
 }) => {
+  const t = useTranslations("licenses");
   const [value, setValue] = useState(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -41,13 +43,13 @@ export const PriceEditor = ({
             setFailed(!result.ok);
             setMessage(
               result.ok
-                ? "Saved"
-                : (result.error ?? "Could not save. Please retry."),
+                ? t("priceEditor.saved")
+                : (result.error ?? t("priceEditor.saveFailed")),
             );
             if (result.ok) router.refresh();
           } catch {
             setFailed(true);
-            setMessage("Could not save. Please retry.");
+            setMessage(t("priceEditor.saveFailed"));
           }
         });
       }}
@@ -63,17 +65,19 @@ export const PriceEditor = ({
         name={`price-${skuId}`}
         autoComplete="off"
         inputMode="decimal"
-        aria-label={`Monthly price for ${name ?? skuId}`}
+        aria-label={t("priceEditor.ariaLabel", { name: name ?? skuId })}
         className="tnum border-line bg-card focus:border-ink min-h-11 w-24 border px-2 py-1.5 text-right font-mono text-sm"
       />
       <button
         disabled={!dirty || pending}
         className={buttonClass("micro", "py-1.5")}
       >
-        {pending ? "…" : "Save"}
+        {pending ? t("priceEditor.saving") : t("priceEditor.save")}
       </button>
       {dirty && !pending && !message && (
-        <span className="text-waste-text text-[11px] font-medium">Unsaved</span>
+        <span className="text-waste-text text-[11px] font-medium">
+          {t("priceEditor.unsaved")}
+        </span>
       )}
       <span
         aria-live="polite"

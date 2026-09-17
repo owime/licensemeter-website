@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   useCallback,
   useEffect,
@@ -59,6 +60,7 @@ export const Tour = ({
   storageId: string;
   finalButtonLabel?: string;
 }) => {
+  const t = useTranslations("tour");
   const [availableSteps, setAvailableSteps] = useState<AvailableStep[] | null>(
     null,
   );
@@ -215,7 +217,11 @@ export const Tour = ({
 
   const isLast = activeIndex === availableSteps.length - 1;
   const buttonLabel =
-    isLast && finalButtonLabel ? finalButtonLabel : isLast ? "Done" : "Next";
+    isLast && finalButtonLabel
+      ? finalButtonLabel
+      : isLast
+        ? t("done")
+        : t("next");
 
   return (
     <>
@@ -256,7 +262,10 @@ export const Tour = ({
               ))}
             </div>
             <span className="sr-only">
-              Step {activeIndex + 1} of {availableSteps.length}
+              {t("stepIndicator", {
+                current: activeIndex + 1,
+                total: availableSteps.length,
+              })}
             </span>
           </div>
           <button
@@ -264,7 +273,7 @@ export const Tour = ({
             onClick={finish}
             className="text-ink-soft hover:text-ink text-xs font-medium underline-offset-4 transition hover:underline"
           >
-            Skip tour
+            {t("skip")}
           </button>
         </div>
         <h2 id={titleId} className="font-display mt-4 text-xl tracking-tight">

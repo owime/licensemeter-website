@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 const FOCUSABLE =
@@ -24,6 +25,7 @@ export const Drawer = ({
   title: string;
   children: React.ReactNode;
 }) => {
+  const t = useTranslations("dashLayout.drawer");
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   // The element that had focus before opening, so it can be restored on close.
@@ -93,7 +95,7 @@ export const Drawer = ({
           <button
             ref={closeRef}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("close")}
             className="text-ink-faint hover:text-ink hover:bg-subtle focus-visible:ring-brand -my-2 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-lg transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">

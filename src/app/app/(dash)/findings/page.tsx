@@ -2,6 +2,7 @@ import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { CircleCheck, Search, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { CopyScriptButton } from "~/components/workspace/CopyScriptButton";
 import { EmptyState } from "~/components/workspace/EmptyState";
@@ -29,7 +30,13 @@ const PAGE_SIZE = 25;
 
 type FindingRow = typeof findings.$inferSelect;
 
-const StatusPill = ({ status }: { status: FindingStatus }) => (
+const StatusPill = ({
+  status,
+  label,
+}: {
+  status: FindingStatus;
+  label: string;
+}) => (
   <Pill
     tone={
       status === "open"
@@ -39,16 +46,9 @@ const StatusPill = ({ status }: { status: FindingStatus }) => (
           : "moss"
     }
   >
-    {status}
+    {label}
   </Pill>
 );
-
-const workflowLabel: Record<FindingRow["remediationStatus"], string> = {
-  unassigned: "Not planned",
-  planned: "Planned",
-  requested: "Requested",
-  in_progress: "In progress",
-};
 
 export default async function FindingsPage({
   searchParams,
@@ -56,6 +56,15 @@ export default async function FindingsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await requireAccess("viewer");
+  const t = await getTranslations("findings.list");
+  const tStatus = await getTranslations("findings.status");
+  const tWorkflow = await getTranslations("findings.workflow");
+  const workflowLabel: Record<FindingRow["remediationStatus"], string> = {
+    unassigned: tWorkflow("unassigned"),
+    planned: tWorkflow("planned"),
+    requested: tWorkflow("requestedShort"),
+    in_progress: tWorkflow("inProgress"),
+  };
   const sp = await searchParams;
   const ruleParam =
     typeof sp.rule === "string" && isWasteRule(sp.rule) ? sp.rule : null;
@@ -184,7 +193,7 @@ export default async function FindingsPage({
         aria-current={!ruleParam && !showResolved ? "page" : undefined}
         className={filterClass(!ruleParam && !showResolved)}
       >
-        All active ({activeTotal})
+        {t("allActive", { count: activeTotal })}
       </Link>
       {!showResolved &&
         visibleRules.map((rule) => {
@@ -205,38 +214,43 @@ export default async function FindingsPage({
         aria-current={showResolved ? "page" : undefined}
         className={filterClass(showResolved)}
       >
-        Resolved
+        {t("resolvedFilter")}
       </Link>
     </>
   );
 
   const activeFilterLabel = showResolved
-    ? "Resolved"
+    ? t("resolvedFilter")
     : ruleParam
       ? RULE_META[ruleParam].short
-      : "All active";
+      : t("allActive", { count: activeTotal });
 
   const empty = query
-    ? { icon: SearchX, heading: "No findings match your search." }
+    ? { icon: SearchX, heading: t("emptySearchHeading") }
     : showResolved
-      ? { icon: CircleCheck, heading: "No resolved findings yet." }
+      ? { icon: CircleCheck, heading: t("emptyResolvedHeading") }
       : ruleParam
-        ? { icon: SearchX, heading: "No findings match this filter." }
+        ? { icon: SearchX, heading: t("emptyFilterHeading") }
         : {
             icon: CircleCheck,
-            heading: "No open findings.",
-            subtext: "Nothing to reclaim right now.",
+            heading: t("emptyOpenHeading"),
+            subtext: t("emptyOpenSubtext"),
           };
 
   return (
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">Findings</h1>
+          <h1 className="font-display text-3xl tracking-tight">
+            {t("title")}
+          </h1>
           <p className="text-ink-soft mt-1 text-sm">
             {showResolved
-              ? `${rowCount} resolved findings`
-              : `${rowCount} findings worth ${fmtMoney(shownImpact, currency)}/mo`}
+              ? t("subtitleResolved", { count: rowCount })
+              : t("subtitleActive", {
+                  count: rowCount,
+                  amount: fmtMoney(shownImpact, currency),
+                })}
           </p>
         </div>
 
@@ -249,11 +263,13 @@ export default async function FindingsPage({
               <ButtonAnchor
                 href={`/api/export/remediation${ruleParam ? `?rule=${ruleParam}` : ""}`}
               >
-                Download .ps1
+                {t("downloadPs1")}
               </ButtonAnchor>
             </>
           )}
-          <ButtonAnchor href="/api/export/findings">Export CSV</ButtonAnchor>
+          <ButtonAnchor href="/api/export/findings">
+            {t("exportCsv")}
+          </ButtonAnchor>
         </div>
       </header>
 
@@ -265,7 +281,7 @@ export default async function FindingsPage({
           {ruleParam && <input type="hidden" name="rule" value={ruleParam} />}
           {showResolved && <input type="hidden" name="show" value="resolved" />}
           <label htmlFor="finding-search" className="sr-only">
-            Search findings by title or email
+            {t("searchLabel")}
           </label>
           <div className="relative min-w-0 flex-1">
             <Search
@@ -279,12 +295,12 @@ export default async function FindingsPage({
               defaultValue={query}
               autoComplete="off"
               spellCheck={false}
-              placeholder="Search by finding or email…"
+              placeholder={t("searchPlaceholder")}
               className="border-line bg-card text-ink placeholder:text-ink-faint focus-visible:border-brand focus-visible:ring-brand/30 min-h-11 w-full rounded-xl border py-2 pr-3 pl-10 text-sm focus-visible:ring-2"
             />
           </div>
           <label className="sr-only" htmlFor="finding-sort">
-            Sort findings
+            {t("sortLabel")}
           </label>
           <select
             id="finding-sort"
@@ -293,40 +309,40 @@ export default async function FindingsPage({
             autoComplete="off"
             className="border-line bg-card text-ink min-h-11 rounded-xl border px-3 py-2 text-sm"
           >
-            <option value="impact">Highest impact</option>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="status">Status</option>
+            <option value="impact">{t("sortImpact")}</option>
+            <option value="newest">{t("sortNewest")}</option>
+            <option value="oldest">{t("sortOldest")}</option>
+            <option value="status">{t("sortStatus")}</option>
           </select>
           <button type="submit" className={buttonClass("secondary")}>
-            Search findings
+            {t("searchButton")}
           </button>
           {query && (
             <Link
               href={filterHref(ruleParam, showResolved, 1, "")}
               className="text-ink-soft hover:text-ink focus-visible:ring-brand inline-flex min-h-11 touch-manipulation items-center justify-center px-2 text-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2"
             >
-              Clear search
+              {t("clearSearch")}
             </Link>
           )}
         </form>
 
         <details className="border-line bg-card rounded-xl border md:hidden">
           <summary className="text-ink flex min-h-11 cursor-pointer touch-manipulation items-center justify-between gap-3 px-4 py-2 text-sm font-medium">
-            Filters
+            {t("filtersSummary")}
             <span className="text-ink-soft text-xs font-normal">
               {activeFilterLabel}
             </span>
           </summary>
           <nav
-            aria-label="Finding filters"
+            aria-label={t("filtersLabel")}
             className="border-line flex flex-wrap gap-2 border-t p-3"
           >
             {renderFilterLinks()}
           </nav>
         </details>
         <nav
-          aria-label="Finding filters"
+          aria-label={t("filtersLabel")}
           className="hidden flex-wrap gap-2 md:flex"
         >
           {renderFilterLinks()}
@@ -348,8 +364,17 @@ export default async function FindingsPage({
           <table className="w-full text-sm">
             <caption className="sr-only">
               {showResolved
-                ? `${rowCount} resolved findings`
-                : `${rowCount} active findings worth ${fmtMoney(shownImpact, currency)} per month${ruleParam ? `, filtered to ${RULE_META[ruleParam].label}` : ""}`}
+                ? t("tableCaptionResolved", { count: rowCount })
+                : ruleParam
+                  ? t("tableCaptionActiveFiltered", {
+                      count: rowCount,
+                      amount: fmtMoney(shownImpact, currency),
+                      filter: RULE_META[ruleParam].label,
+                    })
+                  : t("tableCaptionActive", {
+                      count: rowCount,
+                      amount: fmtMoney(shownImpact, currency),
+                    })}
             </caption>
             <thead>
               <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
@@ -359,23 +384,23 @@ export default async function FindingsPage({
                   </th>
                 )}
                 <th scope="col" className="px-4 py-3 font-medium">
-                  Rule
+                  {t("colRule")}
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
-                  Finding
+                  {t("colFinding")}
                 </th>
                 <th scope="col" className="px-4 py-3 text-right font-medium">
-                  Impact / mo
+                  {t("colImpact")}
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
-                  First seen
+                  {t("colFirstSeen")}
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
-                  Status
+                  {t("colStatus")}
                 </th>
                 {canAct && !showResolved && (
                   <th scope="col" className="px-4 py-3 text-right font-medium">
-                    Action
+                    {t("colAction")}
                   </th>
                 )}
               </tr>
@@ -395,7 +420,9 @@ export default async function FindingsPage({
                             type="checkbox"
                             name="id"
                             value={f.id}
-                            aria-label={`Select ${f.title}`}
+                            aria-label={t("selectFinding", {
+                              title: f.title,
+                            })}
                           />
                         </CheckboxHitArea>
                       </td>
@@ -418,7 +445,7 @@ export default async function FindingsPage({
                             href={`/app/users/${encodeURIComponent(f.graphUserId)}`}
                             className="text-ink-faint hover:text-ink mt-0.5 inline-flex min-h-8 items-center font-mono text-[11px] underline-offset-4 hover:underline"
                           >
-                            {detail.upn} · user profile
+                            {t("userProfileLink", { upn: detail.upn })}
                           </Link>
                         ) : (
                           <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
@@ -436,7 +463,7 @@ export default async function FindingsPage({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col items-start gap-1.5">
-                        <StatusPill status={f.status} />
+                        <StatusPill status={f.status} label={tStatus(f.status)} />
                         {f.remediationStatus !== "unassigned" && (
                           <Pill tone="outline">
                             {workflowLabel[f.remediationStatus]}
@@ -482,7 +509,7 @@ export default async function FindingsPage({
         {canAct && !showResolved && rowCount > 0 && (
           <div className="text-ink-soft mb-2 flex items-center gap-2 text-sm">
             <SelectAllFindings />
-            <span>Select all on this page</span>
+            <span>{t("selectAllPage")}</span>
           </div>
         )}
         <ul className="flex flex-col gap-3">
@@ -497,12 +524,12 @@ export default async function FindingsPage({
                         type="checkbox"
                         name="id"
                         value={f.id}
-                        aria-label={`Select ${f.title}`}
+                        aria-label={t("selectFinding", { title: f.title })}
                       />
                     </CheckboxHitArea>
                   )}
                   <FindingChip rule={f.rule} detail={f.detail} />
-                  <StatusPill status={f.status} />
+                  <StatusPill status={f.status} label={tStatus(f.status)} />
                 </div>
                 <div className="mt-2 text-sm font-medium">
                   <Link
@@ -518,7 +545,7 @@ export default async function FindingsPage({
                       href={`/app/users/${encodeURIComponent(f.graphUserId)}`}
                       className="text-ink-faint hover:text-ink mt-1 inline-flex min-h-8 items-center font-mono text-[11px] underline-offset-4 hover:underline"
                     >
-                      {detail.upn} · user profile
+                      {t("userProfileLink", { upn: detail.upn })}
                     </Link>
                   ) : (
                     <div className="text-ink-faint mt-0.5 font-mono text-[11px]">
@@ -527,7 +554,7 @@ export default async function FindingsPage({
                   ))}
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <span className="text-ink-soft text-xs">
-                    First seen {fmtDate(f.firstSeenAt)}
+                    {t("firstSeen", { date: fmtDate(f.firstSeenAt) })}
                   </span>
                   <span className="tnum text-waste-text font-mono text-sm font-medium">
                     {f.monthlyImpactCents > 0
@@ -560,22 +587,25 @@ export default async function FindingsPage({
 
       {rowCount > PAGE_SIZE && (
         <nav
-          aria-label="Findings pages"
+          aria-label={t("pagesLabel")}
           className="-mt-4 mb-8 flex flex-wrap items-center justify-between gap-3"
         >
           <span className="tnum text-ink-soft text-xs">
-            Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-            {Math.min(page * PAGE_SIZE, rowCount)} of {rowCount}
+            {t("showingRange", {
+              from: (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, rowCount),
+              total: rowCount,
+            })}
           </span>
           <div className="flex items-center gap-2">
             {page > 1 && (
               <Link href={pageHref(page - 1)} className={buttonClass("micro")}>
-                ← Previous
+                {t("previous")}
               </Link>
             )}
             {page < totalPages && (
               <Link href={pageHref(page + 1)} className={buttonClass("micro")}>
-                Next →
+                {t("next")}
               </Link>
             )}
           </div>

@@ -2,26 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   /** Extra routes that belong to this section, e.g. drill-downs. */
   also?: string[];
 };
 
 const ITEMS: NavItem[] = [
-  { href: "/app", label: "Overview" },
-  { href: "/app/findings", label: "Findings", also: ["/app/users"] },
-  { href: "/app/licenses", label: "Licenses & prices" },
-  { href: "/app/renewals", label: "Renewals" },
-  { href: "/app/ai-costs", label: "AI costs" },
-  { href: "/app/connectors", label: "Connectors" },
-  { href: "/app/settings", label: "Settings" },
-  { href: "/support", label: "Support" },
+  { href: "/app", labelKey: "overview" },
+  { href: "/app/findings", labelKey: "findings", also: ["/app/users"] },
+  { href: "/app/licenses", labelKey: "licenses" },
+  { href: "/app/renewals", labelKey: "renewals" },
+  { href: "/app/ai-costs", labelKey: "aiCosts" },
+  { href: "/app/connectors", labelKey: "connectors" },
+  { href: "/app/settings", labelKey: "settings" },
+  { href: "/support", labelKey: "support" },
 ];
 
-const PORTFOLIO_ITEM: NavItem = { href: "/app/portfolio", label: "Portfolio" };
+const PORTFOLIO_ITEM: NavItem = { href: "/app/portfolio", labelKey: "portfolio" };
 
 /** True for the route itself and its children, never for sibling prefixes. */
 const inSection = (pathname: string, href: string) =>
@@ -30,7 +31,7 @@ const inSection = (pathname: string, href: string) =>
 export const NavLinks = ({
   onNavigate,
   showPortfolio = false,
-  navLabel = "Workspace navigation",
+  navLabel,
 }: {
   onNavigate?: () => void;
   showPortfolio?: boolean;
@@ -38,12 +39,16 @@ export const NavLinks = ({
   navLabel?: string;
 }) => {
   const pathname = usePathname();
+  const t = useTranslations("dashLayout.nav");
 
   const items = showPortfolio
     ? [...ITEMS.slice(0, 1), PORTFOLIO_ITEM, ...ITEMS.slice(1)]
     : ITEMS;
   return (
-    <nav aria-label={navLabel} className="flex flex-col gap-0.5">
+    <nav
+      aria-label={navLabel ?? t("ariaLabel")}
+      className="flex flex-col gap-0.5"
+    >
       {items.map((item) => {
         const sectionActive =
           item.href === "/app"
@@ -71,7 +76,7 @@ export const NavLinks = ({
                   : "text-sidebar-soft hover:border-sidebar-soft hover:text-ink border-transparent"
               }`}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           </div>
         );

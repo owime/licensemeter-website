@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { changeMemberRole } from "~/server/actions";
 import { ROLE_DESCRIPTION, ROLE_LABEL } from "~/lib/roles";
@@ -21,6 +22,7 @@ export const RoleSelect = ({
   role: MembershipRole;
   allowOwner: boolean;
 }) => {
+  const t = useTranslations("settings.roleSelect");
   const [current, setCurrent] = useState<MembershipRole>(role);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -44,7 +46,7 @@ export const RoleSelect = ({
   return (
     <div className="flex flex-col items-end">
       <select
-        aria-label="Member role"
+        aria-label={t("memberRole")}
         name={`role-${membershipId}`}
         autoComplete="off"
         title={ROLE_DESCRIPTION[current]}

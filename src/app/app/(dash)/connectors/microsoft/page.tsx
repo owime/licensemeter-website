@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import type { getTranslations as getTranslationsType } from "next-intl/server";
 
 import { ConnectPoller } from "~/components/workspace/ConnectPoller";
 import {
@@ -16,9 +19,14 @@ import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { msConnections } from "~/server/db/schema";
 
-export const metadata = { title: "Microsoft 365 connector" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("connectorsDash");
+  return { title: t("titles.microsoft") };
+}
 // BYO connect action syncs in after(); same 300s budget as other sync paths.
 export const maxDuration = 300;
+
+type T = Awaited<ReturnType<typeof getTranslationsType<"connectorsDash.microsoft">>>;
 
 /** Required application permissions, the single source of truth for both paths. */
 const ScopeList = () => (
@@ -42,10 +50,12 @@ const ScopeList = () => (
  * option dead-ends.
  */
 const SetupOptions = ({
+  t,
   byoEnabled,
   connectorConfigured,
   scanConfigured,
 }: {
+  t: T;
   byoEnabled: boolean;
   connectorConfigured: boolean;
   scanConfigured: boolean;
@@ -57,25 +67,19 @@ const SetupOptions = ({
       {connectorConfigured ? (
         <div>
           <ButtonAnchor href="/api/connect/start" variant="primary">
-            Grant admin consent
+            {t("grantConsent")}
           </ButtonAnchor>
         </div>
       ) : (
-        <p className="text-ink-soft text-sm">
-          One-click managed consent is not enabled on this deployment. Use the
-          instant scan or CSV import below.
-        </p>
+        <p className="text-ink-soft text-sm">{t("oneClickDisabled")}</p>
       )}
-      <p className="text-ink-faint text-xs">
-        Not a Global Administrator? Forward this page to one — they complete the
-        Microsoft dialog and you become the workspace owner.
-      </p>
+      <p className="text-ink-faint text-xs">{t("forwardHint")}</p>
     </div>
 
     {byoEnabled && (
       <details className="group border-line border-t pt-4">
         <summary className="text-ink-soft hover:text-ink cursor-pointer text-sm font-medium select-none">
-          Advanced — bring your own app registration
+          {t("advancedSummary")}
         </summary>
         <div className="mt-3 flex flex-col gap-3">
           <p className="text-ink-soft text-sm">
@@ -84,7 +88,7 @@ const SetupOptions = ({
               href="/connectors/microsoft"
               className="hover:text-ink underline underline-offset-4"
             >
-              Setup guide and script
+              {t("setupGuideLink")}
             </Link>
             .
           </p>
@@ -95,29 +99,28 @@ const SetupOptions = ({
 
     {scanConfigured && (
       <div className="border-line border-t pt-4">
-        <p className="text-ink text-sm font-medium">Run an instant scan</p>
+        <p className="text-ink text-sm font-medium">
+          {t("instantScanTitle")}
+        </p>
         <p className="text-ink-soft mt-1 text-sm">
-          One-time scan with the same read-only scopes, running with{" "}
-          <strong className="text-ink">your</strong> permissions while you are
-          signed in. No standing access, no stored tokens. Works for Application
-          and Cloud Application Administrators, who cannot grant the consent
-          above.
+          {t.rich("instantScanBody", {
+            strong: (chunks) => (
+              <strong className="text-ink">{chunks}</strong>
+            ),
+          })}
         </p>
         <div className="mt-3">
           <ButtonAnchor href="/api/scan/start">
-            Run an instant scan
+            {t("runInstantScan")}
           </ButtonAnchor>
         </div>
       </div>
     )}
 
     <div className="border-line border-t pt-4">
-      <p className="text-ink-soft text-sm">
-        No admin with consent rights at hand? Start with the CSV import: two
-        admin-center exports, no consent at all.
-      </p>
+      <p className="text-ink-soft text-sm">{t("csvHint")}</p>
       <div className="mt-3">
-        <ButtonLink href="/app/connect/csv">Try it with CSV exports</ButtonLink>
+        <ButtonLink href="/app/connect/csv">{t("tryCsv")}</ButtonLink>
       </div>
     </div>
   </div>
@@ -128,6 +131,7 @@ export default async function MicrosoftConnectorPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("connectorsDash.microsoft");
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
   const sp = await searchParams;
@@ -154,15 +158,15 @@ export default async function MicrosoftConnectorPage({
             href="/app/connectors"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
-            Connectors
+            {t("breadcrumbConnectors")}
           </Link>{" "}
           /{" "}
           <span aria-current="page" className="text-ink-soft">
-            Microsoft 365
+            {t("breadcrumbCurrent")}
           </span>
         </nav>
         <h1 className="font-display mt-2 text-3xl tracking-tight">
-          Microsoft 365 connector
+          {t("pageTitle")}
         </h1>
       </header>
 
@@ -171,48 +175,43 @@ export default async function MicrosoftConnectorPage({
           role="alert"
           className="rise rise-2 border-danger-soft bg-danger-soft/50 text-danger-text flex flex-wrap items-center justify-between gap-3 border p-4 text-sm"
         >
-          <span>{connectErrorText(error)}</span>
+          <span>{await connectErrorText(error)}</span>
           <Link
             href="/app/connectors/microsoft"
             className="hover:text-ink shrink-0 text-xs font-medium underline underline-offset-4"
           >
-            Dismiss
+            {t("dismiss")}
           </Link>
         </div>
       )}
 
       {status === "syncing" && (
         <div className="rise rise-2">
-          <Card title="Tenant connected">
+          <Card title={t("tenantConnected")}>
             <ConnectPoller />
           </Card>
         </div>
       )}
 
       <div className="rise rise-3 flex flex-col gap-6">
-        <Card title="Connection">
+        <Card title={t("connectionCardTitle")}>
           {ctx.tenant.isDemo ? (
             <div className="flex flex-col gap-4">
-              <p className="text-ink-soft text-sm">
-                Connected with demo data. On a real workspace, a Global
-                Administrator grants read-only access in one click, or you bring
-                your own Entra app registration.
-              </p>
+              <p className="text-ink-soft text-sm">{t("demoBody")}</p>
               <details className="border-line border-t pt-3">
                 <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
-                  Preview consent and required permissions
+                  {t("previewConsent")}
                 </summary>
                 <div className="mt-2 flex flex-col gap-3">
                   <p className="text-ink-soft text-sm">
-                    The managed flow opens Microsoft&rsquo;s consent screen. No
-                    password or delegated user token is stored.
+                    {t("managedFlowNote")}
                   </p>
                   <ScopeList />
                   <Link
                     href="/connectors/microsoft"
                     className="text-ink hover:text-brand-text inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4"
                   >
-                    Open the Microsoft setup guide
+                    {t("openSetupGuide")}
                   </Link>
                 </div>
               </details>
@@ -237,9 +236,9 @@ export default async function MicrosoftConnectorPage({
                 if (conn.mode === "byo" && expMs !== null && expMs <= 0) {
                   return (
                     <div className="border-danger-soft bg-danger-soft/50 text-danger-text border p-3 text-sm">
-                      The stored credential expired on{" "}
-                      {fmtDate(conn.secretExpiresAt)}. Re-enter it below to
-                      resume the nightly sync.
+                      {t("credentialExpired", {
+                        date: fmtDate(conn.secretExpiresAt),
+                      })}
                     </div>
                   );
                 }
@@ -250,9 +249,9 @@ export default async function MicrosoftConnectorPage({
                 ) {
                   return (
                     <div className="border-waste-soft bg-waste-soft/50 text-waste-text border p-3 text-sm">
-                      The stored credential expires on{" "}
-                      {fmtDate(conn.secretExpiresAt)}. Renew it in Entra and
-                      re-enter it below before then to avoid a sync gap.
+                      {t("credentialExpiring", {
+                        date: fmtDate(conn.secretExpiresAt),
+                      })}
                     </div>
                   );
                 }
@@ -261,19 +260,20 @@ export default async function MicrosoftConnectorPage({
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm">
                   <div className="font-medium">
-                    Connected
+                    {t("connectedLabel")}
                     {conn.mode === "managed"
-                      ? " — Managed (one-click)"
+                      ? t("connectedManaged")
                       : conn.credType === "cert"
-                        ? " — Bring your own app (certificate)"
-                        : " — Bring your own app (client secret)"}
+                        ? t("connectedByoCert")
+                        : t("connectedByoSecret")}
                   </div>
                   <div className="text-ink-soft mt-0.5 text-xs">
-                    Tenant <span className="font-mono">{conn.tid}</span>
+                    {t("tenantLabel")}{" "}
+                    <span className="font-mono">{conn.tid}</span>
                     {conn.appClientId && (
                       <>
                         {" "}
-                        · app{" "}
+                        · {t("appLabel")}{" "}
                         <span className="font-mono">{conn.appClientId}</span>
                       </>
                     )}
@@ -282,7 +282,7 @@ export default async function MicrosoftConnectorPage({
                     <div className="text-ink-soft mt-0.5 text-xs">
                       {conn.credType === "cert" && conn.certThumbprint && (
                         <>
-                          thumbprint{" "}
+                          {t("thumbprintLabel")}{" "}
                           <span className="font-mono">
                             {conn.certThumbprint.slice(0, 16)}…
                           </span>{" "}
@@ -290,10 +290,18 @@ export default async function MicrosoftConnectorPage({
                         </>
                       )}
                       {conn.secretExpiresAt
-                        ? `expires ${fmtDate(conn.secretExpiresAt)}`
-                        : "no expiry on file"}
+                        ? t("expiresLabel", {
+                            date: fmtDate(conn.secretExpiresAt),
+                          })
+                        : t("noExpiryLabel")}
                       {conn.lastVerifiedAt && (
-                        <> · verified {fmtDate(conn.lastVerifiedAt)}</>
+                        <>
+                          {" "}
+                          ·{" "}
+                          {t("verifiedLabel", {
+                            date: fmtDate(conn.lastVerifiedAt),
+                          })}
+                        </>
                       )}
                     </div>
                   )}
@@ -305,8 +313,8 @@ export default async function MicrosoftConnectorPage({
                 <details className="group border-line border-t pt-4">
                   <summary className="text-ink-soft hover:text-ink cursor-pointer text-sm font-medium select-none">
                     {conn.mode === "managed"
-                      ? "Switch to your own app registration (Advanced)"
-                      : "Update credentials"}
+                      ? t("switchToByo")
+                      : t("updateCredentials")}
                   </summary>
                   <div className="mt-3 flex flex-col gap-3">
                     {conn.mode === "managed" && (
@@ -321,18 +329,17 @@ export default async function MicrosoftConnectorPage({
             </div>
           ) : isAdmin ? (
             <SetupOptions
+              t={t}
               byoEnabled={byoEnabled}
               connectorConfigured={connectorConfigured}
               scanConfigured={scanConfigured}
             />
           ) : (
-            <p className="text-ink-soft text-sm">
-              Not connected. A workspace admin can connect Microsoft 365 here.
-            </p>
+            <p className="text-ink-soft text-sm">{t("notConnectedViewer")}</p>
           )}
         </Card>
 
-        <Card title="What it detects">
+        <Card title={t("whatItDetectsTitle")}>
           <ul className="text-ink-soft flex flex-col gap-2 text-sm">
             {MICROSOFT_CONNECTOR.detects.map((line) => (
               <li key={line} className="flex gap-3">
@@ -344,16 +351,16 @@ export default async function MicrosoftConnectorPage({
             ))}
           </ul>
           <p className="text-ink-faint mt-3 text-xs">
-            Read-only application permissions only. Nothing is ever written to
-            your tenant, and mailbox or file contents are never readable. Full
-            details for your security team:{" "}
-            <Link
-              href="/security"
-              className="hover:text-ink underline underline-offset-4"
-            >
-              security overview
-            </Link>
-            .
+            {t.rich("readOnlyNote", {
+              link: (chunks) => (
+                <Link
+                  href="/security"
+                  className="hover:text-ink underline underline-offset-4"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </Card>
       </div>

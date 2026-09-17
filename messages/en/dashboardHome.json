@@ -1,6 +1,7 @@
 {
   "dashboardHome": {
     "page": {
+      "title": "Overview",
       "syncRunning": "Sync running…",
       "importedOn": "Imported {date}",
       "lastSynced": "Last synced {time}",
@@ -131,7 +132,7 @@
       "heading": "Trend",
       "headingWithDays": "Trend ({count} days)",
       "placeholder": "Spend and waste trends appear here after a few daily syncs.",
-      "wasteRange": "Waste {from} → {to}/mo",
+      "wasteFrom": "Waste {from} →",
       "ariaLabel": "Monthly spend and waste trend over {count} days. Spend {spend}, waste {waste} per month.",
       "monthlySpend": "Monthly spend",
       "monthlyWaste": "Monthly waste",

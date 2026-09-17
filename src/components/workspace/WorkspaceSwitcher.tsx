@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
 
 import { switchWorkspace } from "~/server/actions";
@@ -14,6 +15,7 @@ export const WorkspaceSwitcher = ({
   workspaces: WorkspaceSummary[];
   activeId: string;
 }) => {
+  const t = useTranslations("dashLayout.workspaceSwitcher");
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(activeId);
   const [lastActiveId, setLastActiveId] = useState(activeId);
@@ -32,7 +34,7 @@ export const WorkspaceSwitcher = ({
       value={current}
       aria-busy={pending || undefined}
       disabled={pending}
-      aria-label="Active workspace"
+      aria-label={t("ariaLabel")}
       onChange={(e) => {
         const next = e.target.value;
         /* One mutation at a time, and none when re-selecting the active
@@ -60,7 +62,7 @@ export const WorkspaceSwitcher = ({
       {workspaces.map((w) => (
         <option key={w.id} value={w.id}>
           {w.name}
-          {w.isDemo ? " (demo)" : ""}
+          {w.isDemo ? t("demoSuffix") : ""}
         </option>
       ))}
     </select>

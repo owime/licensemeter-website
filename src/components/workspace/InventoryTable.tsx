@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { fmtMoney, fmtNumber } from "~/lib/format";
 
@@ -56,6 +57,7 @@ const UtilizationBar = ({
 }) => {
   const util = utilizationOf(row);
   const rounded = Math.round(util);
+  const t = useTranslations("dashboardHome.inventoryTable");
   return (
     <div className="flex items-center gap-2">
       <div
@@ -64,7 +66,7 @@ const UtilizationBar = ({
         aria-valuenow={rounded}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`${row.name} seat utilization`}
+        aria-label={t("utilizationAria", { name: row.name })}
       >
         <div className="bg-ink-soft h-1.5" style={{ width: `${util}%` }} />
       </div>
@@ -84,6 +86,7 @@ export const InventoryTable = ({
   currency: string;
   emptyText: string;
 }) => {
+  const t = useTranslations("dashboardHome.inventoryTable");
   // Default view matches the previous server-rendered order: spend, descending.
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({
     key: "spend",
@@ -163,14 +166,14 @@ export const InventoryTable = ({
     <section className="rise rise-3 mt-10">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          License inventory
+          {t("heading")}
         </h2>
 
         <a
           href="/api/export/licenses"
           className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
         >
-          Export CSV
+          {t("exportCsv")}
         </a>
       </div>
 
@@ -184,7 +187,7 @@ export const InventoryTable = ({
                 aria-sort={ariaSort("name")}
                 className="px-4 py-3 font-medium"
               >
-                <SortButton sortKey="name" label="Product" />
+                <SortButton sortKey="name" label={t("product")} />
               </th>
               <th
                 scope="col"
@@ -193,7 +196,7 @@ export const InventoryTable = ({
               >
                 <SortButton
                   sortKey="purchased"
-                  label="Purchased"
+                  label={t("purchased")}
                   align="right"
                 />
               </th>
@@ -202,7 +205,11 @@ export const InventoryTable = ({
                 aria-sort={ariaSort("assigned")}
                 className="px-4 py-3 text-right font-medium"
               >
-                <SortButton sortKey="assigned" label="Assigned" align="right" />
+                <SortButton
+                  sortKey="assigned"
+                  label={t("assigned")}
+                  align="right"
+                />
               </th>
               <th
                 scope="col"
@@ -211,7 +218,7 @@ export const InventoryTable = ({
               >
                 <SortButton
                   sortKey="unassigned"
-                  label="Unassigned"
+                  label={t("unassigned")}
                   align="right"
                 />
               </th>
@@ -220,14 +227,18 @@ export const InventoryTable = ({
                 aria-sort={ariaSort("utilization")}
                 className="px-4 py-3 font-medium"
               >
-                <SortButton sortKey="utilization" label="Utilization" />
+                <SortButton sortKey="utilization" label={t("utilization")} />
               </th>
               <th
                 scope="col"
                 aria-sort={ariaSort("spend")}
                 className="px-4 py-3 text-right font-medium"
               >
-                <SortButton sortKey="spend" label="Spend / mo" align="right" />
+                <SortButton
+                  sortKey="spend"
+                  label={t("spendPerMo")}
+                  align="right"
+                />
               </th>
             </tr>
           </thead>
@@ -281,7 +292,7 @@ export const InventoryTable = ({
             <tfoot>
               <tr className="border-line text-ink-faint border-t-2 text-[11px] tracking-[0.14em] uppercase">
                 <th scope="row" className="px-4 py-3 text-left font-medium">
-                  Total
+                  {t("total")}
                 </th>
                 <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.purchased, currency)}
@@ -321,24 +332,28 @@ export const InventoryTable = ({
               <dl className="tnum mt-3 grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
-                    Purchased
+                    {t("purchased")}
                   </dt>
                   <dd>{fmtNumber(r.purchased, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Assigned</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("assigned")}
+                  </dt>
                   <dd>{fmtNumber(r.assigned, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
-                    Unassigned
+                    {t("unassigned")}
                   </dt>
                   <dd className={free > 0 ? "text-waste-text font-medium" : ""}>
                     {fmtNumber(free, currency)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("spendPerMo")}
+                  </dt>
                   <dd>{fmtMoney(r.spendCents, currency)}</dd>
                 </div>
               </dl>
@@ -358,19 +373,19 @@ export const InventoryTable = ({
             <dl className="tnum grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total purchased
+                  {t("totalPurchased")}
                 </dt>
                 <dd>{fmtNumber(totals.purchased, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total assigned
+                  {t("totalAssigned")}
                 </dt>
                 <dd>{fmtNumber(totals.assigned, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total unassigned
+                  {t("totalUnassigned")}
                 </dt>
                 <dd
                   className={
@@ -382,7 +397,7 @@ export const InventoryTable = ({
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total spend/mo
+                  {t("totalSpendPerMo")}
                 </dt>
                 <dd className="font-semibold">
                   {fmtMoney(totals.spendCents, currency)}

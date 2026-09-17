@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import {
   ClearSeatsButton,
@@ -35,6 +36,7 @@ export const SaasConnectorPage = async ({
   provider: SaasProvider;
   previewRequested?: boolean;
 }) => {
+  const t = await getTranslations("connectorsDash.saasPage");
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
   const spec = connectorSpec(provider);
@@ -88,15 +90,16 @@ export const SaasConnectorPage = async ({
   // can no longer cross-check seats or sync until the tenant is reconnected.
   const reconnectNotice = microsoftDisconnected ? (
     <p className="border-gold-soft bg-gold-soft/40 text-gold-text border p-3 text-xs">
-      Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
-      seats against your directory or run new syncs.{" "}
-      <Link
-        href="/app/connectors/microsoft"
-        className="hover:text-ink underline underline-offset-4"
-      >
-        Reconnect Microsoft
-      </Link>{" "}
-      to resume.
+      {t.rich("microsoftDisconnectedNotice", {
+        link: (chunks) => (
+          <Link
+            href="/app/connectors/microsoft"
+            className="hover:text-ink underline underline-offset-4"
+          >
+            {chunks}
+          </Link>
+        ),
+      })}
     </p>
   ) : null;
 
@@ -111,7 +114,7 @@ export const SaasConnectorPage = async ({
             href="/app/connectors"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
-            Connectors
+            {t("breadcrumbConnectors")}
           </Link>{" "}
           /{" "}
           <span aria-current="page" className="text-ink-soft">
@@ -119,7 +122,7 @@ export const SaasConnectorPage = async ({
           </span>
         </nav>
         <h1 className="font-display mt-2 text-3xl tracking-tight">
-          {spec.label} connector
+          {t("connectorSuffix", { label: spec.label })}
         </h1>
       </header>
 
@@ -136,46 +139,51 @@ export const SaasConnectorPage = async ({
         seats.n === 0 &&
         !preview && (
           <div className="border-line bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4">
-            <p className="text-ink-soft text-sm">
-              Explore sample spend and console members before connecting.
-            </p>
+            <p className="text-ink-soft text-sm">{t("previewSpendBody")}</p>
             <Link
               href={`/app/connectors/${provider}?preview=sample`}
               className={buttonClass("secondary")}
             >
-              Preview sample data
+              {t("previewSampleData")}
             </Link>
           </div>
         )}
 
       <div className="rise rise-2 flex flex-col gap-6">
-        <Card title="Connection">
+        <Card title={t("connectionCardTitle")}>
           {ctx.tenant.isDemo || preview ? (
             <div className="flex flex-col gap-4">
               <p className="text-ink-soft text-sm">
                 {preview
-                  ? `Sample workspace: ${seatCount} ${spec.seatNoun}. No live connection.`
-                  : `Connected with demo data: ${seatCount} ${spec.seatNoun} correlated against the directory.`}
+                  ? t("sampleWorkspace", {
+                      count: seatCount,
+                      seatNoun: spec.seatNoun,
+                    })
+                  : t("demoConnected", {
+                      count: seatCount,
+                      seatNoun: spec.seatNoun,
+                    })}
               </p>
               <details className="border-line border-t pt-3">
                 <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
-                  Preview real workspace setup
+                  {t("previewRealSetup")}
                 </summary>
                 <div className="text-ink-soft mt-2 space-y-3 text-sm">
                   <p>{spec.setupHint}</p>
                   {spec.fields.length > 0 && (
                     <p>
-                      Required values:{" "}
-                      {spec.fields.map((field) => field.label).join(", ")}.
-                      Secrets can be shown while reviewing and are encrypted at
-                      rest.
+                      {t("requiredValues", {
+                        fields: spec.fields
+                          .map((field) => field.label)
+                          .join(", "),
+                      })}
                     </p>
                   )}
                   <Link
                     href={`/connectors/${provider}`}
                     className={buttonClass("secondary")}
                   >
-                    Open {spec.label} Setup Guide
+                    {t("openSetupGuideFor", { label: spec.label })}
                   </Link>
                 </div>
               </details>
@@ -187,15 +195,16 @@ export const SaasConnectorPage = async ({
                connector falls through to its normal card with a reconnect
                notice instead, so it stays manageable. */
             <p className="text-ink-soft text-sm">
-              Connectors cross-check seats against your Microsoft 365 directory,
-              so{" "}
-              <Link
-                href="/app/connectors/microsoft"
-                className="hover:text-ink underline underline-offset-4"
-              >
-                connect your tenant
-              </Link>{" "}
-              first.
+              {t.rich("needsMicrosoftFirst", {
+                link: (chunks) => (
+                  <Link
+                    href="/app/connectors/microsoft"
+                    className="hover:text-ink underline underline-offset-4"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           ) : spec.kind === "import" ? (
             <div className="flex flex-col gap-3">
@@ -204,10 +213,15 @@ export const SaasConnectorPage = async ({
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="text-sm">
                     <div className="font-medium">
-                      Imported: {seatCount} {spec.seatNoun}
+                      {t("importedCount", {
+                        count: seatCount,
+                        seatNoun: spec.seatNoun,
+                      })}
                     </div>
                     <div className="text-ink-soft mt-0.5 text-xs">
-                      last import {fmtDate(seats.lastImportAt)}
+                      {t("lastImport", {
+                        date: fmtDate(seats.lastImportAt),
+                      })}
                     </div>
                   </div>
                   {isAdmin && <ClearSeatsButton spec={spec} />}
@@ -216,8 +230,7 @@ export const SaasConnectorPage = async ({
                 <p className="text-ink-soft text-sm">{spec.setupHint}</p>
               ) : (
                 <p className="text-ink-soft text-sm">
-                  Not connected. A workspace admin can import the {spec.label}{" "}
-                  member list here.
+                  {t("notConnectedViewerImport", { label: spec.label })}
                 </p>
               )}
               {isAdmin && <ImportSeatsForm spec={spec} />}
@@ -228,7 +241,10 @@ export const SaasConnectorPage = async ({
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm">
                   <div className="font-medium">
-                    Connected: {seatCount} {spec.seatNoun}
+                    {t("connectedCount", {
+                      count: seatCount,
+                      seatNoun: spec.seatNoun,
+                    })}
                   </div>
                   <div className="text-ink-soft mt-0.5 text-xs">
                     {showOrgRef && (
@@ -237,15 +253,15 @@ export const SaasConnectorPage = async ({
                       </>
                     )}
                     {conn.lastSyncAt
-                      ? `last sync ${fmtDate(conn.lastSyncAt)} (${conn.lastSyncStatus ?? "pending"})`
-                      : "first sync pending"}
+                      ? t("lastSync", {
+                          date: fmtDate(conn.lastSyncAt),
+                          status: conn.lastSyncStatus ?? "pending",
+                        })
+                      : t("firstSyncPending")}
                   </div>
                   {conn.lastSyncStatus === "failed" && (
                     <p className="text-danger-text mt-2 max-w-md text-xs">
-                      The last sync could not reach {spec.label}. Findings are
-                      based on the previous snapshot. If the credentials were
-                      changed or revoked, disconnect and reconnect with fresh
-                      values.
+                      {t("syncFailedNote", { label: spec.label })}
                     </p>
                   )}
                 </div>
@@ -262,7 +278,7 @@ export const SaasConnectorPage = async ({
               {isAdmin && !microsoftDisconnected && (
                 <details className="text-sm">
                   <summary className="text-ink-soft hover:text-ink cursor-pointer text-xs underline-offset-4 hover:underline">
-                    Update credentials
+                    {t("updateCredentials")}
                   </summary>
                   <div className="mt-3">
                     <SaasConnectForm spec={spec} />
@@ -283,7 +299,7 @@ export const SaasConnectorPage = async ({
             </div>
           ) : (
             <p className="text-ink-soft text-sm">
-              Not connected. A workspace admin can connect {spec.label} here.
+              {t("notConnectedViewer", { label: spec.label })}
             </p>
           )}
         </Card>
@@ -292,7 +308,7 @@ export const SaasConnectorPage = async ({
           <AiConnectorPreview preview={preview} isDemo={ctx.tenant.isDemo} />
         )}
 
-        <Card title="What it detects">
+        <Card title={t("whatItDetectsTitle")}>
           <ul className="text-ink-soft flex flex-col gap-2 text-sm">
             {spec.detects.map((line) => (
               <li key={line} className="flex gap-3">
@@ -305,26 +321,27 @@ export const SaasConnectorPage = async ({
           </ul>
           {spec.unpriced ? (
             <p className="text-ink-faint mt-3 text-xs">
-              Costs are reported by the provider in USD and shown on the{" "}
-              <Link
-                href="/app/ai-costs"
-                className="hover:text-ink underline underline-offset-4"
-              >
-                AI costs
-              </Link>{" "}
-              page. Console membership itself carries no per-seat price.
+              {t.rich("aiCostsNote", {
+                link: (chunks) => (
+                  <Link
+                    href="/app/ai-costs"
+                    className="hover:text-ink underline underline-offset-4"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           ) : (
             <p className="text-ink-faint mt-3 text-xs">
-              Seat assignments only: nothing is read from inside {spec.label}.
-              Product prices are editable in your license price book.
+              {t("seatOnlyNote", { label: spec.label })}
             </p>
           )}
           <Link
             href={`/connectors/${provider}`}
             className={buttonClass("secondary", "mt-4")}
           >
-            Open {spec.label} Setup Guide
+            {t("openSetupGuideFor", { label: spec.label })}
           </Link>
         </Card>
       </div>

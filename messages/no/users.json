@@ -1,0 +1,35 @@
+{
+  "users": {
+    "backToFindings": "← Tilbake til funn",
+    "enabled": "aktivert",
+    "disabled": "deaktivert",
+    "guest": "gjest",
+    "stats": {
+      "monthlyLicenseCost": "Månedlig lisenskostnad",
+      "lastActivity": "Siste aktivitet",
+      "accountCreated": "Konto opprettet"
+    },
+    "licenses": {
+      "title": "Lisenser",
+      "assignedByGroup": "Tildelt via gruppe",
+      "groupId": "Gruppe-ID: {id}",
+      "plansDisabled": "{count} planer deaktivert",
+      "perMonth": "{amount}/mnd",
+      "noLicenses": "Ingen lisenser tildelt."
+    },
+    "activityByWorkload": {
+      "title": "Aktivitet per arbeidsbelastning",
+      "exchange": "Exchange",
+      "oneDrive": "OneDrive",
+      "sharePoint": "SharePoint",
+      "teams": "Teams",
+      "copilot": "Copilot",
+      "footer": "Siste interaktive innlogging {interactive} · ikke-interaktiv {nonInteractive} · synkronisert {synced}"
+    },
+    "findings": {
+      "title": "Funn for denne brukeren",
+      "noFindings": "Ingen funn for denne brukeren.",
+      "perMonth": "{amount}/mnd"
+    }
+  }
+}

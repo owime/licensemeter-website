@@ -1,0 +1,60 @@
+{
+  "connect": {
+    "meta": { "title": "Connect a tenant" },
+    "title": "Connect your tenant",
+    "readOnlySync": "Connect the read-only sync",
+    "description": "A Global Administrator or Privileged Role Administrator of your Microsoft 365 tenant grants LicenseMeter <strong>read-only</strong> application permissions once. That unlocks nightly monitoring, leak alerts and trends. Nothing is ever written to your tenant, and mailbox or file contents are never readable.",
+    "grantConsent": "Grant admin consent",
+    "consentNotEnabled": "One-click managed consent is not enabled on this deployment. Use the instant scan or CSV import below.",
+    "signedInAs": "Signed in as {identity}",
+    "instantScan": {
+      "title": "Run an instant scan",
+      "description": "One-time scan with the same read-only scopes, running with <strong>your</strong> permissions while you are signed in. No standing access, no stored tokens.",
+      "cta": "Run an instant scan"
+    },
+    "noAdmin": {
+      "description": "No admin with consent rights at hand? Start with the CSV import: two admin-center exports, no consent at all.",
+      "cta": "Try it with CSV exports"
+    },
+    "csv": {
+      "meta": { "title": "CSV import" },
+      "title": "Your waste number from two exports, no consent",
+      "description": "Upload the exports below and LicenseMeter runs the same waste rules a connected workspace gets: offboarding leaks, overlapping licenses and (with the usage file) inactive seats. Anyone with <strong>Reports Reader</strong> or <strong>Global Reader</strong> rights can produce the exports; no admin consent is involved.",
+      "dataHandling": {
+        "heading": "How your data is handled",
+        "body": "The files are read once and stored like synced workspace data: EU residency, never written back anywhere, no mailbox or file contents. Disconnecting the workspace in Settings deletes everything."
+      },
+      "haveConsent": "Have consent rights?",
+      "connectInstead": "Connect the read-only sync instead",
+      "connectInsteadSuffix": "for nightly updates, leak alerts and trends without re-uploading.",
+      "signedInAs": "Signed in as {identity}",
+      "form": {
+        "directoryLabel": "User export",
+        "required": "(required)",
+        "directoryHelp": "Microsoft 365 admin center > Users > Active users > Export users. It shows who holds which licenses, and who is blocked.",
+        "usageLabel": "Usage export",
+        "optional": "(optional)",
+        "usageHelp": "Reports > Usage > Active users > Export (detail). This adds inactivity detection on top of the offboarding and overlap checks.",
+        "orgNameLabel": "Workspace name",
+        "orgNamePlaceholder": "Defaults to your UPN domain",
+        "submit": "Analyze my exports",
+        "submitting": "Analyzing…"
+      },
+      "errors": {
+        "signInAgain": "Please sign in again to start a CSV import.",
+        "missingDirectory": "Please choose the user export file (Users > Active users > Export users).",
+        "fileTooLarge": "Each file must be 5 MB or smaller.",
+        "tooManyUploads": "Too many uploads for your organization. Please try again later.",
+        "noUsers": "The user export contains no users.",
+        "tooManyUsers": "The user export is unusually large. Connect the read-only sync for tenants this size.",
+        "concealedNames": "The usage report does not join to your users: report identities are concealed. In the Microsoft 365 admin center, turn off Reports > Settings > display concealed names, re-export, and upload again (or leave the usage file out).",
+        "demoNotAvailable": "The CSV import is not available for the demo workspace.",
+        "alreadyConnectedMember": "Your organization already has a connected workspace. Open it from the workspace switcher.",
+        "alreadyConnectedNonMember": "Your organization already has a connected workspace. Ask an admin there for an invite.",
+        "importExistsNoMembership": "An imported workspace for your organization already exists. Ask the colleague who created it for an invite.",
+        "viewOnlyRole": "Your role in this workspace is view only. Ask a workspace admin to refresh the data.",
+        "raceCreated": "Someone in your organization created this workspace just now. Ask them for an invite."
+      }
+    }
+  }
+}

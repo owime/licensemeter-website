@@ -53,7 +53,7 @@ export function SupportForm({
       if (widget.current !== null) turnstile.remove(widget.current);
       widget.current = null;
     };
-  }, [ready, siteKey, sent, supportEmail]);
+  }, [ready, siteKey, sent, supportEmail, t]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
