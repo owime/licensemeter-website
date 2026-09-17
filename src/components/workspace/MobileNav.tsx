@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { BrandMark } from "~/components/BrandMark";
@@ -32,6 +33,7 @@ export const MobileNav = ({
   workspaces: WorkspaceSummary[];
   activeId: string;
 }) => {
+  const t = useTranslations("dashLayout");
   const [open, setOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
@@ -98,7 +100,9 @@ export const MobileNav = ({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-nav-drawer"
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={
+            open ? t("mobileNav.closeMenu") : t("mobileNav.openMenu")
+          }
           className="text-ink -my-1 flex size-11 items-center justify-center"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
@@ -143,13 +147,13 @@ export const MobileNav = ({
             </div>
           )}
           <div className="text-sidebar-soft mt-0.5 text-[11px] tracking-wider uppercase">
-            {isDemo ? "Demo workspace" : "Connected tenant"}
+            {isDemo ? t("demoWorkspace") : t("connectedTenant")}
           </div>
         </div>
         <NavLinks
           onNavigate={() => setOpen(false)}
           showPortfolio={showPortfolio}
-          navLabel="Mobile workspace navigation"
+          navLabel={t("mobileNav.ariaLabel")}
         />
         <div className="border-sidebar-line mt-3 flex items-center justify-between border-t px-4 pt-3">
           <div className="min-w-0">
@@ -158,13 +162,13 @@ export const MobileNav = ({
                 href="/app/account"
                 onClick={() => setOpen(false)}
                 className="group block"
-                aria-label="Account settings"
+                aria-label={t("accountSettings")}
               >
                 <div className="text-ink truncate text-sm underline-offset-4 group-hover:underline">
                   {userName}
                 </div>
                 <div className="text-sidebar-soft text-[11px] tracking-wider uppercase">
-                  {role} · Account
+                  {role} · {t("accountLabel")}
                 </div>
               </Link>
             ) : (
@@ -178,7 +182,7 @@ export const MobileNav = ({
           </div>
           <form action={signOutAction}>
             <button className="text-sidebar-soft hover:text-ink inline-flex min-h-11 items-center text-xs underline-offset-4 transition hover:underline">
-              Sign out
+              {t("signOut")}
             </button>
           </form>
         </div>

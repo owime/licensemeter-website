@@ -1,0 +1,60 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: September 2026",
+    "sections": {
+      "controller": {
+        "title": "1. Controller",
+        "line1": "UgurLabs UG (haftungsbeschränkt)",
+        "line2": "Fährstraße 217, 40221 Düsseldorf, Germany",
+        "line3": "Managing Director: Ugur Koc",
+        "line4": "Email: {email}"
+      },
+      "visiting": {
+        "title": "2. Processing when you visit this website",
+        "p1": "When you open this website, our hosting provider (Vercel Inc.) processes technically necessary data (IP address, time, page requested, user agent) in server logs in order to provide and secure the service (Art. 6(1)(f) GDPR). The application runs in EU data centers; a data processing agreement including the EU Standard Contractual Clauses is in place with Vercel.",
+        "p2": "This website uses session cookies for sign-in and workspace selection, and Crisp cookies to maintain support conversations. See our <cookieLink>Cookie Policy</cookieLink> for details.",
+        "p3": "For reach measurement we use Vercel Web Analytics, a cookieless method that records only aggregated, anonymized page views (Art. 6(1)(f) GDPR). No cross-device profiles are built and no IP addresses are stored."
+      },
+      "signIn": {
+        "title": "3. Sign-in",
+        "p1": "Sign-in is handled through our authentication provider, WorkOS, Inc. (AuthKit). You can sign in with a Microsoft work or school account, Google, Apple, a passkey, a one-time email link, or email and password. Whichever method you choose, we process the profile data it returns, in particular your display name and email address, together with the identifier WorkOS assigns to your account. Where you sign in with a Microsoft account, we additionally receive your Microsoft object ID and tenant ID. This data is required to provide the account (Art. 6(1)(b) GDPR).",
+        "p2": "WorkOS processes this sign-in data in the United States; the transfer is based on the EU Standard Contractual Clauses (see the subprocessor list below). Sessions are then maintained by a first-party, HTTP-only cookie set by LicenseMeter (see our <cookieLink>Cookie Policy</cookieLink>)."
+      },
+      "productData": {
+        "title": "4. Product data (processing on your behalf)",
+        "p1": "When an organization connects its Microsoft 365 tenant, LicenseMeter processes the following data of the tenant’s users on that organization’s behalf (Art. 28 GDPR): display name, UPN, account status, user type, creation date, license assignments, last sign-in timestamp and the last activity date per service. Mailbox, file or message content is never read; access is technically limited to read-only permissions.",
+        "p2": "If the organization additionally connects optional connectors, LicenseMeter processes, under the same engagement, the following data as well: member email addresses and product assignments from Adobe, Zoom, Atlassian and Salesforce; console member lists and daily API cost totals from OpenAI and Anthropic; and member lists pasted via CSV from ChatGPT and Claude.",
+        "p3": "The data is stored in a Postgres database in the EU (Frankfurt region) and is deleted immediately and in full when the workspace is disconnected. Where the organization connects its Microsoft tenant using its own application registration (“bring your own”), the credentials it supplies are stored encrypted (AES-256-GCM) and used solely for the read-only sync; they are never logged or disclosed. A data processing agreement (DPA) is provided to each organization before production use."
+      },
+      "freeService": {
+        "title": "5. Free service",
+        "body": "LicenseMeter is free to use. We do not collect payment methods or process subscription payments for the Service."
+      },
+      "support": {
+        "title": "Support conversations",
+        "p1": "Crisp provides the support chat available across our website and dashboard. Loading the chat connects your browser to Crisp and shares technical connection information, including your IP address and the page URL. Messages and contact details you choose to provide are processed to respond to your request. We do not automatically attach your account profile, connector credentials or scan results to the chat.",
+        "p2": "Resend delivers support form submissions by email. Submission limits and a hidden spam field help prevent abuse. Where enabled, Cloudflare Turnstile additionally verifies submissions. Please do not include passwords, access tokens or tenant exports in support messages.",
+        "p3": "For details about the chat provider, see <crispLink>Crisp’s privacy policy</crispLink>. Contact {email} for questions about or deletion of your support conversation."
+      },
+      "subprocessors": {
+        "title": "6. Subprocessors",
+        "intro": "We engage the following subprocessors to process personal data on your behalf:",
+        "listNote": "The current list is part of the <dpaLink>DPA</dpaLink>.",
+        "distinguish": "To be distinguished from these are the source systems named in section 4 (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, and the lists pasted via CSV from ChatGPT and Claude): LicenseMeter reads data from them, on the organization’s behalf, on a read-only basis. They are data sources, not subprocessors of LicenseMeter; no personal data is shared with them beyond the authenticated read request."
+      },
+      "retention": {
+        "title": "7. Retention",
+        "body": "Account and product data is stored for as long as the workspace is connected. On disconnect, all synchronized data is deleted; remaining copies in routine encrypted backups are overwritten within the backup rotation window (currently around seven days). The hosting provider’s server logs are subject to that provider’s deletion periods."
+      },
+      "rights": {
+        "title": "8. Your rights",
+        "body": "You have the right of access (Art. 15), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18), data portability (Art. 20) and objection (Art. 21 GDPR), as well as the right to lodge a complaint with a supervisory authority (Art. 77 GDPR). For data we process on behalf of your organization, please contact your organization as the controller in the first instance."
+      },
+      "contact": {
+        "title": "9. Contact",
+        "body": "Privacy questions: {email}"
+      }
+    }
+  }
+}

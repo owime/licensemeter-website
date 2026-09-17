@@ -1,0 +1,106 @@
+{
+  "licenses": {
+    "pageTitle": "Lisenser og priser",
+    "priceSource": {
+      "setAPrice": "Sett en pris",
+      "yourPrice": "Din pris",
+      "listEstimate": "Listepris-estimat"
+    },
+    "emptyImported": "Ingen lisensdata ennå. Last opp en ny eksport for å oppdatere denne arbeidsflaten.",
+    "emptySync": "Ingen lisensdata ennå. Kjør en synkronisering.",
+    "page": {
+      "heading": "Lisenser og priser",
+      "subheading": "Priser starter som listepris-estimater. Angi hva du faktisk betaler per lisens og måned. Alle konsekvenstall regnes på nytt ut fra dine tall. Microsoft har ikke noe API for tenant-priser.",
+      "adminHint": "Endrede rader viser en aktivert Lagre-knapp. For mange priser, bruk masseimport under.",
+      "bulkImportButton": "Masseimporter priser",
+      "exportCsv": "Eksporter CSV",
+      "searchLabel": "Søk i produkter",
+      "searchPlaceholder": "Produkt, SKU eller konnektor …",
+      "priceStatusLabel": "Prisstatus",
+      "priceStatus": {
+        "all": "Alle produkter",
+        "unpriced": "Kun uten pris",
+        "estimate": "Kun listepris-estimater",
+        "custom": "Kun kontraktspriser"
+      },
+      "applyFilters": "Bruk filtre",
+      "table": {
+        "product": "Produkt",
+        "purchased": "Kjøpt",
+        "assigned": "Tildelt",
+        "unassigned": "Ikke tildelt",
+        "spendPerMonth": "Kostnad/mnd",
+        "priceSource": "Priskilde",
+        "pricePerSeatPerMonth": "Pris/lisens/mnd",
+        "total": "Totalt"
+      },
+      "mobile": {
+        "purchased": "Kjøpt",
+        "assigned": "Tildelt",
+        "unassigned": "Ikke tildelt",
+        "spendPerMonth": "Kostnad/mnd",
+        "totalPurchased": "Totalt kjøpt",
+        "totalAssigned": "Totalt tildelt",
+        "totalUnassigned": "Totalt ikke tildelt",
+        "totalSpendPerMonth": "Total kostnad/mnd",
+        "perSeatPerMonth": "{price} / lisens / mnd"
+      },
+      "emptyHeadingFiltered": "Ingen Microsoft-produkter samsvarer i denne seksjonen.",
+      "emptyHeadingDefault": "Ingen lisensdata ennå.",
+      "emptyMessageFiltered": "Prøv et bredere søk eller en annen prisstatus.",
+      "seatsCount": "{count} lisenser",
+      "adobe": {
+        "heading": "Adobe-produkter",
+        "description": "Lisensantall hentes fra Adobe Admin Console. Adobe har ikke noe pris-API, så angi din pris per lisens for å tallfeste avviklingslekkasjer."
+      },
+      "saas": {
+        "heading": "{label}-produkter",
+        "description": "Lisensantall hentes fra {label}-konnektoren. {label} har ikke noe pris-API, så angi din pris per lisens for å tallfeste funnene."
+      },
+      "perSeatPerMonth": "{price} / lisens / mnd",
+      "bulkImport": {
+        "heading": "Masseimport av priser",
+        "exportPriceBook": "Eksporter prisliste (CSV)",
+        "description": "Vedlikeholder du priser for mange produkter eller arbeidsflater? Eksporter prislisten, fyll inn hva du betaler i et regneark, og lim inn resultatet her."
+      }
+    },
+    "importForm": {
+      "label": "Ett produkt per linje: <code>nøkkel,månedspris</code>. Nøkkelen er en M365 SKU-id eller delnummer, eller en konnektornøkkel som <code>adobe:Photoshop</code>. Priser godtar 14.90 og 14,90; ukjente nøkler hoppes over.",
+      "importing": "Importerer …",
+      "submit": "Importer priser",
+      "importFailed": "Importen mislyktes.",
+      "applied": "La til {count, plural, one {# pris} other {# priser}}.",
+      "skipped": "Hoppet over {count, plural, one {# ukjent nøkkel} other {# ukjente nøkler}}: {shown}{more}.",
+      "andMore": " og {count} til",
+      "invalid": "{count, plural, one {# linje} other {# linjer}} kunne ikke tolkes."
+    },
+    "priceEditor": {
+      "ariaLabel": "Månedspris for {name}",
+      "save": "Lagre",
+      "saving": "…",
+      "unsaved": "Ikke lagret",
+      "saved": "Lagret",
+      "saveFailed": "Kunne ikke lagre. Prøv igjen."
+    },
+    "priceAccuracy": {
+      "title": "Prisnøyaktighet",
+      "summary": "{customProducts} av {totalProducts} produktpriser bruker dine kontraktsverdier.",
+      "spendCovered": "{spendPercent}% av nåværende kostnad er dekket av egendefinerte priser",
+      "useListEstimates": "; {count} bruker listepris-estimater",
+      "areUnpriced": "; {count} mangler pris",
+      "coverageAriaLabel": "Dekning av kontraktspriser",
+      "setYourPrices": "Sett dine priser"
+    },
+    "currencySelect": {
+      "ariaLabel": "Arbeidsflatens rapporteringsvaluta",
+      "convert": "Konverter",
+      "converting": "Konverterer …",
+      "converted": "Konvertert til 1 {from} = {rate} {to} ({asOf}).",
+      "updated": "Valuta oppdatert.",
+      "conversionFailed": "Valutakonvertering mislyktes.",
+      "conversionFailedRetry": "Valutakonvertering mislyktes. Prøv igjen.",
+      "description": "Endring av valuta konverterer priser, funn, trendhistorikk og fornyelseskontraktsverdier med siste ECB-referansekurs. Se over forhandlede priser etterpå.",
+      "noChangeInProgress": "Ingen valutaendring pågår."
+    }
+  }
+}

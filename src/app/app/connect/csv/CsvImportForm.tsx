@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { Button } from "~/components/ui";
@@ -14,6 +15,7 @@ const inputClass =
  * pattern). Success never returns: the action redirects to /app.
  */
 export const CsvImportForm = () => {
+  const t = useTranslations("connect.csv.form");
   const [result, formAction, pending] = useActionState(
     async (_prev: CsvImportResult | null, formData: FormData) =>
       submitCsvImport(formData),
@@ -28,7 +30,8 @@ export const CsvImportForm = () => {
     >
       <div className="flex flex-col gap-2">
         <label htmlFor="csv-import-directory" className="text-sm font-medium">
-          User export <span className="text-brand-text">(required)</span>
+          {t("directoryLabel")}{" "}
+          <span className="text-brand-text">{t("required")}</span>
         </label>
         <input
           id="csv-import-directory"
@@ -39,15 +42,13 @@ export const CsvImportForm = () => {
           accept=".csv,text/csv"
           className={inputClass}
         />
-        <p className="text-ink-soft text-xs">
-          Microsoft 365 admin center &gt; Users &gt; Active users &gt; Export
-          users. It shows who holds which licenses, and who is blocked.
-        </p>
+        <p className="text-ink-soft text-xs">{t("directoryHelp")}</p>
       </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="csv-import-usage" className="text-sm font-medium">
-          Usage export <span className="text-ink-faint">(optional)</span>
+          {t("usageLabel")}{" "}
+          <span className="text-ink-faint">{t("optional")}</span>
         </label>
         <input
           id="csv-import-usage"
@@ -57,15 +58,13 @@ export const CsvImportForm = () => {
           accept=".csv,text/csv"
           className={inputClass}
         />
-        <p className="text-ink-soft text-xs">
-          Reports &gt; Usage &gt; Active users &gt; Export (detail). This adds
-          inactivity detection on top of the offboarding and overlap checks.
-        </p>
+        <p className="text-ink-soft text-xs">{t("usageHelp")}</p>
       </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="csv-import-org-name" className="text-sm font-medium">
-          Workspace name <span className="text-ink-faint">(optional)</span>
+          {t("orgNameLabel")}{" "}
+          <span className="text-ink-faint">{t("optional")}</span>
         </label>
         <input
           id="csv-import-org-name"
@@ -73,14 +72,14 @@ export const CsvImportForm = () => {
           type="text"
           maxLength={200}
           disabled={pending}
-          placeholder="Defaults to your UPN domain"
+          placeholder={t("orgNamePlaceholder")}
           className={inputClass}
         />
       </div>
 
       <div>
         <Button variant="primary" disabled={pending}>
-          {pending ? "Analyzing…" : "Analyze my exports"}
+          {pending ? t("submitting") : t("submit")}
         </Button>
       </div>
 

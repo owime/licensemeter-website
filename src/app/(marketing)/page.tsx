@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   ArrowUpRight,
   Cable,
@@ -17,23 +18,7 @@ import { Reveal } from "~/components/landing/Reveal";
 import { buttonClass } from "~/components/ui";
 import { SITE_DEFINITION, SITE_DESCRIPTION, SITE_TITLE } from "~/lib/site";
 
-const STEPS = [
-  {
-    Icon: Cable,
-    title: "Connect your tools",
-    body: "Link Microsoft 365 and your SaaS apps with read-only access. See every permission before you connect.",
-  },
-  {
-    Icon: ScanLine,
-    title: "Find the quiet waste",
-    body: "Spot inactive accounts, forgotten licenses and paid seats with nobody assigned. Every finding comes with evidence.",
-  },
-  {
-    Icon: TrendingDown,
-    title: "Make room for savings",
-    body: "See the monthly cost of each unused seat. Export the findings and reclaim the licenses you choose.",
-  },
-];
+const STEP_ICONS = [Cable, ScanLine, TrendingDown] as const;
 
 const BASE = siteUrl();
 
@@ -78,10 +63,16 @@ const HOME_LD = {
  * it CDN-cacheable while letting content edits propagate within a day. */
 export const revalidate = 86400;
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const signInOk = signInEnabled();
   const signInHref = signInPath();
   const demoEnabled = isDemoMode();
+  const t = await getTranslations("home");
+  const steps = STEP_ICONS.map((Icon, index) => ({
+    Icon,
+    title: t(`steps.items.${index}.title`),
+    body: t(`steps.items.${index}.body`),
+  }));
   return (
     <main>
       <OrbitHero
@@ -96,19 +87,19 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
-              Less waste. More visibility.
+              {t("steps.eyebrow")}
             </p>
             <h2
               id="how-it-works"
               className="font-display mt-4 text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl"
             >
-              From scattered seats
+              {t("steps.headingLine1")}
               <br />
-              to a clear next step.
+              {t("steps.headingLine2")}
             </h2>
           </div>
           <div className="mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
-            {STEPS.map(({ Icon, title, body }, index) => (
+            {steps.map(({ Icon, title, body }, index) => (
               <Reveal key={title} delay={index * 80}>
                 <div className="border-line flex items-center justify-between border-b pb-5">
                   <span className="bg-subtle text-ink flex size-11 items-center justify-center rounded-xl">
@@ -135,13 +126,13 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <p className="text-brand-text text-xs font-medium tracking-[0.12em] uppercase">
-              A closer look
+              {t("productTour.eyebrow")}
             </p>
             <h2 className="font-display mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-              Your license spend, finally in focus.
+              {t("productTour.heading")}
             </h2>
             <p className="text-ink-soft mt-4 text-base">
-              Explore the dashboard with a sample workspace.
+              {t("productTour.subheading")}
             </p>
           </div>
           <FeatureShowcase />
@@ -155,27 +146,24 @@ export default function LandingPage() {
           <div>
             <span className="text-brand-text inline-flex items-center gap-2 text-xs font-medium tracking-[0.12em] uppercase">
               <ShieldCheck className="size-4" aria-hidden="true" />
-              Read-only by design
+              {t("trust.eyebrow")}
             </span>
             <h2
               id="trust-heading"
               className="font-display mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"
             >
-              Your tenant.
+              {t("trust.headingLine1")}
               <br />
-              Your control.
+              {t("trust.headingLine2")}
             </h2>
             <p className="text-ink-soft mt-5 max-w-md text-sm leading-7">
-              LicenseMeter reads license and activity metadata. It never reads
-              mailbox or file content, and never removes a license
-              automatically. Hosted in the EU, with deletion when you
-              disconnect.
+              {t("trust.body")}
             </p>
             <Link
               href="/trust-center"
               className="text-ink mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium underline underline-offset-4"
             >
-              Explore the Trust Center{" "}
+              {t("trust.trustCenterLink")}{" "}
               <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
@@ -187,17 +175,16 @@ export default function LandingPage() {
               />
               <div>
                 <h3 className="font-semibold">
-                  Real calculations. Sample data.
+                  {t("trust.sampleReport.title")}
                 </h3>
                 <p className="text-ink-soft mt-3 text-sm leading-7">
-                  Inspect the worked example behind the demo. Each finding shows
-                  the account, the reason and the cost.
+                  {t("trust.sampleReport.body")}
                 </p>
                 <Link
                   href="/sample-report"
                   className="text-brand-text mt-3 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4"
                 >
-                  Read the sample report
+                  {t("trust.sampleReport.link")}
                 </Link>
               </div>
             </div>
@@ -207,10 +194,9 @@ export default function LandingPage() {
                 aria-hidden="true"
               />
               <div>
-                <h3 className="font-semibold">Prefer to run it yourself?</h3>
+                <h3 className="font-semibold">{t("trust.selfHost.title")}</h3>
                 <p className="text-ink-soft mt-3 text-sm leading-7">
-                  The free, open-source PowerShell scanner runs the Microsoft
-                  365 audit locally. No account or upload needed.
+                  {t("trust.selfHost.body")}
                 </p>
                 <a
                   href="https://github.com/ugurkocde/licensemeter"
@@ -218,7 +204,7 @@ export default function LandingPage() {
                   rel="noreferrer"
                   className={buttonClass("secondary", "mt-4")}
                 >
-                  Get it on GitHub{" "}
+                  {t("trust.selfHost.link")}{" "}
                   <ArrowUpRight className="size-4" aria-hidden="true" />
                 </a>
               </div>
@@ -229,12 +215,11 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-6 pb-20">
         <div className="border-line rounded-3xl border bg-[#f8fafb] px-5 py-14 text-center sm:px-10 sm:py-16">
           <h2 className="font-display mx-auto max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl">
-            Your next renewal deserves
-            <br className="hidden sm:block" /> a smaller number.
+            {t("finalCta.headingLine1")}
+            <br className="hidden sm:block" /> {t("finalCta.headingLine2")}
           </h2>
           <p className="text-ink-soft mx-auto mt-5 max-w-lg text-base leading-7">
-            Find your unused licenses today. Keep monitoring for free, for as
-            long as you need.
+            {t("finalCta.body")}
           </p>
           <div className="mt-8">
             <SignInButtons
@@ -242,27 +227,24 @@ export default function LandingPage() {
               signInHref={signInHref}
               demoEnabled={demoEnabled}
               showNote={false}
-              primaryLabel="Run my free scan"
+              primaryLabel={t("finalCta.primaryCta")}
               centered
               primaryVariant="ink"
             />
           </div>
-          <p className="text-ink-faint mt-5 text-xs">
-            Free to use. No credit card. Read-only access.
-          </p>
+          <p className="text-ink-faint mt-5 text-xs">{t("finalCta.note")}</p>
         </div>
         <p className="text-ink-faint mx-auto mt-10 max-w-xl text-center text-xs leading-6">
-          Built and maintained by{" "}
+          {t("footerNote.before")}{" "}
           <a
             href="https://ugurkoc.de"
             target="_blank"
             rel="noreferrer"
             className="text-ink-soft underline underline-offset-4"
           >
-            Ugur Koc
+            {t("footerNote.linkText")}
           </a>
-          , Microsoft MVP for Intune and Security Copilot. Operated by UgurLabs
-          in Düsseldorf, Germany.
+          {t("footerNote.after")}
         </p>
       </section>
       <script

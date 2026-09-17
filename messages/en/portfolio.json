@@ -1,0 +1,47 @@
+{
+  "portfolio": {
+    "pageTitle": "Portfolio",
+    "unavailable": {
+      "title": "Portfolio",
+      "description": "Portfolio reporting becomes available when you can access 2 or more workspaces. Your current workspace is ready on the overview.",
+      "cardTitle": "One workspace connected",
+      "cardDescription": "Add another client workspace from the MSP area to compare spend, waste, findings, and sync health in one view.",
+      "openOverview": "Open Overview",
+      "setUpMsp": "Set Up MSP Portfolio"
+    },
+    "header": {
+      "title": "Portfolio",
+      "subtitle": "All {count} workspaces, normalized to {currency} and sorted by waste."
+    },
+    "stats": {
+      "monthlySpend": "Monthly spend",
+      "monthlyWaste": "Monthly waste",
+      "openFindings": "Open findings"
+    },
+    "table": {
+      "caption": "Workspaces you can open with seats, spend, waste, open findings and sync status.",
+      "columnWorkspace": "Workspace",
+      "columnSeats": "Seats",
+      "columnSpend": "Spend / mo",
+      "columnWaste": "Waste / mo",
+      "columnFindings": "Findings",
+      "columnLastSync": "Last sync",
+      "columnOpen": "Open",
+      "current": "(current)",
+      "demo": "demo",
+      "imported": "imported"
+    },
+    "sync": {
+      "failed": "failed",
+      "imported": "imported {date}",
+      "none": "-"
+    },
+    "mobile": {
+      "seats": "Seats",
+      "findings": "Findings",
+      "spendPerMonth": "Spend/mo",
+      "wastePerMonth": "Waste/mo",
+      "lastSync": "Last sync"
+    }
+  }
+}

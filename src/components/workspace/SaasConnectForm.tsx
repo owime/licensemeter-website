@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   useActionState,
   useEffect,
@@ -18,6 +19,7 @@ import {
 import type { ActionResult } from "~/server/actions";
 
 export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
+  const t = useTranslations("connectorsDash.saasForm");
   /* Object identity changes per failure so repeated identical errors re-focus. */
   const [error, setError] = useState<{ message: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -40,7 +42,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
           setError(null);
           const result = await connectSaasConnector(data);
           if (!result.ok) {
-            setError({ message: result.error ?? "Connection failed" });
+            setError({ message: result.error ?? t("connectionFailed") });
             return;
           }
           router.refresh();
@@ -52,7 +54,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
         <label key={f.name} className="flex flex-col gap-1 text-sm">
           <span className="text-ink-faint text-xs">
             {f.label} <span aria-hidden="true">*</span>
-            <span className="sr-only"> (required)</span>
+            <span className="sr-only">{t("requiredSuffix")}</span>
           </span>
           <span className="relative">
             <input
@@ -82,9 +84,13 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
                   setRevealedField(revealedField === f.name ? null : f.name)
                 }
                 className="text-ink-soft hover:text-ink absolute inset-y-0 right-0 inline-flex min-h-11 items-center px-3 text-xs font-medium"
-                aria-label={`${revealedField === f.name ? "Hide" : "Show"} ${f.label.toLowerCase()}`}
+                aria-label={
+                  revealedField === f.name
+                    ? t("hideField", { field: f.label.toLowerCase() })
+                    : t("showField", { field: f.label.toLowerCase() })
+                }
               >
-                {revealedField === f.name ? "Hide" : "Show"}
+                {revealedField === f.name ? t("hide") : t("show")}
               </button>
             )}
           </span>
@@ -92,7 +98,9 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
       ))}
       <div className="flex items-center gap-3">
         <Button variant="primary" disabled={pending} className="px-4 py-2">
-          {pending ? `Validating with ${spec.label}…` : spec.connectCta}
+          {pending
+            ? t("validatingWith", { label: spec.label })
+            : spec.connectCta}
         </Button>
         <span
           ref={errorRef}
@@ -113,6 +121,7 @@ export const SaasConnectForm = ({ spec }: { spec: ConnectorSpec }) => {
  * live region instead of being discarded.
  */
 export const SaasDisconnectButton = ({ spec }: { spec: ConnectorSpec }) => {
+  const t = useTranslations("connectorsDash.saasForm");
   const [armed, setArmed] = useState(false);
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null) =>
@@ -129,10 +138,10 @@ export const SaasDisconnectButton = ({ spec }: { spec: ConnectorSpec }) => {
 
   const message = armed
     ? spec.unpriced
-      ? `This removes the connection, the imported ${spec.label} members and the spend history. Press again to confirm.`
-      : `This removes the connection and its imported ${spec.label} seats. Press again to confirm.`
+      ? t("disconnectConfirmUnpriced", { label: spec.label })
+      : t("disconnectConfirm", { label: spec.label })
     : result && !result.ok
-      ? (result.error ?? "Something went wrong")
+      ? (result.error ?? t("somethingWrong"))
       : null;
 
   return (
@@ -151,10 +160,10 @@ export const SaasDisconnectButton = ({ spec }: { spec: ConnectorSpec }) => {
     >
       <Button disabled={pending} onBlur={() => setArmed(false)}>
         {pending
-          ? "Removing…"
+          ? t("removing")
           : armed
-            ? "Confirm disconnect"
-            : `Disconnect ${spec.label}`}
+            ? t("confirmDisconnect")
+            : t("disconnectButton", { label: spec.label })}
       </Button>
       <span
         role="status"

@@ -1,0 +1,218 @@
+{
+  "settings": {
+    "title": "Settings",
+    "demoNotice": "This is the demo workspace: synthetic data, refreshed on every sync. Connect a real tenant from a Microsoft sign-in to see your own numbers.",
+    "workspace": {
+      "title": "Workspace",
+      "organization": "Organization",
+      "unknown": "Unknown",
+      "tenantId": "Tenant ID",
+      "notConnected": "Not connected to Microsoft yet",
+      "connectedSince": "Connected since",
+      "importedNotConnected": "Imported workspace, not connected yet",
+      "dataDetection": "Data & detection",
+      "currency": "Currency",
+      "inactivityThreshold": "Inactivity threshold",
+      "days": "{days} days",
+      "contractRenewals": "Contract renewals",
+      "manageRenewalCalendar": "Manage renewal calendar",
+      "notificationsHeading": "Notifications & product experience",
+      "leakAlertEmails": "Leak alert emails",
+      "on": "On",
+      "off": "Off",
+      "monthlyPdfReport": "Monthly PDF report",
+      "productTour": "Product tour"
+    },
+    "detection": {
+      "title": "Detection capabilities",
+      "unknown": "Unknown: run a sync",
+      "entraP1": {
+        "label": "Entra ID P1 sign-in activity",
+        "ok": "Per-user last sign-in is available.",
+        "warn": "No Entra ID P1/P2, falling back to usage-report activity.",
+        "hint": "Without P1, inactivity detection uses workload reports only, which is slightly less precise."
+      },
+      "identifiableUsage": {
+        "label": "Identifiable usage reports",
+        "ok": "Usage reports include user names. Per-user findings enabled.",
+        "warn": "Report names are concealed (Microsoft default since 2021); usage-based findings are aggregate only.",
+        "hint": "A Global Admin can change this in Microsoft 365 admin center > Settings > Org settings > Reports (the change is audit-logged)."
+      },
+      "copilotUsage": {
+        "label": "Copilot usage data",
+        "ok": "Copilot usage report is readable.",
+        "warn": "No Copilot usage data found (no Copilot licenses, or the report is unavailable)."
+      }
+    },
+    "syncHistoryCard": {
+      "title": "Sync history",
+      "noSyncs": "No syncs yet.",
+      "viewAll": "View all runs →"
+    },
+    "members": {
+      "title": "Members",
+      "you": "(you)",
+      "inviteExpired": "invite expired",
+      "invitedExpires": "invited, expires {date}",
+      "demoFixed": "Members are fixed in the demo workspace."
+    },
+    "roleSelect": {
+      "memberRole": "Member role"
+    },
+    "memberActions": {
+      "resend": "Resend",
+      "sending": "Sending…",
+      "remove": "Remove",
+      "confirmRemove": "Confirm remove",
+      "removing": "Removing…",
+      "pressAgainToConfirm": "Press again to confirm removal.",
+      "inviteResent": "Invite re-sent.",
+      "memberRemoved": "Member removed.",
+      "somethingWentWrong": "Something went wrong"
+    },
+    "invite": {
+      "emailLabel": "Email address to invite",
+      "emailPlaceholder": "colleague@yourcompany.com",
+      "roleLabel": "Role for the invited member",
+      "invite": "Invite",
+      "inviting": "Inviting…",
+      "invited": "Invited {email}.",
+      "invitedFallback": "Invited member.",
+      "inviteFailed": "Invite failed",
+      "emailsActive": "Invited people get an email with a sign-in link and gain access on their first Microsoft sign-in.",
+      "emailsInactive": "Invited people get access when they first sign in with Microsoft using this email.",
+      "sameTenantNote": "Same-tenant sign-in alone never grants access."
+    },
+    "activity": {
+      "title": "Activity",
+      "recentChanges": "Recent workspace changes.",
+      "fullLog": "Full activity log",
+      "exportCsv": "Export CSV",
+      "noActivity": "No activity recorded yet.",
+      "footerNote": "Exports, price changes, membership and sync actions. Kept with the workspace, deleted with it.",
+      "page": {
+        "breadcrumbSettings": "Settings",
+        "breadcrumbCurrent": "Activity",
+        "title": "Activity log",
+        "matchingEvents": "{count} matching events.",
+        "exportAudit": "Export audit CSV",
+        "searchLabel": "Search actor or change detail",
+        "searchPlaceholder": "Email, SKU, member or value…",
+        "actionLabel": "Action",
+        "allActions": "All actions",
+        "applyFilters": "Apply filters",
+        "noMatches": "No activity matches these filters.",
+        "showing": "Showing {from}–{to} of {count}",
+        "previous": "← Previous",
+        "next": "Next →"
+      },
+      "labels": {
+        "syncSteps": {
+          "subscribedSkus": "Microsoft subscriptions",
+          "reportSettings": "Report privacy settings",
+          "signInActivity": "Sign-in activity",
+          "users": "Directory users",
+          "usageReports": "Microsoft usage reports",
+          "copilotUsage": "Copilot usage",
+          "adobeUsers": "Adobe users",
+          "wasteAnalysis": "Waste analysis",
+          "providerSeats": "{provider} seats"
+        },
+        "actions": {
+          "finding_status_changed": "Finding status changed",
+          "finding_workflow_updated": "Finding workflow updated",
+          "findings_bulk_updated": "Findings updated in bulk",
+          "sync_triggered": "Sync started",
+          "price_updated": "Product price updated",
+          "prices_imported": "Product prices imported",
+          "seats_imported": "Connector seats imported",
+          "seats_import_cleared": "Imported connector seats cleared",
+          "microsoft_connected": "Microsoft 365 connected",
+          "microsoft_disconnected": "Microsoft 365 disconnected",
+          "connector_connected": "Connector connected",
+          "connector_disconnected": "Connector disconnected",
+          "adobe_connected": "Adobe connected",
+          "adobe_disconnected": "Adobe disconnected",
+          "member_added": "Member invited",
+          "member_removed": "Member removed",
+          "member_role_changed": "Member role changed",
+          "invite_resent": "Invitation resent",
+          "threshold_changed": "Inactivity threshold changed",
+          "currency_changed": "Reporting currency changed",
+          "renewal_created": "Renewal created",
+          "renewal_updated": "Renewal updated",
+          "renewal_deleted": "Renewal deleted",
+          "leak_alerts_changed": "Leak alerts changed",
+          "monthly_report_changed": "Monthly report changed",
+          "trial_reminders_changed": "Trial reminders changed"
+        },
+        "details": {
+          "findingId": "Finding",
+          "membershipId": "Member",
+          "ownerMembershipId": "Owner",
+          "skuId": "Product",
+          "monthlyPriceCents": "Monthly price",
+          "orgRef": "Organization reference",
+          "inactiveDays": "Inactivity threshold",
+          "renewalDate": "Renewal date",
+          "credType": "Credential type",
+          "to": "Workspace"
+        }
+      }
+    },
+    "syncHistory": {
+      "breadcrumbSettings": "Settings",
+      "breadcrumbCurrent": "Sync history",
+      "title": "Sync history",
+      "runsRecorded": "{count} {unit} recorded for this workspace.",
+      "run": "run",
+      "runs": "runs",
+      "runsCardTitle": "Runs",
+      "noSyncs": "No syncs yet.",
+      "showing": "Showing {from} to {to} of {count}",
+      "previous": "← Previous",
+      "next": "Next →"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "Disconnecting deletes every synced record for {tenantName}: users, findings, prices, history. The admin consent in your tenant can then be revoked under Enterprise applications.",
+      "confirmLabel": "Type the workspace name to confirm deletion",
+      "confirmPlaceholder": "Type \"{tenantName}\" to confirm",
+      "deleteEverything": "Delete everything",
+      "deleting": "Deleting…",
+      "somethingWentWrong": "Something went wrong"
+    },
+    "monthlyReport": {
+      "label": "Email me the PDF report monthly",
+      "saved": "Saved.",
+      "saveFailed": "Save failed"
+    },
+    "leakAlerts": {
+      "label": "Email me when a sync finds new offboarding leaks",
+      "saved": "Saved.",
+      "saveFailed": "Save failed"
+    },
+    "inactiveDays": {
+      "ariaLabel": "Inactivity threshold in days",
+      "days": "{days} days",
+      "couldNotSave": "Could not save"
+    },
+    "importSeats": {
+      "instructions": "Paste the member table from the {label} admin panel including its header row. Copied web tables and CSV exports both work. An email column is required; name, status, plan and last-active columns are picked up when present. A new import replaces the current snapshot.",
+      "placeholder": "Email,Name,Status,Last active\njane@example.com,Jane Fox,active,2026-05-28",
+      "importing": "Importing…",
+      "importFailed": "Import failed.",
+      "imported": "Imported {count} {unit}.",
+      "seat": "seat",
+      "seats": "seats",
+      "invalidLines": "{count} {unit} could not be parsed.",
+      "line": "line",
+      "lines": "lines",
+      "clearImportedSeats": "Clear imported seats",
+      "removing": "Removing…",
+      "confirmClear": "Confirm clear",
+      "clearWarning": "This removes the imported {label} seats. Press again to confirm.",
+      "somethingWentWrong": "Something went wrong"
+    }
+  }
+}

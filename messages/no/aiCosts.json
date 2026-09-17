@@ -1,0 +1,70 @@
+{
+  "aiCosts": {
+    "pageTitle": "AI-kostnader",
+    "header": {
+      "title": "AI-kostnader",
+      "previewSubtitle": "Utforsk 60 dager med eksempeldata for OpenAI- og Anthropic-forbruk",
+      "syncRunning": "Synkronisering pågår…",
+      "imported": "Importert {date}",
+      "lastSynced": "Sist synkronisert {when}",
+      "syncFailed": "(siste synkronisering mislyktes)",
+      "completedWithWarnings": "(fullført med advarsler{detail})",
+      "stepsDegraded": " · {count, plural, one {# steg} other {# steg}} med redusert funksjon"
+    },
+    "exploreSample": "Utforsk {label}-eksempel",
+    "connect": {
+      "title": "Koble til en AI-leverandør",
+      "previewButton": "Forhåndsvis eksempeldata",
+      "description": "Koble til OpenAI eller Anthropic for å se hva organisasjonen bruker på API-ene deres: daglige totaler per modell og linjepost, akkurat som fakturert. Den samme kilden kobler console-medlemmer mot Entra ID, slik at personer som har sluttet, men fortsatt har aktive API-nøkler, dukker opp som funn.",
+      "connectM365First": "Koble til Microsoft 365-leietakeren din først, og legg deretter til AI-kildene.",
+      "connectReadOnlySync": "Koble til den skrivebeskyttede synkroniseringen",
+      "adminRequired": "Tilkobling krever en administrator. Be en administrator i arbeidsområdet koble til <openai>OpenAI</openai> eller <anthropic>Anthropic</anthropic>.",
+      "connectOpenAI": "Koble til OpenAI",
+      "connectAnthropic": "Koble til Anthropic"
+    },
+    "connection": {
+      "title": "Tilkobling",
+      "description": "Tilkoblet. Den første synkroniseringen henter inn kostnadshistorikken til hver leverandør.",
+      "lastSync": "sist synkronisert {date} ({status})",
+      "firstSyncPending": "første synkronisering venter"
+    },
+    "stats": {
+      "thisMonth": "{provider} denne måneden",
+      "last30Days": "{provider} siste 30 dager",
+      "calendarMonthSub": "kalendermåned, UTC",
+      "rollingWindowSub": "rullerende vindu",
+      "totalThisMonth": "Total AI-kostnad denne måneden",
+      "totalLast30Days": "Total AI-kostnad siste 30 dager",
+      "totalCalendarMonthSub": "alle leverandører, kalendermåned",
+      "totalRollingWindowSub": "alle leverandører, rullerende vindu"
+    },
+    "categories": {
+      "title": "Topp kostnadskategorier",
+      "tableCaption": "Topp AI-kostnadskategorier de siste 30 dagene, i USD{sample}.",
+      "sampleDataSuffix": " (eksempeldata)",
+      "columnCategory": "Kategori",
+      "columnProvider": "Leverandør",
+      "columnLast30Days": "Siste 30 dager",
+      "other": "Annet",
+      "noSpend": "Ingen kostnader de siste 30 dagene."
+    },
+    "footerNote": {
+      "preview": "Illustrative beløp i USD kun for demonstrasjon. Dette er ikke reelle kostnader.",
+      "live": "Fakturert av leverandørene i USD. Vises som fakturert, aldri konvertert til arbeidsområdets valuta."
+    },
+    "sampleNotice": {
+      "title": "Eksempeldata",
+      "description": "Fiktivt forbruk og medlemmer for demoen din. Ingen API-nøkler kreves.",
+      "exitPreview": "Avslutt forhåndsvisning"
+    },
+    "connectorPreview": {
+      "sampleOverviewLabel": "{label}-eksempeloversikt",
+      "sampleSpendTitle": "{label} eksempelforbruk",
+      "last30DaysUsd": "Siste 30 dager · USD",
+      "sampleMembersTitle": "Eksempel på console-medlemmer",
+      "sampleMembersDescription": "Fiktive console-medlemskap. API-aktivitet er ikke tilgjengelig fra disse medlemslistene.",
+      "consoleMember": "Console-medlem",
+      "viewAllCosts": "Se alle AI-kostnader"
+    }
+  }
+}

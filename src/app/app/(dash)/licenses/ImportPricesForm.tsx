@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "~/components/ui";
 import { importPrices } from "~/server/actions";
@@ -8,30 +9,35 @@ import type { ImportPricesResult } from "~/server/actions";
 
 type ImportState = (ImportPricesResult & { csv?: string }) | null;
 
-const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
-
 /** Outcome sentence(s) for the live region: applied, skipped, unparseable. */
-const summary = (result: ImportPricesResult): string => {
+const summary = (
+  result: ImportPricesResult,
+  t: ReturnType<typeof useTranslations<"licenses">>,
+): string => {
   const parts: string[] = [];
   if (result.ok) {
-    parts.push(`Applied ${result.applied} ${plural(result.applied, "price")}.`);
+    parts.push(t("importForm.applied", { count: result.applied }));
   } else {
     // Every part must be a full sentence so the join reads cleanly.
-    const error = result.error ?? "Import failed.";
+    const error = result.error ?? t("importForm.importFailed");
     parts.push(error.endsWith(".") ? error : `${error}.`);
   }
   if (result.skipped.length > 0) {
     const shown = result.skipped.slice(0, 8).join(", ");
     const more =
-      result.skipped.length > 8 ? ` and ${result.skipped.length - 8} more` : "";
+      result.skipped.length > 8
+        ? t("importForm.andMore", { count: result.skipped.length - 8 })
+        : "";
     parts.push(
-      `Skipped ${result.skipped.length} unknown ${plural(result.skipped.length, "key")}: ${shown}${more}.`,
+      t("importForm.skipped", {
+        count: result.skipped.length,
+        shown,
+        more,
+      }),
     );
   }
   if (result.invalid > 0) {
-    parts.push(
-      `${result.invalid} ${plural(result.invalid, "line")} could not be parsed.`,
-    );
+    parts.push(t("importForm.invalid", { count: result.invalid }));
   }
   return parts.join(" ");
 };
@@ -43,6 +49,7 @@ const summary = (result: ImportPricesResult): string => {
  * the InviteForm).
  */
 export const ImportPricesForm = () => {
+  const t = useTranslations("licenses");
   const [result, formAction, pending] = useActionState(
     async (_prev: ImportState, formData: FormData): Promise<ImportState> => {
       const csv = formData.get("csv");
@@ -55,11 +62,11 @@ export const ImportPricesForm = () => {
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <label htmlFor="price-import-csv" className="text-ink-soft text-sm">
-        One product per line:{" "}
-        <span className="font-mono text-xs">key,monthly price</span>. The key is
-        an M365 SKU id or part number, or a connector key like{" "}
-        <span className="font-mono text-xs">adobe:Photoshop</span>. Prices
-        accept 14.90 and 14,90; unknown keys are skipped.
+        {t.rich("importForm.label", {
+          code: (chunks) => (
+            <span className="font-mono text-xs">{chunks}</span>
+          ),
+        })}
       </label>
       <textarea
         // Remount on each new failure so defaultValue re-applies; resets after success.
@@ -75,7 +82,7 @@ export const ImportPricesForm = () => {
       />
       <div>
         <Button variant="primary" disabled={pending}>
-          {pending ? "Importing…" : "Import prices"}
+          {pending ? t("importForm.importing") : t("importForm.submit")}
         </Button>
       </div>
       <p
@@ -87,7 +94,7 @@ export const ImportPricesForm = () => {
             : "sr-only"
         }
       >
-        {result === null ? null : summary(result)}
+        {result === null ? null : summary(result, t)}
       </p>
     </form>
   );

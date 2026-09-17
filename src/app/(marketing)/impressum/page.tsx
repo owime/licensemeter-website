@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { SUPPORT_EMAIL } from "~/lib/support";
 
@@ -15,14 +16,15 @@ export const metadata: Metadata = {
  * Umsatzsteuer-ID section is intentionally omitted until a USt-IdNr is issued
  * (§ 27a UStG requires it only "soweit vorhanden").
  */
-export default function ImpressumPage() {
+export default async function ImpressumPage() {
+  const t = await getTranslations("impressum");
   return (
     <main lang="de" className="mx-auto max-w-3xl px-6 pt-6 pb-24">
-      <h1 className="font-display text-4xl tracking-tight">Impressum</h1>
+      <h1 className="font-display text-4xl tracking-tight">{t("title")}</h1>
 
       <div className="text-ink-soft mt-8 flex flex-col gap-6 text-sm leading-relaxed">
         <section>
-          <h2 className="text-ink font-medium">Angaben gemäß § 5 DDG</h2>
+          <h2 className="text-ink font-medium">{t("headings.info")}</h2>
           <p className="mt-2">
             UgurLabs UG (haftungsbeschränkt)
             <br />
@@ -35,33 +37,38 @@ export default function ImpressumPage() {
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Vertreten durch</h2>
+          <h2 className="text-ink font-medium">{t("headings.representedBy")}</h2>
           <p className="mt-2">Ugur Koc (Geschäftsführer)</p>
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Kontakt</h2>
-          <p className="mt-2">E-Mail: {SUPPORT_EMAIL}</p>
+          <h2 className="text-ink font-medium">{t("headings.contact")}</h2>
+          <p className="mt-2">
+            {t("labels.email")}: {SUPPORT_EMAIL}
+          </p>
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Registereintrag</h2>
+          <h2 className="text-ink font-medium">{t("headings.register")}</h2>
           <p className="mt-2">
-            Registergericht: Amtsgericht Düsseldorf
+            {t("labels.registryCourt")}: Amtsgericht Düsseldorf
             <br />
-            Handelsregisternummer (HRB): wird nach Eintragung ergänzt
+            {t("labels.commercialRegisterNumber")}: wird nach Eintragung
+            ergänzt
           </p>
         </section>
 
         <section>
           <h2 className="text-ink font-medium">
-            Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
+            {t("headings.responsibleContent")}
           </h2>
           <p className="mt-2">Ugur Koc (Anschrift wie oben)</p>
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Haftung für Inhalte</h2>
+          <h2 className="text-ink font-medium">
+            {t("headings.liabilityContent")}
+          </h2>
           <p className="mt-2">
             Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte
             auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach
@@ -78,7 +85,7 @@ export default function ImpressumPage() {
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Haftung für Links</h2>
+          <h2 className="text-ink font-medium">{t("headings.liabilityLinks")}</h2>
           <p className="mt-2">
             Unser Angebot enthält Links zu externen Websites Dritter, auf deren
             Inhalte wir keinen Einfluss haben. Deshalb können wir für diese
@@ -95,7 +102,7 @@ export default function ImpressumPage() {
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Urheberrecht</h2>
+          <h2 className="text-ink font-medium">{t("headings.copyright")}</h2>
           <p className="mt-2">
             Die durch den Seitenbetreiber erstellten Inhalte und Werke auf
             diesen Seiten unterliegen dem deutschen Urheberrecht. Die
@@ -120,7 +127,7 @@ export default function ImpressumPage() {
          */}
         <section>
           <h2 className="text-ink font-medium">
-            Verbraucherstreitbeilegung / Universalschlichtungsstelle
+            {t("headings.disputeResolution")}
           </h2>
           <p className="mt-2">
             Wir sind nicht bereit und nicht verpflichtet, an
@@ -130,7 +137,7 @@ export default function ImpressumPage() {
         </section>
 
         <section>
-          <h2 className="text-ink font-medium">Hinweis</h2>
+          <h2 className="text-ink font-medium">{t("headings.notice")}</h2>
           <p className="mt-2">
             LicenseMeter ist ein unabhängiges Produkt und steht in keiner
             Verbindung zur Microsoft Corporation. Microsoft, Microsoft 365 und

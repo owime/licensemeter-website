@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { demoEuros } from "~/lib/demoFigures";
 import {
@@ -19,6 +20,7 @@ const inputClass =
  * the visitor's own assumption: we assert nothing; the math (integer cents) lives in roiMath.ts where it is unit-tested.
  */
 export const RoiCalculator = () => {
+  const t = useTranslations("roi.calculator");
   const seatsId = useId();
   const seatsHintId = useId();
   const costId = useId();
@@ -38,10 +40,10 @@ export const RoiCalculator = () => {
     <div className="border-line bg-card shadow-card overflow-hidden rounded-2xl border">
       <div className="border-line flex items-baseline justify-between gap-3 border-b px-6 py-4">
         <span className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Waste estimate · your assumptions
+          {t("badge")}
         </span>
         <span className="text-ink-faint font-mono text-xs whitespace-nowrap">
-          No data leaves this page
+          {t("noDataLeaves")}
         </span>
       </div>
 
@@ -49,7 +51,7 @@ export const RoiCalculator = () => {
         <div className="border-line flex flex-col gap-5 border-b px-6 py-6 md:border-r md:border-b-0">
           <div>
             <label htmlFor={seatsId} className="text-sm font-medium">
-              Paid seats
+              {t("seatsLabel")}
             </label>
             <input
               id={seatsId}
@@ -66,14 +68,13 @@ export const RoiCalculator = () => {
               className={inputClass}
             />
             <p id={seatsHintId} className="text-ink-faint mt-1.5 text-xs">
-              Use the paid seat count from your renewal, billing export or admin
-              center.
+              {t("seatsHint")}
             </p>
           </div>
 
           <div>
             <label htmlFor={costId} className="text-sm font-medium">
-              Monthly cost estimate per seat (EUR)
+              {t("costLabel")}
             </label>
             <input
               id={costId}
@@ -89,15 +90,14 @@ export const RoiCalculator = () => {
               className={inputClass}
             />
             <p id={costHintId} className="text-ink-faint mt-1.5 text-xs">
-              Default uses this app&apos;s Microsoft 365 E3 list-price estimate.
-              Replace it with your blended monthly cost if procurement has one.
+              {t("costHint")}
             </p>
           </div>
 
           <div>
             <div className="flex items-baseline justify-between gap-3">
               <label htmlFor={shareId} className="text-sm font-medium">
-                Assumed waste share
+                {t("shareLabel")}
               </label>
               <span className="tnum font-mono text-sm whitespace-nowrap">
                 {wastePct} %
@@ -113,16 +113,14 @@ export const RoiCalculator = () => {
               value={wastePct}
               onChange={(e) => setWastePct(Number(e.currentTarget.value))}
               aria-describedby={shareHintId}
-              aria-valuetext={`${wastePct} percent assumed waste share`}
+              aria-valuetext={t("shareValueAria", { value: wastePct })}
               className="accent-brand mt-1.5 block min-h-11 w-full cursor-pointer"
             />
             <p
               id={shareHintId}
               className="text-ink-faint mt-1 text-xs leading-relaxed"
             >
-              Start with a conservative pre-scan assumption. The sample tenant
-              is {DEMO_WASTE_PCT} percent, but your free scan replaces this with
-              tenant data.
+              {t("shareHint", { demoWastePct: DEMO_WASTE_PCT })}
             </p>
           </div>
         </div>
@@ -130,25 +128,25 @@ export const RoiCalculator = () => {
         <div className="px-6 py-6">
           <div aria-live="polite" aria-atomic="true">
             <div className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-              Assumption-based estimate
+              {t("resultBadge")}
             </div>
             <div className="font-display text-waste-text mt-3 text-5xl tracking-tight">
               € {demoEuros(result.monthlyWasteCents)}
             </div>
             <div className="text-ink-soft mt-1 text-sm">
-              estimated monthly waste · € {demoEuros(result.annualWasteCents)} a
-              year before remediation
+              {t("resultCaption", {
+                annual: `€ ${demoEuros(result.annualWasteCents)}`,
+              })}
             </div>
             <p className="border-line text-ink-soft mt-5 border-t pt-4 text-sm leading-relaxed">
-              LicenseMeter is free at every seat count. Run a scan to replace
-              this estimate with findings from your own workspace.
+              {t("resultNote")}
             </p>
           </div>
           <Link
             href="/#get-started"
             className="text-brand-text mt-4 inline-block text-sm font-medium underline underline-offset-4 hover:opacity-80"
           >
-            Run my free scan →
+            {t("runScan")}
           </Link>
         </div>
       </div>

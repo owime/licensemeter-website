@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { buttonClass } from "~/components/ui";
 import { setFindingStatus } from "~/server/actions";
@@ -18,6 +19,7 @@ export const FindingStatusControl = ({
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const t = useTranslations("findings.statusControl");
 
   useEffect(() => setCurrent(initial), [initial]);
   useEffect(() => {
@@ -32,14 +34,12 @@ export const FindingStatusControl = ({
     startTransition(async () => {
       const result = await setFindingStatus(findingId, next);
       if (!result.ok) {
-        setMessage(
-          result.error ?? "Could not update this finding. Please retry.",
-        );
+        setMessage(result.error ?? t("genericError"));
         return;
       }
       setCurrent(next);
       setUndoTo(isUndo ? null : previous);
-      setMessage(isUndo ? "Change undone." : "Finding updated.");
+      setMessage(isUndo ? t("undone") : t("updated"));
       router.refresh();
     });
   };
@@ -53,7 +53,11 @@ export const FindingStatusControl = ({
         onClick={() => change(next)}
         className={buttonClass("micro")}
       >
-        {pending ? "Updating…" : current === "open" ? "Acknowledge" : "Reopen"}
+        {pending
+          ? t("updating")
+          : current === "open"
+            ? t("acknowledge")
+            : t("reopen")}
       </button>
       {undoTo && !pending && (
         <button
@@ -61,7 +65,7 @@ export const FindingStatusControl = ({
           onClick={() => change(undoTo, true)}
           className="text-ink-soft hover:text-ink min-h-11 px-1 text-xs underline underline-offset-4"
         >
-          Undo
+          {t("undo")}
         </button>
       )}
       <span
@@ -69,7 +73,7 @@ export const FindingStatusControl = ({
         aria-live="polite"
         className={message ? "text-ink-soft text-xs" : "sr-only"}
       >
-        {message || "No finding update in progress."}
+        {message || t("noUpdateInProgress")}
       </span>
     </div>
   );

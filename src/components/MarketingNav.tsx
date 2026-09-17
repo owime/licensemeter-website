@@ -2,20 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
 import { MarketingMobileNav } from "~/components/MarketingMobileNav";
-
-const ENGLISH = [
-  { href: "/#product-tour", label: "Product" },
-  { href: "/connectors", label: "Connectors" },
-  { href: "/msp", label: "MSP" },
-  { href: "/trust-center", label: "Trust Center" },
-  { href: "/support", label: "Support" },
-  {
-    href: "https://github.com/ugurkocde/licensemeter-website",
-    label: "GitHub",
-  },
-];
 
 const GERMAN = [
   { href: "/de/security", label: "Sicherheit" },
@@ -30,8 +20,23 @@ const GERMAN = [
 
 export const MarketingNav = () => {
   const pathname = usePathname();
-  const items = pathname.startsWith("/de/") ? GERMAN : ENGLISH;
-  const navLabel = pathname.startsWith("/de/") ? "Hauptnavigation" : "Main";
+  const t = useTranslations("nav");
+  const isGerman = pathname.startsWith("/de/");
+
+  const items = isGerman
+    ? GERMAN
+    : [
+        { href: "/#product-tour", label: t("product") },
+        { href: "/connectors", label: t("connectors") },
+        { href: "/msp", label: t("msp") },
+        { href: "/trust-center", label: t("trustCenter") },
+        { href: "/support", label: t("support") },
+        {
+          href: "https://github.com/ugurkocde/licensemeter-website",
+          label: t("github"),
+        },
+      ];
+  const navLabel = isGerman ? "Hauptnavigation" : t("ariaLabel");
   return (
     <>
       <nav aria-label={navLabel} className="hidden items-center gap-5 lg:flex">
@@ -44,6 +49,7 @@ export const MarketingNav = () => {
             {item.label}
           </Link>
         ))}
+        {!isGerman && <LanguageSwitcher />}
       </nav>
       <MarketingMobileNav items={items} navLabel={navLabel} />
     </>

@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { SUPPORT_EMAIL } from "~/lib/support";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
@@ -20,6 +21,7 @@ export function SupportForm({
   nonce?: string;
   supportEmail?: string;
 }) {
+  const t = useTranslations("support.form");
   const container = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
   const submitting = useRef(false);
@@ -44,16 +46,14 @@ export function SupportForm({
       "expired-callback": () => setToken(""),
       "error-callback": () => {
         setToken("");
-        setError(
-          `Verification could not load. Try again or email ${supportEmail}.`,
-        );
+        setError(t("verificationLoadError", { email: supportEmail }));
       },
     });
     return () => {
       if (widget.current !== null) turnstile.remove(widget.current);
       widget.current = null;
     };
-  }, [ready, siteKey, sent, supportEmail]);
+  }, [ready, siteKey, sent, supportEmail, t]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,15 +83,13 @@ export function SupportForm({
         error?: string;
       };
       if (!response.ok || result.success !== true)
-        throw new Error(
-          result.error ?? "Your request could not be sent. Please try again.",
-        );
+        throw new Error(result.error ?? t("defaultError"));
       setSent(true);
     } catch (cause) {
       setError(
         cause instanceof Error && cause.name === "Error"
           ? cause.message
-          : `We could not confirm your request was sent. Try again or email ${supportEmail}.`,
+          : t("genericError", { email: supportEmail }),
       );
       setToken("");
       if (widget.current !== null) api()?.reset(widget.current);
@@ -107,16 +105,13 @@ export function SupportForm({
         role="status"
         className="rounded-2xl border border-teal-200 bg-teal-50 p-8"
       >
-        <h2 className="text-ink text-xl font-semibold">Support request sent</h2>
-        <p className="mt-3 text-slate-700">
-          Thank you for getting in touch. We’ll reply to the email address you
-          provided.
-        </p>
+        <h2 className="text-ink text-xl font-semibold">{t("sentTitle")}</h2>
+        <p className="mt-3 text-slate-700">{t("sentBody")}</p>
         <Link
           href="/"
           className="mt-6 inline-flex min-h-11 items-center font-semibold text-teal-800 underline"
         >
-          Back to home
+          {t("backHome")}
         </Link>
       </div>
     );
@@ -132,7 +127,7 @@ export function SupportForm({
           onReady={() => setReady(true)}
           onError={() =>
             setError(
-              `Verification could not load. Please email ${supportEmail}.`,
+              t("verificationLoadErrorFatal", { email: supportEmail }),
             )
           }
         />
@@ -144,7 +139,7 @@ export function SupportForm({
               className="block text-sm font-semibold text-slate-800"
               htmlFor="support-name"
             >
-              Name
+              {t("name")}
               <input
                 id="support-name"
                 name="name"
@@ -158,7 +153,7 @@ export function SupportForm({
               className="block text-sm font-semibold text-slate-800"
               htmlFor="support-email"
             >
-              Email address
+              {t("email")}
               <input
                 id="support-email"
                 name="email"
@@ -174,7 +169,7 @@ export function SupportForm({
             className="block text-sm font-semibold text-slate-800"
             htmlFor="support-subject"
           >
-            Subject
+            {t("subject")}
             <input
               id="support-subject"
               name="subject"
@@ -187,7 +182,7 @@ export function SupportForm({
             className="block text-sm font-semibold text-slate-800"
             htmlFor="support-message"
           >
-            Message
+            {t("message")}
             <textarea
               id="support-message"
               name="message"
@@ -202,11 +197,10 @@ export function SupportForm({
             id="support-message-hint"
             className="text-sm leading-6 text-slate-600"
           >
-            Describe what happened and what you expected. Please leave out
-            passwords, access tokens, and tenant data.
+            {t("messageHint")}
           </p>
           <div hidden aria-hidden="true">
-            <label htmlFor="support-website">Website</label>
+            <label htmlFor="support-website">{t("website")}</label>
             <input
               id="support-website"
               name="website"
@@ -222,18 +216,20 @@ export function SupportForm({
           </p>
         )}
         <p className="text-sm leading-6 text-slate-600">
-          We use your details to respond to your request. Read our{" "}
-          <Link href="/privacy" className="text-teal-800 underline">
-            privacy policy
-          </Link>
-          .
+          {t.rich("privacyNote", {
+            privacyLink: (chunks) => (
+              <Link href="/privacy" className="text-teal-800 underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
         <button
           type="submit"
           disabled={pending || Boolean(siteKey && !token)}
           className="min-h-12 rounded-lg bg-teal-800 px-6 py-3 font-semibold text-white transition-colors hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Sending…" : "Send support request"}
+          {pending ? t("submitting") : t("submit")}
         </button>
       </form>
     </>

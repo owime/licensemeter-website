@@ -1,0 +1,53 @@
+{
+  "dashLayout": {
+    "skipToContent": "Hopp til innhold",
+    "demoWorkspace": "Demoarbeidsområde",
+    "connectedTenant": "Tilkoblet tenant",
+    "accountSettings": "Kontoinnstillinger",
+    "accountLabel": "Konto",
+    "signOut": "Logg ut",
+    "nav": {
+      "ariaLabel": "Arbeidsområdenavigasjon",
+      "overview": "Oversikt",
+      "findings": "Funn",
+      "licenses": "Lisenser og priser",
+      "renewals": "Fornyelser",
+      "aiCosts": "AI-kostnader",
+      "connectors": "Konnektorer",
+      "settings": "Innstillinger",
+      "support": "Support",
+      "portfolio": "Portefølje"
+    },
+    "mobileNav": {
+      "ariaLabel": "Mobil arbeidsområdenavigasjon",
+      "openMenu": "Åpne meny",
+      "closeMenu": "Lukk meny"
+    },
+    "workspaceSwitcher": {
+      "ariaLabel": "Aktivt arbeidsområde",
+      "demoSuffix": " (demo)"
+    },
+    "openWorkspace": {
+      "open": "Åpne",
+      "ariaLabel": "Åpne {name}"
+    },
+    "drawer": {
+      "close": "Lukk"
+    },
+    "error": {
+      "title": "Noe gikk galt",
+      "description": "Denne siden kunne ikke lastes. Dataene dine er ikke påvirket. Prøv igjen, og hvis det fortsetter å skje, logg ut og inn igjen.",
+      "tryAgain": "Prøv igjen",
+      "openOverview": "Åpne oversikten",
+      "checkSyncHistory": "Sjekk synkroniseringshistorikk"
+    },
+    "loading": {
+      "srLabel": "Laster…"
+    },
+    "notFound": {
+      "title": "Ikke funnet",
+      "description": "Denne siden eller posten finnes ikke i dette arbeidsområdet. Den kan ha blitt fjernet av en senere synkronisering.",
+      "backToFindings": "← Tilbake til funn"
+    }
+  }
+}

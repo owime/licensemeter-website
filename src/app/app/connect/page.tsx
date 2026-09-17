@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { ButtonAnchor, ButtonLink } from "~/components/ui";
 import { env } from "~/env";
@@ -7,10 +9,10 @@ import { connectErrorText } from "~/lib/connectErrors";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { getAccessContext, requireSession } from "~/server/access";
 
-export const metadata = {
-  title: "Connect a tenant",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("connect");
+  return { title: t("meta.title"), robots: { index: false, follow: false } };
+}
 
 /**
  * Standalone connect entry. In the workspace-first model almost every signed-in
@@ -24,6 +26,7 @@ export default async function ConnectPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("connect");
   const session = await requireSession();
   const ctx = await getAccessContext();
   const sp = await searchParams;
@@ -46,7 +49,7 @@ export default async function ConnectPage({
       </Link>
 
       <h1 className="font-display mt-10 text-4xl tracking-tight">
-        Connect your tenant
+        {t("title")}
       </h1>
 
       {error && (
@@ -54,20 +57,19 @@ export default async function ConnectPage({
           role="alert"
           className="border-danger-soft bg-danger-soft/50 text-danger-text mt-6 border p-4 text-sm"
         >
-          {connectErrorText(error)}
+          {await connectErrorText(error)}
         </div>
       )}
 
       <p className="text-ink mt-6 text-sm font-medium">
-        Connect the read-only sync
+        {t("readOnlySync")}
       </p>
       <p className="text-ink-soft mt-1">
-        A Global Administrator or Privileged Role Administrator of your
-        Microsoft 365 tenant grants LicenseMeter{" "}
-        <strong className="text-ink">read-only</strong> application permissions
-        once. That unlocks nightly monitoring, leak alerts and trends. Nothing
-        is ever written to your tenant, and mailbox or file contents are never
-        readable.
+        {t.rich("description", {
+          strong: (chunks) => (
+            <strong className="text-ink">{chunks}</strong>
+          ),
+        })}
       </p>
 
       <ul className="border-line bg-card mt-6 border">
@@ -85,44 +87,44 @@ export default async function ConnectPage({
       <div className="mt-8 flex flex-wrap items-center gap-4">
         {connectorConfigured ? (
           <ButtonAnchor href="/api/connect/start" variant="primary">
-            Grant admin consent
+            {t("grantConsent")}
           </ButtonAnchor>
         ) : (
           <span className="text-ink-soft text-sm">
-            One-click managed consent is not enabled on this deployment. Use the
-            instant scan or CSV import below.
+            {t("consentNotEnabled")}
           </span>
         )}
         <span className="text-ink-faint text-xs">
-          Signed in as {session.user.upn || session.user.email}
+          {t("signedInAs", {
+            identity: session.user.upn ?? session.user.email ?? "",
+          })}
         </span>
       </div>
 
       {scanConfigured && (
         <div className="border-line bg-card mt-8 border p-4">
-          <p className="text-ink text-sm font-medium">Run an instant scan</p>
+          <p className="text-ink text-sm font-medium">
+            {t("instantScan.title")}
+          </p>
           <p className="text-ink-soft mt-1 text-sm">
-            One-time scan with the same read-only scopes, running with{" "}
-            <strong className="text-ink">your</strong> permissions while you are
-            signed in. No standing access, no stored tokens.
+            {t.rich("instantScan.description", {
+              strong: (chunks) => (
+                <strong className="text-ink">{chunks}</strong>
+              ),
+            })}
           </p>
           <div className="mt-3">
             <ButtonAnchor href="/api/scan/start">
-              Run an instant scan
+              {t("instantScan.cta")}
             </ButtonAnchor>
           </div>
         </div>
       )}
 
       <div className="border-line bg-card mt-4 border p-4">
-        <p className="text-ink-soft text-sm">
-          No admin with consent rights at hand? Start with the CSV import: two
-          admin-center exports, no consent at all.
-        </p>
+        <p className="text-ink-soft text-sm">{t("noAdmin.description")}</p>
         <div className="mt-3">
-          <ButtonLink href="/app/connect/csv">
-            Try it with CSV exports
-          </ButtonLink>
+          <ButtonLink href="/app/connect/csv">{t("noAdmin.cta")}</ButtonLink>
         </div>
       </div>
     </main>

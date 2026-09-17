@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { env, signInPath } from "~/env";
 import { type DpaLang, subprocessorRows } from "~/lib/dpa";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
 
-import { SECURITY_CONTENT } from "./content";
+import { buildSecurityContentFromTranslations, SECURITY_CONTENT } from "./content";
 
 /**
  * Renders the security overview from the bilingual structure in ./content and
@@ -88,8 +89,13 @@ const Section = ({
   </section>
 );
 
-export const SecurityView = ({ lang }: { lang: DpaLang }) => {
-  const c = SECURITY_CONTENT[lang];
+export const SecurityView = async ({ lang }: { lang: DpaLang }) => {
+  const c =
+    lang === "de"
+      ? SECURITY_CONTENT.de
+      : buildSecurityContentFromTranslations(
+          await getTranslations("security"),
+        );
   const subprocessors = subprocessorRows(lang);
   const langs: { id: DpaLang; label: string; href: string }[] = [
     { id: "en", label: "English", href: "/security" },
@@ -145,7 +151,7 @@ export const SecurityView = ({ lang }: { lang: DpaLang }) => {
             >
               <code className="text-ink font-mono text-xs">{s.scope}</code>
               <span className="text-xs">
-                {c.access.scopeWhy[s.scope] ?? s.why}
+                {c.access.scopeWhy[s.scope.replaceAll(".", "_")] ?? s.why}
               </span>
             </li>
           ))}

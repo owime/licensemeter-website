@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * Burger menu for the marketing header below sm. The inline nav links move
@@ -18,6 +19,7 @@ export const MarketingMobileNav = ({
   navLabel?: string;
 }) => {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("mobileNav");
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +36,7 @@ export const MarketingMobileNav = ({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="marketing-nav-drawer"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? t("closeMenu") : t("openMenu")}
         className="text-ink -my-1 -mr-2 flex size-11 cursor-pointer touch-manipulation items-center justify-center lg:hidden"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">

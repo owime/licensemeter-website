@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   useActionState,
   useEffect,
@@ -26,6 +27,7 @@ type Checklist = { scope: string; granted: boolean }[];
  * renders the per-permission red/green checklist when consent is incomplete.
  */
 export const MicrosoftByoForm = () => {
+  const t = useTranslations("connectorsDash.microsoftForm");
   const [credType, setCredType] = useState<"secret" | "cert">("secret");
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export const MicrosoftByoForm = () => {
         <label key={f.name} className="flex flex-col gap-1 text-sm">
           <span className="text-ink-faint text-xs">
             {f.label} <span aria-hidden="true">*</span>
-            <span className="sr-only"> (required)</span>
+            <span className="sr-only">{t("requiredSuffix")}</span>
           </span>
           <input
             name={f.name}
@@ -88,18 +90,22 @@ export const MicrosoftByoForm = () => {
       ))}
 
       <fieldset className="flex flex-col gap-1 text-sm">
-        <legend className="text-ink-faint text-xs">Credential type</legend>
+        <legend className="text-ink-faint text-xs">
+          {t("credentialTypeLegend")}
+        </legend>
         <div className="flex gap-4 pt-1">
-          {(["secret", "cert"] as const).map((t) => (
-            <label key={t} className="flex items-center gap-2 text-sm">
+          {(["secret", "cert"] as const).map((option) => (
+            <label key={option} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="credTypeChoice"
-                value={t}
-                checked={credType === t}
-                onChange={() => setCredType(t)}
+                value={option}
+                checked={credType === option}
+                onChange={() => setCredType(option)}
               />
-              {t === "secret" ? "Client secret" : "Certificate"}
+              {option === "secret"
+                ? t("clientSecretOption")
+                : t("certificateOption")}
             </label>
           ))}
         </div>
@@ -109,8 +115,8 @@ export const MicrosoftByoForm = () => {
         <>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
-              Client secret <span aria-hidden="true">*</span>
-              <span className="sr-only"> (required)</span>
+              {t("clientSecretLabel")} <span aria-hidden="true">*</span>
+              <span className="sr-only">{t("requiredSuffix")}</span>
             </span>
             <span className="relative">
               <input
@@ -128,15 +134,19 @@ export const MicrosoftByoForm = () => {
                 type="button"
                 onClick={() => setShowSecret((value) => !value)}
                 className="text-ink-soft hover:text-ink absolute inset-y-0 right-0 inline-flex min-h-11 items-center px-3 text-xs font-medium"
-                aria-label={`${showSecret ? "Hide" : "Show"} client secret`}
+                aria-label={
+                  showSecret
+                    ? t("hideField", { field: t("clientSecretLabel") })
+                    : t("showField", { field: t("clientSecretLabel") })
+                }
               >
-                {showSecret ? "Hide" : "Show"}
+                {showSecret ? t("hide") : t("show")}
               </button>
             </span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
-              Secret expiry (optional, for the renewal reminder)
+              {t("secretExpiryLabel")}
             </span>
             <input
               name="secretExpiresAt"
@@ -150,7 +160,7 @@ export const MicrosoftByoForm = () => {
         <>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
-              Certificate private key (PEM) <span aria-hidden="true">*</span>
+              {t("certPrivateKeyLabel")} <span aria-hidden="true">*</span>
             </span>
             <textarea
               name="privateKey"
@@ -166,7 +176,7 @@ export const MicrosoftByoForm = () => {
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-ink-faint text-xs">
-              Certificate (PEM) <span aria-hidden="true">*</span>
+              {t("certificateLabel")} <span aria-hidden="true">*</span>
             </span>
             <textarea
               name="cert"
@@ -185,7 +195,7 @@ export const MicrosoftByoForm = () => {
 
       <div className="flex items-center gap-3">
         <Button variant="primary" disabled={pending} className="px-4 py-2">
-          {pending ? "Testing connection…" : "Test and connect"}
+          {pending ? t("testingConnection") : t("testAndConnect")}
         </Button>
       </div>
 
@@ -217,7 +227,7 @@ export const MicrosoftByoForm = () => {
               <span
                 className={c.granted ? "text-good-text" : "text-danger-text"}
               >
-                {c.granted ? "granted" : "missing"}
+                {c.granted ? t("granted") : t("missing")}
               </span>
             </li>
           ))}
@@ -232,6 +242,7 @@ export const MicrosoftByoForm = () => {
  * SaaS connectors): the first press arms, the second fires.
  */
 export const MicrosoftDisconnectButton = () => {
+  const t = useTranslations("connectorsDash.microsoftForm");
   const [armed, setArmed] = useState(false);
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null) => disconnectMicrosoft(),
@@ -250,9 +261,9 @@ export const MicrosoftDisconnectButton = () => {
   }, [result, router]);
 
   const message = armed
-    ? "This removes the Microsoft connection and stops the nightly sync. Press again to confirm."
+    ? t("disconnectConfirm")
     : result && !result.ok
-      ? (result.error ?? "Something went wrong")
+      ? (result.error ?? t("somethingWrong"))
       : null;
 
   return (
@@ -270,10 +281,10 @@ export const MicrosoftDisconnectButton = () => {
     >
       <Button disabled={pending} onBlur={() => setArmed(false)}>
         {pending
-          ? "Removing…"
+          ? t("removing")
           : armed
-            ? "Confirm disconnect"
-            : "Disconnect Microsoft"}
+            ? t("confirmDisconnect")
+            : t("disconnectButton")}
       </Button>
       <span
         role="status"

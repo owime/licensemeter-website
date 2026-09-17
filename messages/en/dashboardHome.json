@@ -1,0 +1,196 @@
+{
+  "dashboardHome": {
+    "page": {
+      "title": "Overview",
+      "syncRunning": "Sync running…",
+      "importedOn": "Imported {date}",
+      "lastSynced": "Last synced {time}",
+      "lastSyncFailed": "(last sync failed)",
+      "completedWithWarnings": "(completed with warnings",
+      "stepsDegraded": "{count, plural, one {# step} other {# steps}} degraded",
+      "closeParen": ")",
+      "pdfReport": "PDF report",
+      "importedWorkspace": {
+        "title": "Imported workspace",
+        "body": "Figures come from your last instant scan or CSV upload. Connect the read-only sync for nightly updates, leak alerts and trends.",
+        "connectSync": "Connect the read-only sync",
+        "rerunScan": "Re-run instant scan",
+        "uploadExports": "Upload fresh exports"
+      },
+      "renewalPassed": "Renewal date passed:",
+      "updateInRenewals": "update it in Renewals",
+      "renewalWindow": {
+        "title": "Renewal window",
+        "today": "Renewal today",
+        "inDays": "{vendor}: renewal in {days, plural, one {# day} other {# days}}",
+        "openFindingsWorth": "{contractName}. {count, plural, one {# open finding} other {# open findings}} worth",
+        "reclaim": "Reclaim these seats before you re-commit.",
+        "reviewFindings": "Review findings",
+        "renewalCalendar": "Renewal calendar"
+      },
+      "nextActions": {
+        "heading": "Next best actions",
+        "subtitle": "Highest-value open findings to review first.",
+        "allFindings": "All findings →",
+        "empty": "No open findings. Either the tenant is spotless or the first sync has not finished yet."
+      },
+      "emptyInventoryImported": "No license data yet. Upload a fresh export to update this workspace.",
+      "emptyInventorySync": "No license data yet. Run a sync."
+    },
+    "metricCardsData": {
+      "spend": {
+        "label": "Monthly license spend",
+        "sub": "{count} assigned seats",
+        "explainer": "Assigned seats × the monthly price of each product, summed across your license inventory.",
+        "formula": "For every product we multiply the seats assigned to people by that product's monthly price, then add them up.",
+        "source": "Seat counts come from your latest sync; prices come from your price book (your custom price, or the Microsoft list price as a fallback).",
+        "column1": "Product (seats × price)",
+        "column2": "Spend / mo",
+        "totalLabel": "Total monthly spend",
+        "emptyText": "No priced license data yet."
+      },
+      "waste": {
+        "label": "Monthly waste",
+        "subPercent": "{pct}% of spend",
+        "notePrefix": "Estimated at list prices.",
+        "setPrices": "Set your actual prices",
+        "explainer": "The monthly cost of every open finding added together — this is the spend you could reclaim.",
+        "formula": "Each open or acknowledged finding carries the monthly cost of the wasted seat. Monthly waste is the sum of those costs, grouped here by the rule that flagged them.",
+        "source": "Findings are raised during sync by the detection rules; resolved findings are excluded. Costs reuse the same prices as monthly spend.",
+        "column1": "Rule",
+        "column2": "Impact / mo",
+        "totalLabel": "Total monthly waste",
+        "emptyText": "No open findings — nothing flagged as waste."
+      },
+      "annual": {
+        "label": "Annualized waste",
+        "sub": "if nothing changes",
+        "explainer": "Monthly waste projected over a full year: monthly waste × 12.",
+        "formula": "Monthly waste × 12 months. A projection of what the open findings cost over a year if nothing is reclaimed.",
+        "source": "Same findings as monthly waste, each multiplied by twelve.",
+        "column1": "Rule",
+        "column2": "Impact / yr",
+        "totalLabel": "Total annualized waste",
+        "emptyText": "No open findings — nothing flagged as waste."
+      },
+      "findings": {
+        "label": "Open findings",
+        "sub": "across {count} rules",
+        "explainer": "How many findings are currently open or acknowledged, across all detection rules.",
+        "formula": "A count of every finding whose status is open or acknowledged. Resolved findings drop out of the count.",
+        "source": "Findings are raised during sync by {count} detection rules. Each rule flags a distinct kind of license waste.",
+        "column1": "Rule",
+        "column2": "Open",
+        "totalLabel": "Total open findings",
+        "emptyText": "No open findings.",
+        "footnote": "{withFindings} of {total} rules currently have open findings."
+      },
+      "savings": {
+        "label": "Verified savings (30d)",
+        "sub": "{count} confirmed {count, plural, one {resolution} other {resolutions}}",
+        "explainer": "Monthly recurring waste that disappeared after a later sync confirmed the affected license was reclaimed.",
+        "formula": "Monthly impact from findings automatically resolved during the last 30 days.",
+        "source": "A later sync must confirm the waste condition no longer exists; acknowledging a finding does not count as savings.",
+        "column1": "Measure",
+        "column2": "Value",
+        "annualizedLabel": "Annualized recurring savings",
+        "annualizedSub": "{amount}/mo × 12",
+        "totalLabel": "Verified monthly savings",
+        "emptyText": "No findings were confirmed resolved in the last 30 days."
+      },
+      "spendRowSub": "{units} × {price}",
+      "wasteRowSub": "{count, plural, one {# finding} other {# findings}}",
+      "annualRowSub": "{amount}/mo × 12",
+      "findingRowSub": "{amount}/mo",
+      "priceCoverageFootnote": "{custom} of {total} product prices use contract values; remaining figures are estimates or unpriced."
+    },
+    "metricCards": {
+      "infoAriaLabel": "{label}: what this means",
+      "labelAriaLabel": "{label}: show how this is calculated",
+      "valueAriaLabel": "{label}: show breakdown",
+      "viewBreakdown": "View breakdown",
+      "howCalculated": "How it is calculated",
+      "whereFrom": "Where it comes from",
+      "breakdown": "Breakdown",
+      "nothingToShow": "Nothing to show yet."
+    },
+    "spendChart": {
+      "heading": "Daily API spend",
+      "headingWithDays": "Daily API spend ({count} days)",
+      "placeholder": "The spend chart appears once three or more days of cost data are in.",
+      "latest": "Latest: {parts}",
+      "ariaLabel": "Daily API spend over {count} days. Latest daily totals: {parts}.",
+      "pointAriaLabel": "{label} on {date}: {amount}",
+      "pointTitle": "{label}: {amount} on {date}",
+      "viewDailyValues": "View daily values",
+      "date": "Date",
+      "caption": "Daily API spend per provider.",
+      "exportCsv": "Export Chart CSV",
+      "sampleSuffix": " (sample)"
+    },
+    "trendChart": {
+      "heading": "Trend",
+      "headingWithDays": "Trend ({count} days)",
+      "placeholder": "Spend and waste trends appear here after a few daily syncs.",
+      "wasteFrom": "Waste {from} →",
+      "ariaLabel": "Monthly spend and waste trend over {count} days. Spend {spend}, waste {waste} per month.",
+      "monthlySpend": "Monthly spend",
+      "monthlyWaste": "Monthly waste",
+      "pointAriaLabel": "{label} on {date}: {amount}",
+      "pointTitle": "{label}: {amount} on {date}",
+      "viewDailyValues": "View daily values",
+      "caption": "Monthly spend and waste per day.",
+      "date": "Date",
+      "spendCol": "Spend",
+      "wasteCol": "Waste",
+      "exportCsv": "Export Chart CSV"
+    },
+    "onboardingEmptyState": {
+      "eyebrow": "Get started",
+      "title": "Add your Microsoft 365 directory",
+      "intro": "LicenseMeter reads your seats read-only and prices every wasted, inactive or orphaned license in euros. Connect Microsoft 365 for the complete analysis, or upload its license export for a no-admin preview. All features are free, with no time limit.",
+      "microsoft": {
+        "name": "Microsoft 365",
+        "desc": "Directory, license assignments and usage — usually the biggest source of waste. Read-only, one-time admin consent.",
+        "connect": "Connect Microsoft 365"
+      },
+      "csv": {
+        "title": "No Microsoft admin access?",
+        "desc": "Upload a Microsoft license export for an immediate assessment."
+      },
+      "addMore": {
+        "heading": "Add more sources afterward",
+        "sub": "These connectors unlock after Microsoft 365 is connected."
+      },
+      "afterMicrosoft": "After Microsoft",
+      "reviewPermissions": "Review the read-only permissions before connecting",
+      "secondary": {
+        "adobe": { "name": "Adobe", "blurb": "Creative Cloud / Acrobat seats" },
+        "zoom": { "name": "Zoom", "blurb": "Licensed Zoom seats" },
+        "atlassian": { "name": "Atlassian", "blurb": "Jira & Confluence seats" },
+        "salesforce": { "name": "Salesforce", "blurb": "User licenses" },
+        "chatgpt": { "name": "ChatGPT", "blurb": "Workspace seats (CSV)" },
+        "claude": { "name": "Claude", "blurb": "Workspace seats (CSV)" }
+      }
+    },
+    "inventoryTable": {
+      "heading": "License inventory",
+      "exportCsv": "Export CSV",
+      "product": "Product",
+      "purchased": "Purchased",
+      "assigned": "Assigned",
+      "unassigned": "Unassigned",
+      "utilization": "Utilization",
+      "spendPerMo": "Spend / mo",
+      "total": "Total",
+      "totalPurchased": "Total purchased",
+      "totalAssigned": "Total assigned",
+      "totalUnassigned": "Total unassigned",
+      "totalSpendPerMo": "Total spend/mo",
+      "utilizationAria": "{name} seat utilization"
+    },
+    "accountWidgets": {
+      "signInNote": "You can sign in with a connected account (like Google) or your password — both reach the same account, and either keeps working on its own."
+    }
+  }
+}

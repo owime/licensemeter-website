@@ -1,0 +1,104 @@
+{
+  "security": {
+    "eyebrow": "Sikkerhetsoversikt",
+    "h1": "Skrevet for personen som må si ja.",
+    "intro": "LicenseMeter ber om leserettigheter for hele tenanten, så denne siden forklarer nøyaktig hva som gis tilgang til, hva som lagres hvor, og hvordan du avslutter. Del den med sikkerhetsteamet ditt før noen klikker på samtykke.",
+    "toggleLabel": "Velg språk",
+    "access": {
+      "title": "Slik fungerer tilgangen",
+      "body": {
+        "pre": "En global administrator i din tenant gir samtykke én gang, gjennom Microsofts standard dialog for administratorsamtykke. Det autoriserer applikasjonen «LicenseMeter Connector» for ",
+        "strong": "applikasjonstillatelser som er skrivebeskyttet uten unntak",
+        "post": ". LicenseMeter synkroniserer deretter hver natt med sitt eget legitimasjonssett: ingen tjenestekonto i din tenant, ingen agent, ingen postboks-plugin. Du kan når som helst tilbakekalle applikasjonen i Entra ID, uavhengig av oss."
+      },
+      "scopeWhy": {
+        "User_Read_All": "katalogbrukere, kontostatus, tildelte lisenser",
+        "AuditLog_Read_All": "tidspunkt for siste innlogging (krever Entra ID P1)",
+        "Reports_Read_All": "bruks- og Copilot-aktivitetsrapporter",
+        "LicenseAssignment_Read_All": "kjøpte vs. tildelte lisensplasser",
+        "ReportSettings_Read_All": "om navn er skjult i rapporter"
+      },
+      "consentNote": "Samtykket registreres i tenantens revisjonslogg. Innlogging til selve dashbordet bruker en separat appregistrering med kun openid, profile og email."
+    },
+    "delegate": {
+      "title": "Delegere samtykket uten stående rettigheter som global administrator",
+      "body": {
+        "pre": "Mandantomfattende administratorsamtykke for applikasjonstillatelser i Microsoft Graph (av typen listet over) kan gis av en global administrator eller en administrator for privilegerte roller; en applikasjonsadministrator er ikke tilstrekkelig for Graph-applikasjonstillatelser - en grense Microsoft setter, ikke oss. Entra ID lar imidlertid en organisasjon delegere dette samtykket smalt: en app-samtykkepolicy låst til nøyaktig disse ",
+        "post": " skrivebeskyttede tillatelsene og til LicenseMeter-connector-appen, koblet til en tilpasset katalogrolle. Selve engangsoppsettet krever en administrator for privilegerte roller eller global administrator samt Microsoft Graph PowerShell (rolletillatelsen kan ennå ikke legges til i Entra-portalen) og hører hjemme i identitetsteamets gjennomgang."
+      },
+      "connectorIdNote": "Connector-applikasjonens ID vises på tilkoblingssiden og i Microsofts samtykkedialog.",
+      "csv": {
+        "pre": "Har du ikke en rolle med samtykkerettigheter for hånden akkurat nå? ",
+        "linkText": "CSV-importen",
+        "post": " beregner sløsingstallet ditt fra to eksporter fra Microsoft 365 admin-senteret, helt uten samtykke. Lenken logger deg først inn med Microsoft."
+      }
+    },
+    "never": {
+      "title": "Hva LicenseMeter aldri får tilgang til",
+      "items": [
+        "Postboksinnhold, vedlegg eller kalendere",
+        "Filer i OneDrive, SharePoint eller Teams",
+        "Teams-meldinger eller møteinnhold",
+        "Passord, legitimasjon eller sikkerhetstokener til brukerne dine",
+        "Enhver skrivetilgang: LicenseMeter kan ikke endre noe i din tenant"
+      ],
+      "note": "Bruksrapporter konsumeres kun som antall og dato for siste aktivitet: metadata, aldri innhold."
+    },
+    "stored": {
+      "title": "Hva som lagres",
+      "items": [
+        "Lisens-SKU-er med kjøpte og tildelte antall plasser",
+        "Katalogbrukere: visningsnavn, UPN, aktivert status, brukertype, opprettelsesdato, tildelte lisenser",
+        "Tidspunkt for siste innlogging (når din tenant har Entra ID P1) og dato for siste aktivitet per arbeidsbelastning",
+        "Prisene du legger inn i prisboken og funnene som utledes av dette",
+        "Hvis du kobler til Adobe, Zoom, Atlassian, Salesforce, OpenAI eller Anthropic (alle valgfrie): e-postadresser for lisensplasser eller konsollmedlemmer, status, produkttildelinger og dato for siste innlogging der leverandøren gjør dette tilgjengelig, samt daglige API-kostnadstotaler for OpenAI og Anthropic; selve legitimasjonen lagres kryptert (AES-256-GCM) og brukes kun lesende",
+        "Hvis du importerer medlemslister fra ChatGPT eller Claude (valgfri CSV-innliming): e-postadresser, navn, plasstyper og datoer for siste aktivitet som finnes i dataene du limer inn",
+        "En aktivitetslogg per arbeidsområde over eksporter og administrative handlinger, som slettes sammen med arbeidsområdet"
+      ],
+      "note": "Tilgang til et arbeidsområde er invitasjonsbasert. Å logge inn med en konto fra din tenant gir i seg selv ingen tilgang; administratoren som ga samtykket bestemmer hvem som ser dataene og i hvilken rolle."
+    },
+    "residency": {
+      "title": "Datalokasjon, lagringstid og sletting",
+      "body": "Kundens applikasjonsdata lagres i EU i en Supabase Postgres-database driftet på AWS eu-central-1 (Frankfurt), i samsvar med gjeldende ordlyd i personvernerklæringen. Data lagres kun så lenge din tenant er tilkoblet. Å koble fra arbeidsområdet (Innstillinger → Faresone) sletter all synkronisert data umiddelbart og ugjenkallelig: brukere, funn, priser, historikk. Å tilbakekalle bedriftsapplikasjonen i din Entra ID kutter i tillegg vår tilgang ved kilden."
+    },
+    "subprocessors": {
+      "title": "Underleverandører",
+      "note": {
+        "pre": "Den avgjørende listen over underleverandører er en del av ",
+        "linkText": "databehandleravtalen (DPA)",
+        "post": "."
+      }
+    },
+    "dpa": {
+      "title": "Databehandleravtale (DPA)",
+      "body": {
+        "pre": "LicenseMeter behandler katalogdata på dine vegne, så en databehandleravtale i henhold til art. 28 i personvernforordningen (GDPR) følger med hvert arbeidsområde. Den fullstendige teksten publiseres på vår ",
+        "linkText": "Databehandleravtale",
+        "post": "-side, hvor du kan laste ned den ferdigsignerte PDF-en på engelsk eller tysk, fylle inn dine opplysninger og motsignere den. Ingen e-post frem og tilbake, ingen venting."
+      }
+    },
+    "publisher": {
+      "title": "Utgiververifisering",
+      "body": "Microsofts utgiververifisering for LicenseMeters appregistreringer pågår. Frem til den er fullført viser samtykkedialogen appene som uverifiserte, og tenanter med strenge samtykkepolicyer kan blokkere dem. Microsoft viser verifiseringsstatusen direkte i samtykkedialogen, slik at administratoren din alltid kan bekrefte gjeldende status uavhengig av denne siden."
+    },
+    "who": {
+      "title": "Hvem som bygger LicenseMeter",
+      "pre": "LicenseMeter er bygget og driftes av ",
+      "kocLabel": "Ugur Koc",
+      "mid": ", Microsoft MVP for Intune og Security Copilot. Driftsselskapet er UgurLabs UG (haftungsbeschränkt) i Düsseldorf, Tyskland, samme juridiske enhet som er oppgitt i ",
+      "impressumLabel": "Impressum",
+      "post": " og i hver databehandleravtale, og de skrivebeskyttede designprinsippene dokumentert på denne siden gjelder for hele produktet."
+    },
+    "questions": {
+      "title": "Spørsmål",
+      "body": "Sikkerhetsgjennomgang, koordinering av penetrasjonstesting eller leverandørspørreskjemaer: ",
+      "seeAlso": {
+        "pre": ". Se også ",
+        "faqLabel": "FAQ",
+        "mid": " og ",
+        "privacyLabel": "personvernerklæringen",
+        "post": "."
+      }
+    }
+  }
+}

@@ -1,12 +1,20 @@
+import type { getTranslations } from "next-intl/server";
+
 import type { DpaLang } from "~/lib/dpa";
 
 /**
- * Bilingual content for the Trust Center, mirroring the single-source-of-truth
- * pattern in ~/lib/dpa: one typed structure per language so the EN x DE
- * surfaces can never drift. Each language is server-rendered at its own URL
- * (/trust-center and /de/trust-center). The subprocessor rows are NOT
- * duplicated here, they are read from ~/lib/dpa (subprocessorRows) so the table
- * stays sourced from the binding agreement.
+ * Content for the Trust Center. The German edition (server-rendered at
+ * /de/trust-center) stays a static, hand-maintained structure below, exactly
+ * as before. The English URL (/trust-center) instead sources its strings
+ * from the "trustCenter" next-intl namespace
+ * (messages/{en,no}/trustCenter.json), so the same URL renders in English or
+ * Norwegian depending on the visitor's locale - see
+ * buildTrustContentFromTranslations and its use in TrustCenterView. The
+ * subprocessor rows are NOT duplicated here, they are read from ~/lib/dpa
+ * (subprocessorRows) so the table stays sourced from the binding agreement -
+ * that data currently has no Norwegian edition (~/lib/dpa is out of scope for
+ * this change), so subprocessor names/purposes/locations render in English
+ * even on the Norwegian-language page.
  */
 
 type GlanceItem = { label: string; detail: string };
@@ -45,146 +53,87 @@ export type TrustContent = {
   questions: { title: string; body: string };
 };
 
-const EN: TrustContent = {
-  eyebrow: "Trust Center",
-  h1: "Everything your security team needs, in one place.",
-  intro:
-    "LicenseMeter reads license and directory metadata from your Microsoft 365 tenant, so trust is the whole product. This page brings together how we access data, where it lives, who processes it, and the documents that back it up. Everything here is sourced from the same agreements we sign with you.",
-  toggleLabel: "Choose language",
+/** href per documents item, in JSON array order; not localized (see header note). */
+const DOCUMENT_HREFS = ["/security", "/dpa", "/privacy", "/terms", "/cookies", "/faq"];
+
+/**
+ * Builds the English/Norwegian TrustContent from the "trustCenter" next-intl
+ * namespace (messages/{en,no}/trustCenter.json). Hrefs are not localized
+ * (there is no /no/ route tree), so they stay hardcoded here, matching the
+ * English routes used throughout the marketing site regardless of locale.
+ */
+export const buildTrustContentFromTranslations = (
+  t: Awaited<ReturnType<typeof getTranslations<"trustCenter">>>,
+): TrustContent => ({
+  eyebrow: t("eyebrow"),
+  h1: t("h1"),
+  intro: t("intro"),
+  toggleLabel: t("toggleLabel"),
   atAGlance: {
-    title: "At a glance",
-    items: [
-      {
-        label: "Read-only access",
-        detail:
-          "Application permissions are read-only without exception. We can never change anything in your tenant.",
-      },
-      {
-        label: "EU data residency",
-        detail:
-          "Customer data is stored in the EU, in a Supabase Postgres database on AWS eu-central-1 (Frankfurt).",
-      },
-      {
-        label: "Delete on disconnect",
-        detail:
-          "Disconnecting a workspace deletes all synced data immediately and irreversibly.",
-      },
-      {
-        label: "GDPR DPA, pre-signed",
-        detail:
-          "An Art. 28 GDPR data processing agreement is included for every workspace, downloadable and pre-signed.",
-      },
-      {
-        label: "Encrypted throughout",
-        detail:
-          "TLS in transit, AES-256 at rest, and AES-256-GCM at the app layer for any third-party credentials.",
-      },
-      {
-        label: "Cookieless analytics",
-        detail:
-          "No tracking or marketing cookies, no consent banner. Aggregated, IP-free Vercel Web Analytics.",
-      },
-    ],
+    title: t("atAGlance.title"),
+    items: t.raw("atAGlance.items") as GlanceItem[],
   },
   where: {
-    title: "Where your data lives",
-    intro:
-      "These are the sub-processors LicenseMeter engages, with their processing location and the transfer mechanism that covers it. The list is rendered from the binding Data Processing Agreement, so it is always the same list you sign.",
-    locationLabel: "Location",
-    transferLabel: "Transfer",
-    euLabel: "EU",
-    usLabel: "EU + US",
+    title: t("where.title"),
+    intro: t("where.intro"),
+    locationLabel: t("where.locationLabel"),
+    transferLabel: t("where.transferLabel"),
+    euLabel: t("where.euLabel"),
+    usLabel: t("where.usLabel"),
     note: {
-      pre: "Optional source systems you connect (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic) and any CSV member lists you import (ChatGPT, Claude) are ",
-      bold: "data sources, not sub-processors",
-      mid: ": we read from them on your behalf and disclose no personal data to them beyond the authenticated read request. The definitive list is ",
-      linkText: "Annex 3 of the DPA",
+      pre: t("where.note.pre"),
+      bold: t("where.note.bold"),
+      mid: t("where.note.mid"),
+      linkText: t("where.note.linkText"),
       href: "/dpa#annex-3",
-      post: ".",
+      post: t("where.note.post"),
     },
   },
   access: {
-    title: "How access works",
-    body: "A Global Administrator grants consent once, through Microsoft's standard admin-consent dialog, for application permissions that are read-only without exception. There is no service account, agent or mailbox plugin in your tenant, and you can revoke the application in Entra ID at any time, independently of us. Usage reports are consumed as counts and last-activity dates only: metadata, never content.",
+    title: t("access.title"),
+    body: t("access.body"),
     linked: {
-      pre: "The ",
-      linkText: "Security overview",
+      pre: t("access.linked.pre"),
+      linkText: t("access.linked.linkText"),
       href: "/security",
-      post: " lists every requested scope, what is stored, and how to delegate the consent without standing Global Administrator rights.",
+      post: t("access.linked.post"),
     },
   },
   security: {
-    title: "Security measures",
-    body: "Access to a workspace is invite-based and role-based (owner, admin, viewer); sign-in uses OpenID Connect with PKCE and signed, httpOnly, short-lived session cookies. Data is encrypted in transit (TLS, HSTS) and at rest (AES-256), with bring-your-own connector credentials additionally encrypted at the application layer (AES-256-GCM). Tenants are logically separated with row-level security, state-changing requests are CSRF-protected and rate-limited, and a per-workspace audit log records exports and administrative actions.",
+    title: t("security.title"),
+    body: t("security.body"),
     linked: {
-      pre: "The full technical and organizational measures are ",
-      linkText: "Annex 2 of the DPA",
+      pre: t("security.linked.pre"),
+      linkText: t("security.linked.linkText"),
       href: "/dpa#annex-2",
-      post: ".",
+      post: t("security.linked.post"),
     },
   },
   lifecycle: {
-    title: "Data lifecycle",
+    title: t("lifecycle.title"),
     linked: {
-      pre: "Data is collected only by the read-only sync, retained only while your tenant is connected, and deleted on disconnect. Disconnecting a workspace (Settings → Danger zone) deletes all synced data immediately and irreversibly: users, findings, prices, history and the audit log. Revoking the enterprise application in your Entra ID additionally cuts our access at the source. See the ",
-      linkText: "Privacy Policy",
+      pre: t("lifecycle.linked.pre"),
+      linkText: t("lifecycle.linked.linkText"),
       href: "/privacy",
-      post: " for retention detail and your data subject rights.",
+      post: t("lifecycle.linked.post"),
     },
   },
   certs: {
-    title: "Certifications and status",
-    body1:
-      "Our sub-processors are selected for documented security postures and are bound by data processing agreements; the major infrastructure providers above maintain SOC 2 and/or ISO 27001 certifications, whose reports we can reference in a security review. LicenseMeter itself does not yet hold its own SOC 2 / ISO 27001 attestation.",
-    body2:
-      "Microsoft publisher verification for the LicenseMeter app registrations is in progress. Until it completes, the consent dialog shows the apps as unverified; Microsoft displays the current verification status directly in the dialog, so your admin can always confirm it independently.",
+    title: t("certs.title"),
+    body1: t("certs.body1"),
+    body2: t("certs.body2"),
   },
   documents: {
-    title: "Documents",
-    items: [
-      {
-        href: "/security",
-        label: "Security overview",
-        detail:
-          "Exactly what is granted, stored and how to leave. Read-only scopes, delegated consent, deletion.",
-      },
-      {
-        href: "/dpa",
-        label: "Data Processing Agreement",
-        detail:
-          "Art. 28 GDPR DPA / AVV, pre-signed. Download in English or German with the full subprocessor annex and TOMs.",
-      },
-      {
-        href: "/privacy",
-        label: "Privacy Policy",
-        detail:
-          "What we process, on what legal basis, for how long, and the data subject rights that apply.",
-      },
-      {
-        href: "/terms",
-        label: "Terms",
-        detail:
-          "The B2B service agreement. The DPA prevails over the Terms on anything to do with data processing.",
-      },
-      {
-        href: "/cookies",
-        label: "Cookie policy",
-        detail:
-          "The functional cookies we set, why, and how long they live. No tracking cookies.",
-      },
-      {
-        href: "/faq",
-        label: "FAQ",
-        detail:
-          "Plain-language answers to the questions security and identity teams ask most often.",
-      },
-    ],
+    title: t("documents.title"),
+    items: (t.raw("documents.items") as { label: string; detail: string }[]).map(
+      (item, i) => ({ ...item, href: DOCUMENT_HREFS[i]! }),
+    ),
   },
   questions: {
-    title: "Questions",
-    body: "Security reviews, pentest coordination and vendor questionnaires: ",
+    title: t("questions.title"),
+    body: t("questions.body"),
   },
-};
+});
 
 const DE: TrustContent = {
   eyebrow: "Trust Center",
@@ -327,4 +276,12 @@ const DE: TrustContent = {
   },
 };
 
-export const TRUST_CONTENT: Record<DpaLang, TrustContent> = { en: EN, de: DE };
+/**
+ * Only the German edition is static content here. The English URL builds its
+ * content from next-intl translations instead (see
+ * buildTrustContentFromTranslations), because that is what lets /trust-center
+ * render in Norwegian for Norwegian-locale visitors.
+ */
+export const TRUST_CONTENT: Record<Extract<DpaLang, "de">, TrustContent> = {
+  de: DE,
+};

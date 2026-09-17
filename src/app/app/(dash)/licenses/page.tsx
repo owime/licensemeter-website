@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { PackageOpen } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { ImportPricesForm } from "./ImportPricesForm";
 import { EmptyState } from "~/components/workspace/EmptyState";
@@ -22,18 +23,27 @@ import {
   tenantSkus,
 } from "~/server/db/schema";
 
-export const metadata: Metadata = { title: "Licenses & prices" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("licenses");
+  return { title: t("pageTitle") };
+}
 
 type PriceRow = typeof priceBook.$inferSelect;
 
-const PriceSourcePill = ({ price }: { price: PriceRow | undefined }) => {
+const PriceSourcePill = ({
+  price,
+  t,
+}: {
+  price: PriceRow | undefined;
+  t: Awaited<ReturnType<typeof getTranslations<"licenses">>>;
+}) => {
   if (!price || price.monthlyPriceCents === 0) {
-    return <Pill tone="gold">Set a price</Pill>;
+    return <Pill tone="gold">{t("priceSource.setAPrice")}</Pill>;
   }
   return price.source === "custom" ? (
-    <Pill tone="moss">Your price</Pill>
+    <Pill tone="moss">{t("priceSource.yourPrice")}</Pill>
   ) : (
-    <Pill tone="slate">List estimate</Pill>
+    <Pill tone="slate">{t("priceSource.listEstimate")}</Pill>
   );
 };
 
@@ -42,6 +52,7 @@ export default async function LicensesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("licenses");
   const ctx = await requireAccess("viewer");
   const sp = await searchParams;
   const query =
@@ -58,8 +69,8 @@ export default async function LicensesPage({
   // so do not tell them to run one.
   const isImported = !ctx.tenant.consentedAt && !ctx.tenant.isDemo;
   const emptyMessage = isImported
-    ? "No license data yet. Upload a fresh export to update this workspace."
-    : "No license data yet. Run a sync.";
+    ? t("emptyImported")
+    : t("emptySync");
 
   const [skus, prices, adobeSeats, saasSeatRows] = await Promise.all([
     db.query.tenantSkus.findMany({
@@ -197,10 +208,10 @@ export default async function LicensesPage({
     .filter((section) => section.products.length > 0);
   const filtersActive = Boolean(query) || pricingFilter !== "all";
   const tableEmptyHeading = filtersActive
-    ? "No matching Microsoft products in this section."
-    : "No license data yet.";
+    ? t("page.emptyHeadingFiltered")
+    : t("page.emptyHeadingDefault");
   const tableEmptyMessage = filtersActive
-    ? "Try a broader search or a different price status."
+    ? t("page.emptyMessageFiltered")
     : emptyMessage;
 
   return (
@@ -208,27 +219,26 @@ export default async function LicensesPage({
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight">
-            Licenses &amp; prices
+            {t("page.heading")}
           </h1>
           <p className="text-ink-soft mt-1 max-w-2xl text-sm">
-            Prices start as list-price estimates. Enter what you actually pay
-            per seat and month. Every impact figure recalculates from your
-            numbers. There is no Microsoft API for tenant pricing.
+            {t("page.subheading")}
           </p>
           {isAdmin && (
             <p className="text-ink-faint mt-2 text-xs">
-              Changed rows show an enabled Save button. For many prices, use the
-              bulk import below.
+              {t("page.adminHint")}
             </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
           {isAdmin && (
             <a href="#bulk-price-import" className={buttonClass("secondary")}>
-              Bulk Import Prices
+              {t("page.bulkImportButton")}
             </a>
           )}
-          <ButtonAnchor href="/api/export/licenses">Export CSV</ButtonAnchor>
+          <ButtonAnchor href="/api/export/licenses">
+            {t("page.exportCsv")}
+          </ButtonAnchor>
         </div>
       </header>
 
@@ -240,32 +250,32 @@ export default async function LicensesPage({
 
       <form className="rise rise-2 border-line bg-card mt-6 flex flex-col gap-3 border p-4 sm:flex-row sm:items-end">
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-medium">
-          Search products
+          {t("page.searchLabel")}
           <input
             type="search"
             name="q"
             defaultValue={query}
             autoComplete="off"
-            placeholder="Product, SKU or connector…"
+            placeholder={t("page.searchPlaceholder")}
             className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium">
-          Price status
+          {t("page.priceStatusLabel")}
           <select
             name="pricing"
             defaultValue={pricingFilter}
             autoComplete="off"
             className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
           >
-            <option value="all">All products</option>
-            <option value="unpriced">Unpriced only</option>
-            <option value="estimate">List estimates only</option>
-            <option value="custom">Contract prices only</option>
+            <option value="all">{t("page.priceStatus.all")}</option>
+            <option value="unpriced">{t("page.priceStatus.unpriced")}</option>
+            <option value="estimate">{t("page.priceStatus.estimate")}</option>
+            <option value="custom">{t("page.priceStatus.custom")}</option>
           </select>
         </label>
         <button className="border-ink bg-ink text-canvas hover:bg-ink-soft min-h-11 border px-4 py-2 text-sm font-medium">
-          Apply filters
+          {t("page.applyFilters")}
         </button>
       </form>
 
@@ -275,25 +285,25 @@ export default async function LicensesPage({
           <thead>
             <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
               <th scope="col" className="px-4 py-3 font-medium">
-                Product
+                {t("page.table.product")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Purchased
+                {t("page.table.purchased")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Assigned
+                {t("page.table.assigned")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Unassigned
+                {t("page.table.unassigned")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Spend / mo
+                {t("page.table.spendPerMonth")}
               </th>
               <th scope="col" className="px-4 py-3 font-medium">
-                Price source
+                {t("page.table.priceSource")}
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium">
-                Price / seat / mo
+                {t("page.table.pricePerSeatPerMonth")}
               </th>
             </tr>
           </thead>
@@ -334,7 +344,7 @@ export default async function LicensesPage({
                     {fmtMoney(s.consumedUnits * cents, currency)}
                   </td>
                   <td className="px-4 py-3">
-                    <PriceSourcePill price={p} />
+                    <PriceSourcePill price={p} t={t} />
                   </td>
                   <td className="px-4 py-3">
                     {isAdmin ? (
@@ -367,7 +377,7 @@ export default async function LicensesPage({
             <tfoot>
               <tr className="border-line text-ink-faint border-t-2 text-[11px] tracking-[0.14em] uppercase">
                 <th scope="row" className="px-4 py-3 text-left font-medium">
-                  Total
+                  {t("page.table.total")}
                 </th>
                 <td className="tnum text-ink px-4 py-3 text-right font-mono">
                   {fmtNumber(totals.purchased, currency)}
@@ -411,22 +421,24 @@ export default async function LicensesPage({
                     {s.skuPartNumber}
                   </div>
                 </div>
-                <PriceSourcePill price={p} />
+                <PriceSourcePill price={p} t={t} />
               </div>
               <dl className="tnum mt-3 grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
-                    Purchased
+                    {t("page.mobile.purchased")}
                   </dt>
                   <dd>{fmtNumber(s.prepaidEnabled, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Assigned</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("page.mobile.assigned")}
+                  </dt>
                   <dd>{fmtNumber(s.consumedUnits, currency)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-ink-faint font-sans text-xs">
-                    Unassigned
+                    {t("page.mobile.unassigned")}
                   </dt>
                   <dd
                     className={
@@ -437,7 +449,9 @@ export default async function LicensesPage({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint font-sans text-xs">Spend/mo</dt>
+                  <dt className="text-ink-faint font-sans text-xs">
+                    {t("page.mobile.spendPerMonth")}
+                  </dt>
                   <dd>{fmtMoney(s.consumedUnits * cents, currency)}</dd>
                 </div>
               </dl>
@@ -451,7 +465,9 @@ export default async function LicensesPage({
                   />
                 ) : (
                   <div className="tnum text-right font-mono text-sm">
-                    {fmtMoney(cents, currency)} / seat / mo
+                    {t("page.mobile.perSeatPerMonth", {
+                      price: fmtMoney(cents, currency),
+                    })}
                   </div>
                 )}
               </div>
@@ -470,19 +486,19 @@ export default async function LicensesPage({
             <dl className="tnum grid grid-cols-1 gap-x-6 gap-y-2 font-mono text-sm min-[360px]:grid-cols-2">
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total purchased
+                  {t("page.mobile.totalPurchased")}
                 </dt>
                 <dd>{fmtNumber(totals.purchased, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total assigned
+                  {t("page.mobile.totalAssigned")}
                 </dt>
                 <dd>{fmtNumber(totals.assigned, currency)}</dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total unassigned
+                  {t("page.mobile.totalUnassigned")}
                 </dt>
                 <dd
                   className={
@@ -494,7 +510,7 @@ export default async function LicensesPage({
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-ink-faint font-sans text-xs font-medium uppercase">
-                  Total spend/mo
+                  {t("page.mobile.totalSpendPerMonth")}
                 </dt>
                 <dd className="font-semibold">
                   {fmtMoney(totals.spendCents, currency)}
@@ -511,12 +527,10 @@ export default async function LicensesPage({
           className="rise rise-3 mb-8 scroll-mt-24"
         >
           <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-            Adobe products
+            {t("page.adobe.heading")}
           </h2>
           <p className="text-ink-soft mt-1 max-w-2xl text-sm">
-            Seat counts come from the Adobe Admin Console; Adobe publishes no
-            price API, so enter your per-seat price to put a number on the
-            offboarding leaks.
+            {t("page.adobe.description")}
           </p>
           <ul className="border-line bg-card mt-3 border">
             {adobeProducts.map(([product, count]) => {
@@ -530,7 +544,7 @@ export default async function LicensesPage({
                   <div className="min-w-0">
                     <span className="font-medium">{product}</span>
                     <span className="tnum text-ink-soft ml-3 font-mono text-sm">
-                      {fmtNumber(count, currency)} seats
+                      {t("page.seatsCount", { count: fmtNumber(count, currency) })}
                     </span>
                   </div>
                   {isAdmin ? (
@@ -542,7 +556,9 @@ export default async function LicensesPage({
                     />
                   ) : (
                     <span className="tnum font-mono text-sm">
-                      {fmtMoney(cents, currency)} / seat / mo
+                      {t("page.perSeatPerMonth", {
+                        price: fmtMoney(cents, currency),
+                      })}
                     </span>
                   )}
                 </li>
@@ -555,12 +571,10 @@ export default async function LicensesPage({
       {saasSections.map(({ provider, label, products }) => (
         <section key={provider} className="rise rise-3 mb-8">
           <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-            {label} products
+            {t("page.saas.heading", { label })}
           </h2>
           <p className="text-ink-soft mt-1 max-w-2xl text-sm">
-            Seat counts come from the {label} connector; {label} publishes no
-            price API, so enter your per-seat price to put a number on the
-            findings.
+            {t("page.saas.description", { label })}
           </p>
           <ul className="border-line bg-card mt-3 border">
             {products.map(([product, count]) => {
@@ -574,7 +588,7 @@ export default async function LicensesPage({
                   <div className="min-w-0">
                     <span className="font-medium">{product}</span>
                     <span className="tnum text-ink-soft ml-3 font-mono text-sm">
-                      {fmtNumber(count, currency)} seats
+                      {t("page.seatsCount", { count: fmtNumber(count, currency) })}
                     </span>
                   </div>
                   {isAdmin ? (
@@ -586,7 +600,9 @@ export default async function LicensesPage({
                     />
                   ) : (
                     <span className="tnum font-mono text-sm">
-                      {fmtMoney(cents, currency)} / seat / mo
+                      {t("page.perSeatPerMonth", {
+                        price: fmtMoney(cents, currency),
+                      })}
                     </span>
                   )}
                 </li>
@@ -600,20 +616,18 @@ export default async function LicensesPage({
         <section className="rise rise-3 mb-8">
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-              Bulk price import
+              {t("page.bulkImport.heading")}
             </h2>
 
             <a
               href="/api/export/pricebook"
               className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
             >
-              Export price book CSV
+              {t("page.bulkImport.exportPriceBook")}
             </a>
           </div>
           <p className="text-ink-soft mt-1 max-w-2xl text-sm">
-            Maintaining prices for many products or workspaces? Export the price
-            book, fill in what you pay in a spreadsheet, and paste the result
-            back here.
+            {t("page.bulkImport.description")}
           </p>
           <div className="border-line bg-card mt-3 border p-4">
             <ImportPricesForm />

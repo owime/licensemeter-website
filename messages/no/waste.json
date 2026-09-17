@@ -1,0 +1,201 @@
+{
+  "waste": {
+    "index": {
+      "eyebrow": "Sløsingsmønstre",
+      "h1": "De seks måtene Microsoft 365-tenanter betaler for ingenting",
+      "intro": "Lisensavfall er ikke ett problem, det er en håndfull ulike mønstre med ulike årsaker og ulike deteksjonssignaler. Hver forklaring under dekker ett mønster: hvorfor det oppstår, hvordan du kan oppdage det selv med Graph PowerShell, og hvordan LicenseMeters deteksjonsregler finner og prissetter det automatisk.",
+      "readExplainer": "Les forklaringen",
+      "summaryHeading": "Hva mønstrene summerer seg til",
+      "summaryText": "Eksempeltenanten med {users} personer viser <waste>€ {amount}</waste> i sløsing per måned fordelt på {findings} funn, alle prissatt fra en redigerbar pristabell forhåndsutfylt med listepriser. <roi>Sløsingskalkulatoren</roi> gjør ditt eget antall lisenser og kostnad per lisens om til et estimat, og <psc>PowerShell-sammenligningen</psc> forklarer når et skript er nok og når det ikke er det.",
+      "ctaHeading": "Finn alle seks mønstre i din tenant.",
+      "ctaText": "Koble til med lesetilgang, så sjekker den gratis skanningen hvert mønster på denne siden mot katalogen din, lisenstildelinger, innloggingsaktivitet og bruksrapporter.",
+      "ctaNote": "Gratis skanning og kontinuerlig overvåking. Ingen kredittkort, kun lesetilgang.",
+      "primaryLabel": "Kjør min gratis skanning"
+    },
+    "detail": {
+      "breadcrumbRoot": "Sløsingsmønstre",
+      "sampleFiguresNote": "Eksempeltallene kommer fra den deterministiske demo-arbeidsflaten, ikke fra kundedata. <roi>Sløsingskalkulatoren</roi> gjør ditt eget antall lisenser om til et estimat.",
+      "relatedHeading": "Relaterte sløsingsmønstre",
+      "ctaHeading": "Se hvilke av dine lisenser som matcher dette mønsteret.",
+      "ctaText": "Koble til med lesetilgang, så lister den gratis skanningen opp hver berørte konto i tenanten din, prissatt per lisens og per måned, med et PowerShell-script for utbedring som IT-avdelingen din gjennomgår og kjører selv.",
+      "ctaNote": "Gratis skanning og kontinuerlig overvåking. Ingen kredittkort, kun lesetilgang.",
+      "primaryLabel": "Kjør min gratis skanning"
+    },
+    "explainers": {
+      "disabled-accounts-still-licensed": {
+        "name": "Deaktivert konto som fortsatt har lisens",
+        "metaTitle": "Deaktiverte Microsoft 365-kontoer som fortsatt har lisenser",
+        "metaDescription": "Hvorfor deaktiverte Entra ID-kontoer beholder Microsoft 365-lisensene sine etter offboarding, hvordan du finner dem med Get-MgUser, og hvordan LicenseMeter flagger og prissetter hver eneste en automatisk.",
+        "h1": "Deaktiverte kontoer som fortsatt har Microsoft 365-lisenser",
+        "intro": "Den klassiske offboarding-lekkasjen: noen slutter, IT deaktiverer Entra ID-kontoen, og Microsoft 365-lisensene forblir tildelt. Personen kan ikke lenger logge inn, men lisensen fortsetter å faktureres hver måned til noen legger merke til det.",
+        "summary": "Offboarding-lekkasjen: accountEnabled er false, lisensene forblir tildelt, lisensen fortsetter å faktureres.",
+        "what": {
+          "heading": "Hvorfor deaktiverte kontoer beholder lisensene sine",
+          "paragraph1": "Å deaktivere en konto og å fjerne lisensene fra den er to separate operasjoner i Microsoft 365, og offboarding-sjekklister stopper som regel ved den første. Å sette accountEnabled til false blokkerer innlogging umiddelbart, som er det sikkerhetskritiske steget, så det skjer pålitelig. Fjerning av lisens er et faktureringsspørsmål uten sikkerhetshast, så det glipper: det tilhører et annet team, en annen rutine eller et annet kvartal.",
+          "paragraph2": "Gruppebasert lisensiering gjør lekkasjen mer seiglivet. Hvis lisensen kom fra en gruppetildeling, blir den værende til kontoen fjernes fra gruppen, og deaktiverte kontoer blir sjelden ryddet ut av lisensgrupper. Admin-senteret tilbyr ingen innebygd visning av deaktiverte-men-lisensierte brukere, så tidligere ansatte hoper seg stille opp, en eller to per avgang, helt til fornyelsen tvinger fram en opptelling."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "Med Microsoft Graph PowerShell SDK lister ett filtrert spørring opp hver deaktiverte konto som fortsatt har minst én lisens:",
+          "note1": "Uttrykket assignedLicenses/$count er en avansert Graph-spørring: det fungerer bare med ConsistencyLevel eventual og en telleforespørsel, som er det de splattede parameterne gir.",
+          "note2": "Resultatet er en liste med navn. Å koble hver kontos lisenspakker (SKU-er) til hva lisensene faktisk koster, og å kjøre sjekken på nytt neste måned, er fortsatt opp til deg."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "Den nattlige synkroniseringen med kun lesetilgang henter hver katalogbruker med aktiveringsstatus og lisenstildelinger (tillatelsen User.Read.All, skrivebeskyttet som alle de fem tillatelsene). Regelen slår til når accountEnabled er false og kontoen har minst én lisens, og funnet prissettes til summen av alle lisenspakker kontoen fortsatt har.",
+          "paragraph2": "Motoren evaluerer denne regelen først og hopper deretter over kontoen, slik at en deaktivert tidligere ansatt aldri telles dobbelt av inaktivitetsreglene. Fordi signalet er ren katalogdata, fungerer denne deteksjonen i enhver tenant: den krever ingen Entra ID P1 og påvirkes ikke av skjulte rapportnavn, som har vært Microsofts standard siden 2021."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Hvert funn bærer hele månedskostnaden for lisenspakkene den deaktiverte kontoen har, hentet fra en redigerbar pristabell per tenant, forhåndsutfylt med listepris-estimater, fordi det ikke finnes noe Microsoft-API for dine forhandlede priser.",
+          "paragraph2": "I eksempeltenanten med {users} personer har {leaverCount} deaktiverte kontoer fortsatt lisenser; kontoer som er deaktivert i katalogen men fortsatt lisensiert utgjør til sammen € {leaversEuros} i måneden på tvers av Microsoft 365 og tilkoblede apper."
+        }
+      },
+      "licensed-but-never-active": {
+        "name": "Lisensiert, men aldri aktiv",
+        "metaTitle": "Microsoft 365-lisenser tildelt brukere som aldri har vært aktive",
+        "metaDescription": "Hvordan Microsoft 365-lisenser ender opp tildelt men aldri brukt, hvordan du finner tom signInActivity med Graph PowerShell, og hvordan LicenseMeter flagger aldri-aktive brukere etter en 30-dagers karensperiode.",
+        "h1": "Lisensierte brukere som aldri har vært aktive",
+        "intro": "En lisens som aldri kom i gang: den ble tildelt, fakturaen kom, og brukeren har aldri logget inn og aldri rørt en arbeidsflate. Disse kontoene ser helt friske ut i admin-senteret fordi det ikke er noe galt med dem, bortsett fra at det ikke er noen som bruker dem.",
+        "summary": "Lisenser tildelt før onboarding eller av en gruppe-regel, der brukeren aldri har logget inn i det hele tatt.",
+        "what": {
+          "heading": "Hvor aldri-aktive lisenser kommer fra",
+          "paragraph1": "Lisenser blir tildelt i forkant av onboarding for en startdato som har blitt flyttet, for et prosjekt som falt bort før oppstart, eller av en for bred gruppe-regel som lisensierer alle i en avdeling, inkludert tjeneste- og testkontoer. Brukerobjektet finnes, lisensen er forbrukt, og fra faktureringssiden er lisensen umulig å skille fra en produktiv en.",
+          "paragraph2": "Ingenting rydder opp i dette av seg selv. Kontoen dukker aldri opp i innloggingsloggene, så aktivitetsbaserte rapporter utelater den ganske enkelt, og lisensrapporten viser den som tildelt, som ser helt greit ut. Med mindre noen eksplisitt spør hvilke lisensierte kontoer som aldri har vært aktive, fornyes lisensen for alltid."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "Med Entra ID P1 kan du lese hver brukers signInActivity via Graph PowerShell og se etter lisensierte kontoer der den er tom:",
+          "note1": "Å lese signInActivity krever en Entra ID P1- eller P2-lisens i tenanten pluss tillatelsen AuditLog.Read.All; uten P1 er egenskapen utilgjengelig, og du må i stedet sammenstille bruksrapporter per arbeidsflate.",
+          "note2": "En tom lastSignInDateTime oppstår også når siste innlogging var før april 2020, og en helt ny konto har ikke fått en reell sjanse ennå: sammenlign med createdDateTime før du handler på listen."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "LicenseMeter kobler sammen Entra-innloggingsaktivitet med bruksrapporter per arbeidsflate (Exchange, OneDrive, SharePoint, Teams) til ett siste-aktivitet-tidsstempel per bruker. Regelen slår til når en lisensiert konto ikke har observert aktivitet fra noen av kildene og kontoen er minst 30 dager gammel, en karensperiode som hindrer nyopprettede kontoer fra å bli flagget under onboarding.",
+          "paragraph2": "Regelen trenger et pålitelig aktivitetssignal per bruker. Hvis tenanten mangler Entra ID P1, faller deteksjonen tilbake på bruksrapportene per arbeidsflate alene; hvis rapportnavn også er skjult, hoppes regler for inaktivitet per bruker helt over, og et samlet funn rapporterer i stedet hvor mange brukere som ikke viser aktivitet, med et hint om hvordan du slår på identifiserbare rapportnavn."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Et aldri-aktiv-funn prissettes til hele månedskostnaden for alle lisenspakker kontoen har, fra pristabellen per tenant, forhåndsutfylt med listepris-estimater og redigerbar til dine forhandlede priser.",
+          "paragraph2": "I eksempeltenanten med {users} personer sløser aldri-aktive og lenge-inaktive lisenser til sammen bort € {idleEuros} i måneden på tvers av Microsoft 365 og tilkoblede apper."
+        }
+      },
+      "inactive-licensed-users": {
+        "name": "Inaktiv lisens",
+        "metaTitle": "Inaktive Microsoft 365-brukere som fortsatt har lisenser",
+        "metaDescription": "Hvordan finne Microsoft 365-brukere uten innlogging eller arbeidsflateaktivitet på 90+ dager med Graphs signInActivity-filter, og hvordan LicenseMeter kobler innlogginger med bruksrapporter for å prissette hver inaktive lisens.",
+        "h1": "Inaktive brukere som fortsatt har Microsoft 365-lisenser",
+        "intro": "Lisenser som har gått stille: brukeren var reell og aktiv en gang, byttet så rolle, tok permisjon eller flyttet til et annet verktøy, og den lisensierte kontoen sluttet å logge inn i Exchange, OneDrive, SharePoint og Teams. Uten en sjekk av siste aktivitet på tvers av disse arbeidsflatene ser lisensen helt fin ut i admin-senteret.",
+        "summary": "Brukere hvis siste innlogging og arbeidsflateaktivitet er eldre enn inaktivitetsvinduet ditt, som standard 90 dager.",
+        "what": {
+          "heading": "Hvorfor inaktive lisenser forblir usynlige",
+          "paragraph1": "Inaktivitet er et sammenstillingsproblem. En bruker kan mangle i innloggingsloggene men fortsatt dukke opp i en postboksrapport, eller omvendt, så én enkelt rapport enten underdriver eller overdriver problemet. Å vurdere en lisens som inaktiv på en ærlig måte betyr å ta det seneste av innloggingstidsstempelet og datoene for siste aktivitet per arbeidsflate, per bruker, og sammenligne det mot en terskel.",
+          "paragraph2": "Rolleendringer, lange permisjoner, kontraktører som forsvant uten en offboarding-prosess, delte kontoer hvis formål er over: ingen av disse deaktiverer kontoen, så offboarding-sjekkene utløses aldri. Lisensen fornyes månedlig mot en konto ingen bruker."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "Med Entra ID P1 støtter Graph direkte filtrering av brukere på deres siste innloggingstidsstempel:",
+          "note1": "Graph tillater ikke å kombinere signInActivity-filteret med andre filtrerbare egenskaper, så det å begrense listen til lisensierte brukere skjer på klientsiden, og brukere som aldri har logget inn i det hele tatt fanges ikke opp av dette filteret.",
+          "note2": "lastSignInDateTime teller interaktive innloggingsforsøk, inkludert mislykkede; innlogginger er heller ikke hele bildet, så en grundig gjennomgang henter også bruksrapportene for Exchange, OneDrive, SharePoint og Teams og bruker den seneste aktiviteten per bruker."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "Den nattlige synkroniseringen kobler sammen innloggingsaktivitet med bruksrapportene for Exchange, OneDrive, SharePoint og Teams til ett enkelt siste-aktivitet-tidsstempel per bruker. Regelen slår til når det tidsstempelet er eldre enn arbeidsflatens inaktivitetsvindu: 90 dager som standard, justerbart per arbeidsflate mellom 30 og 180 dager, og tittelen på hvert funn angir det nøyaktige antall dager.",
+          "paragraph2": "Deteksjonen degraderer gradvis i stedet for å feile. Uten Entra ID P1 er signInActivity utilgjengelig, og inaktivitet faller tilbake på bruksrapportene per arbeidsflate. Hvis tenanten også skjuler visningsnavn i rapporter, er funn per bruker umulig, så motoren sender i stedet ett samlet funn som angir hvor mange av tenantens brukere som ikke viser aktivitet, sammen med admin-senter-innstillingen som gjenoppretter detaljer per bruker."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Hver inaktive bruker prissettes til hele månedskostnaden for alle lisenspakker de har, fra den redigerbare pristabellen per tenant, forhåndsutfylt med listepris-estimater. Det gjør en liste med foreldede kontoer om til et månedlig eurotall finansavdelingen kan handle på.",
+          "paragraph2": "I eksempeltenanten med {users} personer sløser inaktive og aldri-aktive lisenser til sammen bort € {idleEuros} i måneden på tvers av Microsoft 365 og tilkoblede apper."
+        }
+      },
+      "unassigned-microsoft-365-licenses": {
+        "name": "Utildelte lisenser",
+        "metaTitle": "Utildelte Microsoft 365-lisenser (hylleliggende lisenser)",
+        "metaDescription": "Hvordan kjøpte Microsoft 365-lisenser ender opp uten noen tildelt, hvordan sammenligne prepaidUnits mot consumedUnits med Get-MgSubscribedSku, og hvordan LicenseMeter prissetter hylleliggende lisenser per SKU.",
+        "h1": "Utildelte Microsoft 365-lisenser, problemet med hylleliggende lisenser",
+        "intro": "Hylleliggende lisenser er sløsing på abonnementsnivå snarere enn brukernivå: lisenser du har kjøpt som ikke er tildelt noen i det hele tatt. Ingen bruker er involvert, så ingen brukersentrert rapport vil noensinne avdekke det. Gapet viser seg bare når kjøpte og tildelte antall sammenlignes per SKU.",
+        "summary": "Kjøpte lisenser tildelt ingen: forhåndsbetalte enheter minus forbrukte enheter, per SKU.",
+        "what": {
+          "heading": "Hvor hylleliggende lisenser kommer fra",
+          "paragraph1": "Fornyelser blir dimensjonert med en buffer som aldri blir brukt, en ansettelsesplan glipper etter avregningen, et prosjekt avsluttes og lisensene blir stående utildelt men ikke kansellert, eller et pakkekjøp gir flere lisenser av en SKU enn teamet som trengte dem. De utildelte lisensene blir liggende på abonnementet, usynlige i enhver brukersentrert visning, og faktureres i sin helhet.",
+          "paragraph2": "Den rene kjøpt-minus-tildelt-regnestykket er også misvisende hvis det tas bokstavelig. Microsoft klargjør automatisk gratis og virale SKU-er i hver tenant, som WINDOWS_STORE med en million forhåndsbetalte enheter eller FLOW_FREE, og kapasitetsbaserte tildelinger på tusenvis av enheter er lisensieringsinfrastruktur snarere enn kjøp. Et nyttig tall for hylleliggende lisenser må ekskludere disse."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "Get-MgSubscribedSku returnerer kjøpte og tildelte antall per SKU; differansen er ditt antall utildelte lisenser:",
+          "note1": "Ignorer de gratis og virale radene før du trekker konklusjoner: WINDOWS_STORE, FLOW_FREE, POWERAPPS_VIRAL, TEAMS_EXPLORATORY og lignende SKU-er viser enorme forhåndsbetalte antall som ikke representerer noe kjøp og ikke medfører noen kostnad.",
+          "note2": "Resultatet snakker i SKU-delnumre, ikke priser. Å gjøre de utildelte antallene om til et månedlig eurotall betyr å koble hver SKU til kontraktsprisen din for hånd, og gjenta det hver gang."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "Synkroniseringen leser abonnerte SKU-er via den skrivebeskyttede tillatelsen LicenseAssignment.Read.All og beregner prepaidUnits.enabled minus consumedUnits per SKU. Gratis, virale og kapasitetsbaserte SKU-er ekskluderes av en kuratert unntaksliste pluss en terskel på 5000 enheter, en beskyttelse som ble lagt til etter at den første synkroniseringen mot en reell tenant viste hvor mye støy Microsofts automatisk klargjorte tildelinger skaper.",
+          "paragraph2": "Fordi signalet er ren abonnementsdata, fungerer deteksjon av hylleliggende lisenser i enhver tenant: den krever ingen Entra ID P1 og påvirkes ikke av skjulte rapportnavn. Funn består på tvers av nattlige synkroniseringer, så et antall som fortsetter å vokse er synlig som en trend snarere enn et engangsbilde."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Et hylleliggende funn prissettes som antallet utildelte lisenser ganger SKU-ens månedspris fra pristabellen per tenant, forhåndsutfylt med listepris-estimater fordi Microsoft ikke tilbyr noe API for dine forhandlede priser, og redigerbar til dine faktiske priser.",
+          "paragraph2": "I eksempeltenanten med {users} personer sløser utildelte lisenser bort € {shelfwareEuros} i måneden, den største enkeltkategorien i demo-arbeidsflaten."
+        }
+      },
+      "unused-copilot-licenses": {
+        "name": "Ubrukt Copilot-lisens",
+        "metaTitle": "Ubrukte Microsoft 365 Copilot-lisenser",
+        "metaDescription": "Hvordan finne tildelte Microsoft 365 Copilot-lisenser uten Copilot-aktivitet med Graph-bruksrapporten, og hvordan LicenseMeter flagger Copilot-lisenser som har vært inaktive i mer enn 60 dager.",
+        "h1": "Ubrukte Microsoft 365 Copilot-lisenser",
+        "intro": "Copilot er en av de dyreste tilleggslisensene per bruker i Microsoft 365, og den ble ofte kjøpt inn i puljer for piloter og utrullinger. En Copilot-lisens der brukeren sluttet å prompte for måneder siden koster full tilleggspris hver måned, på toppen av grunnlisensen som faktisk er i bruk.",
+        "summary": "Copilot-tilleggslisenser uten Copilot-aktivitet på 60 dager, eller aldri brukt i det hele tatt.",
+        "what": {
+          "heading": "Hvorfor Copilot-lisenser blir inaktive",
+          "paragraph1": "Copilot-bruk er ujevnt av natur: noen brukere gjør det til en del av hvert dokument, andre prøver det i en uke og slutter stille. Piloter blir klargjort optimistisk, utrullingsbølger lisensierer hele avdelinger, og lisensene til de som ikke tar det i bruk fortsetter å faktureres til full pris mens Word- og Teams-bruken deres ser helt sunn ut.",
+          "paragraph2": "Vanlig aktivitetsovervåking fanger ikke opp dette i det hele tatt. Brukeren logger inn daglig og bruker hver arbeidsflate, så ingen inaktivitetsregel slår til; bare det Copilot-spesifikke bruksignalet avslører at selve tillegget ikke er rørt."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "Microsoft Graph eksponerer en bruksrapport for Copilot per bruker (beta) med en siste-aktivitet-dato per Copilot-app. Eksporter den og kryssjekk mot dine Copilot-lisenstildelinger:",
+          "note1": "Endepunktet ligger på beta-versjonen av Graph og rapporterer en siste aktivitetsdato per bruker og per Copilot-app (Teams, Word, Excel, PowerPoint, Outlook, OneNote, Loop, Copilot Chat).",
+          "note2": "Siden 2021 skjuler Microsoft brukernavn i bruksrapporter som standard, så CSV-filen kan komme tilbake pseudonymisert; innstillingen ligger i Microsoft 365 admin-senteret under Org-innstillinger, Rapporter. Du må fortsatt koble rapporten mot lisenstildelingene selv."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "Synkroniseringen leser Copilot-bruksrapporten via den skrivebeskyttede tillatelsen Reports.Read.All og kobler den mot lisenstildelinger. Regelen slår til for enhver bruker med Copilot-SKU-en hvis siste Copilot-aktivitet er mer enn 60 dager gammel, eller som aldri har brukt Copilot i det hele tatt.",
+          "paragraph2": "Hvis tenanten skjuler rapportnavn, er koblingen per bruker umulig, så motoren degraderer i stedet til et samlet funn: hvor mange av tenantens Copilot-lisenser viser ingen bruk, prissatt som det antallet ganger Copilot-lisensprisen. Innstillingssiden forklarer hvordan du slår på identifiserbare rapportnavn for å få tilbake funn per bruker."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Hver inaktive Copilot-lisens prissettes til Copilot-tilleggets månedspris fra pristabellen per tenant, forhåndsutfylt med et listepris-estimat og redigerbar til din kontraktspris. Fordi tilleggsprisen er høy og konstant per lisens, gir selv en håndfull inaktive lisenser et tall verdt å handle på.",
+          "paragraph2": "I eksempeltenanten med {users} personer sløser ubrukte Copilot-lisenser bort € {copilotUnusedEuros} i måneden."
+        }
+      },
+      "licensed-guest-accounts": {
+        "name": "Lisensiert gjestekonto",
+        "metaTitle": "Gjestekontoer som har betalte Microsoft 365-lisenser",
+        "metaDescription": "Hvorfor eksterne gjestekontoer noen ganger ender opp med betalte Microsoft 365-lisenser, hvordan du lister dem opp med en avansert Get-MgUser-spørring, og hvordan LicenseMeter flagger hver lisensierte gjest.",
+        "h1": "Gjestekontoer som har betalte Microsoft 365-lisenser",
+        "intro": "Gjestekontoer finnes slik at eksterne personer kan samarbeide i Teams og SharePoint uten en lisens i tenanten din. Når en gjest likevel ender opp med en betalt lisens, betaler du for en ekstern bruker som normalt ikke burde bruke en lisens, og ofte for et samarbeid som ble avsluttet for lenge siden.",
+        "summary": "Eksterne kontoer med userType Guest som har betalte lisenser fra din tenant.",
+        "what": {
+          "heading": "Hvordan gjester ender opp lisensiert",
+          "paragraph1": "Det meste av gjestesamarbeid krever ingen lisens tildelt i din tenant: delingsinnstillinger og gjestens egen organisasjon dekker de vanlige Teams- og SharePoint-scenarioene. Betalte lisenser havner likevel på gjester, gjennom gruppebaserte lisensieringsregler som treffer eksterne kontoer, gjennom en manuell tildeling gjort for å få et prosjekt videre, eller gjennom et konsulentoppsett som overlevde kontrakten.",
+          "paragraph2": "Fordi gjester står utenfor prosessen for nyansatte, roller og avganger, er det ingen som offboarder dem når engasjementet er over. Kontoen forblir aktivert, lisensen forblir tildelt, og ingen intern prosess rører den noensinne igjen."
+        },
+        "manual": {
+          "heading": "Oppdag det manuelt",
+          "intro": "En avansert Graph-spørring lister opp hver gjestekonto som har minst én lisens:",
+          "note1": "Å filtrere på userType og på assignedLicenses/$count er begge avanserte Graph-spørringsfunksjoner, så headeren ConsistencyLevel eventual og telleforespørselen er påkrevd. Det enkelt-anførselstegn-filteret hindrer PowerShell fra å utvide $count, med de indre anførselstegnene rundt Guest doblet.",
+          "note2": "Gjennomgå listen før du fjerner noe: enkelte gjestelisensoppsett er tilsiktede, som eksternt lisensierte konsulenter. Poenget er at hvert tilfelle bør være en beslutning, ikke en rest."
+        },
+        "automatic": {
+          "heading": "Hvordan LicenseMeter oppdager det",
+          "paragraph1": "Katalogsynkroniseringen henter hver brukers userType, og regelen slår til når en konto med userType Guest har minst én lisens. Funnet prissettes til summen av alle lisenspakker gjesten har.",
+          "paragraph2": "I likhet med reglene for deaktiverte kontoer og hylleliggende lisenser er dette ren katalogdata: det fungerer uten Entra ID P1 og påvirkes ikke av skjulte rapportnavn, så lisensierte gjester fanges opp i enhver tenant-konfigurasjon."
+        },
+        "cost": {
+          "heading": "Hva det koster",
+          "paragraph1": "Hver lisensierte gjest prissettes til hele månedskostnaden for lisenspakkene tildelt kontoen, fra den redigerbare pristabellen per tenant, forhåndsutfylt med listepris-estimater.",
+          "paragraph2": "I eksempeltenanten med {users} personer sløser betalte lisenser på gjestekontoer bort € {guestsEuros} i måneden."
+        }
+      }
+    }
+  }
+}

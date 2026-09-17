@@ -1,0 +1,65 @@
+{
+  "cookies": {
+    "title": "Informasjonskapselerklæring",
+    "lastUpdated": "Sist oppdatert: september 2026",
+    "sections": {
+      "short": {
+        "title": "Kort fortalt",
+        "body": "LicenseMeter bruker informasjonskapsler for innlogging, valg av arbeidsområde og supportchat. Crisp holder supportsamtalen din tilgjengelig mens du beveger deg mellom sider. Vi bruker informasjonskapselfri Vercel Web Analytics for rekkeviddemåling og legger ikke inn reklamepiksler."
+      },
+      "whatAre": {
+        "title": "1. Hva er informasjonskapsler?",
+        "body": "Informasjonskapsler er små tekstfiler som lagres på enheten din når du besøker et nettsted. Blant annet lar de en autentisert økt vedvare på tvers av sideinnlastinger. Informasjonskapsler satt av nettstedet du besøker, er førstepartsinformasjonskapsler; informasjonskapsler fra andre leverandører er tredjepartsinformasjonskapsler. Vår supportleverandør Crisp bruker også informasjonskapsler for å opprettholde chattøkter."
+      },
+      "necessary": {
+        "title": "2. Strengt nødvendige informasjonskapsler",
+        "intro": "Disse informasjonskapslene er nødvendige for at applikasjonen skal fungere, og kan ikke slås av. De lagrer ingen informasjon som kan brukes til reklame eller analyse. Rettsgrunnlaget er § 25(2) nr. 2 TDDDG; den tilknyttede behandlingen av personopplysninger bygger på art. 6(1)(b) og (f) GDPR.",
+        "table": {
+          "cookie": "Informasjonskapsel",
+          "purpose": "Formål",
+          "retention": "Lagringstid",
+          "rows": {
+            "wosSession": {
+              "purpose": "Holder deg innlogget i applikasjonen (kun HTTP). Settes av vår autentiseringsleverandør WorkOS når du logger inn; inneholder en forseglet, kryptert økt.",
+              "retention": "Så lenge du forblir innlogget (nettleserbegrensning: 400 dager); økten inni er kortvarig og fornyes mens du bruker appen."
+            },
+            "lmSession": {
+              "purpose": "Holder deg innlogget for demoarbeidsområdet, og der Microsoft-innlogging brukes direkte, for applikasjonen (kun HTTP).",
+              "retention": "30 dager"
+            },
+            "lmOauth": {
+              "purpose": "Beskytter innloggingsflyten (OAuth-tilstand / PKCE) mot CSRF; aktiv kun under omdirigeringen.",
+              "retention": "10 minutter"
+            },
+            "lmWs": {
+              "purpose": "Husker arbeidsområdet du sist åpnet.",
+              "retention": "12 måneder"
+            }
+          }
+        },
+        "hostPrefixNote": "I produksjon har LicenseMeters øktinformasjonskapsler prefikset <code>__Host-</code> for ekstra sikkerhet (f.eks. <code>__Host-lm_session</code>)."
+      },
+      "functionality": {
+        "title": "3. Funksjonalitetsinformasjonskapsler",
+        "p1": "Crisp bruker en øktinformasjonskapsel (hvis navn starter med <code>crisp-client/session/</code>) for å gjenopprette samtalen din når du navigerer mellom sider eller kommer tilbake senere. Crisp oppgir en standard levetid for øktinformasjonskapselen på seks måneder. Se <crispLink>Crisps informasjonskapselerklæring</crispLink> for deres informasjonskapselnavn og formål.",
+        "p2": "Der ytterligere spamverifisering er aktivert, behandler Cloudflare Turnstile også nettleserinformasjon for å verifisere at innsendinger er legitime."
+      },
+      "analytics": {
+        "title": "4. Analyse-/ytelsesinformasjonskapsler",
+        "body": "Vi setter ingen analyseinformasjonskapsler. For rekkeviddemåling bruker vi Vercel Web Analytics, en informasjonskapselfri metode som kun registrerer aggregerte, anonymiserte sidevisninger (art. 6(1)(f) GDPR). Ingen informasjonskapsler settes, ingen IP-adresser lagres, og det bygges ingen profiler på tvers av enheter."
+      },
+      "targeting": {
+        "title": "5. Målrettings-/reklameinformasjonskapsler",
+        "body": "Vi setter ingen markedsførings-, reklame- eller sporingsinformasjonskapsler, og vi legger ikke inn reklame- eller sosiale medier-piksler."
+      },
+      "managing": {
+        "title": "6. Administrere informasjonskapsler",
+        "body": "Du kan når som helst se, begrense eller slette informasjonskapsler i nettleserinnstillingene dine. Sletter du de nødvendige informasjonskapslene, må du logge inn på nytt, og valget av arbeidsområde tilbakestilles. Sletting av Crisp-informasjonskapsler kan hindre chatten i å gjenopprette en tidligere samtale."
+      },
+      "changes": {
+        "title": "7. Endringer i denne informasjonskapselerklæringen",
+        "body": "Vi oppdaterer denne informasjonskapselerklæringen når informasjonskapslene vi bruker, endres. Versjonen som er publisert på denne siden, gjelder. Spørsmål: send e-post til {email}."
+      }
+    }
+  }
+}

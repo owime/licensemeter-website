@@ -1,0 +1,61 @@
+{
+  "roi": {
+    "eyebrow": "ROI-kalkulator",
+    "heading": "Kalkulator for lisenssløsing i Microsoft 365",
+    "intro": "Legg inn antall betalte seter, månedlig kostnad per sete og en sløsingsandel du finner plausibel, og se hva denne antakelsen koster per måned og per år. Estimatet kjører helt i nettleseren din, og et gratis skrivebeskyttet skann erstatter det med det virkelige tallet for leieren din.",
+    "drivers": {
+      "heading": "Hva som typisk driver lisenssløsing",
+      "intro": "Sløsingsandelen du velger over er en antakelse, men mekanismene bak den er konkrete. Dette er mønstrene LicenseMeters deteksjonsregler ser etter i reelle leiere:",
+      "items": [
+        {
+          "title": "Lekkasjer ved avslutning av brukerforhold",
+          "body": "En konto deaktiveres i Entra ID, men lisensene forblir tildelt. Setet fortsetter å faktureres hver måned til noen legger merke til det. Dette er den klassiske lekkasjen: personer som slutter hoper seg stille opp, ett eller to per avgang."
+        },
+        {
+          "title": "Seter som aldri kom i gang",
+          "body": "Lisenser tildelt i forkant av onboarding, for et prosjekt som ikke ble noe av, eller av en for bred gruppe-regel. Brukeren logger aldri inn og rører aldri en arbeidsflyt, men setet betales fra dag én."
+        },
+        {
+          "title": "Seter som ble stille",
+          "body": "Folk bytter roller, verktøy endres, og en lisensiert konto slutter å logge inn i Exchange, OneDrive, SharePoint eller Teams. Uten en sjekk av siste aktivitet på tvers av disse arbeidsflytene ser setet fint ut i administrasjonssenteret."
+        },
+        {
+          "title": "Hylleprodukter, overlapp og tillegg",
+          "body": "Kjøpte seter som aldri ble tildelt noen, pakker betalt ved siden av frittstående planer som overlapper dem, Copilot-tillegg ingen bruker, og betalte lisenser liggende på gjestekontoer. Ingenting av dette vises i en sammenligning mot antall ansatte."
+        }
+      ]
+    },
+    "how": {
+      "heading": "Slik virker kalkulatoren",
+      "body": "Seter ganger månedlig kostnad per sete ganger din antatte sløsingsandel: verken mer eller mindre. Matematikken kjører i heltalls-øre, og årstallet er tolv ganger det månedlige. LicenseMeter er gratis uansett antall seter. Ingenting du skriver inn sendes noe sted."
+    },
+    "detection": {
+      "heading": "Fra antakelse til deteksjon",
+      "intro": "Et skann erstatter skyveknappen med funn: LicenseMeter kobler sammen katalogdata, lisenstildelinger, innloggingsaktivitet og bruksrapporter skrivebeskyttet, og priser deretter hvert bortkastede sete fra en redigerbar prisbok forhåndsutfylt med listepris-estimater, fordi det ikke finnes noe Microsoft-API for dine forhandlede priser.",
+      "stats": "Eksempelleieren med {users} personer viser",
+      "suffix": "i måneden fordelt på {findingsCount} funn, hver med konto, regel og månedlig kostnad tilknyttet.",
+      "note": "Hvert funn eksporteres til CSV for økonomiavdelingen, og IT får et generert PowerShell-utbedringsskript å gjennomgå og kjøre. LicenseMeter skriver selv aldri til leieren din."
+    },
+    "final": {
+      "heading": "Slutt å anslå. Se ditt tall.",
+      "body": "Koble til skrivebeskyttet, og det gratis skannet erstatter hver antakelse på denne siden med reelle leierdata, priset per sete og per måned.",
+      "primaryLabel": "Kjør mitt gratis skann",
+      "note": "Gratis skann og kontinuerlig overvåking. Ikke noe kredittkort, kun skrivebeskyttet tilgang."
+    },
+    "calculator": {
+      "badge": "Sløsingsestimat · dine antakelser",
+      "noDataLeaves": "Ingen data forlater denne siden",
+      "seatsLabel": "Betalte seter",
+      "seatsHint": "Bruk antall betalte seter fra fornyelsen, faktureringseksporten eller administrasjonssenteret.",
+      "costLabel": "Estimert månedlig kostnad per sete (EUR)",
+      "costHint": "Standardverdien bruker denne appens listepris-estimat for Microsoft 365 E3. Erstatt den med din blandede månedskostnad hvis innkjøp har en.",
+      "shareLabel": "Antatt sløsingsandel",
+      "shareValueAria": "{value} prosent antatt sløsingsandel",
+      "shareHint": "Start med en forsiktig antakelse før skanning. Eksempelleieren ligger på {demoWastePct} prosent, men det gratis skannet erstatter dette med leierdata.",
+      "resultBadge": "Antakelsesbasert estimat",
+      "resultCaption": "estimert månedlig sløsing · {annual} i året før utbedring",
+      "resultNote": "LicenseMeter er gratis uansett antall seter. Kjør et skann for å erstatte dette estimatet med funn fra din egen arbeidsflate.",
+      "runScan": "Kjør mitt gratis skann →"
+    }
+  }
+}

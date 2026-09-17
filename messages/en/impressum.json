@@ -1,0 +1,22 @@
+{
+  "impressum": {
+    "title": "Impressum",
+    "headings": {
+      "info": "Information pursuant to § 5 DDG",
+      "representedBy": "Represented by",
+      "contact": "Contact",
+      "register": "Register entry",
+      "responsibleContent": "Responsible for content pursuant to § 18 (2) MStV",
+      "liabilityContent": "Liability for content",
+      "liabilityLinks": "Liability for links",
+      "copyright": "Copyright",
+      "disputeResolution": "Consumer dispute resolution / Universal conciliation body",
+      "notice": "Notice"
+    },
+    "labels": {
+      "email": "Email",
+      "registryCourt": "Register court",
+      "commercialRegisterNumber": "Commercial register number (HRB)"
+    }
+  }
+}

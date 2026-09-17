@@ -1,6 +1,7 @@
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { ButtonAnchor, buttonClass } from "~/components/ui";
 import { fmtDateTime } from "~/lib/format";
@@ -25,6 +26,8 @@ export default async function ActivityPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getTranslations("settings.activity.page");
+  const ta = await getTranslations("settings.activity");
   const ctx = await requireAccess("admin");
   const sp = await searchParams;
   const query = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
@@ -85,47 +88,53 @@ export default async function ActivityPage({
               href="/app/settings"
               className="hover:text-ink hover:underline"
             >
-              Settings
+              {t("breadcrumbSettings")}
             </Link>{" "}
-            / <span aria-current="page">Activity</span>
+            / <span aria-current="page">{t("breadcrumbCurrent")}</span>
           </nav>
           <h1 className="font-display mt-2 text-3xl tracking-tight">
-            Activity log
+            {t("title")}
           </h1>
-          <p className="text-ink-soft mt-1 text-sm">{count} matching events.</p>
+          <p className="text-ink-soft mt-1 text-sm">
+            {t("matchingEvents", { count })}
+          </p>
         </div>
-        <ButtonAnchor href="/api/export/audit">Export audit CSV</ButtonAnchor>
+        <ButtonAnchor href="/api/export/audit">
+          {t("exportAudit")}
+        </ButtonAnchor>
       </header>
 
       <form className="rise rise-2 border-line bg-card grid gap-3 border p-4 sm:grid-cols-[1fr_16rem_auto] sm:items-end">
         <label className="flex flex-col gap-1 text-xs font-medium">
-          Search actor or change detail
+          {t("searchLabel")}
           <input
             type="search"
             name="q"
             defaultValue={query}
             autoComplete="off"
-            placeholder="Email, SKU, member or value…"
+            placeholder={t("searchPlaceholder")}
             className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium">
-          Action
+          {t("actionLabel")}
           <select
             name="action"
             defaultValue={action}
             autoComplete="off"
             className="border-line bg-card min-h-11 border px-3 py-2 text-sm font-normal"
           >
-            <option value="">All actions</option>
+            <option value="">{t("allActions")}</option>
             {actionRows.map((row) => (
               <option key={row.action} value={row.action}>
-                {auditActionLabel(row.action)}
+                {auditActionLabel(ta, row.action)}
               </option>
             ))}
           </select>
         </label>
-        <button className={buttonClass("secondary")}>Apply filters</button>
+        <button className={buttonClass("secondary")}>
+          {t("applyFilters")}
+        </button>
       </form>
 
       <ol className="rise rise-2 flex flex-col gap-3">
@@ -136,7 +145,7 @@ export default async function ActivityPage({
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
                   <span className="font-medium">
-                    {auditActionLabel(entry.action)}
+                    {auditActionLabel(ta, entry.action)}
                   </span>
                   <span className="text-ink-faint ml-2 text-xs break-all">
                     {entry.actorEmail ?? entry.actorOid}
@@ -151,7 +160,7 @@ export default async function ActivityPage({
                   {details.map(([key, value]) => (
                     <div key={key} className="min-w-0 text-xs">
                       <dt className="text-ink-faint">
-                        {auditDetailLabel(key)}
+                        {auditDetailLabel(ta, key)}
                       </dt>
                       <dd className="mt-0.5 font-mono break-words">
                         {detailValue(value)}
@@ -165,7 +174,7 @@ export default async function ActivityPage({
         })}
         {entries.length === 0 && (
           <li className="border-line bg-card text-ink-soft border border-dashed px-4 py-10 text-center text-sm">
-            No activity matches these filters.
+            {t("noMatches")}
           </li>
         )}
       </ol>
@@ -176,18 +185,21 @@ export default async function ActivityPage({
           className="flex items-center justify-between gap-3"
         >
           <span className="text-ink-soft text-xs">
-            Showing {(page - 1) * PAGE_SIZE + 1}–
-            {Math.min(page * PAGE_SIZE, count)} of {count}
+            {t("showing", {
+              from: (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, count),
+              count,
+            })}
           </span>
           <div className="flex gap-2">
             {page > 1 && (
               <Link href={pageHref(page - 1)} className={buttonClass("micro")}>
-                ← Previous
+                {t("previous")}
               </Link>
             )}
             {page < totalPages && (
               <Link href={pageHref(page + 1)} className={buttonClass("micro")}>
-                Next →
+                {t("next")}
               </Link>
             )}
           </div>

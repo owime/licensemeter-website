@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "~/components/ui";
 import { addMember } from "~/server/actions";
@@ -22,6 +23,7 @@ export const InviteForm = ({
   allowOwner: boolean;
   inviteEmailsActive: boolean;
 }) => {
+  const t = useTranslations("settings.invite");
   const [result, formAction, pending] = useActionState(
     async (_prev: InviteState, formData: FormData): Promise<InviteState> => {
       const email = formData.get("email");
@@ -43,8 +45,8 @@ export const InviteForm = ({
         name="email"
         type="email"
         required
-        aria-label="Email address to invite"
-        placeholder="colleague@yourcompany.com"
+        aria-label={t("emailLabel")}
+        placeholder={t("emailPlaceholder")}
         defaultValue={result && !result.ok ? result.email : undefined}
         className="border-line bg-card focus:border-ink min-w-56 flex-1 border px-3 py-2 text-sm"
       />
@@ -52,7 +54,7 @@ export const InviteForm = ({
         name="role"
         value={role}
         onChange={(e) => setRole(e.target.value as MembershipRole)}
-        aria-label="Role for the invited member"
+        aria-label={t("roleLabel")}
         className="border-line bg-card focus:border-ink border px-2 py-2 text-sm"
       >
         {ROLE_ORDER.filter((r) => r !== "owner" || allowOwner).map((r) => (
@@ -62,7 +64,7 @@ export const InviteForm = ({
         ))}
       </select>
       <Button variant="primary" disabled={pending} className="px-4 py-2">
-        {pending ? "Inviting…" : "Invite"}
+        {pending ? t("inviting") : t("invite")}
       </Button>
       <p
         role="status"
@@ -76,18 +78,18 @@ export const InviteForm = ({
         {result === null
           ? null
           : result.ok
-            ? `Invited ${result.email ?? "member"}.`
-            : (result.error ?? "Invite failed")}
+            ? result.email
+              ? t("invited", { email: result.email })
+              : t("invitedFallback")
+            : (result.error ?? t("inviteFailed"))}
       </p>
       <p className="text-ink-soft w-full text-xs">
         <span className="font-medium">{ROLE_LABEL[role]}:</span>{" "}
         {ROLE_DESCRIPTION[role]}
       </p>
       <p className="text-ink-faint w-full text-xs">
-        {inviteEmailsActive
-          ? "Invited people get an email with a sign-in link and gain access on their first Microsoft sign-in."
-          : "Invited people get access when they first sign in with Microsoft using this email."}{" "}
-        Same-tenant sign-in alone never grants access.
+        {inviteEmailsActive ? t("emailsActive") : t("emailsInactive")}{" "}
+        {t("sameTenantNote")}
       </p>
     </form>
   );

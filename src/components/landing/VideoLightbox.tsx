@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 /**
@@ -21,6 +22,7 @@ export const VideoLightbox = ({
   poster: string;
   label: string;
 }) => {
+  const t = useTranslations("home.videoLightbox");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
 
@@ -59,7 +61,7 @@ export const VideoLightbox = ({
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close video"
+        aria-label={t("close")}
         className="bg-ink/70 text-canvas hover:bg-ink focus-visible:ring-canvas focus-visible:ring-offset-ink absolute top-3 right-3 z-10 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 sm:top-5 sm:right-5"
       >
         <X className="size-6" aria-hidden="true" />

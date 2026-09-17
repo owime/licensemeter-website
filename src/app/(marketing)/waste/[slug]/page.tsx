@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { DemoClip } from "~/components/landing/DemoClip";
 import { SignInButtons } from "~/components/SignInButtons";
 
-import { WASTE_EXPLAINERS, wasteExplainer } from "../content";
+import { WASTE_EXPLAINERS, buildWasteExplainers, wasteExplainer } from "../content";
 
 type Params = { slug: string };
 
@@ -20,7 +21,8 @@ export const generateMetadata = async ({
 }: {
   params: Promise<Params>;
 }): Promise<Metadata> => {
-  const entry = wasteExplainer((await params).slug);
+  const t = await getTranslations("waste");
+  const entry = wasteExplainer(t, (await params).slug);
   if (!entry) return {};
   return {
     title: entry.metaTitle,
@@ -36,12 +38,13 @@ export default async function WasteExplainerPage({
 }: {
   params: Promise<Params>;
 }) {
-  const entry = wasteExplainer((await params).slug);
+  const t = await getTranslations("waste");
+  const entry = wasteExplainer(t, (await params).slug);
   if (!entry) notFound();
   const demoEnabled = isDemoMode();
   const signInOk = signInEnabled();
   const signInHref = signInPath();
-  const related = WASTE_EXPLAINERS.filter((e) => e.slug !== entry.slug);
+  const related = buildWasteExplainers(t).filter((e) => e.slug !== entry.slug);
 
   /* Static breadcrumb; "<" escaped so nothing can terminate the script. */
   const pageLd = {
@@ -74,7 +77,7 @@ export default async function WasteExplainerPage({
           href="/waste"
           className="hover:text-ink underline-offset-4 hover:underline"
         >
-          Waste patterns
+          {t("detail.breadcrumbRoot")}
         </Link>{" "}
         /{" "}
         <span aria-current="page" className="text-brand-text">
@@ -150,21 +153,22 @@ export default async function WasteExplainerPage({
           </p>
         ))}
         <p className="text-ink-faint mt-3 text-xs">
-          Sample figures come from the deterministic demo workspace, not from
-          customer data. The{" "}
-          <Link
-            href="/roi"
-            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-          >
-            waste calculator
-          </Link>{" "}
-          turns your own seat count into an estimate.
+          {t.rich("detail.sampleFiguresNote", {
+            roi: (chunks) => (
+              <Link
+                href="/roi"
+                className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </section>
 
       <section className="mt-12">
         <h2 className="font-display text-2xl tracking-tight">
-          Related waste patterns
+          {t("detail.relatedHeading")}
         </h2>
         <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm leading-relaxed">
           {related.map((e) => (
@@ -186,12 +190,10 @@ export default async function WasteExplainerPage({
       {/* Final CTA band, same pattern as /roi and /compare/powershell-audit. */}
       <section className="border-line mt-14 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
-          See which of your seats match this pattern.
+          {t("detail.ctaHeading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
-          Connect read-only and the free scan lists every affected account in
-          your tenant, priced per seat and per month, with a PowerShell
-          remediation script your IT reviews and runs.
+          {t("detail.ctaText")}
         </p>
         <div className="mt-8">
           <SignInButtons
@@ -199,12 +201,9 @@ export default async function WasteExplainerPage({
             signInHref={signInHref}
             demoEnabled={demoEnabled}
             showNote={false}
-            primaryLabel="Run my free scan"
+            primaryLabel={t("detail.primaryLabel")}
           />
-          <p className="text-ink-faint mt-3 text-xs">
-            Free scans and continuous monitoring. No credit card, read-only
-            access.
-          </p>
+          <p className="text-ink-faint mt-3 text-xs">{t("detail.ctaNote")}</p>
         </div>
       </section>
 

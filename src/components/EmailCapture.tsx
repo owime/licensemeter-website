@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { buttonClass } from "~/components/ui";
 import { captureEmail } from "~/server/actions";
 
 export const EmailCapture = () => {
+  const t = useTranslations("emailCapture");
   const [state, setState] = useState<"idle" | "done" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -24,17 +26,13 @@ export const EmailCapture = () => {
           const result = await captureEmail(data);
           if (result.ok) {
             setState("done");
-            setMessage(
-              "Sent. The security pack and first-scan checklist are on their way to your inbox.",
-            );
+            setMessage(t("success"));
             // The fields hide on success: park focus on the confirmation
             // before the commit so it is never dropped to <body>.
             statusRef.current?.focus();
           } else {
             setState("error");
-            setMessage(
-              result.error ?? "Something went wrong. Please try again.",
-            );
+            setMessage(result.error ?? t("genericError"));
             inputRef.current?.focus();
           }
         });
@@ -54,8 +52,8 @@ export const EmailCapture = () => {
         type="email"
         name="email"
         required
-        placeholder="you@yourcompany.com"
-        aria-label="Email address"
+        placeholder={t("placeholder")}
+        aria-label={t("emailLabel")}
         aria-invalid={state === "error" || undefined}
         autoComplete="email"
         spellCheck={false}
@@ -67,7 +65,7 @@ export const EmailCapture = () => {
         disabled={pending}
         className={buttonClass("secondary", state === "done" ? "hidden" : "")}
       >
-        {pending ? "Sending…" : "Send the security pack"}
+        {pending ? t("sending") : t("submit")}
       </button>
       {/* Live region mounted from first render so announcements are reliable. */}
       <p

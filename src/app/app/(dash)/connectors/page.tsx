@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { eq, sql } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { ConnectorCatalog } from "~/components/workspace/ConnectorCatalog";
 import {
   WORKSPACE_CONNECTORS,
@@ -14,10 +16,14 @@ import {
   saasSeats,
 } from "~/server/db/schema";
 
-export const metadata = { title: "Connectors" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("connectorsDash");
+  return { title: t("titles.index") };
+}
 
 export default async function ConnectorsPage() {
   const ctx = await requireAccess("viewer");
+  const t = await getTranslations("connectorsDash.index");
   // Fetch only status metadata. Credentials never enter the catalog payload.
   const [microsoft, adobe, saas, imports] = await Promise.all([
     db.query.msConnections.findFirst({
@@ -73,16 +79,20 @@ export default async function ConnectorsPage() {
           : connection?.lastSyncAt;
     const detail =
       status === "demo"
-        ? "Explore with sample data"
+        ? t("demoDetail")
         : status === "attention"
-          ? "Review your connection"
+          ? t("attentionDetail")
           : date
-            ? `${isImport ? "Imported" : connector.id === "microsoft" ? "Verified" : "Last sync"} ${fmtDate(date)}`
+            ? isImport
+              ? t("importedDetail", { date: fmtDate(date) })
+              : connector.id === "microsoft"
+                ? t("verifiedDetail", { date: fmtDate(date) })
+                : t("lastSyncDetail", { date: fmtDate(date) })
             : connected
-              ? "Ready for the first sync"
+              ? t("readyForFirstSync")
               : isImport
-                ? "Connect with a member export"
-                : "Ready to connect";
+                ? t("connectWithImport")
+                : t("readyToConnect");
     return { id: connector.id, status, detail };
   });
   return (

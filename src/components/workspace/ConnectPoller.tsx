@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import type { SyncStep } from "~/server/types";
 
@@ -24,6 +25,7 @@ export const ConnectPoller = ({
 }: {
   redirectTo?: string;
 }) => {
+  const t = useTranslations("connectorsDash.poller");
   const [run, setRun] = useState<RunInfo>(null);
   const [tick, setTick] = useState(0);
   const expired = tick >= MAX_TICKS;
@@ -78,23 +80,24 @@ export const ConnectPoller = ({
     <div role="status" aria-live="polite">
       {run?.status === "failed" ? (
         <div className="border-danger-soft bg-danger-soft/50 text-danger-text border p-4 text-sm">
-          <p className="font-medium">The first sync failed.</p>
-          <p className="mt-1">
-            {run.error ?? "Check the sync history in settings."}
-          </p>
+          <p className="font-medium">{t("syncFailedTitle")}</p>
+          <p className="mt-1">{run.error ?? t("checkSyncHistory")}</p>
         </div>
       ) : expired ? (
         <div className="text-ink-soft text-sm">
-          <p>This is taking longer than expected.</p>
+          <p>{t("takingLonger")}</p>
           <p className="mt-1">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="hover:text-ink cursor-pointer underline underline-offset-4"
-            >
-              Refresh this page
-            </button>
-            , or come back in a minute.
+            {t.rich("refreshAndComeBack", {
+              link: (chunks) => (
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="hover:text-ink cursor-pointer underline underline-offset-4"
+                >
+                  {chunks}
+                </button>
+              ),
+            })}
           </p>
         </div>
       ) : (
@@ -103,7 +106,7 @@ export const ConnectPoller = ({
             aria-hidden="true"
             className="bg-brand inline-block size-2 rounded-full motion-safe:animate-pulse"
           />
-          Running the first sync: pulling licenses, users and usage reports…
+          {t("runningFirstSync")}
         </div>
       )}
     </div>

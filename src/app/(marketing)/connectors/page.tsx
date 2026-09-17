@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { siteUrl } from "~/env";
 import { DemoClip } from "~/components/landing/DemoClip";
 import { Pill } from "~/components/ui";
 import { buttonClass } from "~/components/ui";
-import { CONNECTOR_GUIDES } from "~/lib/connectorGuides";
+import {
+  CONNECTOR_GUIDES,
+  localizeConnectorGuide,
+} from "~/lib/connectorGuides";
 
 export const metadata: Metadata = {
   title: "Connectors",
@@ -30,40 +34,41 @@ const CONNECTORS_LD = {
   ],
 };
 
-export default function ConnectorsIndexPage() {
+export default async function ConnectorsIndexPage() {
+  const t = await getTranslations("connectors.index");
+  const guides = await Promise.all(CONNECTOR_GUIDES.map(localizeConnectorGuide));
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
-        Connectors
+        {t("eyebrow")}
       </p>
       <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
-        Connect what your company already pays for.
+        {t("title")}
       </h1>
       <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
-        Microsoft 365 is the core connection, granted once through
-        Microsoft&rsquo;s admin-consent dialog, documented in the{" "}
-        <Link
-          href="/security"
-          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-        >
-          security overview
-        </Link>
-        . Every connector below adds another vendor to the same directory
-        cross-check, read-only, with a step-by-step guide and the official
-        vendor documentation linked.
+        {t.rich("intro", {
+          link: (chunks) => (
+            <Link
+              href="/security"
+              className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+            >
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
 
       <DemoClip
         src="/videos/feature-connectors.mp4"
         poster="/videos/feature-connectors.webp"
-        label="Product demo: connecting the Atlassian connector"
-        caption="Connecting Atlassian in the demo workspace: read-only credentials in, first sync done, seats in the directory cross-check."
+        label={t("demoLabel")}
+        caption={t("demoCaption")}
         className="mt-10 max-w-3xl"
       />
 
       <section className="border-line bg-line mt-12 grid gap-px border sm:grid-cols-2">
-        <h2 className="sr-only">Setup guides</h2>
-        {CONNECTOR_GUIDES.map((g) => (
+        <h2 className="sr-only">{t("setupGuidesHeading")}</h2>
+        {guides.map((g) => (
           <Link
             key={g.slug}
             href={`/connectors/${g.slug}`}
@@ -80,7 +85,7 @@ export default function ConnectorsIndexPage() {
                 {g.name}
               </span>
               <Pill tone={g.kind === "api" ? "brand" : "slate"}>
-                {g.kind === "api" ? "Connect via API" : "CSV import"}
+                {g.kind === "api" ? t("kindApi") : t("kindImport")}
               </Pill>
             </div>
             <p className="text-ink-soft mt-2 text-sm leading-relaxed">
@@ -88,35 +93,28 @@ export default function ConnectorsIndexPage() {
             </p>
             {g.kind === "import" && (
               <p className="text-ink-faint mt-2 text-xs leading-relaxed">
-                No API: you paste an exported member list, matched against your
-                directory. Re-import to refresh.
+                {t("importNote")}
               </p>
             )}
           </Link>
         ))}
       </section>
 
-      <p className="text-ink-soft mt-8 text-sm">
-        All connector credentials are stored encrypted (AES-256-GCM), used
-        read-only and deleted the moment you disconnect. Product names are
-        trademarks of their respective owners; LicenseMeter is independent of
-        all of them.
-      </p>
+      <p className="text-ink-soft mt-8 text-sm">{t("footerNote")}</p>
 
       <section className="border-line bg-subtle mt-12 rounded-2xl border px-6 py-8 sm:px-8">
         <h2 className="font-display text-2xl tracking-tight text-balance">
-          Start with Microsoft 365, then add every paid seat source.
+          {t("ctaHeading")}
         </h2>
         <p className="text-ink-soft mt-2 max-w-2xl text-sm leading-relaxed">
-          Run the read-only demo first, or create a workspace and follow the
-          guided Microsoft consent flow. No credit card is required.
+          {t("ctaBody")}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link href="/#get-started" className={buttonClass("primary")}>
-            Start Free
+            {t("startFree")}
           </Link>
           <Link href="/security" className={buttonClass("secondary")}>
-            Review Security
+            {t("reviewSecurity")}
           </Link>
         </div>
       </section>

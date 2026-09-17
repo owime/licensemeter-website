@@ -1,0 +1,79 @@
+{
+  "sampleReport": {
+    "meta": {
+      "title": "Eksempelrapport om lisensavfall - syntetisk demo-tenant",
+      "description": "En gjennomgang av en LicenseMeter-rapport om lisensavfall, beregnet fra den syntetiske demo-tenanten med 155 brukere: funn per regel med eurotall, det ukentlige sammendraget, den månedlige PDF-rapporten og PowerShell-utbedringen. Ikke en kundehistorie."
+    },
+    "eyebrow": "Eksempelrapport",
+    "h1": "Slik ser en rapport om lisensavfall ut",
+    "badge": "Syntetisk demo-tenant - utforsk den selv, ingen konto nødvendig",
+    "intro": "Dette er ikke en kundehistorie. “{orgName}” er en fiktiv eksempeltenant med {users} brukere, bevisst utstyrt med alle seks sløsingsmønstre slik at du kan se en fullstendig rapport før du kobler til noe. Hvert eurotall under er beregnet fra den eksempeltenanten av den samme regelmotoren som skanner ekte tenanter, og demo-arbeidsflaten som viser disse nøyaktige tallene er ett klikk unna.",
+    "stats": {
+      "users": "Brukere",
+      "spend": "Microsoft 365-forbruk / måned",
+      "findings": "Funn",
+      "recoverable": "Kan spares / måned"
+    },
+    "statsNote": "Syntetiske tall fra demo-eksempelet, gjenberegnet av testsuiten slik at denne siden aldri kan avvike fra det den kjørende demoen viser.",
+    "tenantHeading": "Tenanten på skanneren",
+    "tenantText": "En mellomstor organisasjon slik regelmotoren ser en: en blanding av E3-, Business Premium-, Copilot- og tilkoblet-app-lisenser, en katalog med den vanlige historikken av nyansatte, rolleendringer og avganger, og admin-konsoller som ble ryddet sjeldnere enn organisasjonskartet endret seg.",
+    "firstScanHeading": "Hva den første skanningen avdekker",
+    "firstScanText": "Én synkronisering med kun lesetilgang kobler sammen katalogstatus, lisenstildelinger, innloggingsaktivitet og bruk per arbeidsflate, og deretter prissetter regelmotoren det den finner: {findings} funn til en verdi av <waste>€ {amount}</waste> i måneden, omtrent <waste>€ {annual}</waste> i året.",
+    "table": {
+      "category": "Funnkategori",
+      "flags": "Hva regelen flagger",
+      "wastePerMonth": "Sløsing / måned"
+    },
+    "categories": {
+      "leavers": {
+        "category": "Sluttet i firmaet, fortsatt lisensiert",
+        "flags": "Kontoer deaktivert i Entra ID som fortsatt har Microsoft 365- eller tilkoblet-app-lisenser: den klassiske offboarding-lekkasjen."
+      },
+      "idle": {
+        "category": "Inaktiv i 90+ dager eller aldri brukt",
+        "flags": "Lisensierte personer uten innlogging og uten aktivitet i Exchange, OneDrive, SharePoint eller Teams innenfor vinduet, eller aldri."
+      },
+      "shelfware": {
+        "category": "Utildelte betalte lisenser",
+        "flags": "Kjøpte lisenser ingen er tildelt: forhåndsbetalte enheter minus forbrukte enheter, per SKU (hylleliggende lisenser)."
+      },
+      "copilotUnused": {
+        "category": "Copilot-lisenser som aldri ble åpnet",
+        "flags": "Copilot-lisenser uten Copilot-aktivitet på 60 dager."
+      },
+      "orphaned": {
+        "category": "App-lisenser uten katalogkonto",
+        "flags": "Lisenser i tilkoblede apper hvis eier ikke har noen Entra ID-konto i det hele tatt - foreldreløse rester etter manuelt arbeid i admin-konsoller."
+      },
+      "guests": {
+        "category": "Lisensierte gjestekontoer",
+        "flags": "Gjestebrukere som har betalte lisenser."
+      }
+    },
+    "offboardingNote": "Offboarding-linjen er den som er verdt å lese to ganger: {leaverCount} deaktiverte kontoer har fortsatt lisenser, og {crossVendorLeaverCount} av dem beholdt også Adobe-, Zoom-, Atlassian-, Salesforce- eller AI-lisenser - sløsing ingen enkelt admin-konsoll viser, fordi hver av dem bare ser sin egen del. Hvert funn navngir kontoen, regelen, bevisene og månedskostnaden fra den redigerbare pristabellen.",
+    "withoutLoginHeading": "Hva som kommer uten innlogging",
+    "digest": {
+      "heading": "Det ukentlige sammendraget",
+      "text": "Eiere av arbeidsflaten og administratorer får en kort e-post med gjeldende sløsingstall, hva som har endret seg de siste sju dagene og de største åpne funnene. Sløsing som oppstår mellom besøk - en avgått ansatt beholdt en lisens, en lisens ble inaktiv - slutter å være avhengig av at noen husker å sjekke."
+    },
+    "pdf": {
+      "heading": "Den månedlige PDF-rapporten",
+      "text": "Én gang i måneden lander en styrerom-klar PDF i de samme innboksene: totalbeløpet som kan spares, hvert åpne funn prissatt, og trenden siden forrige måned. For denne tenanten er det tallet <waste>€ {amount}</waste>, klart til å videresendes til den som eier fornyelsen."
+    },
+    "remediationHeading": "Slik ser utbedring ut",
+    "script": {
+      "heading": "Et skript IT-avdelingen din gjennomgår og kjører",
+      "text": "For lisensene du bestemmer deg for å hente tilbake, genererer LicenseMeter PowerShell-utbedringsskriptet - de samme Graph-kommandoene teamet ditt ville skrevet for hånd, avgrenset til akkurat de valgte funnene. IT-avdelingen din leser det, redigerer det om de vil, og kjører det selv. LicenseMeter har ingen skrivetilgang og endrer aldri tenanten."
+    },
+    "acknowledge": {
+      "heading": "Bekreft det som skal beholdes",
+      "text": "Ikke hver flaggede lisens er sløsing - økonomisjefens lisens som knapt brukes, beholdes. Å bekrefte et funn registrerer den beslutningen, og fordi funn består på tvers av nattlige synkroniseringer, forblir det registrert. Hvis situasjonen endrer seg, gjenåpnes funnet i stedet for å dukke opp som nytt. Finansavdelingen får CSV-filen med det som fortsatt står åpent, prissatt per måned."
+    },
+    "cta": {
+      "heading": "Åpne demo-arbeidsflaten, og hent så ditt eget tall.",
+      "text": "Eksempeltenanten bak denne siden kan utforskes uten konto: hvert funn, pristabellen, eksportene. Når du har sett nok, erstatter en gratis skanning med kun lesetilgang de syntetiske tallene med dine egne - <security>sikkerhetsoversikten</security> lister opp hver tillatelse på forhånd.",
+      "primaryLabel": "Kjør min gratis skanning"
+    },
+    "footerNote": "Alle tall på denne siden beskriver den syntetiske demo-arbeidsflaten, ikke et kundemiljø. LicenseMeter er gratis, inkludert kontinuerlig overvåking. Ingen kredittkort kreves."
+  }
+}

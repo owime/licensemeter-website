@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "~/components/ui";
 import type { ConnectorSpec } from "~/lib/connectors";
@@ -9,21 +10,28 @@ import type { ActionResult, ImportSeatsResult } from "~/server/actions";
 
 type ImportState = (ImportSeatsResult & { csv?: string }) | null;
 
-const plural = (n: number, word: string) => (n === 1 ? word : `${word}s`);
-
 /** Outcome sentence(s) for the live region: imported count, unparseable lines. */
-const summary = (result: ImportSeatsResult): string => {
+const summary = (
+  result: ImportSeatsResult,
+  t: ReturnType<typeof useTranslations>,
+): string => {
   const parts: string[] = [];
   if (result.ok) {
     parts.push(
-      `Imported ${result.imported} ${plural(result.imported, "seat")}.`,
+      t("imported", {
+        count: result.imported,
+        unit: result.imported === 1 ? t("seat") : t("seats"),
+      }),
     );
   } else {
-    parts.push(result.error ?? "Import failed.");
+    parts.push(result.error ?? t("importFailed"));
   }
   if (result.invalid > 0) {
     parts.push(
-      `${result.invalid} ${plural(result.invalid, "line")} could not be parsed.`,
+      t("invalidLines", {
+        count: result.invalid,
+        unit: result.invalid === 1 ? t("line") : t("lines"),
+      }),
     );
   }
   return parts.join(" ");
@@ -37,6 +45,7 @@ const summary = (result: ImportSeatsResult): string => {
  * error message.
  */
 export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
+  const t = useTranslations("settings.importSeats");
   const statusRef = useRef<HTMLParagraphElement>(null);
   const [result, formAction, pending] = useActionState(
     async (_prev: ImportState, formData: FormData): Promise<ImportState> => {
@@ -60,10 +69,7 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
         htmlFor={`${spec.provider}-import-csv`}
         className="text-ink-soft text-sm"
       >
-        Paste the member table from the {spec.label} admin panel including its
-        header row. Copied web tables and CSV exports both work. An email column
-        is required; name, status, plan and last-active columns are picked up
-        when present. A new import replaces the current snapshot.
+        {t("instructions", { label: spec.label })}
       </label>
       <textarea
         // Remount on each new failure so defaultValue re-applies; resets after success.
@@ -73,16 +79,14 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
         required
         rows={8}
         spellCheck={false}
-        placeholder={
-          "Email,Name,Status,Last active\njane@example.com,Jane Fox,active,2026-05-28"
-        }
+        placeholder={t("placeholder")}
         defaultValue={result && !result.ok ? result.csv : undefined}
         autoComplete="off"
         className="border-line bg-card focus-visible:border-brand focus-visible:ring-brand/30 min-h-44 w-full border px-3 py-2 font-mono text-sm focus-visible:ring-2"
       />
       <div>
         <Button variant="primary" disabled={pending}>
-          {pending ? "Importing…" : spec.connectCta}
+          {pending ? t("importing") : spec.connectCta}
         </Button>
       </div>
       <p
@@ -96,7 +100,7 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
             : "sr-only"
         }
       >
-        {result === null ? null : summary(result)}
+        {result === null ? null : summary(result, t)}
       </p>
     </form>
   );
@@ -108,6 +112,7 @@ export const ImportSeatsForm = ({ spec }: { spec: ConnectorSpec }) => {
  * region instead of being discarded.
  */
 export const ClearSeatsButton = ({ spec }: { spec: ConnectorSpec }) => {
+  const t = useTranslations("settings.importSeats");
   const [armed, setArmed] = useState(false);
   const [result, formAction, pending] = useActionState(
     async (_prev: ActionResult | null) => clearImportedSeats(spec.provider),
@@ -122,9 +127,9 @@ export const ClearSeatsButton = ({ spec }: { spec: ConnectorSpec }) => {
   }, [armed]);
 
   const message = armed
-    ? `This removes the imported ${spec.label} seats. Press again to confirm.`
+    ? t("clearWarning", { label: spec.label })
     : result && !result.ok
-      ? (result.error ?? "Something went wrong")
+      ? (result.error ?? t("somethingWentWrong"))
       : null;
 
   return (
@@ -143,10 +148,10 @@ export const ClearSeatsButton = ({ spec }: { spec: ConnectorSpec }) => {
     >
       <Button disabled={pending} onBlur={() => setArmed(false)}>
         {pending
-          ? "Removing…"
+          ? t("removing")
           : armed
-            ? "Confirm clear"
-            : "Clear imported seats"}
+            ? t("confirmClear")
+            : t("clearImportedSeats")}
       </Button>
       <span
         role="status"

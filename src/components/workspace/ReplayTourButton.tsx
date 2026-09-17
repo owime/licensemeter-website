@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRef, useState, useTransition } from "react";
 
 import { tourStorageKey } from "~/lib/tourStorage";
@@ -8,6 +9,7 @@ import { resetTour } from "~/server/actions";
 import type { ActionResult } from "~/server/actions";
 
 export const ReplayTourButton = ({ storageId }: { storageId: string }) => {
+  const t = useTranslations("tour.replay");
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<ActionResult | null>(null);
   const inFlight = useRef(false);
@@ -48,7 +50,7 @@ export const ReplayTourButton = ({ storageId }: { storageId: string }) => {
         }}
         className="text-ink hover:text-brand-text inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium underline-offset-4 transition hover:underline disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Replay tour
+        {t("label")}
       </button>
       <span
         role="status"
@@ -62,8 +64,8 @@ export const ReplayTourButton = ({ storageId }: { storageId: string }) => {
         {result === null
           ? null
           : result.ok
-            ? "Tour reset."
-            : (result.error ?? "Reset failed")}
+            ? t("success")
+            : (result.error ?? t("failure"))}
       </span>
     </div>
   );

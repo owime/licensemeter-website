@@ -1,0 +1,53 @@
+{
+  "dashLayout": {
+    "skipToContent": "Skip to content",
+    "demoWorkspace": "Demo workspace",
+    "connectedTenant": "Connected tenant",
+    "accountSettings": "Account settings",
+    "accountLabel": "Account",
+    "signOut": "Sign out",
+    "nav": {
+      "ariaLabel": "Workspace navigation",
+      "overview": "Overview",
+      "findings": "Findings",
+      "licenses": "Licenses & prices",
+      "renewals": "Renewals",
+      "aiCosts": "AI costs",
+      "connectors": "Connectors",
+      "settings": "Settings",
+      "support": "Support",
+      "portfolio": "Portfolio"
+    },
+    "mobileNav": {
+      "ariaLabel": "Mobile workspace navigation",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "workspaceSwitcher": {
+      "ariaLabel": "Active workspace",
+      "demoSuffix": " (demo)"
+    },
+    "openWorkspace": {
+      "open": "Open",
+      "ariaLabel": "Open {name}"
+    },
+    "drawer": {
+      "close": "Close"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "This page failed to load. Your data is unaffected. Try again, and if it keeps happening, sign out and back in.",
+      "tryAgain": "Try again",
+      "openOverview": "Open Overview",
+      "checkSyncHistory": "Check Sync History"
+    },
+    "loading": {
+      "srLabel": "Loading…"
+    },
+    "notFound": {
+      "title": "Not found",
+      "description": "This page or record does not exist in this workspace. It may have been removed by a later sync.",
+      "backToFindings": "← Back to findings"
+    }
+  }
+}

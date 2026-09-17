@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { fmtMoney } from "~/lib/format";
 
 export type TrendPoint = {
@@ -36,13 +38,14 @@ const buildPath = (
  * Spend vs waste over the collected daily snapshots. Server-rendered SVG:
  * the ledger aesthetic wants a precise line, not an animated chart library.
  */
-export const TrendChart = ({
+export const TrendChart = async ({
   points,
   currency,
 }: {
   points: TrendPoint[];
   currency: string;
 }) => {
+  const t = await getTranslations("dashboardHome.trendChart");
   // A line needs at least three daily snapshots to be meaningful. Rather than
   // vanish on a fresh workspace, show a short placeholder so the section stays
   // visible and sets the expectation that trends fill in over time.
@@ -50,10 +53,10 @@ export const TrendChart = ({
     return (
       <section data-tour="trend" className="rise rise-3 mt-10">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Trend
+          {t("heading")}
         </h2>
         <div className="border-line bg-card text-ink-soft mt-3 border border-dashed px-4 py-8 text-center text-sm">
-          Spend and waste trends appear here after a few daily syncs.
+          {t("placeholder")}
         </div>
       </section>
     );
@@ -82,10 +85,10 @@ export const TrendChart = ({
     <section data-tour="trend" className="rise rise-3 mt-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Trend ({points.length} days)
+          {t("headingWithDays", { count: points.length })}
         </h2>
         <span className="text-ink-soft text-xs">
-          Waste {fmtMoney(first.wasteCents, currency)} →{" "}
+          {t("wasteFrom", { from: fmtMoney(first.wasteCents, currency) })}{" "}
           <span className="text-waste-text font-medium">
             {fmtMoney(last.wasteCents, currency)}
           </span>
@@ -97,7 +100,11 @@ export const TrendChart = ({
           width="100%"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label={`Monthly spend and waste trend over ${points.length} days. Spend ${fmtMoney(last.spendCents, currency)}, waste ${fmtMoney(last.wasteCents, currency)} per month.`}
+          aria-label={t("ariaLabel", {
+            count: points.length,
+            spend: fmtMoney(last.spendCents, currency),
+            waste: fmtMoney(last.wasteCents, currency),
+          })}
         >
           {Y_TICKS.map((ratio) => {
             const y = H - PAD.bottom - ratio * (H - PAD.top - PAD.bottom);
@@ -138,12 +145,12 @@ export const TrendChart = ({
           />
           {[
             {
-              label: "Monthly spend",
+              label: t("monthlySpend"),
               value: last.spendCents,
               color: "var(--color-ink-soft)",
             },
             {
-              label: "Monthly waste",
+              label: t("monthlyWaste"),
               value: last.wasteCents,
               color: "var(--color-waste)",
             },
@@ -155,9 +162,19 @@ export const TrendChart = ({
               r="5"
               fill={point.color}
               tabIndex={0}
-              aria-label={`${point.label} on ${fmtAxisDate(last.day)}: ${fmtMoney(point.value, currency)}`}
+              aria-label={t("pointAriaLabel", {
+                label: point.label,
+                date: fmtAxisDate(last.day),
+                amount: fmtMoney(point.value, currency),
+              })}
             >
-              <title>{`${point.label}: ${fmtMoney(point.value, currency)} on ${fmtAxisDate(last.day)}`}</title>
+              <title>
+                {t("pointTitle", {
+                  label: point.label,
+                  amount: fmtMoney(point.value, currency),
+                  date: fmtAxisDate(last.day),
+                })}
+              </title>
             </circle>
           ))}
           <path
@@ -191,39 +208,38 @@ export const TrendChart = ({
             {fmtAxisDate(first.day)} → {fmtAxisDate(last.day)}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="bg-ink-soft inline-block h-0.5 w-4" /> Monthly
-            spend
+            <span className="bg-ink-soft inline-block h-0.5 w-4" />{" "}
+            {t("monthlySpend")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="bg-waste inline-block h-0.5 w-4" /> Monthly waste
+            <span className="bg-waste inline-block h-0.5 w-4" />{" "}
+            {t("monthlyWaste")}
           </span>
         </div>
         <div className="border-line mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
           <details className="min-w-0 text-sm">
             <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center font-medium">
-              View daily values
+              {t("viewDailyValues")}
             </summary>
             <div className="max-w-full overflow-x-auto">
               <table className="mt-2 w-full table-fixed text-left text-xs">
-                <caption className="sr-only">
-                  Monthly spend and waste per day.
-                </caption>
+                <caption className="sr-only">{t("caption")}</caption>
                 <thead className="text-ink-faint">
                   <tr>
                     <th scope="col" className="py-2 pr-4 font-medium">
-                      Date
+                      {t("date")}
                     </th>
                     <th
                       scope="col"
                       className="px-2 py-2 text-right font-medium sm:px-4"
                     >
-                      Spend
+                      {t("spendCol")}
                     </th>
                     <th
                       scope="col"
                       className="py-2 pl-2 text-right font-medium sm:pl-4"
                     >
-                      Waste
+                      {t("wasteCol")}
                     </th>
                   </tr>
                 </thead>
@@ -250,7 +266,7 @@ export const TrendChart = ({
             download="licensemeter-spend-waste-trend.csv"
             className="text-ink-soft hover:text-ink inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
           >
-            Export Chart CSV
+            {t("exportCsv")}
           </a>
         </div>
       </div>

@@ -1,0 +1,63 @@
+{
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Spørsmålene som kommer før samtykke.",
+    "questionsHeading": "Spørsmål",
+    "items": [
+      {
+        "q": "Kan LicenseMeter endre noe i leieren vår?",
+        "a": "Nei. Konnektor-appen har utelukkende skrivebeskyttede applikasjonstillatelser. Det finnes ikke noe skriveomfang å misbruke. Utbedring skjer gjennom PowerShell-skript vi genererer, som administratorene deres gjennomgår og kjører selv."
+      },
+      {
+        "q": "Kan dere lese e-posten, filene eller Teams-meldingene våre?",
+        "a": "Nei. De innvilgede tillatelsene har ikke tilgang til postboksinnhold, filer eller meldinger. Bruksrapporter konsumeres som datoer og antall for siste aktivitet: metadata, aldri innhold."
+      },
+      {
+        "q": "Hvor lagres dataene våre, og hvor lenge?",
+        "a": "I Postgres i EU (Frankfurt). Data oppbevares kun mens leieren din er tilkoblet: å koble fra arbeidsflaten sletter alt umiddelbart, og du kan i tillegg når som helst tilbakekalle bedriftsapplikasjonen i Entra ID."
+      },
+      {
+        "q": "Hvordan lagres legitimasjonen for Adobe, Zoom, Atlassian, Salesforce, OpenAI og Anthropic?",
+        "a": "Kryptert i hvile (AES-256-GCM) og brukes utelukkende til å lese setetildelinger, medlemslister og daglige kostnadstotaler, aldri innhold eller ledetekster. Å koble fra konnektoren eller arbeidsflaten sletter legitimasjonen umiddelbart. Sikkerhetsoversikten lister hva hver konnektor lagrer."
+      },
+      {
+        "q": "Hvem i selskapet vårt kan se dataene?",
+        "a": "Bare personer arbeidsflatens eier inviterer, i rollen de tildeles. En leser har skrivebeskyttet tilgang til dashbord og eksporter (bygget for økonomi); en administrator kan i tillegg kjøre synkroniseringer, redigere priser, endre innstillinger og invitere folk; en eier kan i tillegg administrere andre eiere og koble fra arbeidsflaten. Å logge inn med en konto fra leieren din gir ingenting i seg selv."
+      },
+      {
+        "q": "Trenger vi Entra ID P1?",
+        "a": "Nei. Med P1 bruker LicenseMeter presise tidsstempler for siste innlogging. Uten det faller deteksjonen automatisk tilbake på Microsoft 365-bruksrapporter. Innstillingssiden viser nøyaktig hvilke signaler som er aktive for leieren din."
+      },
+      {
+        "q": "Bruksrapportene våre har skjulte brukernavn. Fungerer det likevel?",
+        "a": "Ja, med redusert detaljnivå: katalogbaserte funn (deaktiverte kontoer, hylleprodukter, gjester) forblir per bruker, bruksbaserte funn blir aggregerte antall. En global administrator kan aktivere identifiserbare rapportnavn i Microsoft 365-administrasjonssenteret; endringen logges i revisjonsloggen."
+      },
+      {
+        "q": "Er dere en verifisert Microsoft-utgiver?",
+        "a": "Ikke ennå. Utgiververifisering er i gang; frem til den er på plass viser samtykkedialogen app-ID-en i stedet for et verifisert utgivernavn. Microsoft viser gjeldende verifiseringsstatus direkte i samtykkedialogen, slik at administratoren deres kan bekrefte den uavhengig av dette nettstedet. Se sikkerhetsoversikten for detaljer."
+      },
+      {
+        "q": "Krever tilkobling virkelig en global administrator?",
+        "a": "Samtykke for konnektorens Microsoft Graph-applikasjonstillatelser kan gis av en global administrator eller en administrator med privilegerte roller. En applikasjonsadministrator er ikke tilstrekkelig for Graph-applikasjonstillatelser, noe som er en Microsoft-plattformregel, ikke vår. En applikasjonsadministrator kan også kjøre et engangs direkteskann med delegerte tillatelser: ingen stående tilgang, ingen lagrede tokens. Større organisasjoner kan delegere samtykke for nøyaktig LicenseMeters {scopeCount} skrivebeskyttede tillatelser til en utpekt rolle via en app-samtykkepolicy; sikkerhetsoversikten dokumenterer oppsettet. Og du kan starte helt uten samtykke: CSV-importen beregner sløsingstallet ditt fra to eksporter fra Microsoft 365-administrasjonssenteret."
+      },
+      {
+        "q": "Tilbyr dere en databehandleravtale (DPA/AVV)?",
+        "a": "Ja. LicenseMeter opptrer som databehandler i henhold til artikkel 28 i GDPR; en signert databehandleravtale følger med hver arbeidsflate og er tilgjengelig før du kobler til produksjonsdata."
+      },
+      {
+        "q": "Hva tar dere egentlig betalt for?",
+        "a": "LicenseMeter er gratis å bruke, inkludert kontinuerlig overvåking, nattlige synkroniseringer, nye funn etter hvert som folk begynner og slutter, eksporter og utbedringsskript. Det finnes ikke noe abonnement, tidsbegrensning eller krav om kredittkort."
+      },
+      {
+        "q": "Vi er en MSP. Kan vi administrere flere kundeleiere?",
+        "a": "Ja. Hver kundeleier blir sin egen arbeidsflate: du starter tilkoblingsflyten, kundens globale administrator fullfører Microsofts samtykkedialog, og arbeidsflaten bindes til deg, uten delte legitimasjoner. En porteføljevisning sorterer alle arbeidsflatene dine etter månedlig sløsing, hver med sin egen prisbok og en PDF-sløsingsrapport til kvartalsgjennomgangen. Hver kundearbeidsflate og porteføljen er gratis. Se MSP-siden for detaljer."
+      }
+    ],
+    "outro": {
+      "prefix": "Mangler noe?",
+      "ask": "Spør oss direkte",
+      "or": "eller les",
+      "security": "sikkerhetsoversikten"
+    }
+  }
+}

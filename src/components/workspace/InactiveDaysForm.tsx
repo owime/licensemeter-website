@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { setInactiveDays } from "~/server/actions";
 
@@ -13,6 +14,7 @@ const OPTIONS = [30, 60, 90, 120, 180];
  * CurrencySelect: one mutation in flight at a time, revert on failure.
  */
 export const InactiveDaysForm = ({ value }: { value: number }) => {
+  const t = useTranslations("settings.inactiveDays");
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(value);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
         autoComplete="off"
         disabled={pending}
         aria-busy={pending || undefined}
-        aria-label="Inactivity threshold in days"
+        aria-label={t("ariaLabel")}
         onChange={(e) => {
           const next = Number.parseInt(e.target.value, 10);
           if (inFlight.current || next === current) return;
@@ -44,7 +46,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
               const result = await setInactiveDays(data);
               if (!result.ok) {
                 setCurrent(value);
-                setError(result.error ?? "Could not save");
+                setError(result.error ?? t("couldNotSave"));
                 return;
               }
               router.refresh();
@@ -59,7 +61,7 @@ export const InactiveDaysForm = ({ value }: { value: number }) => {
       >
         {OPTIONS.map((d) => (
           <option key={d} value={d}>
-            {d} days
+            {t("days", { days: d })}
           </option>
         ))}
       </select>

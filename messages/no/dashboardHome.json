@@ -1,0 +1,196 @@
+{
+  "dashboardHome": {
+    "page": {
+      "title": "Oversikt",
+      "syncRunning": "Synkroniserer…",
+      "importedOn": "Importert {date}",
+      "lastSynced": "Sist synkronisert {time}",
+      "lastSyncFailed": "(siste synkronisering mislyktes)",
+      "completedWithWarnings": "(fullført med advarsler",
+      "stepsDegraded": "{count, plural, one {# steg} other {# steg}} med redusert kvalitet",
+      "closeParen": ")",
+      "pdfReport": "PDF-rapport",
+      "importedWorkspace": {
+        "title": "Importert arbeidsområde",
+        "body": "Tallene kommer fra din siste øyeblikkelige skanning eller CSV-opplasting. Koble til den skrivebeskyttede synkroniseringen for nattlige oppdateringer, lekkasjevarsler og trender.",
+        "connectSync": "Koble til skrivebeskyttet synkronisering",
+        "rerunScan": "Kjør øyeblikkelig skanning på nytt",
+        "uploadExports": "Last opp nye eksporter"
+      },
+      "renewalPassed": "Fornyelsesdato passert:",
+      "updateInRenewals": "oppdater den i Fornyelser",
+      "renewalWindow": {
+        "title": "Fornyelsesvindu",
+        "today": "Fornyelse i dag",
+        "inDays": "{vendor}: fornyelse om {days, plural, one {# dag} other {# dager}}",
+        "openFindingsWorth": "{contractName}. {count, plural, one {# åpent funn} other {# åpne funn}} til en verdi av",
+        "reclaim": "Frigjør disse lisensene før dere fornyer.",
+        "reviewFindings": "Gjennomgå funn",
+        "renewalCalendar": "Fornyelseskalender"
+      },
+      "nextActions": {
+        "heading": "Neste beste tiltak",
+        "subtitle": "De mest verdifulle åpne funnene å se på først.",
+        "allFindings": "Alle funn →",
+        "empty": "Ingen åpne funn. Enten er leietakeren plettfri, eller så er den første synkroniseringen ikke ferdig ennå."
+      },
+      "emptyInventoryImported": "Ingen lisensdata ennå. Last opp en ny eksport for å oppdatere dette arbeidsområdet.",
+      "emptyInventorySync": "Ingen lisensdata ennå. Kjør en synkronisering."
+    },
+    "metricCardsData": {
+      "spend": {
+        "label": "Månedlige lisenskostnader",
+        "sub": "{count} tildelte lisenser",
+        "explainer": "Tildelte lisenser × månedspris for hvert produkt, summert på tvers av lisensbeholdningen din.",
+        "formula": "For hvert produkt multipliserer vi antall lisenser tildelt personer med produktets månedspris, og legger deretter sammen alt.",
+        "source": "Antall lisenser kommer fra siste synkronisering; priser kommer fra prisboken din (din egen pris, eller Microsofts listepris som reserveløsning).",
+        "column1": "Produkt (lisenser × pris)",
+        "column2": "Kostnad / mnd",
+        "totalLabel": "Totale månedlige kostnader",
+        "emptyText": "Ingen prissatte lisensdata ennå."
+      },
+      "waste": {
+        "label": "Månedlig lisensavfall",
+        "subPercent": "{pct}% av kostnadene",
+        "notePrefix": "Estimert til listepriser.",
+        "setPrices": "Angi dine faktiske priser",
+        "explainer": "Den månedlige kostnaden for alle åpne funn lagt sammen — dette er beløpet dere kan spare inn.",
+        "formula": "Hvert åpent eller anerkjent funn bærer den månedlige kostnaden for den bortkastede lisensen. Månedlig lisensavfall er summen av disse kostnadene, gruppert etter regelen som avdekket dem.",
+        "source": "Funn opprettes under synkronisering av deteksjonsreglene; løste funn er ekskludert. Kostnadene bruker de samme prisene som månedlige kostnader.",
+        "column1": "Regel",
+        "column2": "Effekt / mnd",
+        "totalLabel": "Totalt månedlig lisensavfall",
+        "emptyText": "Ingen åpne funn — ingenting merket som sløsing."
+      },
+      "annual": {
+        "label": "Årlig lisensavfall",
+        "sub": "hvis ingenting endres",
+        "explainer": "Månedlig lisensavfall fremskrevet over et helt år: månedlig lisensavfall × 12.",
+        "formula": "Månedlig lisensavfall × 12 måneder. En fremskrivning av hva de åpne funnene koster over et år hvis ingenting frigjøres.",
+        "source": "Samme funn som månedlig lisensavfall, hver multiplisert med tolv.",
+        "column1": "Regel",
+        "column2": "Effekt / år",
+        "totalLabel": "Totalt årlig lisensavfall",
+        "emptyText": "Ingen åpne funn — ingenting merket som sløsing."
+      },
+      "findings": {
+        "label": "Åpne funn",
+        "sub": "fordelt på {count} regler",
+        "explainer": "Hvor mange funn som for øyeblikket er åpne eller anerkjent, på tvers av alle deteksjonsregler.",
+        "formula": "En opptelling av alle funn med status åpen eller anerkjent. Løste funn telles ikke med.",
+        "source": "Funn opprettes under synkronisering av {count} deteksjonsregler. Hver regel avdekker en bestemt type lisensavfall.",
+        "column1": "Regel",
+        "column2": "Åpne",
+        "totalLabel": "Totalt antall åpne funn",
+        "emptyText": "Ingen åpne funn.",
+        "footnote": "{withFindings} av {total} regler har for øyeblikket åpne funn."
+      },
+      "savings": {
+        "label": "Bekreftet besparelse (30d)",
+        "sub": "{count} bekreftede {count, plural, one {løsning} other {løsninger}}",
+        "explainer": "Tilbakevendende månedlig lisensavfall som forsvant etter at en senere synkronisering bekreftet at den berørte lisensen ble frigjort.",
+        "formula": "Månedlig effekt fra funn som ble automatisk løst i løpet av de siste 30 dagene.",
+        "source": "En senere synkronisering må bekrefte at sløsingen ikke lenger finnes; å anerkjenne et funn telles ikke som besparelse.",
+        "column1": "Mål",
+        "column2": "Verdi",
+        "annualizedLabel": "Årlig tilbakevendende besparelse",
+        "annualizedSub": "{amount}/mnd × 12",
+        "totalLabel": "Bekreftet månedlig besparelse",
+        "emptyText": "Ingen funn ble bekreftet løst de siste 30 dagene."
+      },
+      "spendRowSub": "{units} × {price}",
+      "wasteRowSub": "{count, plural, one {# funn} other {# funn}}",
+      "annualRowSub": "{amount}/mnd × 12",
+      "findingRowSub": "{amount}/mnd",
+      "priceCoverageFootnote": "{custom} av {total} produktpriser bruker avtalte priser; øvrige tall er estimater eller uten pris."
+    },
+    "metricCards": {
+      "infoAriaLabel": "{label}: hva dette betyr",
+      "labelAriaLabel": "{label}: vis hvordan dette beregnes",
+      "valueAriaLabel": "{label}: vis oppsummering",
+      "viewBreakdown": "Vis oppsummering",
+      "howCalculated": "Hvordan dette beregnes",
+      "whereFrom": "Hvor tallene kommer fra",
+      "breakdown": "Oppsummering",
+      "nothingToShow": "Ingenting å vise ennå."
+    },
+    "spendChart": {
+      "heading": "Daglige API-kostnader",
+      "headingWithDays": "Daglige API-kostnader ({count} dager)",
+      "placeholder": "Kostnadsdiagrammet vises når det finnes tre eller flere dager med kostnadsdata.",
+      "latest": "Siste: {parts}",
+      "ariaLabel": "Daglige API-kostnader over {count} dager. Siste dagstotaler: {parts}.",
+      "pointAriaLabel": "{label} den {date}: {amount}",
+      "pointTitle": "{label}: {amount} den {date}",
+      "viewDailyValues": "Vis daglige verdier",
+      "date": "Dato",
+      "caption": "Daglige API-kostnader per leverandør.",
+      "exportCsv": "Eksporter diagram som CSV",
+      "sampleSuffix": " (eksempel)"
+    },
+    "trendChart": {
+      "heading": "Trend",
+      "headingWithDays": "Trend ({count} dager)",
+      "placeholder": "Kostnads- og avfallstrender vises her etter noen dagers synkronisering.",
+      "wasteFrom": "Lisensavfall {from} →",
+      "ariaLabel": "Månedlig kostnads- og avfallstrend over {count} dager. Kostnad {spend}, lisensavfall {waste} per måned.",
+      "monthlySpend": "Månedlig kostnad",
+      "monthlyWaste": "Månedlig lisensavfall",
+      "pointAriaLabel": "{label} den {date}: {amount}",
+      "pointTitle": "{label}: {amount} den {date}",
+      "viewDailyValues": "Vis daglige verdier",
+      "caption": "Månedlig kostnad og lisensavfall per dag.",
+      "date": "Dato",
+      "spendCol": "Kostnad",
+      "wasteCol": "Lisensavfall",
+      "exportCsv": "Eksporter diagram som CSV"
+    },
+    "onboardingEmptyState": {
+      "eyebrow": "Kom i gang",
+      "title": "Legg til din Microsoft 365-katalog",
+      "intro": "LicenseMeter leser lisensene dine skrivebeskyttet og prissetter hver bortkastede, inaktive eller foreldreløse lisens i kroner. Koble til Microsoft 365 for den fullstendige analysen, eller last opp lisenseksporten for en forhåndsvisning uten admintilgang. Alle funksjoner er gratis, uten tidsbegrensning.",
+      "microsoft": {
+        "name": "Microsoft 365",
+        "desc": "Katalog, lisenstildelinger og bruk — som regel den største kilden til sløsing. Skrivebeskyttet, engangs admin-samtykke.",
+        "connect": "Koble til Microsoft 365"
+      },
+      "csv": {
+        "title": "Ingen Microsoft-admintilgang?",
+        "desc": "Last opp en Microsoft-lisenseksport for en umiddelbar vurdering."
+      },
+      "addMore": {
+        "heading": "Legg til flere kilder senere",
+        "sub": "Disse koblingene låses opp etter at Microsoft 365 er koblet til."
+      },
+      "afterMicrosoft": "Etter Microsoft",
+      "reviewPermissions": "Gjennomgå de skrivebeskyttede tillatelsene før du kobler til",
+      "secondary": {
+        "adobe": { "name": "Adobe", "blurb": "Creative Cloud/Acrobat-lisenser" },
+        "zoom": { "name": "Zoom", "blurb": "Lisensierte Zoom-lisenser" },
+        "atlassian": { "name": "Atlassian", "blurb": "Jira- og Confluence-lisenser" },
+        "salesforce": { "name": "Salesforce", "blurb": "Brukerlisenser" },
+        "chatgpt": { "name": "ChatGPT", "blurb": "Arbeidsområdelisenser (CSV)" },
+        "claude": { "name": "Claude", "blurb": "Arbeidsområdelisenser (CSV)" }
+      }
+    },
+    "inventoryTable": {
+      "heading": "Lisensbeholdning",
+      "exportCsv": "Eksporter CSV",
+      "product": "Produkt",
+      "purchased": "Kjøpt",
+      "assigned": "Tildelt",
+      "unassigned": "Ikke tildelt",
+      "utilization": "Utnyttelse",
+      "spendPerMo": "Kostnad / mnd",
+      "total": "Totalt",
+      "totalPurchased": "Totalt kjøpt",
+      "totalAssigned": "Totalt tildelt",
+      "totalUnassigned": "Totalt ikke tildelt",
+      "totalSpendPerMo": "Total kostnad/mnd",
+      "utilizationAria": "{name} lisensutnyttelse"
+    },
+    "accountWidgets": {
+      "signInNote": "Du kan logge inn med en tilkoblet konto (som Google) eller passordet ditt — begge går til samme konto, og hver av dem fortsetter å fungere uavhengig."
+    }
+  }
+}

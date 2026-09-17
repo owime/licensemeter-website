@@ -1,0 +1,79 @@
+{
+  "nav": {
+    "ariaLabel": "Main",
+    "product": "Product",
+    "connectors": "Connectors",
+    "msp": "MSP",
+    "trustCenter": "Trust Center",
+    "support": "Support",
+    "github": "GitHub"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "no": "Norsk"
+  },
+  "footer": {
+    "description": "License waste analytics for Microsoft 365 and connected SaaS. Read-only, EU-hosted, built for IT and finance.",
+    "hosted": "Hosted in the EU",
+    "support": "Email support",
+    "columns": {
+      "product": {
+        "title": "Product",
+        "startFree": "Start free",
+        "forMsps": "For MSPs",
+        "connectors": "Connectors",
+        "security": "Security",
+        "faq": "FAQ"
+      },
+      "learn": {
+        "title": "Learn",
+        "wastePatterns": "Waste patterns",
+        "sampleReport": "Sample report",
+        "roiCalculator": "ROI calculator",
+        "vsM365": "vs M365 admin center"
+      },
+      "legal": {
+        "title": "Legal",
+        "trustCenter": "Trust Center",
+        "imprint": "Imprint",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "dpa": "Data Processing Agreement"
+      },
+      "contact": {
+        "title": "Contact",
+        "contactSupport": "Contact support",
+        "subprocessors": "Subprocessors"
+      }
+    },
+    "copyright": "operated by UgurLabs",
+    "legal": "Independent tool, not affiliated with the vendors named on this site. All product names are trademarks of their respective owners."
+  },
+  "emailCapture": {
+    "placeholder": "you@yourcompany.com",
+    "emailLabel": "Email address",
+    "submit": "Send the security pack",
+    "sending": "Sending…",
+    "success": "Sent. The security pack and first-scan checklist are on their way to your inbox.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "headerAuthCta": {
+    "appShort": "App",
+    "dashboardShort": "Dashboard",
+    "openDashboard": "Open dashboard",
+    "startShort": "Start",
+    "startFree": "Start free"
+  },
+  "mobileNav": {
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "skipToContent": "Skip to content"
+  },
+  "signInButtons": {
+    "signIn": "Sign in",
+    "requestScanAccess": "Request scan access",
+    "openSampleTenant": "Open the sample tenant",
+    "note": "Free to use, with no time limit. No credit card, read-only access. The sample tenant needs no account."
+  }
+}

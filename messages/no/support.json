@@ -1,0 +1,28 @@
+{
+  "support": {
+    "page": {
+      "eyebrow": "Her for å hjelpe",
+      "title": "Kontakt support",
+      "intro": "Trenger du hjelp med LicenseMeter? Fortell oss hva du jobber med og hvor du sitter fast.",
+      "selfHostedNotice": "Support administreres av administratoren for denne selvhostede instansen. Kontakt dem for hjelp."
+    },
+    "form": {
+      "name": "Navn",
+      "email": "E-postadresse",
+      "subject": "Emne",
+      "message": "Melding",
+      "messageHint": "Beskriv hva som skjedde og hva du forventet. Vennligst ikke inkluder passord, tilgangstokener eller leietakerdata.",
+      "website": "Nettsted",
+      "privacyNote": "Vi bruker opplysningene dine til å besvare forespørselen din. Les vår <privacyLink>personvernerklæring</privacyLink>.",
+      "submit": "Send supportforespørsel",
+      "submitting": "Sender…",
+      "verificationLoadError": "Verifiseringen kunne ikke lastes. Prøv igjen eller send e-post til {email}.",
+      "verificationLoadErrorFatal": "Verifiseringen kunne ikke lastes. Vennligst send e-post til {email}.",
+      "genericError": "Vi kunne ikke bekrefte at forespørselen din ble sendt. Prøv igjen eller send e-post til {email}.",
+      "defaultError": "Forespørselen din kunne ikke sendes. Vennligst prøv igjen.",
+      "sentTitle": "Supportforespørsel sendt",
+      "sentBody": "Takk for at du tok kontakt. Vi svarer til e-postadressen du oppga.",
+      "backHome": "Tilbake til forsiden"
+    }
+  }
+}

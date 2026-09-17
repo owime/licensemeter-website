@@ -1,0 +1,116 @@
+{
+  "trustCenter": {
+    "eyebrow": "Trust Center",
+    "h1": "Alt sikkerhetsteamet ditt trenger, på ett sted.",
+    "intro": "LicenseMeter leser lisens- og katalogmetadata fra din Microsoft 365-tenant, så tillit er selve produktet. Denne siden samler hvordan vi får tilgang til data, hvor de befinner seg, hvem som behandler dem, og dokumentene som underbygger dette. Alt her er hentet fra de samme avtalene vi inngår med deg.",
+    "toggleLabel": "Velg språk",
+    "atAGlance": {
+      "title": "I korte trekk",
+      "items": [
+        {
+          "label": "Kun lesetilgang",
+          "detail": "Applikasjonstillatelsene er skrivebeskyttet uten unntak. Vi kan aldri endre noe i din tenant."
+        },
+        {
+          "label": "Datalagring i EU",
+          "detail": "Kundedata lagres i EU, i en Supabase Postgres-database på AWS eu-central-1 (Frankfurt)."
+        },
+        {
+          "label": "Sletting ved frakobling",
+          "detail": "Å koble fra et arbeidsområde sletter all synkronisert data umiddelbart og ugjenkallelig."
+        },
+        {
+          "label": "GDPR-databehandleravtale, ferdigsignert",
+          "detail": "En databehandleravtale i henhold til art. 28 GDPR følger med hvert arbeidsområde, nedlastbar og ferdigsignert."
+        },
+        {
+          "label": "Kryptert gjennomgående",
+          "detail": "TLS under overføring, AES-256 i hvile, og AES-256-GCM på applikasjonsnivå for tredjeparts legitimasjon."
+        },
+        {
+          "label": "Analyse uten informasjonskapsler",
+          "detail": "Ingen sporings- eller markedsføringskapsler, ingen samtykkebanner. Aggregert Vercel Web Analytics uten IP-lagring."
+        }
+      ]
+    },
+    "where": {
+      "title": "Hvor dataene dine befinner seg",
+      "intro": "Dette er underleverandørene LicenseMeter benytter, med behandlingssted og overføringsmekanismen som dekker det. Listen genereres fra den bindende databehandleravtalen, så det er alltid samme liste som den du signerer.",
+      "locationLabel": "Sted",
+      "transferLabel": "Overføring",
+      "euLabel": "EU",
+      "usLabel": "EU + USA",
+      "note": {
+        "pre": "Valgfrie kildesystemer du kobler til (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic) og eventuelle CSV-medlemslister du importerer (ChatGPT, Claude) er ",
+        "bold": "datakilder, ikke underleverandører",
+        "mid": ": vi leser fra dem på dine vegne og utleverer ingen personopplysninger til dem utover den autentiserte leseforespørselen. Den avgjørende listen er ",
+        "linkText": "vedlegg 3 til databehandleravtalen",
+        "post": "."
+      }
+    },
+    "access": {
+      "title": "Slik fungerer tilgangen",
+      "body": "En global administrator gir samtykke én gang, gjennom Microsofts standard dialog for administratorsamtykke, for applikasjonstillatelser som er skrivebeskyttet uten unntak. Det finnes ingen tjenestekonto, agent eller postboks-plugin i din tenant, og du kan når som helst tilbakekalle applikasjonen i Entra ID, uavhengig av oss. Bruksrapporter konsumeres kun som antall og dato for siste aktivitet: metadata, aldri innhold.",
+      "linked": {
+        "pre": "",
+        "linkText": "Sikkerhetsoversikten",
+        "post": " lister opp hver forespurte tillatelse, hva som lagres, og hvordan samtykket kan delegeres uten stående rettigheter som global administrator."
+      }
+    },
+    "security": {
+      "title": "Sikkerhetstiltak",
+      "body": "Tilgang til et arbeidsområde er invitasjons- og rollebasert (eier, administrator, betrakter); innlogging bruker OpenID Connect med PKCE samt signerte, httpOnly-økter med kort levetid. Data krypteres under overføring (TLS, HSTS) og i hvile (AES-256), der egen medbrakt connector-legitimasjon i tillegg krypteres på applikasjonsnivå (AES-256-GCM). Tenanter er logisk atskilt med radnivåsikkerhet, tilstandsendrende forespørsler er CSRF-beskyttet og har hastighetsbegrensning, og en revisjonslogg per arbeidsområde registrerer eksporter og administrative handlinger.",
+      "linked": {
+        "pre": "De fullstendige tekniske og organisatoriske tiltakene finnes i ",
+        "linkText": "vedlegg 2 til databehandleravtalen",
+        "post": "."
+      }
+    },
+    "lifecycle": {
+      "title": "Datalivssyklus",
+      "linked": {
+        "pre": "Data samles kun inn gjennom den skrivebeskyttede synkroniseringen, lagres kun så lenge din tenant er tilkoblet, og slettes ved frakobling. Å koble fra et arbeidsområde (Innstillinger → Faresone) sletter all synkronisert data umiddelbart og ugjenkallelig: brukere, funn, priser, historikk og revisjonsloggen. Å tilbakekalle bedriftsapplikasjonen i din Entra ID kutter i tillegg vår tilgang ved kilden. Se ",
+        "linkText": "personvernerklæringen",
+        "post": " for detaljer om lagringstid og dine rettigheter som registrert."
+      }
+    },
+    "certs": {
+      "title": "Sertifiseringer og status",
+      "body1": "Våre underleverandører velges ut fra dokumenterte sikkerhetsnivåer og er bundet av databehandleravtaler; de store infrastrukturleverandørene nevnt over har SOC 2- og/eller ISO 27001-sertifiseringer, hvis rapporter vi kan vise til i en sikkerhetsgjennomgang. LicenseMeter har selv ennå ikke egen SOC 2-/ISO 27001-attestering.",
+      "body2": "Microsofts utgiververifisering for LicenseMeters appregistreringer pågår. Frem til den er fullført viser samtykkedialogen appene som uverifiserte; Microsoft viser gjeldende verifiseringsstatus direkte i dialogen, slik at administratoren din alltid kan bekrefte den uavhengig."
+    },
+    "documents": {
+      "title": "Dokumenter",
+      "items": [
+        {
+          "label": "Sikkerhetsoversikt",
+          "detail": "Nøyaktig hva som gis tilgang til og lagres, og hvordan du avslutter. Skrivebeskyttede tillatelser, delegert samtykke, sletting."
+        },
+        {
+          "label": "Databehandleravtale",
+          "detail": "Databehandleravtale (DPA/AVV) i henhold til art. 28 GDPR, ferdigsignert. Last ned på engelsk eller tysk med fullstendig underleverandørvedlegg og tekniske/organisatoriske tiltak."
+        },
+        {
+          "label": "Personvernerklæring",
+          "detail": "Hva vi behandler, på hvilket rettslig grunnlag, hvor lenge, og hvilke rettigheter som gjelder for registrerte."
+        },
+        {
+          "label": "Vilkår",
+          "detail": "B2B-tjenesteavtalen. Databehandleravtalen går foran vilkårene i alt som gjelder databehandling."
+        },
+        {
+          "label": "Cookie-policy",
+          "detail": "De funksjonelle informasjonskapslene vi setter, hvorfor, og hvor lenge de lever. Ingen sporingskapsler."
+        },
+        {
+          "label": "FAQ",
+          "detail": "Klare svar på spørsmålene sikkerhets- og identitetsteam stiller oftest."
+        }
+      ]
+    },
+    "questions": {
+      "title": "Spørsmål",
+      "body": "Sikkerhetsgjennomganger, koordinering av penetrasjonstesting og leverandørspørreskjemaer: "
+    }
+  }
+}

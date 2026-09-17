@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import {
   AdobeConnectForm,
@@ -14,11 +16,15 @@ import { hasRole, requireAccess } from "~/server/access";
 import { db } from "~/server/db";
 import { adobeConnections, adobeUsers } from "~/server/db/schema";
 
-export const metadata = { title: "Adobe connector" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("connectorsDash");
+  return { title: t("titles.adobe") };
+}
 // Connect action syncs in after(); needs the same 300s budget as other sync paths.
 export const maxDuration = 300;
 
 export default async function AdobeConnectorPage() {
+  const t = await getTranslations("connectorsDash.adobe");
   const ctx = await requireAccess("viewer");
   const isAdmin = hasRole(ctx, "admin");
 
@@ -37,15 +43,16 @@ export default async function AdobeConnectorPage() {
     !ctx.tenant.isDemo && ctx.tenant.consentedAt === null;
   const reconnectNotice = microsoftDisconnected ? (
     <p className="border-gold-soft bg-gold-soft/40 text-gold-text border p-3 text-xs">
-      Microsoft 365 is disconnected, so this connector can&rsquo;t cross-check
-      seats against your directory or run new syncs.{" "}
-      <Link
-        href="/app/connectors/microsoft"
-        className="hover:text-ink underline underline-offset-4"
-      >
-        Reconnect Microsoft
-      </Link>{" "}
-      to resume.
+      {t.rich("microsoftDisconnectedNotice", {
+        link: (chunks) => (
+          <Link
+            href="/app/connectors/microsoft"
+            className="hover:text-ink underline underline-offset-4"
+          >
+            {chunks}
+          </Link>
+        ),
+      })}
     </p>
   ) : null;
 
@@ -60,42 +67,36 @@ export default async function AdobeConnectorPage() {
             href="/app/connectors"
             className="hover:text-ink underline-offset-4 hover:underline"
           >
-            Connectors
+            {t("breadcrumbConnectors")}
           </Link>{" "}
           /{" "}
           <span aria-current="page" className="text-ink-soft">
-            Adobe
+            {t("breadcrumbCurrent")}
           </span>
         </nav>
         <h1 className="font-display mt-2 text-3xl tracking-tight">
-          Adobe connector
+          {t("pageTitle")}
         </h1>
       </header>
 
       <div className="rise rise-2 flex flex-col gap-6">
-        <Card title="Connection">
+        <Card title={t("connectionCardTitle")}>
           {ctx.tenant.isDemo ? (
             <div className="flex flex-col gap-4">
               <p className="text-ink-soft text-sm">
-                Connected with demo data: {adobeCount} Adobe seats correlated
-                against the directory.
+                {t("demoBody", { count: adobeCount })}
               </p>
               <details className="border-line border-t pt-3">
                 <summary className="text-ink-soft hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-sm font-medium">
-                  Preview real workspace setup
+                  {t("previewSetup")}
                 </summary>
                 <div className="text-ink-soft mt-2 space-y-3 text-sm">
-                  <p>
-                    A System Admin creates an OAuth server-to-server project
-                    with the User Management API, then enters the organization
-                    ID, client ID, and client secret. The secret is encrypted at
-                    rest and used read-only.
-                  </p>
+                  <p>{t("setupBody")}</p>
                   <Link
                     href="/connectors/adobe"
                     className={buttonClass("secondary")}
                   >
-                    Open Adobe Setup Guide
+                    {t("openSetupGuide")}
                   </Link>
                 </div>
               </details>
@@ -106,15 +107,16 @@ export default async function AdobeConnectorPage() {
                credentials that would sit idle. An existing connection falls
                through to its card with a reconnect notice instead. */
             <p className="text-ink-soft text-sm">
-              Connectors cross-check seats against your Microsoft 365 directory,
-              so{" "}
-              <Link
-                href="/app/connectors/microsoft"
-                className="hover:text-ink underline underline-offset-4"
-              >
-                connect your tenant
-              </Link>{" "}
-              first.
+              {t.rich("needsMicrosoftFirst", {
+                link: (chunks) => (
+                  <Link
+                    href="/app/connectors/microsoft"
+                    className="hover:text-ink underline underline-offset-4"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           ) : adobeConn ? (
             <div className="flex flex-col gap-4">
@@ -122,19 +124,20 @@ export default async function AdobeConnectorPage() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm">
                   <div className="font-medium">
-                    Connected: {adobeCount} Adobe seats
+                    {t("connectedSeats", { count: adobeCount })}
                   </div>
                   <div className="text-ink-soft mt-0.5 text-xs">
-                    Org {adobeConn.orgId} ·{" "}
+                    {t("orgLabel", { orgId: adobeConn.orgId })} ·{" "}
                     {adobeConn.lastSyncAt
-                      ? `last sync ${fmtDate(adobeConn.lastSyncAt)} (${adobeConn.lastSyncStatus ?? "pending"})`
-                      : "first sync pending"}
+                      ? t("lastSync", {
+                          date: fmtDate(adobeConn.lastSyncAt),
+                          status: adobeConn.lastSyncStatus ?? "pending",
+                        })
+                      : t("firstSyncPending")}
                   </div>
                   {adobeConn.lastSyncStatus === "failed" && (
                     <p className="text-danger-text mt-2 max-w-md text-xs">
-                      The last sync could not reach Adobe. Findings are based on
-                      the previous snapshot. If the credentials were changed or
-                      revoked, update them below or reconnect with fresh values.
+                      {t("syncFailedNote")}
                     </p>
                   )}
                 </div>
@@ -150,7 +153,7 @@ export default async function AdobeConnectorPage() {
               {isAdmin && !microsoftDisconnected && (
                 <details className="text-sm">
                   <summary className="text-ink-soft hover:text-ink cursor-pointer text-xs underline-offset-4 hover:underline">
-                    Update credentials
+                    {t("updateCredentials")}
                   </summary>
                   <div className="mt-3">
                     <AdobeConnectForm />
@@ -165,48 +168,35 @@ export default async function AdobeConnectorPage() {
             </div>
           ) : isAdmin ? (
             <div className="flex flex-col gap-3">
-              <p className="text-ink-soft text-sm">
-                Detect Adobe seats still assigned to people who are disabled or
-                gone in Entra ID. Create an OAuth server-to-server project with
-                the User Management API in the Adobe Developer Console (System
-                Admin required), then paste the credentials. They are stored
-                encrypted and used read-only.
-              </p>
+              <p className="text-ink-soft text-sm">{t("setupBodyAdmin")}</p>
               <AdobeConnectForm />
             </div>
           ) : (
-            <p className="text-ink-soft text-sm">
-              Not connected. A workspace admin can connect the Adobe Admin
-              Console here.
-            </p>
+            <p className="text-ink-soft text-sm">{t("notConnectedViewer")}</p>
           )}
         </Card>
 
-        <Card title="What it detects">
+        <Card title={t("whatItDetectsTitle")}>
           <ul className="text-ink-soft flex flex-col gap-2 text-sm">
             <li className="flex gap-3">
               <span aria-hidden="true" className="text-brand-text mt-0.5">
                 ·
               </span>
-              Adobe seats whose owner is disabled in Entra ID: paid Creative
-              Cloud for accounts that can no longer sign in.
+              {t("detectsDisabled")}
             </li>
             <li className="flex gap-3">
               <span aria-hidden="true" className="text-brand-text mt-0.5">
                 ·
               </span>
-              Orphaned Adobe seats with no matching directory account at all.
+              {t("detectsOrphaned")}
             </li>
           </ul>
-          <p className="text-ink-faint mt-3 text-xs">
-            Entitlements only: no Adobe documents or content are read. Prices
-            are editable in your license price book.
-          </p>
+          <p className="text-ink-faint mt-3 text-xs">{t("entitlementsNote")}</p>
           <Link
             href="/connectors/adobe"
             className={buttonClass("secondary", "mt-4")}
           >
-            Open Adobe Setup Guide
+            {t("openSetupGuide")}
           </Link>
         </Card>
       </div>

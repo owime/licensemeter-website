@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { ButtonLink, Card } from "~/components/ui";
 import { SpendChart } from "~/components/workspace/SpendChart";
@@ -37,6 +38,7 @@ export default async function AiCostsPage({
 }: {
   searchParams: Promise<{ preview?: string }>;
 }) {
+  const t = await getTranslations("aiCosts");
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
   const isAdmin = hasRole(ctx, "admin");
@@ -100,20 +102,20 @@ export default async function AiCostsPage({
 
   const perProviderCards = providers.flatMap((p) => [
     {
-      label: `${CONNECTOR_LABELS[p]} this month`,
+      label: t("stats.thisMonth", { provider: CONNECTOR_LABELS[p] }),
       value: fmtMoney(
         totalFor(p, (d) => d.startsWith(monthPrefix)),
         "USD",
       ),
-      sub: "calendar month, UTC",
+      sub: t("stats.calendarMonthSub"),
     },
     {
-      label: `${CONNECTOR_LABELS[p]} last 30 days`,
+      label: t("stats.last30Days", { provider: CONNECTOR_LABELS[p] }),
       value: fmtMoney(
         totalFor(p, (d) => d >= cutoff30),
         "USD",
       ),
-      sub: "rolling window",
+      sub: t("stats.rollingWindowSub"),
     },
   ]);
 
@@ -125,7 +127,7 @@ export default async function AiCostsPage({
     providers.length > 1
       ? [
           {
-            label: "Total AI spend this month",
+            label: t("stats.totalThisMonth"),
             value: fmtMoney(
               providers.reduce(
                 (s, p) => s + totalFor(p, (d) => d.startsWith(monthPrefix)),
@@ -133,10 +135,10 @@ export default async function AiCostsPage({
               ),
               "USD",
             ),
-            sub: "all providers, calendar month",
+            sub: t("stats.totalCalendarMonthSub"),
           },
           {
-            label: "Total AI spend last 30 days",
+            label: t("stats.totalLast30Days"),
             value: fmtMoney(
               providers.reduce(
                 (s, p) => s + totalFor(p, (d) => d >= cutoff30),
@@ -144,7 +146,7 @@ export default async function AiCostsPage({
               ),
               "USD",
             ),
-            sub: "all providers, rolling window",
+            sub: t("stats.totalRollingWindowSub"),
           },
         ]
       : [];
@@ -197,25 +199,34 @@ export default async function AiCostsPage({
     <div className="mx-auto max-w-5xl">
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">AI costs</h1>
+          <h1 className="font-display text-3xl tracking-tight">
+            {t("header.title")}
+          </h1>
           <p className="text-ink-soft mt-1 text-sm">
             {isPreview
-              ? "Explore 60 days of sample OpenAI and Anthropic usage"
+              ? t("header.previewSubtitle")
               : lastRun?.status === "running"
-                ? "Sync running…"
+                ? t("header.syncRunning")
                 : isImported
-                  ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
-                  : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+                  ? t("header.imported", {
+                      date: fmtDate(importedUser?.syncedAt ?? null),
+                    })
+                  : t("header.lastSynced", {
+                      when: fmtAgo(lastRun?.finishedAt ?? null),
+                    })}
             {!isPreview && lastRun?.status === "failed" && (
-              <span className="text-danger-text ml-2">(last sync failed)</span>
+              <span className="text-danger-text ml-2">
+                {t("header.syncFailed")}
+              </span>
             )}
             {!isPreview && lastRun?.status === "partial" && (
               <span className="text-gold-text ml-2">
-                (completed with warnings
-                {degradedSteps > 0
-                  ? ` · ${degradedSteps} ${degradedSteps === 1 ? "step" : "steps"} degraded`
-                  : ""}
-                )
+                {t("header.completedWithWarnings", {
+                  detail:
+                    degradedSteps > 0
+                      ? t("header.stepsDegraded", { count: degradedSteps })
+                      : "",
+                })}
               </span>
             )}
           </p>
@@ -234,7 +245,7 @@ export default async function AiCostsPage({
                 key={provider}
                 href={`/app/connectors/${provider}${ctx.tenant.isDemo ? "" : "?preview=sample"}`}
               >
-                Explore {CONNECTOR_LABELS[provider]} sample
+                {t("exploreSample", { label: CONNECTOR_LABELS[provider] })}
               </ButtonLink>
             ))}
           </div>
@@ -243,60 +254,58 @@ export default async function AiCostsPage({
 
       {rows.length === 0 && aiConns.length === 0 ? (
         <section className="rise rise-2 mt-8">
-          <Card title="Connect an AI provider">
+          <Card title={t("connect.title")}>
             <div className="flex flex-col gap-4">
               <div>
                 <ButtonLink
                   href="/app/ai-costs?preview=sample"
                   variant="secondary"
                 >
-                  Preview sample data
+                  {t("connect.previewButton")}
                 </ButtonLink>
               </div>
               <p className="text-ink-soft max-w-2xl text-sm">
-                Connect OpenAI or Anthropic to see what your organization spends
-                on their APIs: daily totals by model and line item, exactly as
-                billed. The same connector correlates console members against
-                Entra ID, so departed people who still hold live API keys
-                surface as findings.
+                {t("connect.description")}
               </p>
               {isImported ? (
                 <>
                   <p className="text-ink-soft max-w-2xl text-sm">
-                    Connect your Microsoft 365 tenant first, then add the AI
-                    connectors.
+                    {t("connect.connectM365First")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <ButtonLink href="/app/connectors/microsoft">
-                      Connect the read-only sync
+                      {t("connect.connectReadOnlySync")}
                     </ButtonLink>
                   </div>
                 </>
               ) : !isAdmin ? (
                 <p className="text-ink-soft max-w-2xl text-sm">
-                  Connecting needs an admin. Ask a workspace admin to connect{" "}
-                  <Link
-                    href="/app/connectors/openai"
-                    className="hover:text-ink underline underline-offset-4"
-                  >
-                    OpenAI
-                  </Link>{" "}
-                  or{" "}
-                  <Link
-                    href="/app/connectors/anthropic"
-                    className="hover:text-ink underline underline-offset-4"
-                  >
-                    Anthropic
-                  </Link>
-                  .
+                  {t.rich("connect.adminRequired", {
+                    openai: (chunks) => (
+                      <Link
+                        href="/app/connectors/openai"
+                        className="hover:text-ink underline underline-offset-4"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                    anthropic: (chunks) => (
+                      <Link
+                        href="/app/connectors/anthropic"
+                        className="hover:text-ink underline underline-offset-4"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   <ButtonLink href="/app/connectors/openai">
-                    Connect OpenAI
+                    {t("connect.connectOpenAI")}
                   </ButtonLink>
                   <ButtonLink href="/app/connectors/anthropic">
-                    Connect Anthropic
+                    {t("connect.connectAnthropic")}
                   </ButtonLink>
                 </div>
               )}
@@ -305,11 +314,10 @@ export default async function AiCostsPage({
         </section>
       ) : rows.length === 0 ? (
         <section className="rise rise-2 mt-8">
-          <Card title="Connection">
+          <Card title={t("connection.title")}>
             <div className="flex flex-col gap-3">
               <p className="text-ink-soft text-sm">
-                Connected. The first sync brings in each provider&apos;s cost
-                history.
+                {t("connection.description")}
               </p>
               <ul className="flex flex-col gap-1 text-sm">
                 {aiConns.map((c) => (
@@ -325,8 +333,11 @@ export default async function AiCostsPage({
                     </Link>
                     <span className="text-ink-faint text-xs">
                       {c.lastSyncAt
-                        ? `last sync ${fmtDate(c.lastSyncAt)} (${c.lastSyncStatus ?? "pending"})`
-                        : "first sync pending"}
+                        ? t("connection.lastSync", {
+                            date: fmtDate(c.lastSyncAt),
+                            status: c.lastSyncStatus ?? "pending",
+                          })
+                        : t("connection.firstSyncPending")}
                     </span>
                   </li>
                 ))}
@@ -356,28 +367,31 @@ export default async function AiCostsPage({
 
           <section className="rise rise-4 mt-10">
             <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-              Top cost categories
+              {t("categories.title")}
             </h2>
             {/* Desktop table */}
             <div className="border-line bg-card mt-3 hidden overflow-x-auto border md:block">
               <table className="w-full text-sm">
                 <caption className="sr-only">
-                  Top AI cost categories over the last 30 days, in USD
-                  {isPreview ? " (sample data)" : ""}.
+                  {t("categories.tableCaption", {
+                    sample: isPreview
+                      ? t("categories.sampleDataSuffix")
+                      : "",
+                  })}
                 </caption>
                 <thead>
                   <tr className="border-line text-ink-faint border-b text-left text-[11px] tracking-[0.14em] uppercase">
                     <th scope="col" className="px-4 py-3 font-medium">
-                      Category
+                      {t("categories.columnCategory")}
                     </th>
                     <th scope="col" className="px-4 py-3 font-medium">
-                      Provider
+                      {t("categories.columnProvider")}
                     </th>
                     <th
                       scope="col"
                       className="px-4 py-3 text-right font-medium"
                     >
-                      Last 30 days
+                      {t("categories.columnLast30Days")}
                     </th>
                   </tr>
                 </thead>
@@ -398,7 +412,9 @@ export default async function AiCostsPage({
                   ))}
                   {otherCents > 0 && (
                     <tr className="border-line hover:bg-canvas border-b last:border-b-0">
-                      <td className="text-ink-soft px-4 py-3">Other</td>
+                      <td className="text-ink-soft px-4 py-3">
+                        {t("categories.other")}
+                      </td>
                       <td className="text-ink-faint px-4 py-3">-</td>
                       <td className="tnum px-4 py-3 text-right font-mono">
                         {fmtMoney(otherCents, "USD")}
@@ -411,7 +427,7 @@ export default async function AiCostsPage({
                         colSpan={3}
                         className="text-ink-soft px-4 py-8 text-center"
                       >
-                        No spend in the last 30 days.
+                        {t("categories.noSpend")}
                       </td>
                     </tr>
                   )}
@@ -439,7 +455,9 @@ export default async function AiCostsPage({
               ))}
               {otherCents > 0 && (
                 <li className="border-line bg-card flex items-center justify-between gap-3 border p-4">
-                  <span className="text-ink-soft">Other</span>
+                  <span className="text-ink-soft">
+                    {t("categories.other")}
+                  </span>
                   <span className="tnum shrink-0 font-mono text-sm">
                     {fmtMoney(otherCents, "USD")}
                   </span>
@@ -447,7 +465,7 @@ export default async function AiCostsPage({
               )}
               {topCategories.length === 0 && (
                 <li className="border-line bg-card text-ink-soft border px-4 py-8 text-center text-sm">
-                  No spend in the last 30 days.
+                  {t("categories.noSpend")}
                 </li>
               )}
             </ul>
@@ -456,9 +474,7 @@ export default async function AiCostsPage({
       )}
 
       <p className="rise rise-4 text-ink-faint mt-8 mb-8 text-xs">
-        {isPreview
-          ? "Illustrative amounts in USD for demonstration only. These are not actual charges."
-          : "Billed by the providers in USD. Shown as billed, never converted to your workspace currency."}
+        {isPreview ? t("footerNote.preview") : t("footerNote.live")}
       </p>
     </div>
   );

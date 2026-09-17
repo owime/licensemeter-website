@@ -1,0 +1,21 @@
+{
+  "account": {
+    "title": "Konto",
+    "demo": {
+      "cardTitle": "Demoarbeidsområde",
+      "description": "Denne delte demoen har ingen personlig identitet å redigere. En reell konto eksponerer følgende sikkerhetskontroller for selvbetjening.",
+      "items": ["Profil og navn", "Passord", "Tofaktorautentisering"],
+      "note": "Endringer gjelder for innloggingen din på tvers av alle arbeidsområder. Demoen forblir skrivebeskyttet slik at én besøkende ikke kan påvirke en annen.",
+      "backToOverview": "Tilbake til oversikten"
+    },
+    "entra": {
+      "description": "Profilen, passordet og påloggingssikkerheten din administreres av Microsoft Entra ID. Oppdater dem i Microsoft-kontoen din — endringer gjelder på tvers av alle arbeidsområder du er medlem av."
+    },
+    "loadError": {
+      "description": "Vi kunne ikke laste kontoopplysningene dine. Å logge ut og inn igjen løser vanligvis dette.",
+      "signOut": "Logg ut",
+      "backHome": "Tilbake til forsiden"
+    },
+    "description": "Administrer navnet, passordet og påloggingssikkerheten din. Dette gjelder for den personlige innloggingen din på tvers av alle arbeidsområder du er medlem av."
+  }
+}

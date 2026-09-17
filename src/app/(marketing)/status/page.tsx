@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { EXTERNAL_STATUS_LINKS, type StatusLevel } from "~/lib/statusProviders";
 import { getStatusOverview } from "~/server/status";
@@ -15,49 +16,31 @@ export const metadata: Metadata = {
 // hammered on every request.
 export const revalidate = 60;
 
-const LEVEL_META: Record<
-  StatusLevel,
-  { label: string; dot: string; pill: string }
-> = {
+const LEVEL_META: Record<StatusLevel, { dot: string; pill: string }> = {
   operational: {
-    label: "Operational",
     dot: "bg-good",
     pill: "bg-good-soft text-good-text",
   },
   degraded: {
-    label: "Degraded performance",
     dot: "bg-waste",
     pill: "bg-waste-soft text-waste-text",
   },
   partial: {
-    label: "Partial outage",
     dot: "bg-waste",
     pill: "bg-waste-soft text-waste-text",
   },
   outage: {
-    label: "Major outage",
     dot: "bg-danger",
     pill: "bg-danger-soft text-danger-text",
   },
   maintenance: {
-    label: "Maintenance",
     dot: "bg-slate-ink",
     pill: "bg-slate-soft text-slate-ink",
   },
   unknown: {
-    label: "Status unavailable",
     dot: "bg-ink-faint",
     pill: "bg-subtle text-ink-faint",
   },
-};
-
-const OVERALL_HEADLINE: Record<StatusLevel, string> = {
-  operational: "All systems operational",
-  degraded: "Degraded performance",
-  partial: "Partial service disruption",
-  outage: "Major service outage",
-  maintenance: "Scheduled maintenance",
-  unknown: "Status partially unavailable",
 };
 
 function StatusDot({ level }: { level: StatusLevel }) {
@@ -69,7 +52,7 @@ function StatusDot({ level }: { level: StatusLevel }) {
   );
 }
 
-function StatusPill({ level }: { level: StatusLevel }) {
+function StatusPill({ level, label }: { level: StatusLevel; label: string }) {
   const meta = LEVEL_META[level];
   return (
     <span
@@ -79,7 +62,7 @@ function StatusPill({ level }: { level: StatusLevel }) {
         className={`inline-block h-1.5 w-1.5 rounded-full ${meta.dot}`}
         aria-hidden="true"
       />
-      {meta.label}
+      {label}
     </span>
   );
 }
@@ -93,13 +76,14 @@ function formatChecked(iso: string): string {
 }
 
 export default async function StatusPage() {
+  const t = await getTranslations("status");
   const { overall, services, providers, checkedAt } = await getStatusOverview();
   const overallMeta = LEVEL_META[overall];
 
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
-        System status
+        {t("eyebrow")}
       </p>
 
       {/* Overall banner. Tinted by the worst of LicenseMeter's own services. */}
@@ -109,21 +93,19 @@ export default async function StatusPage() {
         <div className="flex items-center gap-3">
           <StatusDot level={overall} />
           <h1 className="font-display text-2xl tracking-tight">
-            {OVERALL_HEADLINE[overall]}
+            {t(`overallHeadline.${overall}`)}
           </h1>
         </div>
         <p className="text-xs font-medium opacity-80">
-          Checked {formatChecked(checkedAt)} UTC
+          {t("checkedAt", { time: formatChecked(checkedAt) })}
         </p>
       </div>
 
       <p className="text-ink-soft mt-4 text-sm leading-relaxed">
-        Live status for LicenseMeter and the infrastructure it runs on. Our own
-        services are probed directly; the providers below report their own
-        health, refreshed about once a minute.
+        {t("intro")}
       </p>
 
-      <Section title="LicenseMeter">
+      <Section title={t("sections.licensemeter")}>
         <ul className="border-line bg-card overflow-hidden rounded-xl border">
           {services.map((service) => (
             <li
@@ -134,13 +116,16 @@ export default async function StatusPage() {
                 <p className="text-ink text-sm font-medium">{service.name}</p>
                 <p className="text-ink-faint text-xs">{service.description}</p>
               </div>
-              <StatusPill level={service.level} />
+              <StatusPill
+                level={service.level}
+                label={t(`levels.${service.level}`)}
+              />
             </li>
           ))}
         </ul>
       </Section>
 
-      <Section title="Infrastructure and subprocessors">
+      <Section title={t("sections.infrastructure")}>
         <ul className="border-line bg-card overflow-hidden rounded-xl border">
           {providers.map((provider) => (
             <li
@@ -158,14 +143,17 @@ export default async function StatusPage() {
                     rel="noreferrer"
                     className="text-ink-faint hover:text-ink text-xs underline-offset-4 hover:underline"
                   >
-                    details &rarr;
+                    {t("detailsLink")}
                   </a>
                 </div>
                 <p className="text-ink-faint text-xs">
                   {provider.purpose} &middot; {provider.location}
                 </p>
               </div>
-              <StatusPill level={provider.level} />
+              <StatusPill
+                level={provider.level}
+                label={t(`levels.${provider.level}`)}
+              />
             </li>
           ))}
           {EXTERNAL_STATUS_LINKS.map((link) => (
@@ -185,28 +173,27 @@ export default async function StatusPage() {
                 rel="noreferrer"
                 className="border-line-strong text-ink-soft hover:border-brand hover:text-ink shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium underline-offset-4"
               >
-                Check status &rarr;
+                {t("checkStatusLink")}
               </a>
             </li>
           ))}
         </ul>
         <p className="text-ink-faint mt-3 text-xs leading-relaxed">
-          Microsoft 365 and Entra ID have no public machine-readable feed, so
-          their status is a direct link. The full subprocessor list lives on the{" "}
-          <Link
-            href="/trust-center#subprocessors"
-            className="text-ink-soft hover:text-ink underline underline-offset-4"
-          >
-            Trust Center
-          </Link>
-          .
+          {t.rich("microsoftNote", {
+            trustCenterLink: (chunks) => (
+              <Link
+                href="/trust-center#subprocessors"
+                className="text-ink-soft hover:text-ink underline underline-offset-4"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </Section>
 
       <p className="text-ink-faint border-line mt-10 border-t pt-6 text-xs leading-relaxed">
-        This page runs inside the LicenseMeter application, so it cannot report
-        a full platform outage on its own. For incidents, watch the provider
-        feeds above or contact support.
+        {t("footerNote")}
       </p>
     </main>
   );

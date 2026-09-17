@@ -1,0 +1,61 @@
+{
+  "roi": {
+    "eyebrow": "ROI calculator",
+    "heading": "Microsoft 365 license waste calculator",
+    "intro": "Put in your paid seat count, your monthly cost per seat and a waste share you consider plausible, and see what that assumption costs per month and per year. The estimate runs entirely in your browser, and a free read-only scan replaces it with your tenant's real number.",
+    "drivers": {
+      "heading": "What typically drives license waste",
+      "intro": "The waste share you pick above is an assumption, but the mechanisms behind it are concrete. These are the patterns LicenseMeter's detection rules look for in real tenants:",
+      "items": [
+        {
+          "title": "Offboarding leaks",
+          "body": "An account gets disabled in Entra ID, but its licenses stay assigned. The seat keeps billing every month until someone notices. This is the classic leak: leavers accumulate quietly, one or two per departure."
+        },
+        {
+          "title": "Seats that never started",
+          "body": "Licenses assigned ahead of onboarding, for a project that fizzled, or by an over-broad group rule. The user never signs in and never touches a workload, yet the seat is paid from day one."
+        },
+        {
+          "title": "Seats that went quiet",
+          "body": "People change roles, tools change, and a licensed account stops signing in to Exchange, OneDrive, SharePoint or Teams. Without a last-activity check across those workloads, the seat looks fine in the admin center."
+        },
+        {
+          "title": "Shelfware, overlaps and add-ons",
+          "body": "Purchased seats that were never assigned to anyone, suites paid alongside standalone plans that duplicate them, Copilot add-ons nobody uses, and paid licenses sitting on guest accounts. None of this shows up in a headcount comparison."
+        }
+      ]
+    },
+    "how": {
+      "heading": "How the calculator works",
+      "body": "Seats times monthly cost per seat times your assumed waste share: no more, no less. The math runs in integer cents, the annual figure is twelve times the monthly one. LicenseMeter is free regardless of seat count. Nothing you type is sent anywhere."
+    },
+    "detection": {
+      "heading": "From assumption to detection",
+      "intro": "A scan replaces the slider with findings: LicenseMeter joins directory data, license assignments, sign-in activity and usage reports read-only, then prices every wasted seat from an editable price book prefilled with list-price estimates, because there is no Microsoft API for your negotiated prices.",
+      "stats": "The sample tenant of {users} people shows",
+      "suffix": "a month across {findingsCount} findings, each with the account, the rule and the monthly cost attached.",
+      "note": "Every finding exports to CSV for finance, and IT gets a generated PowerShell remediation script to review and run. LicenseMeter itself never writes to your tenant."
+    },
+    "final": {
+      "heading": "Stop estimating. See your number.",
+      "body": "Connect read-only and the free scan replaces every assumption on this page with real tenant data, priced per seat and per month.",
+      "primaryLabel": "Run my free scan",
+      "note": "Free scans and continuous monitoring. No credit card, read-only access."
+    },
+    "calculator": {
+      "badge": "Waste estimate · your assumptions",
+      "noDataLeaves": "No data leaves this page",
+      "seatsLabel": "Paid seats",
+      "seatsHint": "Use the paid seat count from your renewal, billing export or admin center.",
+      "costLabel": "Monthly cost estimate per seat (EUR)",
+      "costHint": "Default uses this app's Microsoft 365 E3 list-price estimate. Replace it with your blended monthly cost if procurement has one.",
+      "shareLabel": "Assumed waste share",
+      "shareValueAria": "{value} percent assumed waste share",
+      "shareHint": "Start with a conservative pre-scan assumption. The sample tenant is {demoWastePct} percent, but your free scan replaces this with tenant data.",
+      "resultBadge": "Assumption-based estimate",
+      "resultCaption": "estimated monthly waste · {annual} a year before remediation",
+      "resultNote": "LicenseMeter is free at every seat count. Run a scan to replace this estimate with findings from your own workspace.",
+      "runScan": "Run my free scan →"
+    }
+  }
+}

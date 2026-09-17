@@ -1,0 +1,75 @@
+{
+  "msp": {
+    "eyebrow": "For leverandører av administrerte tjenester (MSP)",
+    "heading": "Alle kundeleiere. Én felles oversikt over sløsing.",
+    "intro": "Du drifter Microsoft 365 for fem, tjue, femti kunder. LicenseMeter gir hver kundeleier sin egen skrivebeskyttede arbeidsflate, og gir deg én samlet portefølje, sortert etter hva hver kunde sløser bort per måned.",
+    "cta": {
+      "startFree": "Start gratis",
+      "talkToUs": "Snakk med oss",
+      "openDemo": "Åpne live-demoen",
+      "note": "Logg inn, koble til din første kunde skrivebeskyttet, og se sløsingstallet deres gratis. Legg til flere kundeleiere etter hvert, uten kostnad og uten kredittkort."
+    },
+    "steps": {
+      "heading": "Å koble til en kunde krever bare ett samtykke.",
+      "items": [
+        {
+          "title": "Du starter flyten",
+          "body": "Logg inn med din egen konto og start tilkoblingsflyten for kundeleieren. Ingen kundekredentialer skifter hender på noe tidspunkt."
+        },
+        {
+          "title": "Kundens globale administrator (eller administrator med privilegerte roller) samtykker",
+          "body": "Kundens administrator fullfører Microsofts standard samtykkedialog for administratorer: skrivebeskyttede applikasjonstillatelser, registrert i deres revisjonslogg."
+        },
+        {
+          "title": "Du eier arbeidsflaten",
+          "body": "Arbeidsflaten bindes til deg i det øyeblikket samtykket foreligger, og første synkronisering starter. Kunden kan når som helst tilbakekalle bedriftsappen i Entra ID."
+        }
+      ]
+    },
+    "finding": {
+      "heading": "Funnet kundene dine betaler deg for å fange opp",
+      "intro": "Avslutning av brukerforhold er der kundens penger lekker ut. LicenseMeter kryssjekker hvert Adobe-, Zoom-, Atlassian-, Salesforce-, OpenAI-, Anthropic-, ChatGPT- og Claude-sete mot kundens katalog, slik at kontoen du deaktiverte for måneder siden dukker opp med de betalte setene den fortsatt har.",
+      "stats": "Live-demoleieren viser mønsteret: {leaverCount} tidligere ansatte fortsatt lisensiert, {crossVendorCount} av dem i tilkoblede apper.",
+      "thats": "Det er",
+      "suffix": "i måneden for folk som allerede har sluttet."
+    },
+    "features": [
+      {
+        "title": "Portefølje, sortert etter sløsing",
+        "body": "Seter, kostnad, månedlig sløsing, åpne funn og synkroniseringsstatus for hver kundeleier i én tabell, sortert etter sløsing slik at du åpner riktig leier først."
+      },
+      {
+        "title": "En prisbok per kunde",
+        "body": "Hver arbeidsflate har sine egne priser og valuta: listepris-estimater forhåndsutfylt, kundens forhandlede priser redigerbare per SKU. Funn prises med kundens egne tall, ikke våre."
+      },
+      {
+        "title": "Leveransen til kvartalsgjennomgangen (QBR)",
+        "body": "En merkevaretilpasset PDF-sløsingsrapport per leier: kostnad, sløsing og hvert funn med sin månedlige kostnad. Pluss CSV-eksporter for økonomi og genererte PowerShell-skript som kundens IT gjennomgår og kjører."
+      },
+      {
+        "title": "En oppsummering som følger opp for deg",
+        "body": "Hver arbeidsflate sender eierne og administratorene sine et ukentlig sammendrag med sløsingstallet og de største åpne funnene. Kundene ser fremgang mellom kvartalsgjennomgangene uten å logge inn."
+      }
+    ],
+    "trust": {
+      "heading": "Bygget for å bestå kundens sikkerhetsgjennomgang.",
+      "items": [
+        "Skrivebeskyttede applikasjonstillatelser (det finnes ikke noe skriveomfang)",
+        "Utbedring skjer som PowerShell-skript, kjørt av kundens IT",
+        "Datalagring i EU (Postgres, Frankfurt)",
+        "Å koble fra en arbeidsflate sletter alt"
+      ],
+      "securityPrefix": "",
+      "securityLinkLabel": "Sikkerhetsoversikten",
+      "securitySuffix": "lister alle innvilgede tillatelser og hva som lagres. Den er skrevet for å kunne videresendes til kundens sikkerhetsteam som den er."
+    },
+    "free": {
+      "heading": "Alle kundeleiere, gratis.",
+      "body": "Koble til kundeleierne dine, bytt mellom arbeidsflatene deres og se gjennom porteføljen din på ett sted. Overvåking, rapporter og eksporter er inkludert for hver tilkoblede arbeidsflate."
+    },
+    "final": {
+      "heading": "Ta med den verste leieren din.",
+      "body": "Gå gjennom demo-arbeidsflaten først, koble deretter til kunden du mistenker mest. Første skann er gratis, skrivebeskyttet, og krever bare ett samtykke."
+    }
+  }
+}

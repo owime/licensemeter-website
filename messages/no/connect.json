@@ -1,0 +1,60 @@
+{
+  "connect": {
+    "meta": { "title": "Koble til en tenant" },
+    "title": "Koble til tenanten din",
+    "readOnlySync": "Koble til den skrivebeskyttede synkroniseringen",
+    "description": "En Global Administrator eller Privileged Role Administrator i Microsoft 365-tenanten din gir LicenseMeter <strong>skrivebeskyttede</strong> applikasjonstillatelser én gang. Det åpner for nattlig overvåking, varsler om lekkasjer og trender. Ingenting skrives noensinne til tenanten din, og innholdet i e-post eller filer er aldri lesbart.",
+    "grantConsent": "Gi administratorsamtykke",
+    "consentNotEnabled": "Administrert samtykke med ett klikk er ikke aktivert i dette miljøet. Bruk det umiddelbare søket eller CSV-importen under.",
+    "signedInAs": "Pålogget som {identity}",
+    "instantScan": {
+      "title": "Kjør et umiddelbart søk",
+      "description": "Et engangssøk med de samme skrivebeskyttede omfangene, kjørt med <strong>dine</strong> tillatelser mens du er pålogget. Ingen stående tilgang, ingen lagrede tokens.",
+      "cta": "Kjør et umiddelbart søk"
+    },
+    "noAdmin": {
+      "description": "Har du ingen administrator med samtykkerettigheter tilgjengelig? Start med CSV-importen: to eksporter fra admin-senteret, uten noe samtykke i det hele tatt.",
+      "cta": "Prøv med CSV-eksporter"
+    },
+    "csv": {
+      "meta": { "title": "CSV-import" },
+      "title": "Sløsingstallet ditt fra to eksporter, uten samtykke",
+      "description": "Last opp eksportene under, så kjører LicenseMeter de samme sløsingsreglene som et tilkoblet arbeidsområde får: offboarding-lekkasjer, overlappende lisenser og (med brukfilen) inaktive seter. Alle med <strong>Reports Reader</strong>- eller <strong>Global Reader</strong>-rettigheter kan produsere eksportene; ingen administratorsamtykke er involvert.",
+      "dataHandling": {
+        "heading": "Slik behandles dataene dine",
+        "body": "Filene leses én gang og lagres som synkroniserte arbeidsområdedata: EU-basert lagring, skrives aldri tilbake noe sted, ingen e-post- eller filinnhold. Å koble fra arbeidsområdet i Innstillinger sletter alt."
+      },
+      "haveConsent": "Har du samtykkerettigheter?",
+      "connectInstead": "Koble til den skrivebeskyttede synkroniseringen i stedet",
+      "connectInsteadSuffix": "for nattlige oppdateringer, lekkasjevarsler og trender uten å laste opp på nytt.",
+      "signedInAs": "Pålogget som {identity}",
+      "form": {
+        "directoryLabel": "Brukereksport",
+        "required": "(påkrevd)",
+        "directoryHelp": "Microsoft 365 admin-senter > Brukere > Aktive brukere > Eksporter brukere. Den viser hvem som har hvilke lisenser, og hvem som er blokkert.",
+        "usageLabel": "Bruk-eksport",
+        "optional": "(valgfritt)",
+        "usageHelp": "Rapporter > Bruk > Aktive brukere > Eksporter (detaljert). Dette legger til inaktivitetsdeteksjon i tillegg til offboarding- og overlappingssjekkene.",
+        "orgNameLabel": "Arbeidsområdenavn",
+        "orgNamePlaceholder": "Standard er UPN-domenet ditt",
+        "submit": "Analyser eksportene mine",
+        "submitting": "Analyserer…"
+      },
+      "errors": {
+        "signInAgain": "Logg inn på nytt for å starte en CSV-import.",
+        "missingDirectory": "Velg brukereksportfilen (Brukere > Aktive brukere > Eksporter brukere).",
+        "fileTooLarge": "Hver fil må være 5 MB eller mindre.",
+        "tooManyUploads": "For mange opplastinger for organisasjonen din. Prøv igjen senere.",
+        "noUsers": "Brukereksporten inneholder ingen brukere.",
+        "tooManyUsers": "Brukereksporten er uvanlig stor. Koble til den skrivebeskyttede synkroniseringen for tenanter av denne størrelsen.",
+        "concealedNames": "Bruksrapporten kan ikke kobles til brukerne dine: identiteter i rapporten er skjult. Slå av Rapporter > Innstillinger > vis skjulte navn i Microsoft 365 admin-senter, eksporter på nytt, og last opp igjen (eller utelat bruksfilen).",
+        "demoNotAvailable": "CSV-import er ikke tilgjengelig for demoarbeidsområdet.",
+        "alreadyConnectedMember": "Organisasjonen din har allerede et tilkoblet arbeidsområde. Åpne det fra arbeidsområdevelgeren.",
+        "alreadyConnectedNonMember": "Organisasjonen din har allerede et tilkoblet arbeidsområde. Be en administrator der om en invitasjon.",
+        "importExistsNoMembership": "Et importert arbeidsområde for organisasjonen din finnes allerede. Be kollegaen som opprettet det om en invitasjon.",
+        "viewOnlyRole": "Rollen din i dette arbeidsområdet er kun visning. Be en administrator om å oppdatere dataene.",
+        "raceCreated": "Noen i organisasjonen din opprettet nettopp dette arbeidsområdet. Be dem om en invitasjon."
+      }
+    }
+  }
+}

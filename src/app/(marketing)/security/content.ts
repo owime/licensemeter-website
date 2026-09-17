@@ -1,10 +1,15 @@
+import type { getTranslations } from "next-intl/server";
+
 import type { DpaLang } from "~/lib/dpa";
 
 /**
- * Bilingual content for the security overview, following the single-source
- * pattern of /trust-center: one typed structure per language, each language
- * server-rendered at its own URL (/security and /de/security). The scope table
- * and the delegate-consent PowerShell script stay sourced from
+ * Content for the security overview. The German edition (server-rendered at
+ * /de/security) stays a static, hand-maintained structure below, exactly as
+ * before. The English URL (/security) instead sources its strings from the
+ * "security" next-intl namespace (messages/{en,no}/security.json), so the
+ * same URL renders in English or Norwegian depending on the visitor's
+ * locale - see buildContentFromTranslations and its use in SecurityView. The
+ * scope table and the delegate-consent PowerShell script stay sourced from
  * ~/lib/scopes (CONNECTOR_SCOPES) in SecurityView; only the human-language
  * strings live here. The script's comments remain English in both editions,
  * as is customary for code.
@@ -64,110 +69,100 @@ export type SecurityContent = {
   };
 };
 
-const EN: SecurityContent = {
-  eyebrow: "Security overview",
-  h1: "Written for the person who has to say yes.",
-  intro:
-    "LicenseMeter asks for tenant-wide read access, so this page spells out exactly what is granted, what is stored where, and how you leave. Share it with your security team before anyone clicks consent.",
-  toggleLabel: "Choose language",
+/**
+ * Builds the English/Norwegian SecurityContent from the "security" next-intl
+ * namespace (messages/{en,no}/security.json). Hrefs are not localized (there
+ * is no /no/ route tree), so they stay hardcoded here, matching the English
+ * routes used throughout the marketing site regardless of locale.
+ */
+export const buildSecurityContentFromTranslations = (
+  t: Awaited<ReturnType<typeof getTranslations<"security">>>,
+): SecurityContent => ({
+  eyebrow: t("eyebrow"),
+  h1: t("h1"),
+  intro: t("intro"),
+  toggleLabel: t("toggleLabel"),
   access: {
-    title: "How access works",
+    title: t("access.title"),
     body: {
-      pre: "A Global Administrator of your tenant grants consent once, through Microsoft’s standard admin-consent dialog. That authorizes the “LicenseMeter Connector” application for ",
-      strong: "application permissions that are read-only without exception",
-      post: ". LicenseMeter then syncs nightly using its own credential: no service account in your tenant, no agent, no mailbox plugin. You can revoke the application in Entra ID at any time, independently of us.",
+      pre: t("access.body.pre"),
+      strong: t("access.body.strong"),
+      post: t("access.body.post"),
     },
-    scopeWhy: {},
-    consentNote:
-      "The consent is recorded in your tenant’s audit log. Sign-in to the dashboard itself uses a separate app registration with only openid, profile and email.",
+    scopeWhy: t.raw("access.scopeWhy") as Partial<Record<string, string>>,
+    consentNote: t("access.consentNote"),
   },
   delegate: {
-    title:
-      "Delegating the consent without standing Global Administrator rights",
+    title: t("delegate.title"),
     body: {
-      pre: "Tenant-wide admin consent for Microsoft Graph application permissions (the kind listed above) can be granted by a Global Administrator or a Privileged Role Administrator; an Application Administrator is not sufficient for Graph application permissions, a boundary Microsoft sets, not us. Entra ID does let an organization delegate this consent narrowly: an app consent policy pinned to exactly these ",
-      post: " read-only permissions and to the LicenseMeter connector app, attached to a custom directory role. The one-time setup itself requires a Privileged Role Administrator or Global Administrator and Microsoft Graph PowerShell (the role permission cannot be added in the Entra portal yet) and belongs in your identity team’s review.",
+      pre: t("delegate.body.pre"),
+      post: t("delegate.body.post"),
     },
-    connectorIdNote:
-      "The connector application ID is shown on the connect page and in Microsoft’s consent dialog.",
+    connectorIdNote: t("delegate.connectorIdNote"),
     csv: {
-      pre: "No role with consent rights at hand today? The ",
-      linkText: "CSV import",
+      pre: t("delegate.csv.pre"),
+      linkText: t("delegate.csv.linkText"),
       href: "/app/connect/csv",
-      post: " computes your waste number from two Microsoft 365 admin center exports, with no consent at all. The link signs you in with Microsoft first.",
+      post: t("delegate.csv.post"),
     },
   },
   never: {
-    title: "What LicenseMeter never accesses",
-    items: [
-      "Mailbox content, attachments or calendars",
-      "Files in OneDrive, SharePoint or Teams",
-      "Teams messages or meeting content",
-      "Passwords, credentials or security tokens of your users",
-      "Any write access: LicenseMeter cannot change anything in your tenant",
-    ],
-    note: "Usage reports are consumed as counts and last-activity dates only: metadata, never content.",
+    title: t("never.title"),
+    items: t.raw("never.items") as string[],
+    note: t("never.note"),
   },
   stored: {
-    title: "What is stored",
-    items: [
-      "License SKUs with purchased and assigned seat counts",
-      "Directory users: display name, UPN, enabled state, user type, creation date, assigned licenses",
-      "Last sign-in timestamps (when your tenant has Entra ID P1) and per-workload last-activity dates",
-      "The prices you enter in the price book and the findings derived from the above",
-      "If you connect Adobe, Zoom, Atlassian, Salesforce, OpenAI or Anthropic (all optional): seat or console-member emails, status, product assignments and last-login dates where the provider exposes them, plus daily API cost totals for OpenAI and Anthropic; the credentials themselves are stored encrypted (AES-256-GCM) and used read-only",
-      "If you import ChatGPT or Claude member lists (optional CSV paste): the member emails, names, seat types and last-active dates contained in the data you paste",
-      "A per-workspace activity log of exports and administrative actions, deleted with the workspace",
-    ],
-    note: "Access to a workspace is invite-based. Signing in with an account from your tenant grants nothing by itself; the admin who completed consent decides who sees the data and in which role.",
+    title: t("stored.title"),
+    items: t.raw("stored.items") as string[],
+    note: t("stored.note"),
   },
   residency: {
-    title: "Data residency, retention and deletion",
-    body: "Customer application data is stored in the EU in a Supabase Postgres database hosted on AWS eu-central-1 (Frankfurt), matching the current Privacy Policy wording. Data is retained only while your tenant is connected. Disconnecting the workspace (Settings → Danger zone) deletes all synced data immediately and irreversibly: users, findings, prices, history. Revoking the enterprise application in your Entra ID additionally cuts our access at the source.",
+    title: t("residency.title"),
+    body: t("residency.body"),
   },
   subprocessors: {
-    title: "Subprocessors",
+    title: t("subprocessors.title"),
     note: {
-      pre: "The definitive subprocessor list is part of the ",
-      linkText: "DPA",
+      pre: t("subprocessors.note.pre"),
+      linkText: t("subprocessors.note.linkText"),
       href: "/dpa#annex-3",
-      post: ".",
+      post: t("subprocessors.note.post"),
     },
   },
   dpa: {
-    title: "DPA / Auftragsverarbeitung",
+    title: t("dpa.title"),
     body: {
-      pre: "LicenseMeter processes directory data on your behalf, so a data processing agreement under Art. 28 GDPR (AVV) is included for every workspace. The full text is published on our ",
-      linkText: "Data Processing Agreement",
+      pre: t("dpa.body.pre"),
+      linkText: t("dpa.body.linkText"),
       href: "/dpa",
-      post: " page, where you can download the pre-signed PDF in English or German, add your details and counter-sign it. No need to email and wait.",
+      post: t("dpa.body.post"),
     },
   },
   publisher: {
-    title: "Publisher verification",
+    title: t("publisher.title"),
     // TODO: update this wording the day verification completes.
-    body: "Microsoft publisher verification for the LicenseMeter app registrations is in progress. Until it completes, the consent dialog shows the apps as unverified, and tenants with strict consent policies may block them. Microsoft displays the verification status directly in the consent dialog, so your admin can always confirm the current state independently of this page.",
+    body: t("publisher.body"),
   },
   who: {
-    title: "Who builds LicenseMeter",
-    pre: "LicenseMeter is built and maintained by ",
-    kocLabel: "Ugur Koc",
-    mid: ", Microsoft MVP for Intune and Security Copilot. The operating company is UgurLabs UG (haftungsbeschränkt) in Düsseldorf, Germany, the same legal entity named in the ",
-    impressumLabel: "Imprint",
-    post: " and in every DPA, and the read-only design principles documented on this page apply to the entire product.",
+    title: t("who.title"),
+    pre: t("who.pre"),
+    kocLabel: t("who.kocLabel"),
+    mid: t("who.mid"),
+    impressumLabel: t("who.impressumLabel"),
+    post: t("who.post"),
   },
   questions: {
-    title: "Questions",
-    body: "Security review, pentest coordination or vendor questionnaires: ",
+    title: t("questions.title"),
+    body: t("questions.body"),
     seeAlso: {
-      pre: ". See also the ",
-      faqLabel: "FAQ",
-      mid: " and ",
-      privacyLabel: "Privacy Policy",
-      post: ".",
+      pre: t("questions.seeAlso.pre"),
+      faqLabel: t("questions.seeAlso.faqLabel"),
+      mid: t("questions.seeAlso.mid"),
+      privacyLabel: t("questions.seeAlso.privacyLabel"),
+      post: t("questions.seeAlso.post"),
     },
   },
-};
+});
 
 const DE: SecurityContent = {
   eyebrow: "Sicherheitsübersicht",
@@ -281,7 +276,13 @@ const DE: SecurityContent = {
   },
 };
 
-export const SECURITY_CONTENT: Record<DpaLang, SecurityContent> = {
-  en: EN,
-  de: DE,
-};
+/**
+ * Only the German edition is static content here. The English URL builds its
+ * content from next-intl translations instead (see
+ * buildSecurityContentFromTranslations), because that is what lets /security
+ * render in Norwegian for Norwegian-locale visitors.
+ */
+export const SECURITY_CONTENT: Record<Extract<DpaLang, "de">, SecurityContent> =
+  {
+    de: DE,
+  };

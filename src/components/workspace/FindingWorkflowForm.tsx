@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "~/components/ui";
 import { updateFindingWorkflow, type ActionResult } from "~/server/actions";
@@ -28,33 +29,35 @@ export const FindingWorkflowForm = ({
       updateFindingWorkflow(findingId, formData),
     null,
   );
+  const t = useTranslations("findings.workflowForm");
+  const tw = useTranslations("findings.workflow");
 
   return (
     <form action={action} className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium">
-          Remediation status
+          {t("remediationStatusLabel")}
           <select
             name="remediationStatus"
             defaultValue={initial.remediationStatus}
             autoComplete="off"
             className="border-line bg-card min-h-11 border px-3 py-2 font-normal"
           >
-            <option value="unassigned">Not planned</option>
-            <option value="planned">Planned</option>
-            <option value="requested">Remediation requested</option>
-            <option value="in_progress">In progress</option>
+            <option value="unassigned">{tw("unassigned")}</option>
+            <option value="planned">{tw("planned")}</option>
+            <option value="requested">{tw("requestedFull")}</option>
+            <option value="in_progress">{tw("inProgress")}</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium">
-          Assignee
+          {t("assigneeLabel")}
           <select
             name="assigneeMembershipId"
             defaultValue={initial.assigneeMembershipId ?? ""}
             autoComplete="off"
             className="border-line bg-card min-h-11 border px-3 py-2 font-normal"
           >
-            <option value="">Unassigned</option>
+            <option value="">{t("assigneeUnassigned")}</option>
             {members.map((member) => (
               <option key={member.id} value={member.id}>
                 {member.label}
@@ -63,7 +66,7 @@ export const FindingWorkflowForm = ({
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium">
-          Due date
+          {t("dueDateLabel")}
           <input
             type="date"
             name="dueDate"
@@ -73,33 +76,33 @@ export const FindingWorkflowForm = ({
           />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium">
-          External ticket URL
+          {t("ticketUrlLabel")}
           <input
             type="url"
             name="ticketUrl"
             defaultValue={initial.ticketUrl ?? ""}
             autoComplete="off"
             spellCheck={false}
-            placeholder="https://tickets.example.com/…"
+            placeholder={t("ticketUrlPlaceholder")}
             className="border-line bg-card min-h-11 border px-3 py-2 font-normal"
           />
         </label>
       </div>
       <label className="flex flex-col gap-1 text-sm font-medium">
-        Notes
+        {t("notesLabel")}
         <textarea
           name="workflowNote"
           defaultValue={initial.workflowNote ?? ""}
           autoComplete="off"
           rows={4}
           maxLength={2_000}
-          placeholder="Owner, approval context or remediation steps…"
+          placeholder={t("notesPlaceholder")}
           className="border-line bg-card border px-3 py-2 font-normal"
         />
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="primary" disabled={pending}>
-          {pending ? "Saving workflow…" : "Save workflow"}
+          {pending ? t("saving") : t("saveButton")}
         </Button>
         <p
           role="status"
@@ -112,9 +115,9 @@ export const FindingWorkflowForm = ({
         >
           {result
             ? result.ok
-              ? "Workflow saved."
-              : (result.error ?? "Could not save. Please retry.")
-            : "No workflow changes submitted."}
+              ? t("saved")
+              : (result.error ?? t("genericError"))
+            : t("noChanges")}
         </p>
       </div>
     </form>

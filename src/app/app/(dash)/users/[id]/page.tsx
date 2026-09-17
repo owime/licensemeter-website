@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CircleCheck, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { cache } from "react";
 
 import { EmptyState } from "~/components/workspace/EmptyState";
@@ -40,13 +41,13 @@ export async function generateMetadata({
   return { title: user ? (user.displayName ?? user.upn) : "User detail" };
 }
 
-const ACTIVITY_LABELS: Record<string, string> = {
-  exchange: "Exchange",
-  oneDrive: "OneDrive",
-  sharePoint: "SharePoint",
-  teams: "Teams",
-  copilot: "Copilot",
-};
+const ACTIVITY_LABEL_KEYS = [
+  "exchange",
+  "oneDrive",
+  "sharePoint",
+  "teams",
+  "copilot",
+] as const;
 
 export default async function UserDetailPage({
   params,
@@ -54,6 +55,7 @@ export default async function UserDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("users");
   const { ctx, user } = await loadUser(id);
   if (!user) notFound();
 
@@ -93,7 +95,7 @@ export default async function UserDetailPage({
         href="/app/findings"
         className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
       >
-        ← Back to findings
+        {t("backToFindings")}
       </Link>
 
       <header className="rise rise-1 mt-3 flex flex-wrap items-end justify-between gap-4">
@@ -107,20 +109,26 @@ export default async function UserDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <Pill tone={user.accountEnabled ? "moss" : "danger"}>
-            {user.accountEnabled ? "enabled" : "disabled"}
+            {user.accountEnabled ? t("enabled") : t("disabled")}
           </Pill>
-          {user.userType === "Guest" && <Pill tone="teal">guest</Pill>}
+          {user.userType === "Guest" && <Pill tone="teal">{t("guest")}</Pill>}
         </div>
       </header>
 
       <section className="rise rise-2 border-line bg-line mt-8 grid gap-px border sm:grid-cols-3">
         {[
           {
-            label: "Monthly license cost",
+            label: t("stats.monthlyLicenseCost"),
             value: fmtMoney(monthlyCost, currency),
           },
-          { label: "Last activity", value: fmtDate(user.lastActivity) },
-          { label: "Account created", value: fmtDate(user.createdDateTime) },
+          {
+            label: t("stats.lastActivity"),
+            value: fmtDate(user.lastActivity),
+          },
+          {
+            label: t("stats.accountCreated"),
+            value: fmtDate(user.createdDateTime),
+          },
         ].map((c) => (
           <div key={c.label} className="bg-card p-5">
             <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
@@ -135,7 +143,7 @@ export default async function UserDetailPage({
 
       <section className="rise rise-3 mt-8">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Licenses
+          {t("licenses.title")}
         </h2>
         <ul className="border-line bg-card mt-3 border">
           {user.licenses.map((l) => (
@@ -148,27 +156,34 @@ export default async function UserDetailPage({
                 {l.assignedByGroup && (
                   <details className="ml-2 inline-block align-middle">
                     <summary className="text-ink-faint hover:text-ink inline-flex min-h-11 cursor-pointer touch-manipulation items-center text-xs underline-offset-4 hover:underline">
-                      Assigned by group
+                      {t("licenses.assignedByGroup")}
                     </summary>
                     <span className="text-ink-faint block max-w-xs font-mono text-[11px] break-all">
-                      Group ID: {l.assignedByGroup}
+                      {t("licenses.groupId", { id: l.assignedByGroup })}
                     </span>
                   </details>
                 )}
                 {l.disabledPlans.length > 0 && (
                   <span className="text-gold-text ml-2 text-xs">
-                    {l.disabledPlans.length} plans disabled
+                    {t("licenses.plansDisabled", {
+                      count: l.disabledPlans.length,
+                    })}
                   </span>
                 )}
               </div>
               <span className="tnum font-mono text-sm">
-                {fmtMoney(priceBySku.get(l.skuId) ?? 0, currency)}/mo
+                {t("licenses.perMonth", {
+                  amount: fmtMoney(priceBySku.get(l.skuId) ?? 0, currency),
+                })}
               </span>
             </li>
           ))}
           {user.licenses.length === 0 && (
             <li>
-              <EmptyState icon={KeyRound} heading="No licenses assigned." />
+              <EmptyState
+                icon={KeyRound}
+                heading={t("licenses.noLicenses")}
+              />
             </li>
           )}
         </ul>
@@ -176,35 +191,35 @@ export default async function UserDetailPage({
 
       <section className="rise rise-4 mt-8">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Activity by workload
+          {t("activityByWorkload.title")}
         </h2>
         <dl className="tnum border-line bg-line mt-3 grid grid-cols-2 gap-px border font-mono text-sm sm:grid-cols-5">
-          {Object.entries(ACTIVITY_LABELS).map(([key, label], index) => (
+          {ACTIVITY_LABEL_KEYS.map((key, index) => (
             <div
               key={key}
               className={`bg-card p-4 ${index === 4 ? "max-sm:col-span-2" : ""}`}
             >
-              <dt className="text-ink-faint font-sans text-xs">{label}</dt>
+              <dt className="text-ink-faint font-sans text-xs">
+                {t(`activityByWorkload.${key}`)}
+              </dt>
               <dd className="mt-1">
-                {fmtDate(
-                  user.workloadActivity?.[
-                    key as keyof typeof user.workloadActivity
-                  ] ?? null,
-                )}
+                {fmtDate(user.workloadActivity?.[key] ?? null)}
               </dd>
             </div>
           ))}
         </dl>
         <p className="text-ink-faint mt-2 text-xs">
-          Last interactive sign-in {fmtDate(user.lastInteractiveSignIn)} ·
-          non-interactive {fmtDate(user.lastNonInteractiveSignIn)} · synced{" "}
-          {fmtDate(user.syncedAt)}
+          {t("activityByWorkload.footer", {
+            interactive: fmtDate(user.lastInteractiveSignIn),
+            nonInteractive: fmtDate(user.lastNonInteractiveSignIn),
+            synced: fmtDate(user.syncedAt),
+          })}
         </p>
       </section>
 
       <section className="rise rise-5 mt-8 mb-8">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          Findings for this user
+          {t("findings.title")}
         </h2>
         <ul className="border-line bg-card mt-3 border">
           {userFindings.map((f) => (
@@ -232,7 +247,9 @@ export default async function UserDetailPage({
                 </div>
                 <span className="tnum text-waste-text shrink-0 font-mono text-sm font-medium">
                   {f.monthlyImpactCents > 0
-                    ? `${fmtMoney(f.monthlyImpactCents, currency)}/mo`
+                    ? t("findings.perMonth", {
+                        amount: fmtMoney(f.monthlyImpactCents, currency),
+                      })
                     : "-"}
                 </span>
               </Link>
@@ -242,7 +259,7 @@ export default async function UserDetailPage({
             <li>
               <EmptyState
                 icon={CircleCheck}
-                heading="No findings for this user."
+                heading={t("findings.noFindings")}
               />
             </li>
           )}

@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { Button } from "~/components/ui";
 import { triggerSync } from "~/server/actions";
 
 export const SyncNowButton = () => {
+  const t = useTranslations("connectorsDash.syncButton");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -24,17 +26,17 @@ export const SyncNowButton = () => {
       <Button
         variant="secondary"
         disabled={pending}
-        title="Runs a full workspace sync across every connected service, not just this one."
+        title={t("title")}
         onClick={() =>
           startTransition(async () => {
             setError(null);
             const result = await triggerSync();
-            if (!result.ok) setError(result.error ?? "Sync failed");
+            if (!result.ok) setError(result.error ?? t("syncFailed"));
             router.refresh();
           })
         }
       >
-        {pending ? "Syncing…" : "Sync now"}
+        {pending ? t("syncing") : t("syncNow")}
       </Button>
     </div>
   );

@@ -1,0 +1,218 @@
+{
+  "settings": {
+    "title": "Innstillinger",
+    "demoNotice": "Dette er demo-arbeidsområdet: syntetiske data som oppdateres ved hver synkronisering. Koble til en ekte leier via Microsoft-innlogging for å se dine egne tall.",
+    "workspace": {
+      "title": "Arbeidsområde",
+      "organization": "Organisasjon",
+      "unknown": "Ukjent",
+      "tenantId": "Leier-ID",
+      "notConnected": "Ikke koblet til Microsoft ennå",
+      "connectedSince": "Tilkoblet siden",
+      "importedNotConnected": "Importert arbeidsområde, ikke tilkoblet ennå",
+      "dataDetection": "Data og deteksjon",
+      "currency": "Valuta",
+      "inactivityThreshold": "Terskel for inaktivitet",
+      "days": "{days} dager",
+      "contractRenewals": "Kontraktsfornyelser",
+      "manageRenewalCalendar": "Administrer fornyelseskalender",
+      "notificationsHeading": "Varsler og produktopplevelse",
+      "leakAlertEmails": "E-postvarsler om lekkasjer",
+      "on": "På",
+      "off": "Av",
+      "monthlyPdfReport": "Månedlig PDF-rapport",
+      "productTour": "Produktomvisning"
+    },
+    "detection": {
+      "title": "Deteksjonsmuligheter",
+      "unknown": "Ukjent: kjør en synkronisering",
+      "entraP1": {
+        "label": "Entra ID P1-innloggingsaktivitet",
+        "ok": "Siste innlogging per bruker er tilgjengelig.",
+        "warn": "Ingen Entra ID P1/P2, faller tilbake til aktivitet fra bruksrapporter.",
+        "hint": "Uten P1 bruker inaktivitetsdeteksjon kun arbeidsbelastningsrapporter, som er noe mindre presist."
+      },
+      "identifiableUsage": {
+        "label": "Identifiserbare bruksrapporter",
+        "ok": "Bruksrapporter inkluderer brukernavn. Funn per bruker er aktivert.",
+        "warn": "Rapportnavn er skjult (Microsoft-standard siden 2021); bruksbaserte funn er kun aggregerte.",
+        "hint": "En global administrator kan endre dette i Microsoft 365 admin-senter > Innstillinger > Organisasjonsinnstillinger > Rapporter (endringen logges i revisjonsloggen)."
+      },
+      "copilotUsage": {
+        "label": "Copilot-bruksdata",
+        "ok": "Copilot-bruksrapporten kan leses.",
+        "warn": "Fant ingen Copilot-bruksdata (ingen Copilot-lisenser, eller rapporten er utilgjengelig)."
+      }
+    },
+    "syncHistoryCard": {
+      "title": "Synkroniseringshistorikk",
+      "noSyncs": "Ingen synkroniseringer ennå.",
+      "viewAll": "Vis alle kjøringer →"
+    },
+    "members": {
+      "title": "Medlemmer",
+      "you": "(deg)",
+      "inviteExpired": "invitasjon utløpt",
+      "invitedExpires": "invitert, utløper {date}",
+      "demoFixed": "Medlemmer er faste i demo-arbeidsområdet."
+    },
+    "roleSelect": {
+      "memberRole": "Medlemsrolle"
+    },
+    "memberActions": {
+      "resend": "Send på nytt",
+      "sending": "Sender…",
+      "remove": "Fjern",
+      "confirmRemove": "Bekreft fjerning",
+      "removing": "Fjerner…",
+      "pressAgainToConfirm": "Trykk igjen for å bekrefte fjerning.",
+      "inviteResent": "Invitasjon sendt på nytt.",
+      "memberRemoved": "Medlem fjernet.",
+      "somethingWentWrong": "Noe gikk galt"
+    },
+    "invite": {
+      "emailLabel": "E-postadresse som skal inviteres",
+      "emailPlaceholder": "kollega@dinbedrift.no",
+      "roleLabel": "Rolle for den inviterte",
+      "invite": "Inviter",
+      "inviting": "Inviterer…",
+      "invited": "Inviterte {email}.",
+      "invitedFallback": "Inviterte medlem.",
+      "inviteFailed": "Invitasjon feilet",
+      "emailsActive": "Inviterte personer får en e-post med innloggingslenke og får tilgang ved første Microsoft-innlogging.",
+      "emailsInactive": "Inviterte personer får tilgang første gang de logger inn med Microsoft med denne e-postadressen.",
+      "sameTenantNote": "Innlogging i samme leier alene gir aldri tilgang."
+    },
+    "activity": {
+      "title": "Aktivitet",
+      "recentChanges": "Nylige endringer i arbeidsområdet.",
+      "fullLog": "Full aktivitetslogg",
+      "exportCsv": "Eksporter CSV",
+      "noActivity": "Ingen aktivitet registrert ennå.",
+      "footerNote": "Eksporter, prisendringer, medlemskaps- og synkroniseringshandlinger. Beholdes med arbeidsområdet, slettes med det.",
+      "page": {
+        "breadcrumbSettings": "Innstillinger",
+        "breadcrumbCurrent": "Aktivitet",
+        "title": "Aktivitetslogg",
+        "matchingEvents": "{count} treff.",
+        "exportAudit": "Eksporter revisjons-CSV",
+        "searchLabel": "Søk etter utfører eller endringsdetalj",
+        "searchPlaceholder": "E-post, SKU, medlem eller verdi …",
+        "actionLabel": "Handling",
+        "allActions": "Alle handlinger",
+        "applyFilters": "Bruk filtre",
+        "noMatches": "Ingen aktivitet samsvarer med disse filtrene.",
+        "showing": "Viser {from}–{to} av {count}",
+        "previous": "← Forrige",
+        "next": "Neste →"
+      },
+      "labels": {
+        "syncSteps": {
+          "subscribedSkus": "Microsoft-abonnementer",
+          "reportSettings": "Personverninnstillinger for rapporter",
+          "signInActivity": "Innloggingsaktivitet",
+          "users": "Katalogbrukere",
+          "usageReports": "Microsoft-bruksrapporter",
+          "copilotUsage": "Copilot-bruk",
+          "adobeUsers": "Adobe-brukere",
+          "wasteAnalysis": "Sløsingsanalyse",
+          "providerSeats": "{provider}-lisenser"
+        },
+        "actions": {
+          "finding_status_changed": "Funnstatus endret",
+          "finding_workflow_updated": "Funn-arbeidsflyt oppdatert",
+          "findings_bulk_updated": "Funn oppdatert i bulk",
+          "sync_triggered": "Synkronisering startet",
+          "price_updated": "Produktpris oppdatert",
+          "prices_imported": "Produktpriser importert",
+          "seats_imported": "Tilkoblingslisenser importert",
+          "seats_import_cleared": "Importerte tilkoblingslisenser fjernet",
+          "microsoft_connected": "Microsoft 365 tilkoblet",
+          "microsoft_disconnected": "Microsoft 365 frakoblet",
+          "connector_connected": "Tilkobling opprettet",
+          "connector_disconnected": "Tilkobling fjernet",
+          "adobe_connected": "Adobe tilkoblet",
+          "adobe_disconnected": "Adobe frakoblet",
+          "member_added": "Medlem invitert",
+          "member_removed": "Medlem fjernet",
+          "member_role_changed": "Medlemsrolle endret",
+          "invite_resent": "Invitasjon sendt på nytt",
+          "threshold_changed": "Inaktivitetsterskel endret",
+          "currency_changed": "Rapporteringsvaluta endret",
+          "renewal_created": "Fornyelse opprettet",
+          "renewal_updated": "Fornyelse oppdatert",
+          "renewal_deleted": "Fornyelse slettet",
+          "leak_alerts_changed": "Lekkasjevarsler endret",
+          "monthly_report_changed": "Månedlig rapport endret",
+          "trial_reminders_changed": "Prøveperiode-påminnelser endret"
+        },
+        "details": {
+          "findingId": "Funn",
+          "membershipId": "Medlem",
+          "ownerMembershipId": "Eier",
+          "skuId": "Produkt",
+          "monthlyPriceCents": "Månedspris",
+          "orgRef": "Organisasjonsreferanse",
+          "inactiveDays": "Terskel for inaktivitet",
+          "renewalDate": "Fornyelsesdato",
+          "credType": "Legitimasjonstype",
+          "to": "Arbeidsområde"
+        }
+      }
+    },
+    "syncHistory": {
+      "breadcrumbSettings": "Innstillinger",
+      "breadcrumbCurrent": "Synkroniseringshistorikk",
+      "title": "Synkroniseringshistorikk",
+      "runsRecorded": "{count} {unit} registrert for dette arbeidsområdet.",
+      "run": "kjøring",
+      "runs": "kjøringer",
+      "runsCardTitle": "Kjøringer",
+      "noSyncs": "Ingen synkroniseringer ennå.",
+      "showing": "Viser {from} til {to} av {count}",
+      "previous": "← Forrige",
+      "next": "Neste →"
+    },
+    "dangerZone": {
+      "title": "Faresone",
+      "description": "Frakobling sletter alle synkroniserte data for {tenantName}: brukere, funn, priser, historikk. Administratorsamtykket i leieren din kan deretter trekkes tilbake under Enterprise-applikasjoner.",
+      "confirmLabel": "Skriv inn navnet på arbeidsområdet for å bekrefte sletting",
+      "confirmPlaceholder": "Skriv \"{tenantName}\" for å bekrefte",
+      "deleteEverything": "Slett alt",
+      "deleting": "Sletter…",
+      "somethingWentWrong": "Noe gikk galt"
+    },
+    "monthlyReport": {
+      "label": "Send meg PDF-rapporten månedlig",
+      "saved": "Lagret.",
+      "saveFailed": "Lagring feilet"
+    },
+    "leakAlerts": {
+      "label": "Send meg e-post når en synkronisering finner nye offboarding-lekkasjer",
+      "saved": "Lagret.",
+      "saveFailed": "Lagring feilet"
+    },
+    "inactiveDays": {
+      "ariaLabel": "Terskel for inaktivitet i dager",
+      "days": "{days} dager",
+      "couldNotSave": "Kunne ikke lagre"
+    },
+    "importSeats": {
+      "instructions": "Lim inn medlemstabellen fra {label}-adminpanelet, inkludert overskriftsraden. Både kopierte webtabeller og CSV-eksporter fungerer. En e-postkolonne er påkrevd; navn, status, plan og sist aktiv-kolonner leses inn når de finnes. En ny import erstatter gjeldende øyeblikksbilde.",
+      "placeholder": "E-post,Navn,Status,Sist aktiv\njane@example.com,Jane Fox,active,2026-05-28",
+      "importing": "Importerer…",
+      "importFailed": "Import feilet.",
+      "imported": "Importerte {count} {unit}.",
+      "seat": "lisens",
+      "seats": "lisenser",
+      "invalidLines": "{count} {unit} kunne ikke tolkes.",
+      "line": "linje",
+      "lines": "linjer",
+      "clearImportedSeats": "Fjern importerte lisenser",
+      "removing": "Fjerner…",
+      "confirmClear": "Bekreft fjerning",
+      "clearWarning": "Dette fjerner de importerte {label}-lisensene. Trykk igjen for å bekrefte.",
+      "somethingWentWrong": "Noe gikk galt"
+    }
+  }
+}

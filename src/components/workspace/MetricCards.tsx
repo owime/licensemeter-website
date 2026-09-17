@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Drawer } from "./Drawer";
 
@@ -59,13 +60,14 @@ const InfoButton = ({
   tourAnchor?: string;
 }) => {
   const tipId = useId();
+  const t = useTranslations("dashboardHome.metricCards");
   return (
     <span className="group/info relative inline-flex">
       <button
         type="button"
         data-tour={tourAnchor}
         onClick={onOpen}
-        aria-label={`${label}: what this means`}
+        aria-label={t("infoAriaLabel", { label })}
         aria-describedby={tipId}
         className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:ring-brand -my-3 flex size-11 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
       >
@@ -90,6 +92,7 @@ const InfoButton = ({
 export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const active = cards.find((c) => c.key === openKey) ?? null;
+  const t = useTranslations("dashboardHome.metricCards");
 
   return (
     <>
@@ -105,7 +108,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                 type="button"
                 onClick={() => setOpenKey(card.key)}
                 aria-haspopup="dialog"
-                aria-label={`${card.label}: show how this is calculated`}
+                aria-label={t("labelAriaLabel", { label: card.label })}
                 className="text-ink-faint hover:text-ink text-left text-[11px] font-medium tracking-[0.16em] uppercase underline-offset-4 hover:underline"
               >
                 {card.label}
@@ -120,7 +123,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
             <button
               type="button"
               onClick={() => setOpenKey(card.key)}
-              aria-label={`${card.label}: show breakdown`}
+              aria-label={t("valueAriaLabel", { label: card.label })}
               className="group/val block w-full text-left"
             >
               <span
@@ -140,7 +143,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
               onClick={() => setOpenKey(card.key)}
               className="text-brand-text hover:text-ink mt-3 inline-flex min-h-11 items-center text-xs font-medium underline-offset-4 hover:underline"
             >
-              View breakdown <span aria-hidden="true">→</span>
+              {t("viewBreakdown")} <span aria-hidden="true">→</span>
             </button>
           </div>
         ))}
@@ -167,7 +170,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
             <dl className="flex flex-col gap-4">
               <div>
                 <dt className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
-                  How it is calculated
+                  {t("howCalculated")}
                 </dt>
                 <dd className="text-ink-soft mt-1 text-sm">
                   {active.detail.formula}
@@ -175,7 +178,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
               </div>
               <div>
                 <dt className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
-                  Where it comes from
+                  {t("whereFrom")}
                 </dt>
                 <dd className="text-ink-soft mt-1 text-sm">
                   {active.detail.source}
@@ -185,7 +188,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
 
             <div>
               <div className="text-ink-faint text-[11px] font-medium tracking-[0.16em] uppercase">
-                Breakdown
+                {t("breakdown")}
               </div>
               {active.detail.rows.length > 0 ? (
                 <table className="mt-3 w-full text-sm">
@@ -239,7 +242,7 @@ export const MetricCards = ({ cards }: { cards: MetricCardData[] }) => {
                 </table>
               ) : (
                 <p className="text-ink-soft mt-3 text-sm">
-                  {active.detail.emptyText ?? "Nothing to show yet."}
+                  {active.detail.emptyText ?? t("nothingToShow")}
                 </p>
               )}
               {active.detail.footnote && (

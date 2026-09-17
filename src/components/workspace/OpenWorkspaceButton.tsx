@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
 import { Button } from "~/components/ui";
@@ -13,13 +14,14 @@ export const OpenWorkspaceButton = ({
   tenantId: string;
   name: string;
 }) => {
+  const t = useTranslations("dashLayout.openWorkspace");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   return (
     <Button
       variant="micro"
       disabled={pending}
-      aria-label={`Open ${name}`}
+      aria-label={t("ariaLabel", { name })}
       onClick={() =>
         startTransition(async () => {
           await switchWorkspace(tenantId);
@@ -28,7 +30,7 @@ export const OpenWorkspaceButton = ({
         })
       }
     >
-      {pending ? "…" : "Open"}
+      {pending ? "…" : t("open")}
     </Button>
   );
 };

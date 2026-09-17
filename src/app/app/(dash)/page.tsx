@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { ButtonAnchor, ButtonLink, Card } from "~/components/ui";
 import { FindingChip } from "~/components/workspace/FindingChip";
@@ -16,8 +17,8 @@ import { SyncNowButton } from "~/components/workspace/SyncNowButton";
 import { TrendChart } from "~/components/workspace/TrendChart";
 import { Tour } from "~/components/workspace/Tour";
 import {
-  dataTourSteps,
-  welcomeTourSteps,
+  getDataTourSteps,
+  getWelcomeTourSteps,
 } from "~/components/workspace/tourSteps";
 import { fmtAgo, fmtDate, fmtMoney, fmtNumber } from "~/lib/format";
 import { calculatePriceCoverage } from "~/lib/priceCoverage";
@@ -43,6 +44,11 @@ export const metadata: Metadata = { title: "Overview" };
 export default async function OverviewPage() {
   const ctx = await requireAccess("viewer");
   const tenantId = ctx.tenant.id;
+  const t = await getTranslations("dashboardHome.page");
+  const tm = await getTranslations("dashboardHome.metricCardsData");
+  const tTour = await getTranslations("tour");
+  const dataTourSteps = getDataTourSteps(tTour);
+  const welcomeTourSteps = getWelcomeTourSteps(tTour);
 
   // Workspace-first onboarding: a workspace that has connected no service yet
   // lands on the dashboard but sees the onboarding empty state (nudge to connect
@@ -211,8 +217,8 @@ export default async function OverviewPage() {
 
   // Imported workspaces have no sync button, so do not tell them to run one.
   const emptyInventory = isImported
-    ? "No license data yet. Upload a fresh export to update this workspace."
-    : "No license data yet. Run a sync.";
+    ? t("emptyInventoryImported")
+    : t("emptyInventorySync");
 
   // Drill-down rows for each metric card. Each breakdown is derived from the
   // exact same inputs as the headline figure, so the rows always sum to the
@@ -231,10 +237,10 @@ export default async function OverviewPage() {
     .sort((a, b) => b.cents - a.cents)
     .map((r) => ({
       label: r.sku.displayName ?? r.sku.skuPartNumber,
-      sub: `${fmtNumber(r.sku.consumedUnits, currency)} × ${fmtMoney(
-        r.price,
-        currency,
-      )}`,
+      sub: tm("spendRowSub", {
+        units: fmtNumber(r.sku.consumedUnits, currency),
+        price: fmtMoney(r.price, currency),
+      }),
       value: fmtMoney(r.cents, currency),
     }));
 
@@ -251,143 +257,141 @@ export default async function OverviewPage() {
 
   const wasteRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
     label: ruleLabel(rule),
-    sub: `${fmtNumber(agg.count, currency)} ${agg.count === 1 ? "finding" : "findings"}`,
+    sub: tm("wasteRowSub", { count: agg.count }),
     value: fmtMoney(agg.cents, currency),
     tone: agg.cents > 0 ? "waste" : "ink",
   }));
   const annualRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
     label: ruleLabel(rule),
-    sub: `${fmtMoney(agg.cents, currency)}/mo × 12`,
+    sub: tm("annualRowSub", { amount: fmtMoney(agg.cents, currency) }),
     value: fmtMoney(agg.cents * 12, currency),
     tone: agg.cents > 0 ? "waste" : "ink",
   }));
   const findingRows: BreakdownRow[] = ruleEntries.map(([rule, agg]) => ({
     label: ruleLabel(rule),
-    sub: agg.cents > 0 ? `${fmtMoney(agg.cents, currency)}/mo` : undefined,
+    sub:
+      agg.cents > 0
+        ? tm("findingRowSub", { amount: fmtMoney(agg.cents, currency) })
+        : undefined,
     value: fmtNumber(agg.count, currency),
   }));
 
   const listPriceFootnote = !priceCoverage.complete
-    ? `${priceCoverage.customProducts} of ${priceCoverage.totalProducts} product prices use contract values; remaining figures are estimates or unpriced.`
+    ? tm("priceCoverageFootnote", {
+        custom: priceCoverage.customProducts,
+        total: priceCoverage.totalProducts,
+      })
     : undefined;
 
   const metricCards: MetricCardData[] = [
     {
       key: "spend",
-      label: "Monthly license spend",
+      label: tm("spend.label"),
       value: fmtMoney(monthlySpend, currency),
-      sub: `${fmtNumber(assignedSeats, currency)} assigned seats`,
+      sub: tm("spend.sub", { count: fmtNumber(assignedSeats, currency) }),
       tone: "ink",
-      explainer:
-        "Assigned seats × the monthly price of each product, summed across your license inventory.",
+      explainer: tm("spend.explainer"),
       detail: {
-        formula:
-          "For every product we multiply the seats assigned to people by that product's monthly price, then add them up.",
-        source:
-          "Seat counts come from your latest sync; prices come from your price book (your custom price, or the Microsoft list price as a fallback).",
-        columns: ["Product (seats × price)", "Spend / mo"],
+        formula: tm("spend.formula"),
+        source: tm("spend.source"),
+        columns: [tm("spend.column1"), tm("spend.column2")],
         rows: spendRows,
-        totalLabel: "Total monthly spend",
+        totalLabel: tm("spend.totalLabel"),
         totalValue: fmtMoney(monthlySpend, currency),
-        emptyText: "No priced license data yet.",
+        emptyText: tm("spend.emptyText"),
       },
     },
     {
       key: "waste",
-      label: "Monthly waste",
+      label: tm("waste.label"),
       value: fmtMoney(monthlyWaste, currency),
-      sub: `${wasteShare.toFixed(1)}% of spend`,
+      sub: tm("waste.subPercent", { pct: wasteShare.toFixed(1) }),
       tone: "waste",
       note: !priceCoverage.complete ? (
         <>
-          Estimated at list prices.{" "}
+          {tm("waste.notePrefix")}{" "}
           <Link
             href="/app/licenses"
             className="hover:text-ink underline underline-offset-4"
           >
-            Set your actual prices
+            {tm("waste.setPrices")}
           </Link>
         </>
       ) : null,
-      explainer:
-        "The monthly cost of every open finding added together — this is the spend you could reclaim.",
+      explainer: tm("waste.explainer"),
       detail: {
-        formula:
-          "Each open or acknowledged finding carries the monthly cost of the wasted seat. Monthly waste is the sum of those costs, grouped here by the rule that flagged them.",
-        source:
-          "Findings are raised during sync by the detection rules; resolved findings are excluded. Costs reuse the same prices as monthly spend.",
-        columns: ["Rule", "Impact / mo"],
+        formula: tm("waste.formula"),
+        source: tm("waste.source"),
+        columns: [tm("waste.column1"), tm("waste.column2")],
         rows: wasteRows,
-        totalLabel: "Total monthly waste",
+        totalLabel: tm("waste.totalLabel"),
         totalValue: fmtMoney(monthlyWaste, currency),
-        emptyText: "No open findings — nothing flagged as waste.",
+        emptyText: tm("waste.emptyText"),
         footnote: listPriceFootnote,
       },
     },
     {
       key: "annual",
-      label: "Annualized waste",
+      label: tm("annual.label"),
       value: fmtMoney(monthlyWaste * 12, currency),
-      sub: "if nothing changes",
+      sub: tm("annual.sub"),
       tone: "waste",
-      explainer:
-        "Monthly waste projected over a full year: monthly waste × 12.",
+      explainer: tm("annual.explainer"),
       detail: {
-        formula:
-          "Monthly waste × 12 months. A projection of what the open findings cost over a year if nothing is reclaimed.",
-        source: "Same findings as monthly waste, each multiplied by twelve.",
-        columns: ["Rule", "Impact / yr"],
+        formula: tm("annual.formula"),
+        source: tm("annual.source"),
+        columns: [tm("annual.column1"), tm("annual.column2")],
         rows: annualRows,
-        totalLabel: "Total annualized waste",
+        totalLabel: tm("annual.totalLabel"),
         totalValue: fmtMoney(monthlyWaste * 12, currency),
-        emptyText: "No open findings — nothing flagged as waste.",
+        emptyText: tm("annual.emptyText"),
         footnote: listPriceFootnote,
       },
     },
     {
       key: "findings",
-      label: "Open findings",
+      label: tm("findings.label"),
       value: fmtNumber(openCount, currency),
-      sub: `across ${ALL_RULES.length} rules`,
+      sub: tm("findings.sub", { count: ALL_RULES.length }),
       tone: "ink",
-      explainer:
-        "How many findings are currently open or acknowledged, across all detection rules.",
+      explainer: tm("findings.explainer"),
       detail: {
-        formula:
-          "A count of every finding whose status is open or acknowledged. Resolved findings drop out of the count.",
-        source: `Findings are raised during sync by ${ALL_RULES.length} detection rules. Each rule flags a distinct kind of license waste.`,
-        columns: ["Rule", "Open"],
+        formula: tm("findings.formula"),
+        source: tm("findings.source", { count: ALL_RULES.length }),
+        columns: [tm("findings.column1"), tm("findings.column2")],
         rows: findingRows,
-        totalLabel: "Total open findings",
+        totalLabel: tm("findings.totalLabel"),
         totalValue: fmtNumber(openCount, currency),
-        emptyText: "No open findings.",
-        footnote: `${ruleEntries.length} of ${ALL_RULES.length} rules currently have open findings.`,
+        emptyText: tm("findings.emptyText"),
+        footnote: tm("findings.footnote", {
+          withFindings: ruleEntries.length,
+          total: ALL_RULES.length,
+        }),
       },
     },
     {
       key: "savings",
-      label: "Verified savings (30d)",
+      label: tm("savings.label"),
       value: fmtMoney(resolvedSavings.cents, currency),
-      sub: `${fmtNumber(resolvedSavings.count, currency)} confirmed ${resolvedSavings.count === 1 ? "resolution" : "resolutions"}`,
+      sub: tm("savings.sub", { count: resolvedSavings.count }),
       tone: "ink",
-      explainer:
-        "Monthly recurring waste that disappeared after a later sync confirmed the affected license was reclaimed.",
+      explainer: tm("savings.explainer"),
       detail: {
-        formula:
-          "Monthly impact from findings automatically resolved during the last 30 days.",
-        source:
-          "A later sync must confirm the waste condition no longer exists; acknowledging a finding does not count as savings.",
-        columns: ["Measure", "Value"],
+        formula: tm("savings.formula"),
+        source: tm("savings.source"),
+        columns: [tm("savings.column1"), tm("savings.column2")],
         rows: [
           {
-            label: "Annualized recurring savings",
-            sub: `${fmtMoney(resolvedSavings.cents, currency)}/mo × 12`,
+            label: tm("savings.annualizedLabel"),
+            sub: tm("savings.annualizedSub", {
+              amount: fmtMoney(resolvedSavings.cents, currency),
+            }),
             value: fmtMoney(resolvedSavings.cents * 12, currency),
           },
         ],
-        totalLabel: "Verified monthly savings",
+        totalLabel: tm("savings.totalLabel"),
         totalValue: fmtMoney(resolvedSavings.cents, currency),
-        emptyText: "No findings were confirmed resolved in the last 30 days.",
+        emptyText: tm("savings.emptyText"),
       },
     },
   ];
@@ -404,31 +408,39 @@ export default async function OverviewPage() {
       )}
       <header className="rise rise-1 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">Overview</h1>
+          <h1 className="font-display text-3xl tracking-tight">
+            {t("title")}
+          </h1>
           <p className="text-ink-soft mt-1 text-sm">
             {lastRun?.status === "running"
-              ? "Sync running…"
+              ? t("syncRunning")
               : isImported
-                ? `Imported ${fmtDate(importedUser?.syncedAt ?? null)}`
-                : `Last synced ${fmtAgo(lastRun?.finishedAt ?? null)}`}
+                ? t("importedOn", {
+                    date: fmtDate(importedUser?.syncedAt ?? null),
+                  })
+                : t("lastSynced", {
+                    time: fmtAgo(lastRun?.finishedAt ?? null),
+                  })}
             {lastRun?.status === "failed" && (
-              <span className="text-danger-text ml-2">(last sync failed)</span>
+              <span className="text-danger-text ml-2">
+                {t("lastSyncFailed")}
+              </span>
             )}
             {lastRun?.status === "partial" && (
               <span className="text-gold-text ml-2">
-                (completed with warnings
+                {t("completedWithWarnings")}
                 {degradedSteps > 0
-                  ? ` · ${fmtNumber(degradedSteps, currency)} ${
-                      degradedSteps === 1 ? "step" : "steps"
-                    } degraded`
+                  ? ` · ${t("stepsDegraded", { count: degradedSteps })}`
                   : ""}
-                )
+                {t("closeParen")}
               </span>
             )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ButtonAnchor href="/api/export/report">PDF report</ButtonAnchor>
+          <ButtonAnchor href="/api/export/report">
+            {t("pdfReport")}
+          </ButtonAnchor>
           {/* Imported workspaces (consentedAt null) have no Graph access: a
                   manual sync could only fail. Demo tenants have consentedAt set. */}
           {hasRole(ctx, "admin") && ctx.tenant.consentedAt && <SyncNowButton />}
@@ -437,21 +449,20 @@ export default async function OverviewPage() {
 
       {!ctx.tenant.consentedAt && !ctx.tenant.isDemo && (
         <section className="rise rise-2 mt-8">
-          <Card title="Imported workspace">
+          <Card title={t("importedWorkspace.title")}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-ink-soft max-w-2xl text-sm">
-                Figures come from your last instant scan or CSV upload. Connect
-                the read-only sync for nightly updates, leak alerts and trends.
+                {t("importedWorkspace.body")}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonLink variant="primary" href="/app/connectors/microsoft">
-                  Connect the read-only sync
+                  {t("importedWorkspace.connectSync")}
                 </ButtonLink>
                 <ButtonAnchor href="/api/scan/start">
-                  Re-run instant scan
+                  {t("importedWorkspace.rerunScan")}
                 </ButtonAnchor>
                 <ButtonLink href="/app/connect/csv">
-                  Upload fresh exports
+                  {t("importedWorkspace.uploadExports")}
                 </ButtonLink>
               </div>
             </div>
@@ -461,12 +472,12 @@ export default async function OverviewPage() {
 
       {renewalDays !== null && renewalDays < 0 && (
         <p className="rise rise-2 text-ink-faint mt-8 text-sm">
-          Renewal date passed:{" "}
+          {t("renewalPassed")}{" "}
           <Link
             href="/app/renewals"
             className="hover:text-ink underline underline-offset-4"
           >
-            update it in Renewals
+            {t("updateInRenewals")}
           </Link>
           .
         </p>
@@ -476,27 +487,35 @@ export default async function OverviewPage() {
         renewalDays >= 0 &&
         noticeDaysUntil <= 90 && (
           <section className="rise rise-2 mt-8">
-            <Card title="Renewal window">
+            <Card title={t("renewalWindow.title")}>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="font-display text-2xl tracking-tight">
                     {renewalDays === 0
-                      ? "Renewal today"
-                      : `${nextRenewal?.vendor}: renewal in ${renewalDays} ${renewalDays === 1 ? "day" : "days"}`}
+                      ? t("renewalWindow.today")
+                      : t("renewalWindow.inDays", {
+                          vendor: nextRenewal?.vendor ?? "",
+                          days: renewalDays,
+                        })}
                   </div>
                   <p className="text-ink-soft mt-1 text-sm">
-                    {nextRenewal?.contractName}.{" "}
-                    {fmtNumber(openCount, currency)} open{" "}
-                    {openCount === 1 ? "finding" : "findings"} worth{" "}
+                    {t("renewalWindow.openFindingsWorth", {
+                      contractName: nextRenewal?.contractName ?? "",
+                      count: openCount,
+                    })}{" "}
                     <span className="text-waste-text font-medium">
                       {fmtMoney(monthlyWaste, currency)}/mo
                     </span>
-                    . Reclaim these seats before you re-commit.
+                    . {t("renewalWindow.reclaim")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <ButtonLink href="/app/findings">Review findings</ButtonLink>
-                  <ButtonLink href="/app/renewals">Renewal calendar</ButtonLink>
+                  <ButtonLink href="/app/findings">
+                    {t("renewalWindow.reviewFindings")}
+                  </ButtonLink>
+                  <ButtonLink href="/app/renewals">
+                    {t("renewalWindow.renewalCalendar")}
+                  </ButtonLink>
                 </div>
               </div>
             </Card>
@@ -515,17 +534,17 @@ export default async function OverviewPage() {
         <div className="flex items-baseline justify-between gap-4">
           <div>
             <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-              Next best actions
+              {t("nextActions.heading")}
             </h2>
             <p className="text-ink-soft mt-1 text-sm">
-              Highest-value open findings to review first.
+              {t("nextActions.subtitle")}
             </p>
           </div>
           <Link
             href="/app/findings"
             className="text-ink-soft hover:text-ink text-xs underline-offset-4 hover:underline"
           >
-            All findings →
+            {t("nextActions.allFindings")}
           </Link>
         </div>
         <ul className="border-line bg-card mt-3 border">
@@ -551,8 +570,7 @@ export default async function OverviewPage() {
           ))}
           {topFindings.length === 0 && (
             <li className="text-ink-soft px-4 py-8 text-center text-sm">
-              No open findings. Either the tenant is spotless or the first sync
-              has not finished yet.
+              {t("nextActions.empty")}
             </li>
           )}
         </ul>
