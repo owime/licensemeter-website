@@ -1,0 +1,107 @@
+{
+  "home": {
+    "hero": {
+      "freeToUse": "Gratis å bruke",
+      "readOnly": "Skrivebeskyttet av design",
+      "titleLine1": "Slutt å betale for",
+      "titleLine2": "lisenser ingen bruker.",
+      "subtitle": "Samle Microsoft 365, SaaS-lisensene deres og AI-forbruk i én samlet oversikt. Finn det som ikke brukes. Behold besparelsen.",
+      "primaryCta": "Kjør min gratis skanning",
+      "note": "Ingen kredittkort. Ingen tidsbegrensning. Dataene deres forblir deres.",
+      "sampleAriaLabel": "Illustrerende funn fra prøve-tenanten",
+      "unassignedSeats": "Utildelte betalte lisenser",
+      "inactiveSeats": "Inaktive lisenser, på tvers av appene deres",
+      "leaversTitle": "De sluttet. Lisensene gjorde det ikke.",
+      "leaversCount": "{count} tidligere ansatte har fortsatt betalte lisenser",
+      "wasteFound": "Sløsing funnet",
+      "sampleLink": "Prøvedata. Se hele rapporten",
+      "builtFor": "Bygget for verktøyene teamet ditt allerede bruker"
+    },
+    "steps": {
+      "eyebrow": "Mindre sløsing. Mer innsikt.",
+      "headingLine1": "Fra spredte lisenser",
+      "headingLine2": "til et tydelig neste steg.",
+      "items": [
+        {
+          "title": "Koble til verktøyene dine",
+          "body": "Koble til Microsoft 365 og SaaS-appene deres med skrivebeskyttet tilgang. Se alle rettigheter før du kobler til."
+        },
+        {
+          "title": "Finn den stille sløsingen",
+          "body": "Avdekk inaktive kontoer, glemte lisenser og betalte lisenser uten eier. Hvert funn kommer med dokumentasjon."
+        },
+        {
+          "title": "Gjør plass til besparelser",
+          "body": "Se månedskostnaden for hver ubrukte lisens. Eksporter funnene og hent inn igjen lisensene du velger."
+        }
+      ]
+    },
+    "productTour": {
+      "eyebrow": "Et nærmere blikk",
+      "heading": "Lisensforbruket deres, endelig i fokus.",
+      "subheading": "Utforsk dashbordet med en prøve-arbeidsflate."
+    },
+    "trust": {
+      "eyebrow": "Skrivebeskyttet av design",
+      "headingLine1": "Deres tenant.",
+      "headingLine2": "Deres kontroll.",
+      "body": "LicenseMeter leser lisens- og aktivitetsmetadata. Det leser aldri innholdet i postbokser eller filer, og fjerner aldri en lisens automatisk. Driftet i EU, med sletting når du kobler fra.",
+      "trustCenterLink": "Utforsk Trust Center",
+      "sampleReport": {
+        "title": "Ekte beregninger. Prøvedata.",
+        "body": "Se det gjennomregnede eksempelet bak demoen. Hvert funn viser kontoen, årsaken og kostnaden.",
+        "link": "Les prøverapporten"
+      },
+      "selfHost": {
+        "title": "Foretrekker du å kjøre det selv?",
+        "body": "Den gratis, åpen kildekode-baserte PowerShell-skanneren kjører Microsoft 365-revisjonen lokalt. Ingen konto eller opplasting nødvendig.",
+        "link": "Hent den på GitHub"
+      }
+    },
+    "finalCta": {
+      "headingLine1": "Neste fornyelse fortjener",
+      "headingLine2": "et lavere tall.",
+      "body": "Finn de ubrukte lisensene deres i dag. Fortsett å overvåke gratis, så lenge du trenger.",
+      "primaryCta": "Kjør min gratis skanning",
+      "note": "Gratis å bruke. Ingen kredittkort. Skrivebeskyttet tilgang."
+    },
+    "footerNote": {
+      "before": "Bygget og driftet av",
+      "linkText": "Ugur Koc",
+      "after": ", Microsoft MVP for Intune og Security Copilot. Driftet av UgurLabs i Düsseldorf, Tyskland."
+    },
+    "featureShowcase": {
+      "tabListLabel": "Produktfunksjoner",
+      "pauseRotation": "Pause rotasjon",
+      "resumeRotation": "Fortsett rotasjon",
+      "placeholder": "Produktdemo",
+      "demoAriaLabel": "Produktdemo: {title}",
+      "enlargeAriaLabel": "Produktdemo — Forstørr: {title}",
+      "enlarge": "Forstørr",
+      "features": {
+        "overview": {
+          "title": "Se sløsingen i euro",
+          "body": "Oversikten priser hver ubrukte lisens og sporer forbruk mot sløsing over tid."
+        },
+        "findings": {
+          "title": "Håndter funn i bulk",
+          "body": "Filtrer etter regel, velg lisensene som lekker, og kvitter dem ut med ett klikk."
+        },
+        "aiCosts": {
+          "title": "Følg AI-forbruk daglig",
+          "body": "OpenAI- og Anthropic-API-kostnader side om side, vist slik de faktureres."
+        },
+        "connectors": {
+          "title": "Koble til et verktøy på minutter",
+          "body": "Skrivebeskyttede koblinger for Microsoft 365, Adobe, Atlassian, Zoom og flere."
+        }
+      }
+    },
+    "demoClip": {
+      "placeholder": "Produktdemo"
+    },
+    "videoLightbox": {
+      "close": "Lukk video"
+    }
+  }
+}

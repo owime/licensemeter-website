@@ -1,0 +1,107 @@
+{
+  "home": {
+    "hero": {
+      "freeToUse": "Free to use",
+      "readOnly": "Read-only by design",
+      "titleLine1": "Stop paying for",
+      "titleLine2": "licenses nobody uses.",
+      "subtitle": "Bring Microsoft 365, your SaaS seats and AI spend into one clear view. Find what's unused. Keep the savings.",
+      "primaryCta": "Run my free scan",
+      "note": "No credit card. No time limit. Your data stays yours.",
+      "sampleAriaLabel": "Illustrative findings from the sample tenant",
+      "unassignedSeats": "Unassigned paid seats",
+      "inactiveSeats": "Inactive seats, across your apps",
+      "leaversTitle": "They left. Their licenses didn't.",
+      "leaversCount": "{count} former employees still hold paid seats",
+      "wasteFound": "Waste found",
+      "sampleLink": "Sample data. See the full report",
+      "builtFor": "Built for the tools your team already uses"
+    },
+    "steps": {
+      "eyebrow": "Less waste. More visibility.",
+      "headingLine1": "From scattered seats",
+      "headingLine2": "to a clear next step.",
+      "items": [
+        {
+          "title": "Connect your tools",
+          "body": "Link Microsoft 365 and your SaaS apps with read-only access. See every permission before you connect."
+        },
+        {
+          "title": "Find the quiet waste",
+          "body": "Spot inactive accounts, forgotten licenses and paid seats with nobody assigned. Every finding comes with evidence."
+        },
+        {
+          "title": "Make room for savings",
+          "body": "See the monthly cost of each unused seat. Export the findings and reclaim the licenses you choose."
+        }
+      ]
+    },
+    "productTour": {
+      "eyebrow": "A closer look",
+      "heading": "Your license spend, finally in focus.",
+      "subheading": "Explore the dashboard with a sample workspace."
+    },
+    "trust": {
+      "eyebrow": "Read-only by design",
+      "headingLine1": "Your tenant.",
+      "headingLine2": "Your control.",
+      "body": "LicenseMeter reads license and activity metadata. It never reads mailbox or file content, and never removes a license automatically. Hosted in the EU, with deletion when you disconnect.",
+      "trustCenterLink": "Explore the Trust Center",
+      "sampleReport": {
+        "title": "Real calculations. Sample data.",
+        "body": "Inspect the worked example behind the demo. Each finding shows the account, the reason and the cost.",
+        "link": "Read the sample report"
+      },
+      "selfHost": {
+        "title": "Prefer to run it yourself?",
+        "body": "The free, open-source PowerShell scanner runs the Microsoft 365 audit locally. No account or upload needed.",
+        "link": "Get it on GitHub"
+      }
+    },
+    "finalCta": {
+      "headingLine1": "Your next renewal deserves",
+      "headingLine2": "a smaller number.",
+      "body": "Find your unused licenses today. Keep monitoring for free, for as long as you need.",
+      "primaryCta": "Run my free scan",
+      "note": "Free to use. No credit card. Read-only access."
+    },
+    "footerNote": {
+      "before": "Built and maintained by",
+      "linkText": "Ugur Koc",
+      "after": ", Microsoft MVP for Intune and Security Copilot. Operated by UgurLabs in Düsseldorf, Germany."
+    },
+    "featureShowcase": {
+      "tabListLabel": "Product features",
+      "pauseRotation": "Pause rotation",
+      "resumeRotation": "Resume rotation",
+      "placeholder": "Product demo",
+      "demoAriaLabel": "Product demo: {title}",
+      "enlargeAriaLabel": "Product demo — Enlarge: {title}",
+      "enlarge": "Enlarge",
+      "features": {
+        "overview": {
+          "title": "See the waste in euros",
+          "body": "The overview prices every unused seat and tracks spend against waste over time."
+        },
+        "findings": {
+          "title": "Act on findings in bulk",
+          "body": "Filter by rule, select the seats that leaked, and acknowledge them in one click."
+        },
+        "aiCosts": {
+          "title": "Track AI spend daily",
+          "body": "OpenAI and Anthropic API costs side by side, shown as billed."
+        },
+        "connectors": {
+          "title": "Connect a tool in minutes",
+          "body": "Read-only connectors for Microsoft 365, Adobe, Atlassian, Zoom and more."
+        }
+      }
+    },
+    "demoClip": {
+      "placeholder": "Product demo"
+    },
+    "videoLightbox": {
+      "close": "Close video"
+    }
+  }
+}

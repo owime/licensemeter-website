@@ -1,6 +1,7 @@
 "use client";
 
 import { Maximize2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { useReducedMotion } from "./useReducedMotion";
@@ -28,6 +29,7 @@ export const DemoClip = ({
   caption?: string;
   className?: string;
 }) => {
+  const t = useTranslations("home.demoClip");
   const [expanded, setExpanded] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
   const [inView, setInView] = useState(false);
@@ -110,7 +112,7 @@ export const DemoClip = ({
       aria-hidden="true"
       className="bg-subtle text-ink-faint flex aspect-video w-full items-center justify-center text-sm"
     >
-      Product demo
+      {t("placeholder")}
     </span>
   );
 

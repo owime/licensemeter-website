@@ -1,0 +1,31 @@
+{
+  "status": {
+    "eyebrow": "System status",
+    "checkedAt": "Checked {time} UTC",
+    "intro": "Live status for LicenseMeter and the infrastructure it runs on. Our own services are probed directly; the providers below report their own health, refreshed about once a minute.",
+    "sections": {
+      "licensemeter": "LicenseMeter",
+      "infrastructure": "Infrastructure and subprocessors"
+    },
+    "detailsLink": "details →",
+    "checkStatusLink": "Check status →",
+    "microsoftNote": "Microsoft 365 and Entra ID have no public machine-readable feed, so their status is a direct link. The full subprocessor list lives on the <trustCenterLink>Trust Center</trustCenterLink>.",
+    "footerNote": "This page runs inside the LicenseMeter application, so it cannot report a full platform outage on its own. For incidents, watch the provider feeds above or contact support.",
+    "levels": {
+      "operational": "Operational",
+      "degraded": "Degraded performance",
+      "partial": "Partial outage",
+      "outage": "Major outage",
+      "maintenance": "Maintenance",
+      "unknown": "Status unavailable"
+    },
+    "overallHeadline": {
+      "operational": "All systems operational",
+      "degraded": "Degraded performance",
+      "partial": "Partial service disruption",
+      "outage": "Major service outage",
+      "maintenance": "Scheduled maintenance",
+      "unknown": "Status partially unavailable"
+    }
+  }
+}

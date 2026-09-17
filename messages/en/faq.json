@@ -1,0 +1,63 @@
+{
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "The questions that come before consent.",
+    "questionsHeading": "Questions",
+    "items": [
+      {
+        "q": "Can LicenseMeter change anything in our tenant?",
+        "a": "No. The connector app holds exclusively read-only application permissions. There is no write scope to misuse. Remediation happens through PowerShell scripts we generate for your admins to review and run themselves."
+      },
+      {
+        "q": "Can you read our email, files or Teams messages?",
+        "a": "No. The granted scopes cannot access mailbox content, files or messages. Usage reports are consumed as last-activity dates and counts: metadata, never content."
+      },
+      {
+        "q": "Where is our data stored, and for how long?",
+        "a": "In Postgres in the EU (Frankfurt). Data is kept only while your tenant is connected: disconnecting the workspace deletes everything immediately, and you can additionally revoke the enterprise application in Entra ID at any time."
+      },
+      {
+        "q": "How are the Adobe, Zoom, Atlassian, Salesforce, OpenAI and Anthropic credentials stored?",
+        "a": "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments, member lists and daily cost totals, never content or prompts. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores."
+      },
+      {
+        "q": "Who in our company can see the data?",
+        "a": "Only people the workspace owner invites, in the role they assign. A viewer has read-only access to dashboards and exports (built for finance); an admin can also run syncs, edit prices, change settings and invite people; an owner can additionally manage other owners and disconnect the workspace. Signing in with an account from your tenant grants nothing by itself."
+      },
+      {
+        "q": "Do we need Entra ID P1?",
+        "a": "No. With P1, LicenseMeter uses precise last-sign-in timestamps. Without it, detection automatically falls back to Microsoft 365 usage reports. The settings page shows exactly which signals are active for your tenant."
+      },
+      {
+        "q": "Our usage reports have concealed user names. Does it still work?",
+        "a": "Yes, with reduced granularity: directory-based findings (disabled accounts, shelfware, guests) stay per-user, usage-based findings become aggregate counts. A Global Admin can enable identifiable report names in the Microsoft 365 admin center; the change is audit-logged."
+      },
+      {
+        "q": "Are you a verified Microsoft publisher?",
+        "a": "Not yet. Publisher verification is in progress; until it lands, the consent dialog shows the app id instead of a verified publisher name. Microsoft displays the current verification status directly in the consent dialog, so your admin can confirm it independently of this site. See the security overview for details."
+      },
+      {
+        "q": "Does connecting really require a Global Administrator?",
+        "a": "Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's {scopeCount} read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV import computes your waste number from two Microsoft 365 admin center exports."
+      },
+      {
+        "q": "Do you offer a DPA (AVV)?",
+        "a": "Yes. LicenseMeter acts as a data processor under Art. 28 GDPR; a signed DPA is included for every workspace and available before you connect production data."
+      },
+      {
+        "q": "What exactly do you charge for?",
+        "a": "LicenseMeter is free to use, including continuous monitoring, nightly syncs, new findings as people join and leave, exports and remediation scripts. There is no subscription, time limit or credit card requirement."
+      },
+      {
+        "q": "We are an MSP. Can we manage several client tenants?",
+        "a": "Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Every client workspace and the portfolio are free. See the MSP page for details."
+      }
+    ],
+    "outro": {
+      "prefix": "Anything missing?",
+      "ask": "Ask directly",
+      "or": "or read the",
+      "security": "security overview"
+    }
+  }
+}

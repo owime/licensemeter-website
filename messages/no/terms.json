@@ -1,0 +1,53 @@
+{
+  "terms": {
+    "title": "Vilkår og betingelser",
+    "lastUpdated": "Sist oppdatert: september 2026",
+    "sections": {
+      "scope": {
+        "title": "1. Omfang og leverandør",
+        "body": "Disse vilkårene og betingelsene regulerer bruken av nettjenesten LicenseMeter (“tjenesten”) av selskaper og andre organisasjoner (“kunden”). Leverandøren og avtaleparten er UgurLabs UG (haftungsbeschränkt), Fährstraße 217, 40221 Düsseldorf, Tyskland, representert ved daglig leder Ugur Koc (“leverandøren”). Tjenesten retter seg utelukkende mot næringsdrivende i henhold til § 14 i den tyske sivillovboken (BGB), ikke mot forbrukere."
+      },
+      "description": {
+        "title": "2. Beskrivelse av tjenesten",
+        "p1": "LicenseMeter er en analysetjeneste som avdekker ubrukte og overdimensjonerte programvarelisenser. Når kunden gir tilgang, kobler tjenesten seg via skrivebeskyttede rettigheter til kundens Microsoft 365-leietaker og, valgfritt, til ytterligere kildesystemer (inkludert Adobe, Zoom, Atlassian, Salesforce, OpenAI og Anthropic) eller til medlemslister kunden importerer via CSV (ChatGPT, Claude), evaluerer lisens-, plass- og aktivitetsinformasjon, og presenterer dette som analyser, rapporter og eksporter.",
+        "p2": "Leverandøren skylder ikke noe bestemt økonomisk resultat. Analyser og spareforslag er beslutningsstøtte; ansvaret for lisensendringer forblir hos kunden."
+      },
+      "registration": {
+        "title": "3. Registrering og tilgang",
+        "body": "Innlogging håndteres via vår autentiseringsleverandør (WorkOS AuthKit) og støtter flere metoder, inkludert en Microsoft jobb- eller skolekonto, Google, Apple, en passnøkkel, en engangs e-postlenke, eller e-post og passord. Å koble til en Microsoft 365-leietaker for analyse er et eget steg: kunden sikrer at de personene som handler, er autorisert til å gi det nødvendige administratorsamtykket og til å koble til leietakeren. Kunden kan bruke leverandørens administrerte applikasjon eller registrere sin egen applikasjon (“ta med egen”); eventuell legitimasjon som oppgis for sistnevnte, lagres kryptert og brukes utelukkende til den skrivebeskyttede synkroniseringen. Tilgangslegitimasjon må holdes konfidensiell; kunden er ansvarlig for handlinger utført under sin konto."
+      },
+      "processing": {
+        "title": "4. Tilkobling av kildesystemer; behandling på dine vegne",
+        "body": "Når kunden kobler til sin leietaker eller ytterligere kildesystemer, behandler leverandøren de innhentede dataene utelukkende etter instruks fra og på vegne av kunden (art. 28 GDPR). En <dpaLink>databehandleravtale (DPA)</dpaLink> gis før produksjonsbruk, og har ved eventuell motstrid om databehandling forrang fremfor disse vilkårene. Innhold i postkasser, filer eller meldinger leses ikke; tilgangen er teknisk begrenset til skrivebeskyttede rettigheter."
+      },
+      "obligations": {
+        "title": "5. Kundens forpliktelser",
+        "body": "Kunden bruker tjenesten i samsvar med gjeldende lov og kun for sine egne organisasjonsdata, eller data den er autorisert til å behandle. Kunden avstår fra å forstyrre tjenestens integritet eller tilgjengelighet, fra å omgå tilgangskontroller, og fra automatisert uthenting utover de funksjonene som tilbys."
+      },
+      "freeAccess": {
+        "title": "6. Gratis tilgang",
+        "body": "Tjenesten leveres gratis. Alle funksjoner, inkludert kontinuerlig overvåking, rapporter og eksporter, er tilgjengelige uten betalt abonnement eller tidsbegrenset prøveperiode. Ingen betalingsmetode kreves."
+      },
+      "availability": {
+        "title": "7. Tilgjengelighet og support",
+        "body": "Leverandøren tilstreber høy tilgjengelighet for tjenesten, men skylder, uten en egen avtale, ingen bestemt tilgjengelighet (ingen tjenestenivåavtale). Vedlikehold, løpende videreutvikling og forstyrrelser utenfor leverandørens kontroll (særlig hos tredjeparter som Microsoft eller de tilkoblede kildesystemene) kan midlertidig begrense bruken. Support gis per e-post til {email}."
+      },
+      "liability": {
+        "title": "8. Ansvar",
+        "body": "Leverandøren er ansvarlig uten begrensning for forsett og grov uaktsomhet, og for skade som følge av skade på liv, kropp eller helse. Ved simpel uaktsomhet er leverandøren kun ansvarlig for brudd på en vesentlig kontraktsforpliktelse (kardinalforpliktelse), og ansvaret er beløpsmessig begrenset til den forutsigbare skaden som er typisk for denne typen avtale. Ansvar er for øvrig utelukket. Ansvar i henhold til den tyske produktansvarsloven berøres ikke."
+      },
+      "term": {
+        "title": "9. Varighet og oppsigelse",
+        "body": "Bruksforholdet løper på ubestemt tid. Kunden kan når som helst avslutte det ved å koble fra arbeidsområdet; ved frakobling slettes all synkronisert data umiddelbart og fullstendig (se personvernerklæringen). Retten til ekstraordinær oppsigelse ved saklig grunn berøres ikke for noen av partene."
+      },
+      "changes": {
+        "title": "10. Endringer i disse vilkårene og i tjenesten",
+        "body": "Leverandøren kan endre disse vilkårene og omfanget av tjenesten med virkning for fremtiden der dette er nødvendig av gyldig grunn (særlig en endret rettslig situasjon eller teknisk utvikling), og kunden ikke stilles urimelig dårligere. Endringer kommuniseres til kunden med rimelig varsel. Den versjonen som er publisert på bruksstidspunktet, gjelder."
+      },
+      "final": {
+        "title": "11. Avsluttende bestemmelser",
+        "body": "Loven i Forbundsrepublikken Tyskland gjelder, med unntak av FNs konvensjon om kontrakter for internasjonalt løsørekjøp (CISG). Dersom kunden er en næringsdrivende, en juridisk person underlagt offentlig rett eller et offentligrettslig særfond, er leverandørens forretningssete eksklusivt verneting. Skulle enkeltbestemmelser i disse vilkårene være ugyldige, berøres ikke gyldigheten av de øvrige bestemmelsene."
+      }
+    }
+  }
+}

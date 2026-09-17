@@ -1,0 +1,75 @@
+{
+  "msp": {
+    "eyebrow": "For managed service providers",
+    "heading": "Every client tenant. One waste ledger.",
+    "intro": "You run Microsoft 365 for five, twenty, fifty clients. LicenseMeter gives every client tenant its own read-only workspace, and gives you one portfolio, sorted by what each client wastes per month.",
+    "cta": {
+      "startFree": "Start free",
+      "talkToUs": "Talk to us",
+      "openDemo": "Open the live demo",
+      "note": "Sign in, connect your first client read-only, and see their waste number free. Add client tenants as you go, with no charge and no credit card."
+    },
+    "steps": {
+      "heading": "Connecting a client takes one consent.",
+      "items": [
+        {
+          "title": "You start the flow",
+          "body": "Sign in with your own account and start the connect flow for the client tenant. No client credentials change hands at any point."
+        },
+        {
+          "title": "Their Global Administrator (or Privileged Role Administrator) consents",
+          "body": "The client's admin completes Microsoft's standard admin-consent dialog: read-only application permissions, recorded in their audit log."
+        },
+        {
+          "title": "You own the workspace",
+          "body": "The workspace binds to you the moment consent lands, and the first sync starts. The client can revoke the enterprise app in Entra ID at any time."
+        }
+      ]
+    },
+    "finding": {
+      "heading": "The finding your clients pay you to catch",
+      "intro": "Offboarding is where client money leaks. LicenseMeter cross-checks every Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude seat against the client's directory, so the account you disabled months ago surfaces with the paid seats it still holds.",
+      "stats": "The live demo tenant shows the pattern: {leaverCount} ex-employees still licensed, {crossVendorCount} of them in connected apps.",
+      "thats": "That's",
+      "suffix": "a month for people who already left."
+    },
+    "features": [
+      {
+        "title": "Portfolio, sorted by waste",
+        "body": "Seats, spend, monthly waste, open findings and sync health for every client workspace in one table, sorted by waste so you open the right tenant first."
+      },
+      {
+        "title": "A price book per client",
+        "body": "Each workspace carries its own prices and currency: list-price estimates prefilled, the client's negotiated rates editable per SKU. Findings are priced in their numbers, not ours."
+      },
+      {
+        "title": "The QBR deliverable",
+        "body": "A branded PDF waste report per tenant: spend, waste and every finding with its monthly cost. Plus CSV exports for finance and generated PowerShell scripts the client's IT reviews and runs."
+      },
+      {
+        "title": "A digest that does the chasing",
+        "body": "Each workspace emails its owners and admins a weekly digest with the waste number and the largest open findings. Clients see progress between QBRs without logging in."
+      }
+    ],
+    "trust": {
+      "heading": "Built to pass your client's security review.",
+      "items": [
+        "Read-only application permissions (no write scope exists)",
+        "Remediation ships as PowerShell scripts, run by the client's IT",
+        "EU data residency (Postgres, Frankfurt)",
+        "Disconnecting a workspace deletes everything"
+      ],
+      "securityPrefix": "The",
+      "securityLinkLabel": "security overview",
+      "securitySuffix": "lists every granted scope and what is stored. It is written to be forwarded to the client's security team as is."
+    },
+    "free": {
+      "heading": "Every client tenant, free.",
+      "body": "Connect your client tenants, switch between their workspaces and review your portfolio in one place. Monitoring, reports and exports are included for every connected workspace."
+    },
+    "final": {
+      "heading": "Bring your worst tenant.",
+      "body": "Walk through the demo workspace first, then connect the client you suspect most. The first scan is free, read-only, and takes one consent."
+    }
+  }
+}

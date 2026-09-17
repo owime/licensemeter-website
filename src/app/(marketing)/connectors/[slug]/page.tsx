@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { isDemoMode, signInPath, siteUrl } from "~/env";
 import { buttonClass, Pill } from "~/components/ui";
-import { CONNECTOR_GUIDES, connectorGuide } from "~/lib/connectorGuides";
+import {
+  CONNECTOR_GUIDES,
+  connectorGuide,
+  localizeConnectorGuide,
+} from "~/lib/connectorGuides";
 
 type Params = { slug: string };
 
@@ -33,8 +38,10 @@ export default async function ConnectorGuidePage({
 }: {
   params: Promise<Params>;
 }) {
-  const guide = connectorGuide((await params).slug);
-  if (!guide) notFound();
+  const baseGuide = connectorGuide((await params).slug);
+  if (!baseGuide) notFound();
+  const guide = await localizeConnectorGuide(baseGuide);
+  const t = await getTranslations("connectors.slug");
   const demoEnabled = isDemoMode();
 
   /* Static breadcrumb; "<" escaped so nothing can terminate the script. */
@@ -68,7 +75,7 @@ export default async function ConnectorGuidePage({
           href="/connectors"
           className="hover:text-ink underline-offset-4 hover:underline"
         >
-          Connectors
+          {t("breadcrumbConnectors")}
         </Link>{" "}
         /{" "}
         <span aria-current="page" className="text-brand-text">
@@ -77,17 +84,15 @@ export default async function ConnectorGuidePage({
       </nav>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-4xl tracking-tight text-balance">
-          Connect {guide.name} to LicenseMeter.
+          {t("title", { name: guide.name })}
         </h1>
         <Pill tone={guide.kind === "api" ? "brand" : "slate"}>
-          {guide.kind === "api" ? "Connect via API" : "CSV import"}
+          {guide.kind === "api" ? t("kindApi") : t("kindImport")}
         </Pill>
       </div>
       {guide.kind === "import" && (
         <p className="text-ink-faint mt-3 max-w-2xl text-sm leading-relaxed">
-          This is a CSV import, not an API connection: {guide.name} has no
-          members API to read, so you paste an exported member list and
-          LicenseMeter matches it against your directory. Re-import to refresh.
+          {t("importNotice", { name: guide.name })}
         </p>
       )}
       <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
@@ -96,7 +101,7 @@ export default async function ConnectorGuidePage({
 
       <section className="mt-12">
         <h2 className="font-display text-2xl tracking-tight">
-          Setup, step by step.
+          {t("setupHeading")}
         </h2>
         <ol className="mt-6 flex flex-col gap-8">
           {guide.steps.map((step, i) => (
@@ -125,7 +130,7 @@ export default async function ConnectorGuidePage({
                       {step.doc.label}
                     </a>{" "}
                     <span className="text-ink-faint">
-                      (official documentation)
+                      {t("officialDocumentation")}
                     </span>
                   </p>
                 )}
@@ -138,7 +143,7 @@ export default async function ConnectorGuidePage({
       {guide.detects.length > 0 && (
         <section className="mt-12">
           <h2 className="font-display text-2xl tracking-tight">
-            What it finds.
+            {t("whatItFindsHeading")}
           </h2>
           <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.detects.map((line) => (
@@ -156,7 +161,7 @@ export default async function ConnectorGuidePage({
       <section className="border-line bg-line mt-12 grid gap-px border sm:grid-cols-2">
         <div className="bg-card px-6 py-6">
           <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-            What LicenseMeter reads
+            {t("whatReadsHeading")}
           </h2>
           <ul className="text-ink-soft mt-3 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.reads.map((line) => (
@@ -171,7 +176,7 @@ export default async function ConnectorGuidePage({
         </div>
         <div className="bg-card px-6 py-6">
           <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-            What it never reads
+            {t("whatNeverReadsHeading")}
           </h2>
           <ul className="text-ink-soft mt-3 flex flex-col gap-2 text-sm leading-relaxed">
             {guide.neverReads.map((line) => (
@@ -187,45 +192,42 @@ export default async function ConnectorGuidePage({
       </section>
 
       <p className="text-ink-soft mt-8 text-sm leading-relaxed">
-        {guide.kind === "api"
-          ? "Credentials are validated against the vendor before anything is stored, encrypted at rest (AES-256-GCM), used read-only and deleted the moment you disconnect."
-          : "Nothing leaves the pasted table: the member list is stored like any other connector seat snapshot and deleted the moment you clear it."}{" "}
-        Data lives in the EU (Postgres, Frankfurt). The{" "}
-        <Link
-          href="/security"
-          className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-        >
-          security overview
-        </Link>{" "}
-        covers the full picture.
+        {guide.kind === "api" ? t("apiFooter") : t("importFooter")}{" "}
+        {t.rich("dataLocation", {
+          link: (chunks) => (
+            <Link
+              href="/security"
+              className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+            >
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
 
       <section className="border-line mt-12 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
-          Ready in a few minutes.
+          {t("readyHeading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
-          Open the connector page in your workspace, or walk through the live
-          demo first to see the findings this connector produces.
+          {t("readyBody")}
         </p>
         <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <a
             href={`${signInPath()}?returnTo=${encodeURIComponent(guide.settingsPath)}`}
             className={buttonClass("primary", "w-full sm:w-auto")}
           >
-            Open the {guide.name} connector
+            {t("openConnector", { name: guide.name })}
           </a>
           {demoEnabled && (
             <form action="/api/auth/demo" method="post">
               <button className={buttonClass("secondary", "w-full sm:w-auto")}>
-                Open the live demo
+                {t("openDemo")}
               </button>
             </form>
           )}
         </div>
-        <p className="text-ink-faint mt-3 text-xs">
-          Opening the connector signs you in with Microsoft first.
-        </p>
+        <p className="text-ink-faint mt-3 text-xs">{t("signInNote")}</p>
       </section>
 
       <script

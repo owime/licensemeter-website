@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, Check, ShieldCheck, UsersRound } from "lucide-react";
 import {
   ConnectorLogo,
@@ -20,7 +21,7 @@ const ORBIT_BRANDS: ConnectorBrand[] = [
   "anthropic",
 ];
 
-export function OrbitHero({
+export async function OrbitHero({
   signInEnabled,
   signInHref,
   demoEnabled,
@@ -29,6 +30,7 @@ export function OrbitHero({
   signInHref: string;
   demoEnabled: boolean;
 }) {
+  const t = await getTranslations("home.hero");
   return (
     <section
       id="get-started"
@@ -50,46 +52,43 @@ export function OrbitHero({
         <div className="rise rise-1 text-ink-soft inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs sm:text-sm">
           <span className="inline-flex items-center gap-1.5">
             <span className="bg-good size-1.5 rounded-full" />
-            Free to use
+            {t("freeToUse")}
           </span>
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck
               className="text-brand-text size-4"
               aria-hidden="true"
             />
-            Read-only by design
+            {t("readOnly")}
           </span>
         </div>
         <h1
           id="hero-heading"
           className="font-display rise rise-2 mt-6 text-[2.65rem] leading-[1.07] font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-[4.4rem]"
         >
-          Stop paying for
-          <br className="hidden sm:block" /> licenses nobody uses.
+          {t("titleLine1")}
+          <br className="hidden sm:block" /> {t("titleLine2")}
         </h1>
         <p className="rise rise-3 text-ink-soft mx-auto mt-6 max-w-[34rem] text-base leading-relaxed sm:text-lg">
-          Bring Microsoft 365, your SaaS seats and AI spend into one clear view.
-          Find what&apos;s unused. Keep the savings.
+          {t("subtitle")}
         </p>
         <div className="rise rise-4 mt-8">
           <SignInButtons
             signInEnabled={signInEnabled}
             signInHref={signInHref}
             demoEnabled={demoEnabled}
-            primaryLabel="Run my free scan"
+            primaryLabel={t("primaryCta")}
             showNote={false}
             centered
             primaryVariant="ink"
           />
-          <p className="text-ink-faint mt-4 text-xs">
-            No credit card. No time limit. Your data stays yours.
-          </p>
+          <p className="text-ink-faint mt-4 text-xs">{t("note")}</p>
         </div>
 
         <div
           className="sample-stack rise rise-5 mx-auto mt-12 text-left"
           id="sample-tenant"
-          aria-label="Illustrative findings from the sample tenant"
+          aria-label={t("sampleAriaLabel")}
         >
           <div className="sample-glow" aria-hidden="true" />
           <div className="sample-finding sample-finding-back">
@@ -97,7 +96,7 @@ export function OrbitHero({
               <ConnectorLogo brand="microsoft" size={21} />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-medium">Unassigned paid seats</p>
+              <p className="text-sm font-medium">{t("unassignedSeats")}</p>
               <p className="text-ink-faint mt-1 text-xs">
                 € {demoEuros(DEMO_FIGURES.byCategory.shelfware)} / month
               </p>
@@ -112,9 +111,7 @@ export function OrbitHero({
               <ConnectorLogo brand="adobe" size={20} />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-medium">
-                Inactive seats, across your apps
-              </p>
+              <p className="text-sm font-medium">{t("inactiveSeats")}</p>
               <p className="text-ink-faint mt-1 text-xs">
                 € {demoEuros(DEMO_FIGURES.byCategory.idle)} / month
               </p>
@@ -126,15 +123,14 @@ export function OrbitHero({
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium sm:text-sm">
-                They left. Their licenses didn&apos;t.
+                {t("leaversTitle")}
               </p>
               <p className="text-ink-faint mt-1 text-xs">
-                {DEMO_FIGURES.leaverCount} former employees still hold paid
-                seats
+                {t("leaversCount", { count: DEMO_FIGURES.leaverCount })}
               </p>
             </div>
             <span className="bg-good-soft text-good-text hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium sm:inline-flex">
-              Waste found
+              {t("wasteFound")}
             </span>
           </div>
         </div>
@@ -142,14 +138,14 @@ export function OrbitHero({
           href="/sample-report"
           className="text-ink-faint hover:text-ink relative z-10 inline-flex min-h-11 items-center justify-center gap-1.5 text-xs underline-offset-4 hover:underline"
         >
-          Sample data. See the full report{" "}
+          {t("sampleLink")}{" "}
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </Link>
       </div>
 
       <div className="relative z-10 mx-auto mt-12 max-w-6xl px-5 pb-14 sm:mt-16 lg:mt-14">
         <p className="text-ink-faint text-center text-xs sm:text-sm">
-          Built for the tools your team already uses
+          {t("builtFor")}
         </p>
         <ul className="mx-auto mt-7 grid max-w-xl grid-cols-3 gap-x-4 gap-y-6 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-x-8 lg:gap-x-7">
           {CONNECTOR_BRANDS.map((brand) => (

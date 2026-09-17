@@ -1,0 +1,274 @@
+{
+  "connectors": {
+    "index": {
+      "eyebrow": "Konnektorer",
+      "title": "Koble til det selskapet ditt allerede betaler for.",
+      "intro": "Microsoft 365 er kjernetilkoblingen, gitt én gang gjennom Microsofts admin-samtykkedialog, dokumentert i <link>sikkerhetsoversikten</link>. Hver konnektor under legger til enda en leverandør i den samme katalogsammenligningen, skrivebeskyttet, med en trinnvis veiledning og lenke til leverandørens offisielle dokumentasjon.",
+      "demoLabel": "Produktdemo: kobler til Atlassian-konnektoren",
+      "demoCaption": "Kobler til Atlassian i demoarbeidsområdet: skrivebeskyttede legitimasjonsopplysninger inn, første synkronisering ferdig, plasser i katalogsammenligningen.",
+      "setupGuidesHeading": "Oppsettsveiledninger",
+      "kindApi": "Koble til via API",
+      "kindImport": "CSV-import",
+      "importNote": "Ingen API: du limer inn en eksportert medlemsliste, matchet mot katalogen din. Importer på nytt for å oppdatere.",
+      "footerNote": "Alle legitimasjonsopplysninger for konnektorer lagres kryptert (AES-256-GCM), brukes skrivebeskyttet og slettes idet du kobler fra. Produktnavn er varemerker tilhørende sine respektive eiere; LicenseMeter er uavhengig av dem alle.",
+      "ctaHeading": "Start med Microsoft 365, legg deretter til alle betalte lisenskilder.",
+      "ctaBody": "Kjør den skrivebeskyttede demoen først, eller opprett et arbeidsområde og følg den veiledede Microsoft-samtykkeflyten. Ingen kredittkort kreves.",
+      "startFree": "Start gratis",
+      "reviewSecurity": "Se sikkerhet"
+    },
+    "slug": {
+      "breadcrumbConnectors": "Konnektorer",
+      "title": "Koble {name} til LicenseMeter.",
+      "kindApi": "Koble til via API",
+      "kindImport": "CSV-import",
+      "importNotice": "Dette er en CSV-import, ikke en API-tilkobling: {name} har ikke noe medlems-API å lese fra, så du limer inn en eksportert medlemsliste og LicenseMeter matcher den mot katalogen din. Importer på nytt for å oppdatere.",
+      "setupHeading": "Oppsett, steg for steg.",
+      "whatItFindsHeading": "Hva den finner.",
+      "whatReadsHeading": "Hva LicenseMeter leser",
+      "whatNeverReadsHeading": "Hva den aldri leser",
+      "officialDocumentation": "(offisiell dokumentasjon)",
+      "apiFooter": "Legitimasjonsopplysninger valideres mot leverandøren før noe lagres, kryptert i hvile (AES-256-GCM), brukt skrivebeskyttet og slettet idet du kobler fra.",
+      "importFooter": "Ingenting forlater den innlimte tabellen: medlemslisten lagres som ethvert annet konnektor-øyeblikksbilde og slettes idet du tømmer den.",
+      "dataLocation": "Data ligger i EU (Postgres, Frankfurt). <link>Sikkerhetsoversikten</link> dekker hele bildet.",
+      "readyHeading": "Klar på noen få minutter.",
+      "readyBody": "Åpne konnektorsiden i arbeidsområdet ditt, eller gå gjennom live-demoen først for å se funnene denne konnektoren gir.",
+      "openConnector": "Åpne {name}-konnektoren",
+      "openDemo": "Åpne live-demoen",
+      "signInNote": "Å åpne konnektoren logger deg først inn med Microsoft."
+    },
+    "guides": {
+      "microsoft": {
+        "summary": "Koble til Microsoft 365-leietakeren din skrivebeskyttet: samtykke med ett klikk, eller ta med din egen Entra-appregistrering (klienthemmelighet eller sertifikat).",
+        "intro": "Microsoft 365 er kjernekatalogen LicenseMeter leser for å finne lisensavfall. De fleste team bruker den administrerte ett-klikks-veien: en global administrator gir skrivebeskyttede applikasjonstillatelser én gang. Foretrekker du å eie appregistreringen selv, bruker BYO-veien legitimasjonsopplysningene fra din egen Entra-app, lagret kryptert og kun brukt til den nattlige skrivebeskyttede synkroniseringen.",
+        "steps": [
+          {
+            "title": "Administrert (anbefalt): samtykke med ett klikk",
+            "body": "På Microsoft-konnektorsiden velger du Gi administratorsamtykke. En global administrator godkjenner LicenseMeters skrivebeskyttede applikasjonstillatelser for leietakeren din i Microsoft-dialogen. Ingenting lagres på din side, og ingenting skrives noensinne til leietakeren din. Dette er standarden og krever ingen appregistrering."
+          },
+          {
+            "title": "BYO (avansert): opprett din egen appregistrering",
+            "body": "Foretrekker du å eie legitimasjonen selv? Kjør skriptet setup-byo-connector.ps1 (Microsoft.Graph PowerShell-modulen kreves) som global administrator for leietakeren din. Det oppretter en enkelttenant, skrivebeskyttet appregistrering med nøyaktig de applikasjonstillatelsene LicenseMeter krever, gir administratorsamtykke, og skriver ut din katalog-ID (leietaker), applikasjons-ID (klient) og en klienthemmelighet du kan lime inn. Legg til -UseCertificate for å registrere et sertifikat i stedet."
+          },
+          {
+            "title": "BYO manuell rute (portal)",
+            "body": "Kan du ikke kjøre skriptet: gå til Entra ID > Appregistreringer og opprett en app (enkelttenant). Under API-tillatelser legger du til nøyaktig de applikasjonstillatelsene LicenseMeter lister på konnektorsiden (alle skrivebeskyttede), og gir deretter administratorsamtykke. Under Sertifikater og hemmeligheter oppretter du en klienthemmelighet (eller laster opp et sertifikat). Lim inn leietaker-ID, klient-ID og hemmeligheten (eller sertifikatets private nøkkel og sertifikat, begge PEM) i konnektorens Avansert-seksjon. Prinsippet om minste privilegium: hver tillatelse er *.Read.All og begrenset til katalog-, lisens- og bruksrapportlesing - ingen skrivetilganger, ingen e-post- eller filinnhold."
+          },
+          {
+            "title": "Verifiser",
+            "body": "Ved lagring henter LicenseMeter et rent app-token og sjekker at tokenets rollepåstand inneholder alle nødvendige tillatelser, og viser en grønn/rød rad per tillatelse og blokkerer lagringen hvis noe mangler. Den kjører også ett live-kall mot bruksrapport-API-et. Å bytte mellom administrert og BYO omdirigerer synkroniseringen uten datatap."
+          }
+        ],
+        "reads": [
+          "Katalogbrukere: navn, UPN, aktiveringsstatus og tildelte lisenser",
+          "Abonnerte SKU-er: kjøpte kontra tildelte lisensantall",
+          "Innloggingsaktivitet (med Entra ID P1) og bruks-/Copilot-aktivitetsrapporter",
+          "Om visningsnavn i rapporter er skjult (en leietakerinnstilling)"
+        ],
+        "neverReads": [
+          "Innhold i postboks, kalender, Teams, OneDrive eller SharePoint: ingen innholdstilganger blir bedt om",
+          "Alt som kan skrives til: alle tillatelser er skrivebeskyttet (*.Read.All)"
+        ]
+      },
+      "adobe": {
+        "summary": "Finn Creative Cloud-plasser eid av personer som er deaktivert eller borte, via Adobes User Management API. Kun rettigheter, skrivebeskyttet.",
+        "intro": "Adobe-plasser er dyre, og fratredelser når sjelden Admin Console. LicenseMeter leser brukerlisten og filtrerer medlemskap til produktprofil-rettigheter via User Management API, og sammenligner deretter hver plass mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett API-prosjektet",
+            "body": "I Adobe Developer Console oppretter eller åpner du et prosjekt og legger til User Management API med OAuth Server-to-Server-legitimasjon. Dette krever rollen Adobe System Administrator; Developer-rollen alene kan ikke opprette User Management API-integrasjonen."
+          },
+          {
+            "title": "Kopier legitimasjonsopplysningene",
+            "body": "Siden med legitimasjonsdetaljer viser organisasjons-ID, klient-ID og klienthemmelighet: de tre verdiene LicenseMeter ber om."
+          },
+          {
+            "title": "Koble til",
+            "body": "Lim inn de tre verdiene på Adobe-konnektorsiden. LicenseMeter validerer dem mot API-et før noe lagres; hemmeligheten er kryptert i hvile (AES-256-GCM)."
+          }
+        ],
+        "reads": [
+          "Brukerlisten: e-post, navn og kontostatus",
+          "Produktprofil-rettigheter per bruker, filtrert fra Adobe-gruppemedlemskap"
+        ],
+        "neverReads": [
+          "Filer, biblioteker eller annet Creative Cloud-innhold",
+          "Bruksdata: Adobes API eksponerer kun rettigheter, så det finnes ikke noe inaktivitetssignal"
+        ],
+        "detects": [
+          "Creative Cloud-plasser eid av kontoer som er deaktivert i Entra ID.",
+          "Plasser uten noen tilsvarende katalogkonto i det hele tatt."
+        ]
+      },
+      "zoom": {
+        "summary": "Finn lisensierte Zoom-plasser eid av personer som har sluttet eller vært lenge inaktive. En Server-to-Server OAuth-app med ett lesetilgang.",
+        "intro": "Zoom-lisenser blir liggende igjen etter at Teams overtar og etter at folk slutter. LicenseMeter lister lisensierte brukere og deres siste innlogging og sammenligner hver plass mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett Server-to-Server OAuth-appen",
+            "body": "I Zoom App Marketplace under Develop > Build App oppretter en Zoom-kontoadministrator en Server-to-Server OAuth-app og aktiverer den. Appen forblir intern for kontoen din. Ingenting publiseres."
+          },
+          {
+            "title": "Gi tilgangen",
+            "body": "Legg til tilgangen user:read:list_users:admin (den granulære tilgangen som lister alle brukere). Ingenting annet kreves. Merk at den lignende navngitte user:read:user:admin bare leser én bruker om gangen og ikke vil autorisere synkroniseringen."
+          },
+          {
+            "title": "Koble til",
+            "body": "Kopier konto-ID, klient-ID og klienthemmelighet fra appens legitimasjonsside og lim dem inn på Zoom-konnektorsiden. De valideres før lagring og er kryptert i hvile."
+          }
+        ],
+        "reads": [
+          "Lisensierte brukere: e-post, navn, status og plantype",
+          "Siste innlogging der Zoom rapporterer det"
+        ],
+        "neverReads": ["Møter, opptak, chat eller annet innhold"]
+      },
+      "atlassian": {
+        "summary": "Finn Jira- og Confluence-plasser som overlevde brukerne sine. Én organisasjons-API-nøkkel, skrivebeskyttet.",
+        "intro": "Atlassian-produkttilgang overlever fratredelser oftere enn de fleste. LicenseMeter leser administrerte brukere og deres produkttilgang gjennom organisasjonens admin-API og sammenligner hver plass mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett en organisasjons-API-nøkkel",
+            "body": "I Atlassian Administration (admin.atlassian.com) under Organization settings > API keys oppretter du en nøkkel. Bare brukere med organisasjonsadministrator-rollen kan gjøre dette. Hvis nøkkelen tilbyr API-tilganger, inkluder read:accounts:admin (eller opprett den uten tilganger). Konnektoren leser administrerte kontoer, så organisasjonen din trenger minst ett verifisert domene; ikke-verifiserte kontoer returneres ikke."
+          },
+          {
+            "title": "Noter organisasjons-ID-en",
+            "body": "Den er en del av Atlassian Administration-URL-en (admin.atlassian.com/o/<organisasjons-id>) og vises sammen med API-nøkkelen."
+          },
+          {
+            "title": "Koble til",
+            "body": "Lim inn organisasjons-ID-en og API-nøkkelen på Atlassian-konnektorsiden. Validert før lagring, kryptert i hvile."
+          }
+        ],
+        "reads": [
+          "Administrerte brukere: e-post, navn og kontostatus",
+          "Produkttilgang per bruker (Jira, Confluence) og siste aktivitet der Atlassian rapporterer det"
+        ],
+        "neverReads": ["Saker, sider, prosjekter eller annet innhold inne i produktene"]
+      },
+      "salesforce": {
+        "summary": "Finn Salesforce-lisenser fortsatt tildelt personer som har sluttet, vanligvis det aller dyreste lekket. Connected App med klientlegitimasjon, skrivebeskyttet.",
+        "intro": "Til Salesforce-priser betaler én glemt lisens for mye verktøy. LicenseMeter spør brukerlisten med lisenstype og siste innlogging og sammenligner hver lisens mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett en Connected App",
+            "body": "I Setup > App Manager oppretter du en Connected App med OAuth aktivert og Enable Client Credentials Flow avkrysset. Under Selected OAuth Scopes legger du til 'Manage user data via APIs (api)' - uten den utstedes tokenet, men brukerspørringen avvises, så tilkoblingen validerer men leser ingenting."
+          },
+          {
+            "title": "Sett en skrivebeskyttet kjørebruker",
+            "body": "Under Manage > Edit Policies > Client Credentials Flow setter du kjørebrukeren. Bruk en dedikert integrasjonsbruker med API Enabled og View All Users (skrivebeskyttet) - View All Users er det som lar det enkelte spørringen returnere alle aktive brukere når User Sharing er på; uten den kommer listen tom eller delvis tilbake. LicenseMeters eneste spørring er brukerlisten."
+          },
+          {
+            "title": "Koble til",
+            "body": "Lim inn din produksjons-My Domain-URL (https://<org>.my.salesforce.com) eller sandbox-My Domain-URL (https://<org>.sandbox.my.salesforce.com), pluss consumer key og consumer secret, på Salesforce-konnektorsiden. Validert før lagring, kryptert i hvile."
+          }
+        ],
+        "reads": [
+          "Brukerlisten: e-post, navn, aktiv-flagg og lisenstype",
+          "Siste innlogging per bruker"
+        ],
+        "neverReads": ["CRM-data: ingen kontoer, kontakter, muligheter eller rapporter"]
+      },
+      "openai": {
+        "summary": "Spor organisasjonens OpenAI API-forbruk dag for dag og fang opp tidligere ansatte som fortsatt har tilgang til konsollen. Én admin-nøkkel, skrivebeskyttet.",
+        "intro": "API-forbruk er usynlig frem til fakturaen, og konsolltilgang overlever fratredelser. Med én Admin API-nøkkel etterfyller LicenseMeter opptil 180 dager med daglige kostnadsdata og sammenligner hvert konsollmedlem mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett en Admin API-nøkkel",
+            "body": "En organisasjonseier åpner platform.openai.com under Settings > Organization > Admin keys og oppretter en nøkkel. Bare eiere kan opprette admin-nøkler; vanlige prosjekt-API-nøkler fungerer ikke her."
+          },
+          {
+            "title": "Koble til",
+            "body": "Lim inn nøkkelen i det ene feltet på OpenAI-konnektorsiden. Den valideres skrivebeskyttet før lagring og er kryptert i hvile (AES-256-GCM)."
+          },
+          {
+            "title": "La den første synkroniseringen etterfylle",
+            "body": "Opptil 180 dager med daglige kostnadsdata og den nåværende konsollmedlemslisten kommer med den første synkroniseringen. Forbruk vises på AI-kostnadssiden i USD, nøyaktig som fakturert, aldri konvertert."
+          }
+        ],
+        "reads": [
+          "Konsollens organisasjonsmedlemmer: e-post og navn",
+          "Daglige kostnadssummer per linjeelement"
+        ],
+        "neverReads": [
+          "Prompter, fullføringer eller annet forespørselsinnhold",
+          "Hemmelighetene til dine prosjekt-API-nøkler eller prosjektdata"
+        ]
+      },
+      "anthropic": {
+        "summary": "Spor organisasjonens Claude API-forbruk per modell og fang opp tidligere ansatte som fortsatt har tilgang til konsollen. Én admin-nøkkel, skrivebeskyttet.",
+        "intro": "Med én Admin API-nøkkel etterfyller LicenseMeter rundt 90 dager med daglige Claude API-kostnadsdata og sammenligner hvert konsollmedlem mot Entra ID.",
+        "steps": [
+          {
+            "title": "Opprett en Admin API-nøkkel",
+            "body": "En organisasjonsadministrator åpner Claude Console (platform.claude.com) under Organization settings > Admin keys og oppretter en nøkkel, som starter med sk-ant-admin. Admin-nøkler finnes på organisasjonskontoer, ikke individuelle kontoer."
+          },
+          {
+            "title": "Koble til",
+            "body": "Lim inn nøkkelen i det ene feltet på Anthropic-konnektorsiden. Validert skrivebeskyttet før lagring, kryptert i hvile (AES-256-GCM)."
+          },
+          {
+            "title": "La den første synkroniseringen etterfylle",
+            "body": "Rundt 90 dager med daglige kostnadsdata per modell samt konsollmedlemslisten kommer med den første synkroniseringen. Forbruk vises på AI-kostnadssiden i USD, nøyaktig som fakturert."
+          }
+        ],
+        "reads": [
+          "Konsollens organisasjonsmedlemmer: e-post og navn",
+          "Daglige kostnadssummer per modell"
+        ],
+        "neverReads": [
+          "Prompter, svar eller annet forespørselsinnhold",
+          "Hemmelighetene til dine arbeidsområde-API-nøkler"
+        ]
+      },
+      "chatgpt": {
+        "summary": "Match ChatGPT Enterprise- eller Business-medlemslisten din mot Entra ID med en CSV-innliming. Ingen legitimasjon, ingen API.",
+        "intro": "ChatGPT-plasser kjøpes raskt og gjennomgås sjelden. Lim inn en medlemstabell eller analyseeksport hvis arbeidsområdet ditt tilbyr det, så prissetter LicenseMeter hver plass eid av noen som er deaktivert, borte eller inaktiv når de innlimte dataene inkluderer aktivitetsdatoer."
+        ,
+        "steps": [
+          {
+            "title": "Klargjør medlemsdataene",
+            "body": "I ChatGPT-arbeidsområdeinnstillinger eller analyse, bruk en medlemstabell eller CSV-eksport hvis tilgjengelig for arbeidsområdet ditt. Inkluder overskriftsraden slik at LicenseMeter kan oppdage de tilgjengelige kolonnene."
+          },
+          {
+            "title": "Lim den inn",
+            "body": "På ChatGPT-konnektorsiden limer du inn tabellen eller eksporten. E-post er påkrevd; navn, plasstype, status og siste aktivitet oppdages når de kolonnene finnes. Komma-, semikolon- og tabulatorformater fungerer alle."
+          },
+          {
+            "title": "Prissett plassene",
+            "body": "Sett prisen per plass under Licenses & prices (chatgpt:<plasstype>) slik at funn har dine reelle tall. Importer på nytt når som helst. Hver innliming erstatter forrige øyeblikksbilde."
+          }
+        ],
+        "reads": [
+          "Kun det som er i innlimingen din: medlemmers e-poster, navn, plasstyper, og status eller sist-aktiv-datoer når de er inkludert"
+        ],
+        "neverReads": [
+          "Samtaler, prompter eller noe inne i ChatGPT: ingen ChatGPT-legitimasjon lagres i det hele tatt"
+        ]
+      },
+      "claude": {
+        "summary": "Match Claude Team- eller Enterprise-medlemslisten din mot Entra ID med en CSV-innliming. Ingen legitimasjon, ingen API.",
+        "intro": "Claude-plasser følger samme fratredelsesfysikk som ethvert annet abonnement. Lim inn medlemslisten fra adminstrasjonsinnstillingene, så prissetter LicenseMeter hver plass eid av noen som er deaktivert, borte eller inaktiv.",
+        "steps": [
+          {
+            "title": "Eksporter medlemslisten",
+            "body": "I Claude under Organization settings > Members kopierer eller eksporterer du medlemstabellen inkludert overskriftsraden. Administratorer på Team- og Enterprise-planer har tilgang til den."
+          },
+          {
+            "title": "Lim den inn",
+            "body": "På Claude-konnektorsiden limer du inn tabellen. Kolonner for e-post, navn, status, plasstype og siste aktivitet oppdages automatisk; komma-, semikolon- og tabulatorformater fungerer alle."
+          },
+          {
+            "title": "Prissett plassene",
+            "body": "Sett prisen per plass under Licenses & prices (claude:<plasstype>). Importer på nytt når som helst. Hver innliming erstatter forrige øyeblikksbilde."
+          }
+        ],
+        "reads": [
+          "Kun det som er i innlimingen din: medlemmers e-poster, navn, plasstyper, status og sist-aktiv-datoer"
+        ],
+        "neverReads": [
+          "Samtaler, prompter eller noe inne i Claude: ingen Claude-legitimasjon lagres i det hele tatt"
+        ]
+      }
+    }
+  }
+}

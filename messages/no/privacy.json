@@ -1,0 +1,60 @@
+{
+  "privacy": {
+    "title": "Personvernerklæring",
+    "lastUpdated": "Sist oppdatert: september 2026",
+    "sections": {
+      "controller": {
+        "title": "1. Behandlingsansvarlig",
+        "line1": "UgurLabs UG (haftungsbeschränkt)",
+        "line2": "Fährstraße 217, 40221 Düsseldorf, Tyskland",
+        "line3": "Daglig leder: Ugur Koc",
+        "line4": "E-post: {email}"
+      },
+      "visiting": {
+        "title": "2. Behandling når du besøker nettstedet",
+        "p1": "Når du åpner dette nettstedet, behandler vår hostingleverandør (Vercel Inc.) teknisk nødvendige data (IP-adresse, tidspunkt, forespurt side, brukeragent) i serverlogger for å levere og sikre tjenesten (art. 6(1)(f) GDPR). Applikasjonen kjører i EU-datasentre, og det foreligger en databehandleravtale med Vercel som inkluderer EUs standard personvernbestemmelser (SCC).",
+        "p2": "Dette nettstedet bruker øktinformasjonskapsler for innlogging og valg av arbeidsområde, samt Crisp-informasjonskapsler for å opprettholde supportsamtaler. Se vår <cookieLink>informasjonskapselerklæring</cookieLink> for detaljer.",
+        "p3": "For rekkeviddemåling bruker vi Vercel Web Analytics, en informasjonskapselfri metode som kun registrerer aggregerte, anonymiserte sidevisninger (art. 6(1)(f) GDPR). Det bygges ingen profiler på tvers av enheter, og ingen IP-adresser lagres."
+      },
+      "signIn": {
+        "title": "3. Innlogging",
+        "p1": "Innlogging håndteres via vår autentiseringsleverandør, WorkOS, Inc. (AuthKit). Du kan logge inn med en Microsoft jobb- eller skolekonto, Google, Apple, en passnøkkel, en engangs e-postlenke, eller e-post og passord. Uansett hvilken metode du velger, behandler vi profildataene den returnerer, særlig visningsnavnet og e-postadressen din, sammen med identifikatoren WorkOS tildeler kontoen din. Der du logger inn med en Microsoft-konto, mottar vi i tillegg din Microsoft-objekt-ID og leietaker-ID (tenant ID). Disse dataene er nødvendige for å levere kontoen (art. 6(1)(b) GDPR).",
+        "p2": "WorkOS behandler disse innloggingsdataene i USA; overføringen er basert på EUs standard personvernbestemmelser (se listen over databehandlere nedenfor). Øktene opprettholdes deretter av en førstepartsinformasjonskapsel, kun for HTTP (HTTP-only), satt av LicenseMeter (se vår <cookieLink>informasjonskapselerklæring</cookieLink>)."
+      },
+      "productData": {
+        "title": "4. Produktdata (behandling på dine vegne)",
+        "p1": "Når en organisasjon kobler til sin Microsoft 365-leietaker, behandler LicenseMeter følgende data om leietakerens brukere på organisasjonens vegne (art. 28 GDPR): visningsnavn, UPN, kontostatus, brukertype, opprettelsesdato, lisenstildelinger, tidspunkt for siste innlogging og siste aktivitetsdato per tjeneste. Innholdet i postkasser, filer eller meldinger leses aldri; tilgangen er teknisk begrenset til skrivebeskyttede rettigheter.",
+        "p2": "Hvis organisasjonen i tillegg kobler til valgfrie konnektorer, behandler LicenseMeter under samme oppdrag også følgende data: medlemmers e-postadresser og produkttildelinger fra Adobe, Zoom, Atlassian og Salesforce; medlemslister fra konsoll og daglige API-kostnadstotaler fra OpenAI og Anthropic; samt medlemslister limt inn via CSV fra ChatGPT og Claude.",
+        "p3": "Dataene lagres i en Postgres-database i EU (Frankfurt-regionen) og slettes umiddelbart og fullstendig når arbeidsområdet kobles fra. Der organisasjonen kobler til sin Microsoft-leietaker med sin egen appregistrering (“ta med egen”), lagres oppgitte legitimasjonsopplysninger kryptert (AES-256-GCM) og brukes utelukkende til den skrivebeskyttede synkroniseringen; de logges eller utleveres aldri. En databehandleravtale (DPA) gis til hver organisasjon før produksjonsbruk."
+      },
+      "freeService": {
+        "title": "5. Gratis tjeneste",
+        "body": "LicenseMeter er gratis å bruke. Vi samler ikke inn betalingsmetoder eller behandler abonnementsbetalinger for tjenesten."
+      },
+      "support": {
+        "title": "Supportsamtaler",
+        "p1": "Crisp leverer supportchatten som er tilgjengelig på nettstedet og i dashbordet vårt. Når chatten lastes, kobles nettleseren din til Crisp, og teknisk tilkoblingsinformasjon deles, inkludert IP-adressen din og side-URL-en. Meldinger og kontaktopplysninger du velger å oppgi, behandles for å besvare forespørselen din. Vi legger ikke automatisk ved kontoprofilen din, konnektorlegitimasjon eller skanningsresultater i chatten.",
+        "p2": "Resend leverer innsendinger fra supportskjemaet per e-post. Grenser for innsending og et skjult spamfelt bidrar til å forhindre misbruk. Der det er aktivert, verifiserer Cloudflare Turnstile i tillegg innsendinger. Vennligst ikke inkluder passord, tilgangstokener eller leietakereksporter i supportmeldinger.",
+        "p3": "For detaljer om chatleverandøren, se <crispLink>Crisps personvernerklæring</crispLink>. Kontakt {email} med spørsmål om, eller ønske om sletting av, supportsamtalen din."
+      },
+      "subprocessors": {
+        "title": "6. Databehandlere",
+        "intro": "Vi bruker følgende databehandlere til å behandle personopplysninger på dine vegne:",
+        "listNote": "Den gjeldende listen er en del av <dpaLink>databehandleravtalen</dpaLink>.",
+        "distinguish": "Disse må skilles fra kildesystemene nevnt i punkt 4 (Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, og listene limt inn via CSV fra ChatGPT og Claude): LicenseMeter leser data fra dem, på organisasjonens vegne, på skrivebeskyttet basis. De er datakilder, ikke databehandlere for LicenseMeter; ingen personopplysninger deles med dem utover den autentiserte leseforespørselen."
+      },
+      "retention": {
+        "title": "7. Lagringstid",
+        "body": "Konto- og produktdata lagres så lenge arbeidsområdet er tilkoblet. Ved frakobling slettes all synkronisert data; gjenværende kopier i rutinemessige krypterte sikkerhetskopier overskrives innenfor rotasjonsvinduet for sikkerhetskopier (for tiden rundt sju dager). Hostingleverandørens serverlogger er underlagt leverandørens egne slettefrister."
+      },
+      "rights": {
+        "title": "8. Dine rettigheter",
+        "body": "Du har rett til innsyn (art. 15), retting (art. 16), sletting (art. 17), begrensning av behandling (art. 18), dataportabilitet (art. 20) og innsigelse (art. 21 GDPR), samt retten til å klage til en tilsynsmyndighet (art. 77 GDPR). For data vi behandler på vegne av din organisasjon, vennligst kontakt din organisasjon som behandlingsansvarlig i første omgang."
+      },
+      "contact": {
+        "title": "9. Kontakt",
+        "body": "Personvernspørsmål: {email}"
+      }
+    }
+  }
+}

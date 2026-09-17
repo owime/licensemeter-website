@@ -1,0 +1,22 @@
+{
+  "impressum": {
+    "title": "Impressum",
+    "headings": {
+      "info": "Opplysninger i henhold til § 5 DDG",
+      "representedBy": "Representert ved",
+      "contact": "Kontakt",
+      "register": "Registerinnføring",
+      "responsibleContent": "Ansvarlig for innhold i henhold til § 18 avs. 2 MStV",
+      "liabilityContent": "Ansvar for innhold",
+      "liabilityLinks": "Ansvar for lenker",
+      "copyright": "Opphavsrett",
+      "disputeResolution": "Forbrukertvisteløsning / universelt meklingsorgan",
+      "notice": "Merknad"
+    },
+    "labels": {
+      "email": "E-post",
+      "registryCourt": "Registerdomstol",
+      "commercialRegisterNumber": "Handelsregisternummer (HRB)"
+    }
+  }
+}

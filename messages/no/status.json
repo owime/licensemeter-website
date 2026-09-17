@@ -1,0 +1,31 @@
+{
+  "status": {
+    "eyebrow": "Systemstatus",
+    "checkedAt": "Sjekket {time} UTC",
+    "intro": "Live status for LicenseMeter og infrastrukturen den kjører på. Våre egne tjenester overvåkes direkte; leverandørene nedenfor rapporterer sin egen status, oppdatert omtrent hvert minutt.",
+    "sections": {
+      "licensemeter": "LicenseMeter",
+      "infrastructure": "Infrastruktur og databehandlere"
+    },
+    "detailsLink": "detaljer →",
+    "checkStatusLink": "Sjekk status →",
+    "microsoftNote": "Microsoft 365 og Entra ID har ingen offentlig maskinlesbar feed, så statusen deres er en direkte lenke. Den fullstendige listen over databehandlere finnes i <trustCenterLink>Trust Center</trustCenterLink>.",
+    "footerNote": "Denne siden kjører inne i LicenseMeter-applikasjonen, og kan derfor ikke selv rapportere et fullstendig plattformutfall. For hendelser, følg med på leverandørfeedene ovenfor eller kontakt support.",
+    "levels": {
+      "operational": "I drift",
+      "degraded": "Redusert ytelse",
+      "partial": "Delvis driftsforstyrrelse",
+      "outage": "Større driftsforstyrrelse",
+      "maintenance": "Vedlikehold",
+      "unknown": "Status utilgjengelig"
+    },
+    "overallHeadline": {
+      "operational": "Alle systemer i drift",
+      "degraded": "Redusert ytelse",
+      "partial": "Delvis tjenesteforstyrrelse",
+      "outage": "Større tjenesteutfall",
+      "maintenance": "Planlagt vedlikehold",
+      "unknown": "Status delvis utilgjengelig"
+    }
+  }
+}

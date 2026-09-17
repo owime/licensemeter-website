@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Pill } from "~/components/ui";
 import { type DpaLang, subprocessorRows } from "~/lib/dpa";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "~/lib/support";
 
-import { TRUST_CONTENT } from "./content";
+import { buildTrustContentFromTranslations, TRUST_CONTENT } from "./content";
 
 /**
  * Renders the Trust Center from the bilingual structure in ./content and the
@@ -38,8 +39,11 @@ const Section = ({
   </section>
 );
 
-export const TrustCenterView = ({ lang }: { lang: DpaLang }) => {
-  const c = TRUST_CONTENT[lang];
+export const TrustCenterView = async ({ lang }: { lang: DpaLang }) => {
+  const c =
+    lang === "de"
+      ? TRUST_CONTENT.de
+      : buildTrustContentFromTranslations(await getTranslations("trustCenter"));
   const rows = subprocessorRows(lang);
   const langs: { id: DpaLang; label: string; href: string }[] = [
     { id: "en", label: "English", href: "/trust-center" },

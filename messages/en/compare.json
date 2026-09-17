@@ -1,0 +1,296 @@
+{
+  "compare": {
+    "eyebrow": "Compare",
+    "excel": {
+      "title": "LicenseMeter vs tracking licenses in Excel",
+      "intro": "A license spreadsheet is free, endlessly flexible and easy to hand to an auditor, which is why almost every IT team has one. This page is about the two things a sheet structurally cannot know: what changed since the last edit, and whether anyone actually uses the seats it lists.",
+      "sideBySide": {
+        "heading": "Side by side, dimension by dimension",
+        "headers": {
+          "dimension": "Dimension",
+          "column": "License spreadsheet",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Cost",
+            "column": "Free, apart from the hours spent keeping it honest - and those hours are the whole product.",
+            "licensemeter": "Free for every tenant, including continuous monitoring and exports."
+          },
+          "freshness": {
+            "dimension": "Freshness",
+            "column": "Accurate on the day someone updates it, stale the day after. Licenses move without the sheet hearing about it.",
+            "licensemeter": "Synced nightly from the source systems, with manual sync on demand and a full sync history."
+          },
+          "activitySignal": {
+            "dimension": "Activity signal",
+            "column": "None. A spreadsheet records what someone typed, not whether the seat was ever opened.",
+            "licensemeter": "Joins license assignments with sign-in activity and per-workload usage reports, so idle and never-used seats surface with evidence."
+          },
+          "staffChanges": {
+            "dimension": "Staff changes",
+            "column": "Breaks silently. Leavers stay listed as active until someone remembers to edit the row, and nobody is notified that nobody did.",
+            "licensemeter": "Disabled accounts still holding paid seats surface automatically, including the Adobe, Zoom or other connected-app seats the same people kept."
+          },
+          "perSeatCost": {
+            "dimension": "Per-seat cost",
+            "column": "Formulas someone built once and now has to update whenever prices, tiers or seat mixes change.",
+            "licensemeter": "An editable per-tenant price book prices every finding in euros per month, prefilled with list-price estimates."
+          },
+          "coverage": {
+            "dimension": "Coverage",
+            "column": "Whatever columns someone added. Every new vendor means another tab and more manual entry.",
+            "licensemeter": "Connectors cross-check Microsoft 365, Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude seats against Entra ID in the same pass."
+          },
+          "findingsWorkflow": {
+            "dimension": "Findings workflow",
+            "column": "Cell colors and comments, reconciled across the copies of the file that inevitably exist.",
+            "licensemeter": "Findings persist across syncs with an acknowledge and reopen workflow, so decisions survive the next update."
+          },
+          "financeHandoff": {
+            "dimension": "Finance handoff",
+            "column": "Already a spreadsheet, which is genuinely convenient - but the numbers are only as current as the last edit.",
+            "licensemeter": "One-click CSV export of all findings with owner, rule and monthly euro cost, current as of last night's sync."
+          },
+          "remediation": {
+            "dimension": "Remediation",
+            "column": "A to-do column. The actual cleanup happens somewhere else.",
+            "licensemeter": "Generates the PowerShell remediation script for the seats you choose. Your IT reviews and runs it; LicenseMeter itself never writes to the tenant."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "When a spreadsheet is enough",
+        "body": "Honestly: more often than vendors like to admit. A handful of subscriptions, one person who owns the sheet and actually maintains it, a once-a-year inventory before a renewal - a spreadsheet handles all of that for free. It is also genuinely good at what it was made for: contract metadata like renewal dates, owners and notes, which no API will ever tell you. The sheet fails only when it is asked to be a monitoring system, because it cannot observe anything."
+      },
+      "whatAdds": {
+        "heading": "What LicenseMeter adds to the sheet",
+        "items": {
+          "liveSync": {
+            "title": "Live sync instead of manual entry",
+            "body": "Directory accounts, license assignments and connected-app seats are read from the source systems every night, read-only. Nobody retypes anything, so nothing goes quietly stale, and the sync history shows exactly when each picture was taken."
+          },
+          "findingsNotRows": {
+            "title": "Findings, not rows",
+            "body": "A sheet lists seats; LicenseMeter joins each seat with sign-in and usage activity and flags the ones that are wasted: leavers still licensed, seats idle for 90 days or never opened, unassigned paid seats, unused Copilot, licensed guests. Each finding names the account, the rule and the evidence."
+          },
+          "priceBook": {
+            "title": "A price book that does the math",
+            "body": "Every finding carries a euro-per-month figure from an editable per-tenant price book, prefilled with list-price estimates and adjustable to your negotiated rates. When a price changes, you edit it once and every figure recalculates - no formula maintenance."
+          },
+          "workflowExports": {
+            "title": "A workflow, and your exports back",
+            "body": "Findings persist across syncs with acknowledge and reopen actions, so decisions are not lost in a copy of the file. And because finance still lives in spreadsheets, everything exports back out: a CSV of all findings with their monthly cost, plus a generated PowerShell script for the cleanup itself."
+          }
+        }
+      },
+      "startSection": {
+        "heading": "Start from the spreadsheet you already have",
+        "bodyBefore": "If you track licenses in a sheet, you already work in exports - so the natural first step needs no admin consent at all. The",
+        "linkText": "CSV import",
+        "bodyAfter": "computes your waste number from two Microsoft 365 admin center exports, with no consent at all. The link signs you in with Microsoft first. If the number justifies it, connect read-only afterwards and let the nightly sync take over from the uploads."
+      },
+      "finalCta": {
+        "heading": "Keep the sheet for contracts. Stop asking it to watch usage.",
+        "bodyBefore": "Connect read-only, get activity-joined, priced findings in minutes, and export them straight back to the format finance already reads. The",
+        "linkText": "security overview",
+        "bodyAfter": "lists every permission up front.",
+        "primaryLabel": "Run my free scan",
+        "note": "Free scans and continuous monitoring. No credit card, read-only access."
+      }
+    },
+    "m365AdminCenter": {
+      "title": "LicenseMeter vs the Microsoft 365 admin center",
+      "intro": "The admin center is included, and for what it claims to do it is authoritative: Billing > Licenses is the source of truth for assignment counts, and Reports > Usage answers most spot-check questions. This page is about the questions it stops answering when the job is finding waste, pricing it and watching it month after month.",
+      "sideBySide": {
+        "heading": "Side by side, dimension by dimension",
+        "headers": {
+          "dimension": "Dimension",
+          "column": "M365 admin center",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Cost",
+            "column": "Included with every tenant. The only spend is the admin time it takes to walk the reports.",
+            "licensemeter": "Free for every tenant, including continuous monitoring and exports."
+          },
+          "assignmentCounts": {
+            "dimension": "Assignment counts",
+            "column": "Authoritative. Billing > Licenses is the source of truth for assigned and unassigned seats per product.",
+            "licensemeter": "Read nightly from the same Graph data. Unassigned paid seats do not just appear in a count: they become priced shelfware findings."
+          },
+          "activityPerUser": {
+            "dimension": "Activity per user",
+            "column": "Reports > Usage shows last-activity dates per workload, one report at a time. Microsoft documents that you cannot generate a report for a single account listing which services it uses.",
+            "licensemeter": "One nightly sync joins directory status, license assignments, sign-in activity and Exchange, OneDrive, SharePoint and Teams usage into a single per-user picture."
+          },
+          "userNames": {
+            "dimension": "User names in reports",
+            "column": "Concealed by default since September 2021. A Global Administrator can re-enable identifiable names tenant-wide under Org Settings > Reports.",
+            "licensemeter": "Reads the same reports, so the same setting applies. With names concealed, usage findings degrade to aggregate counts while directory-based findings stay per user, and the settings page explains the switch."
+          },
+          "euroFigures": {
+            "dimension": "Euro figures",
+            "column": "License counts and usage counts, with no cost attached to either. There is no Microsoft API that exposes your negotiated seat prices.",
+            "licensemeter": "Every finding carries a monthly euro figure from an editable per-tenant price book, prefilled with list-price estimates."
+          },
+          "cadenceAlerts": {
+            "dimension": "Cadence and alerts",
+            "column": "The reports are there when you go and look. Nothing emails you when a new idle seat starts billing.",
+            "licensemeter": "Nightly sync, a weekly digest with the waste number and the largest open findings, and a monthly board-ready PDF report."
+          },
+          "offboardingLeaks": {
+            "dimension": "Offboarding leaks",
+            "column": "You can filter sign-in-blocked users on the Active users page and check their licenses one by one. Nothing surfaces the pattern for you.",
+            "licensemeter": "Disabled accounts still holding paid seats surface automatically as priced findings, including the connected-app seats the same people still hold."
+          },
+          "financeHandoff": {
+            "dimension": "Finance handoff",
+            "column": "Each usage report exports its own CSV, per workload, anonymous by default and without cost columns.",
+            "licensemeter": "One CSV of all findings with owner, rule and monthly euro cost, written for the finance side of the renewal conversation."
+          },
+          "remediation": {
+            "dimension": "Remediation",
+            "column": "Point and click, seat by seat, or scripts you write and maintain yourself.",
+            "licensemeter": "Generates the PowerShell remediation script for the seats you choose. Your IT reviews and runs it; LicenseMeter itself never writes to the tenant."
+          },
+          "beyondM365": {
+            "dimension": "Beyond Microsoft 365",
+            "column": "Stops at the Microsoft bill. Adobe, Zoom, Atlassian, Salesforce and the AI consoles each have their own admin pages.",
+            "licensemeter": "Connectors cross-check Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude seats against Entra ID in the same pass."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "When the admin center is enough",
+        "body": "Honestly: for a lot of the daily work. Buying and assigning seats, checking counts before a true-up, a quick look at whether Teams adoption moved, a tenant small enough to eyeball - the admin center does all of that, included and authoritative. Every number LicenseMeter shows starts life in the same Graph data the admin center reads. The difference is not the data; it is the join, the euro figure and the watching."
+      },
+      "whatAdds": {
+        "heading": "What the admin center does not do",
+        "items": {
+          "perUserJoin": {
+            "title": "The per-user join",
+            "body": "The usage reports are organized by workload, not by person, and Microsoft’s own documentation says you cannot generate a report where you enter one account and get everything it uses. Answering “which licensed people have been inactive everywhere for 90 days?” means exporting several CSVs and joining them by hand. That join is exactly what LicenseMeter maintains for you, nightly."
+          },
+          "euroPerSeat": {
+            "title": "A euro figure per wasted seat",
+            "body": "Usage reports carry counts, not costs, and no Microsoft API exposes the prices your tenant actually pays. LicenseMeter closes that gap with an editable per-tenant price book, prefilled with list-price estimates and adjustable to your negotiated rates, so every finding arrives as euros per month rather than a row count."
+          },
+          "watching": {
+            "title": "Watching, not just looking",
+            "body": "The admin center answers when asked; it never volunteers. New leavers keeping seats and new idle licenses bill quietly between visits. LicenseMeter syncs nightly, keeps findings across runs with an acknowledge and reopen workflow, emails a weekly digest and delivers a monthly PDF report, so the audit becomes a process instead of an errand."
+          },
+          "concealedNames": {
+            "title": "Concealed names, on both sides",
+            "body": "Since September 2021 Microsoft conceals user names in usage reports by default, in the admin center and in the Graph API alike. LicenseMeter is subject to the same setting - no vendor can read around it - but it degrades rule by rule: usage-based findings become aggregate counts while directory-based findings such as disabled accounts, shelfware and guests keep working per user, and the settings page explains how a Global Administrator re-enables identifiable names for both tools at once."
+          }
+        }
+      },
+      "finalCta": {
+        "heading": "Keep the admin center. Add the joined, priced view.",
+        "bodyBefore": "Connect read-only and the free scan turns the reports you already have into per-seat findings with a monthly euro figure attached. The",
+        "linkText": "security overview",
+        "bodyAfter": "lists every permission up front.",
+        "primaryLabel": "Run my free scan",
+        "note": "Free scans and continuous monitoring. No credit card, read-only access."
+      }
+    },
+    "powershellAudit": {
+      "title": "LicenseMeter vs a manual PowerShell audit",
+      "introBefore": "If you can write",
+      "introMiddle": "and",
+      "introAfter": "one-liners, you can audit licenses for free, and for a one-off check that is a perfectly good answer. This page is about what changes when the audit has to be joined across signals, priced in euros and repeated every month.",
+      "sideBySide": {
+        "heading": "Side by side, dimension by dimension",
+        "headers": {
+          "dimension": "Dimension",
+          "column": "Manual PowerShell",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Cost",
+            "column": "Free, apart from the hours it takes to write, run and interpret the output.",
+            "licensemeter": "Free for every tenant, including continuous monitoring and exports."
+          },
+          "dataGathering": {
+            "dimension": "Data gathering",
+            "column": "Separate calls: Get-MgUser for accounts, Get-MgSubscribedSku for seat counts, audit logs for sign-ins, usage reports per workload. You join the results yourself.",
+            "licensemeter": "One nightly sync joins directory data, license assignments, sign-in activity and per-workload usage reports into a single per-user picture."
+          },
+          "signInActivity": {
+            "dimension": "Sign-in activity",
+            "column": "signInActivity needs Entra ID P1. Without it, your script has to fall back to workload reports, and you have to build that fallback.",
+            "licensemeter": "Same Graph constraint, handled for you: without P1, inactivity detection automatically falls back to per-workload usage reports."
+          },
+          "euroFigures": {
+            "dimension": "Euro figures",
+            "column": "SKU GUIDs and part numbers. Mapping them to what a seat actually costs is a manual lookup you repeat every run.",
+            "licensemeter": "Every finding carries a monthly euro figure from an editable per-tenant price book, prefilled with list-price estimates."
+          },
+          "cadence": {
+            "dimension": "Cadence",
+            "column": "Runs when someone remembers to run it. Between runs, new leavers and new idle seats bill unnoticed.",
+            "licensemeter": "Nightly sync plus manual sync, with full sync history. Waste is monitored month after month, not sampled once."
+          },
+          "findingsWorkflow": {
+            "dimension": "Findings workflow",
+            "column": "Console output or a CSV you triage in a spreadsheet. Re-running the script forgets what you already decided.",
+            "licensemeter": "Findings persist with an acknowledge and reopen workflow, so the seats you have already handled stay handled across syncs."
+          },
+          "financeHandoff": {
+            "dimension": "Finance handoff",
+            "column": "You format the export yourself and explain the columns in the email.",
+            "licensemeter": "One-click CSV export of all findings with their monthly cost, written for the finance side of the renewal conversation."
+          },
+          "remediation": {
+            "dimension": "Remediation",
+            "column": "You write the cleanup script, and you own every line of it.",
+            "licensemeter": "Generates the PowerShell remediation script for you. Your IT reviews and runs it; LicenseMeter itself never writes to the tenant."
+          },
+          "beyondM365": {
+            "dimension": "Beyond Microsoft 365",
+            "column": "Graph cmdlets stop at the tenant boundary. Adobe, Zoom or Salesforce seats need separate scripts against separate admin APIs.",
+            "licensemeter": "Connectors cross-check Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT and Claude seats against Entra ID in the same pass."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "When a script is enough",
+        "body": "Honestly: often. A tenant small enough to eyeball, a single question like “which disabled accounts still hold licenses?”, a one-time cleanup before a renewal, or a team that already maintains Graph scripts and enjoys it - in all of those cases, PowerShell is free, transparent and entirely under your control. LicenseMeter exports its remediation as PowerShell precisely because we expect your IT to keep working that way: it complements the shell, it does not replace it."
+      },
+      "whatAdds": {
+        "heading": "What a script cannot easily give you",
+        "items": {
+          "joinMaintained": {
+            "title": "The join, maintained",
+            "body": "The hard part is not any single cmdlet, it is joining accounts, license assignments, sign-in activity and Exchange, OneDrive, SharePoint and Teams usage per user, and keeping that join working when the tenant lacks Entra ID P1 or conceals report names, Microsoft’s default since 2021. LicenseMeter detects both cases and degrades rule by rule instead of failing the run."
+          },
+          "memoryBetweenRuns": {
+            "title": "Memory between runs",
+            "body": "A script produces a snapshot. Monitoring needs state: which findings are new since last month, which you acknowledged, which came back. LicenseMeter keeps findings across nightly syncs with acknowledge and reopen actions, so the audit becomes a process rather than a yearly archaeology project."
+          },
+          "numbersFinanceAccepts": {
+            "title": "Numbers finance accepts",
+            "body": "A list of stale SKU assignments starts a debate; a monthly euro figure starts a decision. The per-tenant price book prices every finding, prefilled with list-price estimates and editable to your negotiated rates, and the CSV export hands finance the list in their own format."
+          },
+          "saferPermissions": {
+            "title": "A safer permission story",
+            "bodyBefore": "Ad-hoc scripts run with whatever rights your admin account has. LicenseMeter uses exactly",
+            "bodyMiddle": "read-only application permissions (",
+            "bodyMiddle2": "), granted once via admin consent and listed in full on the",
+            "linkText": "security overview",
+            "bodyAfter": ". No write scope exists."
+          }
+        }
+      },
+      "finalCta": {
+        "heading": "Keep your scripts. Skip the joining.",
+        "body": "Connect read-only, get the joined, priced findings in minutes, and take away a generated PowerShell script your team reviews and runs.",
+        "primaryLabel": "Run my free scan",
+        "note": "Free scans and continuous monitoring. No credit card, read-only access."
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Maximize2, Pause, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { useReducedMotion } from "./useReducedMotion";
@@ -8,8 +9,8 @@ import { VideoLightbox } from "./VideoLightbox";
 
 type Feature = {
   id: string;
-  title: string;
-  body: string;
+  titleKey: string;
+  bodyKey: string;
   video: string;
   poster: string;
 };
@@ -17,29 +18,29 @@ type Feature = {
 const FEATURES: Feature[] = [
   {
     id: "overview",
-    title: "See the waste in euros",
-    body: "The overview prices every unused seat and tracks spend against waste over time.",
+    titleKey: "overview.title",
+    bodyKey: "overview.body",
     video: "/videos/feature-overview.mp4",
     poster: "/videos/feature-overview.webp",
   },
   {
     id: "findings",
-    title: "Act on findings in bulk",
-    body: "Filter by rule, select the seats that leaked, and acknowledge them in one click.",
+    titleKey: "findings.title",
+    bodyKey: "findings.body",
     video: "/videos/feature-findings.mp4",
     poster: "/videos/feature-findings.webp",
   },
   {
     id: "ai-costs",
-    title: "Track AI spend daily",
-    body: "OpenAI and Anthropic API costs side by side, shown as billed.",
+    titleKey: "aiCosts.title",
+    bodyKey: "aiCosts.body",
     video: "/videos/feature-ai-costs.mp4",
     poster: "/videos/feature-ai-costs.webp",
   },
   {
     id: "connectors",
-    title: "Connect a tool in minutes",
-    body: "Read-only connectors for Microsoft 365, Adobe, Atlassian, Zoom and more.",
+    titleKey: "connectors.title",
+    bodyKey: "connectors.body",
     video: "/videos/feature-connectors.mp4",
     poster: "/videos/feature-connectors.webp",
   },
@@ -55,6 +56,8 @@ const FEATURES: Feature[] = [
  * a hidden browser tab.
  */
 export const FeatureShowcase = () => {
+  const t = useTranslations("home.featureShowcase");
+  const tFeatures = useTranslations("home.featureShowcase.features");
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
@@ -180,7 +183,7 @@ export const FeatureShowcase = () => {
           ? () => setActive((current) => (current + 1) % FEATURES.length)
           : undefined
       }
-      aria-label={`Product demo: ${feature.title}`}
+      aria-label={t("demoAriaLabel", { title: tFeatures(feature.titleKey) })}
       className="block aspect-video w-full bg-white"
     />
   ) : (
@@ -188,7 +191,7 @@ export const FeatureShowcase = () => {
       aria-hidden="true"
       className="bg-subtle text-ink-faint flex aspect-video w-full items-center justify-center text-sm"
     >
-      Product demo
+      {t("placeholder")}
     </span>
   );
 
@@ -198,7 +201,7 @@ export const FeatureShowcase = () => {
       <div className="flex flex-col gap-2 lg:gap-3">
         <div
           role="tablist"
-          aria-label="Product features"
+          aria-label={t("tabListLabel")}
           className="-mx-6 flex [scrollbar-width:none] gap-2 overflow-x-auto px-6 pb-1 lg:mx-0 lg:flex-col lg:gap-3 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
         >
           {FEATURES.map((f, index) => {
@@ -241,10 +244,10 @@ export const FeatureShowcase = () => {
                 }`}
               >
                 <span className="font-display block text-sm font-semibold tracking-tight">
-                  {f.title}
+                  {tFeatures(f.titleKey)}
                 </span>
                 <span className="text-ink-soft mt-1 hidden text-[13px] leading-snug font-normal lg:block">
-                  {f.body}
+                  {tFeatures(f.bodyKey)}
                 </span>
                 {autoAdvance && selected && !reducedMotion && (
                   <span
@@ -273,7 +276,7 @@ export const FeatureShowcase = () => {
             ) : (
               <Play className="size-3.5" aria-hidden="true" />
             )}
-            {autoAdvance ? "Pause rotation" : "Resume rotation"}
+            {autoAdvance ? t("pauseRotation") : t("resumeRotation")}
           </button>
         )}
       </div>
@@ -293,19 +296,21 @@ export const FeatureShowcase = () => {
               type="button"
               onClick={open}
               aria-haspopup="dialog"
-              aria-label={`Product demo — Enlarge: ${feature.title}`}
+              aria-label={t("enlargeAriaLabel", {
+                title: tFeatures(feature.titleKey),
+              })}
               className="block w-full cursor-zoom-in"
             >
               {videoElement}
               <span className="bg-ink/70 text-canvas pointer-events-none absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium opacity-0 transition-opacity duration-150 group-hover:opacity-100">
                 <Maximize2 className="size-3.5" aria-hidden="true" />
-                Enlarge
+                {t("enlarge")}
               </span>
             </button>
           )}
         </div>
         <p className="text-ink-soft mt-3 text-sm leading-relaxed lg:hidden">
-          {feature.body}
+          {tFeatures(feature.bodyKey)}
         </p>
       </div>
 
@@ -315,7 +320,7 @@ export const FeatureShowcase = () => {
           onClose={close}
           src={feature.video}
           poster={feature.poster}
-          label={`Product demo: ${feature.title}`}
+          label={t("demoAriaLabel", { title: tFeatures(feature.titleKey) })}
         />
       )}
     </div>

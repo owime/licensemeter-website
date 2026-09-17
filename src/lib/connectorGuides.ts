@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { CONNECTORS, MICROSOFT_CONNECTOR } from "~/lib/connectors";
 
 /**
@@ -378,3 +380,35 @@ export const CONNECTOR_GUIDES: ConnectorGuide[] = [
 
 export const connectorGuide = (slug: string): ConnectorGuide | undefined =>
   CONNECTOR_GUIDES.find((g) => g.slug === slug);
+
+/**
+ * Returns `guide` with its copy (summary, intro, step titles/bodies, reads,
+ * neverReads, detects) translated via the "connectors.guides.<slug>" message
+ * namespace, falling back to the English default for the active locale.
+ * Structural fields (slug, kind, doc hrefs, settingsPath, detects source)
+ * are untouched, so this is safe to use only from the marketing pages while
+ * every other consumer of CONNECTOR_GUIDES keeps reading the English data
+ * as-is.
+ */
+export const localizeConnectorGuide = async (
+  guide: ConnectorGuide,
+): Promise<ConnectorGuide> => {
+  const t = await getTranslations(`connectors.guides.${guide.slug}`);
+  const stepTitles = t.raw("steps") as { title: string; body: string }[];
+  return {
+    ...guide,
+    summary: t("summary"),
+    intro: t("intro"),
+    steps: guide.steps.map((step, i) => ({
+      ...step,
+      title: stepTitles[i]?.title ?? step.title,
+      body: stepTitles[i]?.body ?? step.body,
+    })),
+    reads: t.raw("reads") as string[],
+    neverReads: t.raw("neverReads") as string[],
+    // Only "adobe" ships its own literal `detects` copy in the guide (every
+    // other slug derives `detects` from the CONNECTORS spec via detectsOf,
+    // which has no Norwegian translation yet), so only translate that case.
+    detects: guide.slug === "adobe" ? (t.raw("detects") as string[]) : guide.detects,
+  };
+};

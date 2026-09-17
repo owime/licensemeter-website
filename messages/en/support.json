@@ -1,0 +1,28 @@
+{
+  "support": {
+    "page": {
+      "eyebrow": "Here to help",
+      "title": "Contact support",
+      "intro": "Need a hand with LicenseMeter? Tell us what you’re working on and where you got stuck.",
+      "selfHostedNotice": "Support is managed by the administrator of this self-hosted instance. Contact them for help."
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email address",
+      "subject": "Subject",
+      "message": "Message",
+      "messageHint": "Describe what happened and what you expected. Please leave out passwords, access tokens, and tenant data.",
+      "website": "Website",
+      "privacyNote": "We use your details to respond to your request. Read our <privacyLink>privacy policy</privacyLink>.",
+      "submit": "Send support request",
+      "submitting": "Sending…",
+      "verificationLoadError": "Verification could not load. Try again or email {email}.",
+      "verificationLoadErrorFatal": "Verification could not load. Please email {email}.",
+      "genericError": "We could not confirm your request was sent. Try again or email {email}.",
+      "defaultError": "Your request could not be sent. Please try again.",
+      "sentTitle": "Support request sent",
+      "sentBody": "Thank you for getting in touch. We’ll reply to the email address you provided.",
+      "backHome": "Back to home"
+    }
+  }
+}

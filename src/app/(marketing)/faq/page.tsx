@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { siteUrl } from "~/env";
 import { CONNECTOR_SCOPES } from "~/lib/scopes";
@@ -11,57 +12,6 @@ export const metadata: Metadata = {
     "The questions IT and security teams ask before granting LicenseMeter admin consent: write access, mailbox content, data residency, retention, Entra P1, DPA.",
 };
 
-const FAQS = [
-  {
-    q: "Can LicenseMeter change anything in our tenant?",
-    a: "No. The connector app holds exclusively read-only application permissions. There is no write scope to misuse. Remediation happens through PowerShell scripts we generate for your admins to review and run themselves.",
-  },
-  {
-    q: "Can you read our email, files or Teams messages?",
-    a: "No. The granted scopes cannot access mailbox content, files or messages. Usage reports are consumed as last-activity dates and counts: metadata, never content.",
-  },
-  {
-    q: "Where is our data stored, and for how long?",
-    a: "In Postgres in the EU (Frankfurt). Data is kept only while your tenant is connected: disconnecting the workspace deletes everything immediately, and you can additionally revoke the enterprise application in Entra ID at any time.",
-  },
-  {
-    q: "How are the Adobe, Zoom, Atlassian, Salesforce, OpenAI and Anthropic credentials stored?",
-    a: "Encrypted at rest (AES-256-GCM) and used exclusively to read seat assignments, member lists and daily cost totals, never content or prompts. Disconnecting the connector or the workspace deletes the credentials immediately. The security overview lists what each connector stores.",
-  },
-  {
-    q: "Who in our company can see the data?",
-    a: "Only people the workspace owner invites, in the role they assign. A viewer has read-only access to dashboards and exports (built for finance); an admin can also run syncs, edit prices, change settings and invite people; an owner can additionally manage other owners and disconnect the workspace. Signing in with an account from your tenant grants nothing by itself.",
-  },
-  {
-    q: "Do we need Entra ID P1?",
-    a: "No. With P1, LicenseMeter uses precise last-sign-in timestamps. Without it, detection automatically falls back to Microsoft 365 usage reports. The settings page shows exactly which signals are active for your tenant.",
-  },
-  {
-    q: "Our usage reports have concealed user names. Does it still work?",
-    a: "Yes, with reduced granularity: directory-based findings (disabled accounts, shelfware, guests) stay per-user, usage-based findings become aggregate counts. A Global Admin can enable identifiable report names in the Microsoft 365 admin center; the change is audit-logged.",
-  },
-  {
-    q: "Are you a verified Microsoft publisher?",
-    a: "Not yet. Publisher verification is in progress; until it lands, the consent dialog shows the app id instead of a verified publisher name. Microsoft displays the current verification status directly in the consent dialog, so your admin can confirm it independently of this site. See the security overview for details.",
-  },
-  {
-    q: "Does connecting really require a Global Administrator?",
-    a: `Consent for the connector's Microsoft Graph application permissions can be granted by a Global Administrator or a Privileged Role Administrator. An Application Administrator is not sufficient for Graph application permissions, which is a Microsoft platform rule, not ours. An Application Administrator can also run a one-time instant scan with delegated permissions: no standing access, no stored tokens. Larger organizations can delegate consent for exactly LicenseMeter's ${CONNECTOR_SCOPES.length} read-only permissions to a designated role via an app consent policy; the security overview documents the setup. And you can start without any consent at all: the CSV import computes your waste number from two Microsoft 365 admin center exports.`,
-  },
-  {
-    q: "Do you offer a DPA (AVV)?",
-    a: "Yes. LicenseMeter acts as a data processor under Art. 28 GDPR; a signed DPA is included for every workspace and available before you connect production data.",
-  },
-  {
-    q: "What exactly do you charge for?",
-    a: "LicenseMeter is free to use, including continuous monitoring, nightly syncs, new findings as people join and leave, exports and remediation scripts. There is no subscription, time limit or credit card requirement.",
-  },
-  {
-    q: "We are an MSP. Can we manage several client tenants?",
-    a: `Yes. Each client tenant becomes its own workspace: you start the connect flow, the client's Global Admin completes Microsoft's consent dialog, and the workspace binds to you, with no shared credentials. A portfolio view sorts all your workspaces by monthly waste, each with its own price book and a PDF waste report for the QBR. Every client workspace and the portfolio are free. See the MSP page for details.`,
-  },
-] as const;
-
 const BASE = siteUrl();
 
 /** Stable anchor per question so answers can be deep-linked. */
@@ -71,24 +21,33 @@ const slugify = (s: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const t = await getTranslations("faq");
+  const rawFaqs = t.raw("items") as { q: string; a: string }[];
+  /* One answer carries a runtime placeholder ({scopeCount}) for the number of
+   * connector scopes, since that count isn't static translated copy. */
+  const faqs = rawFaqs.map((item) => ({
+    q: item.q,
+    a: item.a.replace("{scopeCount}", String(CONNECTOR_SCOPES.length)),
+  }));
+
   return (
     <main className="mx-auto max-w-3xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
-        FAQ
+        {t("eyebrow")}
       </p>
       <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
-        The questions that come before consent.
+        {t("heading")}
       </h1>
 
       <h2 id="faq-list-heading" className="sr-only">
-        Questions
+        {t("questionsHeading")}
       </h2>
       <dl
         aria-labelledby="faq-list-heading"
         className="border-line bg-card mt-10 border"
       >
-        {FAQS.map((item) => (
+        {faqs.map((item) => (
           <div
             key={item.q}
             id={slugify(item.q)}
@@ -103,26 +62,27 @@ export default function FaqPage() {
       </dl>
 
       <p className="text-ink-soft mt-8 text-sm">
-        Anything missing?{" "}
+        {t("outro.prefix")}{" "}
         <a
           href={SUPPORT_MAILTO}
           className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
-          Ask directly
+          {t("outro.ask")}
         </a>{" "}
-        or read the{" "}
+        {t("outro.or")}{" "}
         <Link
           href="/security"
           className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
         >
-          security overview
+          {t("outro.security")}
         </Link>
         .
       </p>
 
       <script
         type="application/ld+json"
-        // Static content from the local FAQS const; "<" escaped so nothing can
+        // Mirrors the rendered (translated) Q&A above so structured data never
+        // diverges from what visitors see; "<" escaped so nothing can
         // terminate the script element.
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
@@ -130,7 +90,7 @@ export default function FaqPage() {
             "@graph": [
               {
                 "@type": "FAQPage",
-                mainEntity: FAQS.map((item) => ({
+                mainEntity: faqs.map((item) => ({
                   "@type": "Question",
                   name: item.q,
                   acceptedAnswer: { "@type": "Answer", text: item.a },

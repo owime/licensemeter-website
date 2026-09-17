@@ -1,0 +1,98 @@
+{
+  "security": {
+    "eyebrow": "Security overview",
+    "h1": "Written for the person who has to say yes.",
+    "intro": "LicenseMeter asks for tenant-wide read access, so this page spells out exactly what is granted, what is stored where, and how you leave. Share it with your security team before anyone clicks consent.",
+    "toggleLabel": "Choose language",
+    "access": {
+      "title": "How access works",
+      "body": {
+        "pre": "A Global Administrator of your tenant grants consent once, through Microsoft’s standard admin-consent dialog. That authorizes the “LicenseMeter Connector” application for ",
+        "strong": "application permissions that are read-only without exception",
+        "post": ". LicenseMeter then syncs nightly using its own credential: no service account in your tenant, no agent, no mailbox plugin. You can revoke the application in Entra ID at any time, independently of us."
+      },
+      "scopeWhy": {},
+      "consentNote": "The consent is recorded in your tenant’s audit log. Sign-in to the dashboard itself uses a separate app registration with only openid, profile and email."
+    },
+    "delegate": {
+      "title": "Delegating the consent without standing Global Administrator rights",
+      "body": {
+        "pre": "Tenant-wide admin consent for Microsoft Graph application permissions (the kind listed above) can be granted by a Global Administrator or a Privileged Role Administrator; an Application Administrator is not sufficient for Graph application permissions, a boundary Microsoft sets, not us. Entra ID does let an organization delegate this consent narrowly: an app consent policy pinned to exactly these ",
+        "post": " read-only permissions and to the LicenseMeter connector app, attached to a custom directory role. The one-time setup itself requires a Privileged Role Administrator or Global Administrator and Microsoft Graph PowerShell (the role permission cannot be added in the Entra portal yet) and belongs in your identity team’s review."
+      },
+      "connectorIdNote": "The connector application ID is shown on the connect page and in Microsoft’s consent dialog.",
+      "csv": {
+        "pre": "No role with consent rights at hand today? The ",
+        "linkText": "CSV import",
+        "post": " computes your waste number from two Microsoft 365 admin center exports, with no consent at all. The link signs you in with Microsoft first."
+      }
+    },
+    "never": {
+      "title": "What LicenseMeter never accesses",
+      "items": [
+        "Mailbox content, attachments or calendars",
+        "Files in OneDrive, SharePoint or Teams",
+        "Teams messages or meeting content",
+        "Passwords, credentials or security tokens of your users",
+        "Any write access: LicenseMeter cannot change anything in your tenant"
+      ],
+      "note": "Usage reports are consumed as counts and last-activity dates only: metadata, never content."
+    },
+    "stored": {
+      "title": "What is stored",
+      "items": [
+        "License SKUs with purchased and assigned seat counts",
+        "Directory users: display name, UPN, enabled state, user type, creation date, assigned licenses",
+        "Last sign-in timestamps (when your tenant has Entra ID P1) and per-workload last-activity dates",
+        "The prices you enter in the price book and the findings derived from the above",
+        "If you connect Adobe, Zoom, Atlassian, Salesforce, OpenAI or Anthropic (all optional): seat or console-member emails, status, product assignments and last-login dates where the provider exposes them, plus daily API cost totals for OpenAI and Anthropic; the credentials themselves are stored encrypted (AES-256-GCM) and used read-only",
+        "If you import ChatGPT or Claude member lists (optional CSV paste): the member emails, names, seat types and last-active dates contained in the data you paste",
+        "A per-workspace activity log of exports and administrative actions, deleted with the workspace"
+      ],
+      "note": "Access to a workspace is invite-based. Signing in with an account from your tenant grants nothing by itself; the admin who completed consent decides who sees the data and in which role."
+    },
+    "residency": {
+      "title": "Data residency, retention and deletion",
+      "body": "Customer application data is stored in the EU in a Supabase Postgres database hosted on AWS eu-central-1 (Frankfurt), matching the current Privacy Policy wording. Data is retained only while your tenant is connected. Disconnecting the workspace (Settings → Danger zone) deletes all synced data immediately and irreversibly: users, findings, prices, history. Revoking the enterprise application in your Entra ID additionally cuts our access at the source."
+    },
+    "subprocessors": {
+      "title": "Subprocessors",
+      "note": {
+        "pre": "The definitive subprocessor list is part of the ",
+        "linkText": "DPA",
+        "post": "."
+      }
+    },
+    "dpa": {
+      "title": "DPA / Auftragsverarbeitung",
+      "body": {
+        "pre": "LicenseMeter processes directory data on your behalf, so a data processing agreement under Art. 28 GDPR (AVV) is included for every workspace. The full text is published on our ",
+        "linkText": "Data Processing Agreement",
+        "post": " page, where you can download the pre-signed PDF in English or German, add your details and counter-sign it. No need to email and wait."
+      }
+    },
+    "publisher": {
+      "title": "Publisher verification",
+      "body": "Microsoft publisher verification for the LicenseMeter app registrations is in progress. Until it completes, the consent dialog shows the apps as unverified, and tenants with strict consent policies may block them. Microsoft displays the verification status directly in the consent dialog, so your admin can always confirm the current state independently of this page."
+    },
+    "who": {
+      "title": "Who builds LicenseMeter",
+      "pre": "LicenseMeter is built and maintained by ",
+      "kocLabel": "Ugur Koc",
+      "mid": ", Microsoft MVP for Intune and Security Copilot. The operating company is UgurLabs UG (haftungsbeschränkt) in Düsseldorf, Germany, the same legal entity named in the ",
+      "impressumLabel": "Imprint",
+      "post": " and in every DPA, and the read-only design principles documented on this page apply to the entire product."
+    },
+    "questions": {
+      "title": "Questions",
+      "body": "Security review, pentest coordination or vendor questionnaires: ",
+      "seeAlso": {
+        "pre": ". See also the ",
+        "faqLabel": "FAQ",
+        "mid": " and ",
+        "privacyLabel": "Privacy Policy",
+        "post": "."
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "cookies": {
+    "title": "Cookie Policy",
+    "lastUpdated": "Last updated: September 2026",
+    "sections": {
+      "short": {
+        "title": "In short",
+        "body": "LicenseMeter uses cookies for sign-in, workspace selection and support chat. Crisp keeps your support conversation available as you move between pages. We use cookieless Vercel Web Analytics for reach measurement and do not embed advertising pixels."
+      },
+      "whatAre": {
+        "title": "1. What are cookies?",
+        "body": "Cookies are small text files stored on your device when you visit a website. Among other things, they let an authenticated session persist across page loads. Cookies set by the website you are visiting are first-party cookies; cookies from other providers are third-party cookies. Our support provider Crisp also uses cookies to maintain chat sessions."
+      },
+      "necessary": {
+        "title": "2. Strictly necessary cookies",
+        "intro": "These cookies are essential for the application to work and cannot be switched off. They store no information that could be used for advertising or analytics. The legal basis is Section 25(2) no. 2 TDDDG; the related processing of personal data relies on Art. 6(1)(b) and (f) GDPR.",
+        "table": {
+          "cookie": "Cookie",
+          "purpose": "Purpose",
+          "retention": "Retention",
+          "rows": {
+            "wosSession": {
+              "purpose": "Keeps you signed in to the application (HTTP-only). Set by our authentication provider WorkOS when you sign in; contains a sealed, encrypted session.",
+              "retention": "While you stay signed in (browser limit: 400 days); the session inside is short-lived and refreshed as you use the app."
+            },
+            "lmSession": {
+              "purpose": "Keeps you signed in for the demo workspace and, where Microsoft sign-in is used directly, for the application (HTTP-only).",
+              "retention": "30 days"
+            },
+            "lmOauth": {
+              "purpose": "Protects the sign-in flow (OAuth state / PKCE) against CSRF; active only during the redirect.",
+              "retention": "10 minutes"
+            },
+            "lmWs": {
+              "purpose": "Remembers the workspace you last opened.",
+              "retention": "12 months"
+            }
+          }
+        },
+        "hostPrefixNote": "In production the LicenseMeter session cookies carry the <code>__Host-</code> prefix for added security (e.g. <code>__Host-lm_session</code>)."
+      },
+      "functionality": {
+        "title": "3. Functionality cookies",
+        "p1": "Crisp uses a session cookie (whose name starts with <code>crisp-client/session/</code>) to restore your conversation when you navigate between pages or return later. Crisp documents a default session-cookie lifetime of six months. See <crispLink>Crisp’s cookie policy</crispLink> for its cookie names and purposes.",
+        "p2": "Where additional spam verification is enabled, Cloudflare Turnstile also processes browser information to verify that submissions are legitimate."
+      },
+      "analytics": {
+        "title": "4. Analytics / performance cookies",
+        "body": "We set no analytics cookies. For reach measurement we use Vercel Web Analytics, a cookieless method that records only aggregated, anonymized page views (Art. 6(1)(f) GDPR). No cookies are set, no IP addresses are stored, and no cross-device profiles are built."
+      },
+      "targeting": {
+        "title": "5. Targeting / advertising cookies",
+        "body": "We set no marketing, advertising or tracking cookies, and we embed no advertising or social-media pixels."
+      },
+      "managing": {
+        "title": "6. Managing cookies",
+        "body": "You can view, restrict or delete cookies at any time in your browser settings. Deleting the necessary cookies means you will have to sign in again and your workspace selection is reset. Deleting Crisp cookies can prevent the chat from restoring a previous conversation."
+      },
+      "changes": {
+        "title": "7. Changes to this Cookie Policy",
+        "body": "We update this Cookie Policy when the cookies we use change. The version published on this page applies. Questions: please email {email}."
+      }
+    }
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "compare": {
+    "eyebrow": "Sammenlign",
+    "excel": {
+      "title": "LicenseMeter mot lisensoversikt i Excel",
+      "intro": "Et lisensregneark er gratis, uendelig fleksibelt og lett å legge frem for en revisor, som er grunnen til at nesten alle IT-avdelinger har et. Denne siden handler om de to tingene et ark aldri kan vite: hva som har endret seg siden siste redigering, og om noen faktisk bruker lisensene som står oppført.",
+      "sideBySide": {
+        "heading": "Side om side, dimensjon for dimensjon",
+        "headers": {
+          "dimension": "Dimensjon",
+          "column": "Lisensregneark",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Kostnad",
+            "column": "Gratis, bortsett fra timene som går med til å holde det oppdatert - og de timene er hele produktet.",
+            "licensemeter": "Gratis for alle tenanter, inkludert løpende overvåking og eksport."
+          },
+          "freshness": {
+            "dimension": "Ferskhet",
+            "column": "Nøyaktig den dagen noen oppdaterer det, utdatert dagen etter. Lisenser endres uten at arket får vite om det.",
+            "licensemeter": "Synkronisert hver natt fra kildesystemene, med manuell synkronisering på forespørsel og full synkroniseringshistorikk."
+          },
+          "activitySignal": {
+            "dimension": "Aktivitetssignal",
+            "column": "Ingen. Et regneark registrerer det noen har skrevet inn, ikke om lisensen faktisk har vært i bruk.",
+            "licensemeter": "Kobler lisenstildelinger med innloggingsaktivitet og bruksrapporter per arbeidsflate, slik at inaktive og ubrukte lisenser dukker opp med dokumentasjon."
+          },
+          "staffChanges": {
+            "dimension": "Bemanningsendringer",
+            "column": "Feiler stille. Personer som har sluttet, står oppført som aktive helt til noen husker å redigere raden, og ingen får beskjed om at ingen gjorde det.",
+            "licensemeter": "Deaktiverte kontoer som fortsatt har betalte lisenser, dukker opp automatisk - inkludert Adobe-, Zoom- eller andre tilkoblede tjenester de samme personene beholdt."
+          },
+          "perSeatCost": {
+            "dimension": "Kostnad per lisens",
+            "column": "Formler noen bygde en gang, som nå må oppdateres hver gang priser, nivåer eller lisensmiks endrer seg.",
+            "licensemeter": "En redigerbar prisliste per tenant priser hvert funn i euro per måned, forhåndsutfylt med listepris-estimater."
+          },
+          "coverage": {
+            "dimension": "Dekning",
+            "column": "Uansett hvilke kolonner noen har lagt til. Hver nye leverandør betyr en ny fane og mer manuell registrering.",
+            "licensemeter": "Koblinger krysssjekker Microsoft 365-, Adobe-, Zoom-, Atlassian-, Salesforce-, OpenAI-, Anthropic-, ChatGPT- og Claude-lisenser mot Entra ID i samme gjennomgang."
+          },
+          "findingsWorkflow": {
+            "dimension": "Håndtering av funn",
+            "column": "Cellefarger og kommentarer, avstemt på tvers av kopiene av filen som uunngåelig oppstår.",
+            "licensemeter": "Funn består på tvers av synkroniseringer med en godkjenn- og gjenåpne-arbeidsflyt, slik at beslutninger overlever neste oppdatering."
+          },
+          "financeHandoff": {
+            "dimension": "Overlevering til økonomi",
+            "column": "Allerede et regneark, som er genuint praktisk - men tallene er bare like ferske som siste redigering.",
+            "licensemeter": "Eksporter alle funn til CSV med ett klikk, med eier, regel og månedlig eurokostnad, oppdatert etter siste natts synkronisering."
+          },
+          "remediation": {
+            "dimension": "Utbedring",
+            "column": "En gjøremålskolonne. Selve opprydningen skjer et annet sted.",
+            "licensemeter": "Genererer PowerShell-skriptet for utbedring av lisensene du velger. IT-avdelingen din gjennomgår og kjører det; LicenseMeter skriver aldri selv til tenanten."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "Når et regneark er nok",
+        "body": "Ærlig talt: oftere enn leverandører liker å innrømme. En håndfull abonnementer, én person som eier og faktisk vedlikeholder arket, en årlig gjennomgang før fornyelse - et regneark takler alt dette gratis. Det er også genuint godt til det det er laget for: kontraktdata som fornyelsesdatoer, eiere og notater, som ingen API noensinne vil fortelle deg. Arket svikter først når det blir bedt om å være et overvåkingssystem, fordi det ikke kan observere noe."
+      },
+      "whatAdds": {
+        "heading": "Hva LicenseMeter legger til arket",
+        "items": {
+          "liveSync": {
+            "title": "Løpende synkronisering i stedet for manuell registrering",
+            "body": "Katalogkontoer, lisenstildelinger og lisenser fra tilkoblede tjenester leses fra kildesystemene hver natt, skrivebeskyttet. Ingen taster inn på nytt, så ingenting blir stille utdatert, og synkroniseringshistorikken viser nøyaktig når hvert øyeblikksbilde ble tatt."
+          },
+          "findingsNotRows": {
+            "title": "Funn, ikke rader",
+            "body": "Et ark lister lisenser; LicenseMeter kobler hver lisens med innloggings- og bruksaktivitet og flagger dem som er bortkastet: personer som har sluttet men fortsatt er lisensiert, lisenser som er inaktive i 90 dager eller aldri åpnet, ubrukte betalte lisenser, ubrukt Copilot, lisensierte gjester. Hvert funn navngir kontoen, regelen og dokumentasjonen."
+          },
+          "priceBook": {
+            "title": "En prisliste som gjør regnestykket",
+            "body": "Hvert funn får et beløp i euro per måned fra en redigerbar prisliste per tenant, forhåndsutfylt med listepris-estimater og justerbar til dine forhandlede priser. Når en pris endres, redigerer du den én gang, og alle tall regnes om på nytt - ingen formelvedlikehold."
+          },
+          "workflowExports": {
+            "title": "En arbeidsflyt, og eksportene dine tilbake",
+            "body": "Funn består på tvers av synkroniseringer med godkjenn- og gjenåpne-handlinger, slik at beslutninger ikke går tapt i en kopi av filen. Og fordi økonomi fortsatt lever i regneark, eksporteres alt tilbake: en CSV med alle funn og deres månedlige kostnad, pluss et generert PowerShell-skript for selve opprydningen."
+          }
+        }
+      },
+      "startSection": {
+        "heading": "Start med regnearket du allerede har",
+        "bodyBefore": "Hvis du sporer lisenser i et ark, jobber du allerede med eksporter - så det naturlige første steget krever ikke administratorsamtykke i det hele tatt. Med",
+        "linkText": "CSV-import",
+        "bodyAfter": "beregnes tallet ditt for bortkastede lisenser fra to eksporter fra Microsoft 365 admin-senter, helt uten samtykke. Lenken logger deg inn med Microsoft først. Hvis tallet rettferdiggjør det, kan du koble til skrivebeskyttet etterpå og la den nattlige synkroniseringen overta for opplastingene."
+      },
+      "finalCta": {
+        "heading": "Behold arket for kontrakter. Slutt å be det overvåke bruk.",
+        "bodyBefore": "Koble til skrivebeskyttet, få aktivitetskoblede, prissatte funn på minutter, og eksporter dem rett tilbake til formatet økonomi allerede leser.",
+        "linkText": "Sikkerhetsoversikten",
+        "bodyAfter": "lister alle rettigheter på forhånd.",
+        "primaryLabel": "Kjør min gratis skanning",
+        "note": "Gratis skanninger og løpende overvåking. Ingen kredittkort, kun skrivebeskyttet tilgang."
+      }
+    },
+    "m365AdminCenter": {
+      "title": "LicenseMeter mot Microsoft 365 admin-senter",
+      "intro": "Admin-senteret er inkludert, og for det det hevder å gjøre er det autoritativt: Fakturering > Lisenser er kilden til sannhet for tildelingstall, og Rapporter > Bruk svarer på de fleste stikkprøvespørsmål. Denne siden handler om spørsmålene det slutter å svare på når jobben er å finne sløsing, prissette den og overvåke den måned etter måned.",
+      "sideBySide": {
+        "heading": "Side om side, dimensjon for dimensjon",
+        "headers": {
+          "dimension": "Dimensjon",
+          "column": "M365 admin-senter",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Kostnad",
+            "column": "Inkludert i alle tenanter. Den eneste kostnaden er administratortiden det tar å gå gjennom rapportene.",
+            "licensemeter": "Gratis for alle tenanter, inkludert løpende overvåking og eksport."
+          },
+          "assignmentCounts": {
+            "dimension": "Tildelingstall",
+            "column": "Autoritativt. Fakturering > Lisenser er kilden til sannhet for tildelte og utildelte lisenser per produkt.",
+            "licensemeter": "Leses hver natt fra de samme Graph-dataene. Utildelte betalte lisenser vises ikke bare som et tall: de blir prissatte funn om hylleplasslisenser."
+          },
+          "activityPerUser": {
+            "dimension": "Aktivitet per bruker",
+            "column": "Rapporter > Bruk viser siste aktivitetsdato per arbeidsflate, én rapport om gangen. Microsoft dokumenterer at du ikke kan generere en rapport for én enkelt konto som viser hvilke tjenester den bruker.",
+            "licensemeter": "Én nattlig synkronisering kobler katalogstatus, lisenstildelinger, innloggingsaktivitet og bruk av Exchange, OneDrive, SharePoint og Teams til ett bilde per bruker."
+          },
+          "userNames": {
+            "dimension": "Brukernavn i rapporter",
+            "column": "Skjult som standard siden september 2021. En global administrator kan gjenaktivere identifiserbare navn for hele tenanten under Org.innstillinger > Rapporter.",
+            "licensemeter": "Leser de samme rapportene, så den samme innstillingen gjelder. Med skjulte navn degraderes bruksbaserte funn til aggregerte tall, mens katalogbaserte funn fortsatt er per bruker, og innstillingssiden forklarer bryteren."
+          },
+          "euroFigures": {
+            "dimension": "Eurobeløp",
+            "column": "Lisenstall og brukstall, uten kostnad knyttet til noen av dem. Det finnes ikke noe Microsoft-API som eksponerer dine forhandlede lisenspriser.",
+            "licensemeter": "Hvert funn får et månedlig eurobeløp fra en redigerbar prisliste per tenant, forhåndsutfylt med listepris-estimater."
+          },
+          "cadenceAlerts": {
+            "dimension": "Frekvens og varsler",
+            "column": "Rapportene er der når du går og ser. Ingenting sender deg e-post når en ny inaktiv lisens begynner å koste.",
+            "licensemeter": "Nattlig synkronisering, et ukentlig sammendrag med sløsingstallet og de største åpne funnene, og en månedlig styrerapport i PDF."
+          },
+          "offboardingLeaks": {
+            "dimension": "Lekkasjer ved avslutning",
+            "column": "Du kan filtrere brukere som er sperret for innlogging på siden Aktive brukere og sjekke lisensene deres én etter én. Ingenting viser mønsteret for deg.",
+            "licensemeter": "Deaktiverte kontoer som fortsatt har betalte lisenser, dukker opp automatisk som prissatte funn - inkludert lisenser fra tilkoblede tjenester de samme personene fortsatt har."
+          },
+          "financeHandoff": {
+            "dimension": "Overlevering til økonomi",
+            "column": "Hver bruksrapport eksporterer sin egen CSV, per arbeidsflate, anonym som standard og uten kostnadskolonner.",
+            "licensemeter": "Én CSV med alle funn med eier, regel og månedlig eurokostnad, skrevet for økonomisiden av fornyelsessamtalen."
+          },
+          "remediation": {
+            "dimension": "Utbedring",
+            "column": "Pek og klikk, lisens for lisens, eller skript du skriver og vedlikeholder selv.",
+            "licensemeter": "Genererer PowerShell-skriptet for utbedring av lisensene du velger. IT-avdelingen din gjennomgår og kjører det; LicenseMeter skriver aldri selv til tenanten."
+          },
+          "beyondM365": {
+            "dimension": "Utover Microsoft 365",
+            "column": "Stopper ved Microsoft-fakturaen. Adobe, Zoom, Atlassian, Salesforce og AI-konsollene har hver sine egne admin-sider.",
+            "licensemeter": "Koblinger krysssjekker Adobe-, Zoom-, Atlassian-, Salesforce-, OpenAI-, Anthropic-, ChatGPT- og Claude-lisenser mot Entra ID i samme gjennomgang."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "Når admin-senteret er nok",
+        "body": "Ærlig talt: for mye av det daglige arbeidet. Kjøpe og tildele lisenser, sjekke tall før en avregning, en rask titt på om Teams-bruken har endret seg, en tenant liten nok til å overskue - admin-senteret gjør alt dette, inkludert og autoritativt. Hvert tall LicenseMeter viser starter livet i de samme Graph-dataene admin-senteret leser. Forskjellen er ikke dataene; det er koblingen, eurobeløpet og overvåkingen."
+      },
+      "whatAdds": {
+        "heading": "Det admin-senteret ikke gjør",
+        "items": {
+          "perUserJoin": {
+            "title": "Koblingen per bruker",
+            "body": "Bruksrapportene er organisert per arbeidsflate, ikke per person, og Microsofts egen dokumentasjon sier at du ikke kan generere en rapport der du taster inn én konto og får alt den bruker. Å svare på «hvilke lisensierte personer har vært inaktive overalt i 90 dager?» betyr å eksportere flere CSV-er og koble dem sammen for hånd. Den koblingen er nettopp det LicenseMeter vedlikeholder for deg, hver natt."
+          },
+          "euroPerSeat": {
+            "title": "Et eurobeløp per bortkastet lisens",
+            "body": "Bruksrapporter viser tall, ikke kostnader, og ingen Microsoft-API eksponerer prisene tenanten din faktisk betaler. LicenseMeter tetter det gapet med en redigerbar prisliste per tenant, forhåndsutfylt med listepris-estimater og justerbar til dine forhandlede priser, slik at hvert funn kommer som euro per måned i stedet for et radtall."
+          },
+          "watching": {
+            "title": "Overvåking, ikke bare titting",
+            "body": "Admin-senteret svarer når du spør; det tar aldri initiativ. Nye personer som slutter men beholder lisenser, og nye inaktive lisenser koster stille mellom besøkene. LicenseMeter synkroniserer hver natt, beholder funn på tvers av kjøringer med en godkjenn- og gjenåpne-arbeidsflyt, sender et ukentlig sammendrag på e-post og leverer en månedlig PDF-rapport, slik at revisjonen blir en prosess i stedet for et ærend."
+          },
+          "concealedNames": {
+            "title": "Skjulte navn, på begge sider",
+            "body": "Siden september 2021 skjuler Microsoft brukernavn i bruksrapporter som standard, både i admin-senteret og i Graph-API-et. LicenseMeter er underlagt den samme innstillingen - ingen leverandør kan lese seg rundt den - men den degraderer regel for regel: bruksbaserte funn blir aggregerte tall, mens katalogbaserte funn som deaktiverte kontoer, hylleplasslisenser og gjester fortsatt fungerer per bruker, og innstillingssiden forklarer hvordan en global administrator gjenaktiverer identifiserbare navn for begge verktøyene samtidig."
+          }
+        }
+      },
+      "finalCta": {
+        "heading": "Behold admin-senteret. Legg til den koblede, prissatte oversikten.",
+        "bodyBefore": "Koble til skrivebeskyttet, og den gratis skanningen gjør om rapportene du allerede har til funn per lisens med et månedlig eurobeløp knyttet til. ",
+        "linkText": "Sikkerhetsoversikten",
+        "bodyAfter": "lister alle rettigheter på forhånd.",
+        "primaryLabel": "Kjør min gratis skanning",
+        "note": "Gratis skanninger og løpende overvåking. Ingen kredittkort, kun skrivebeskyttet tilgang."
+      }
+    },
+    "powershellAudit": {
+      "title": "LicenseMeter mot en manuell PowerShell-revisjon",
+      "introBefore": "Hvis du kan skrive",
+      "introMiddle": "og",
+      "introAfter": "-enlinjere, kan du revidere lisenser gratis, og for en engangssjekk er det et helt godt svar. Denne siden handler om hva som endrer seg når revisjonen må kobles på tvers av signaler, prissettes i euro og gjentas hver måned.",
+      "sideBySide": {
+        "heading": "Side om side, dimensjon for dimensjon",
+        "headers": {
+          "dimension": "Dimensjon",
+          "column": "Manuell PowerShell",
+          "licensemeter": "LicenseMeter"
+        },
+        "rows": {
+          "cost": {
+            "dimension": "Kostnad",
+            "column": "Gratis, bortsett fra timene det tar å skrive, kjøre og tolke resultatet.",
+            "licensemeter": "Gratis for alle tenanter, inkludert løpende overvåking og eksport."
+          },
+          "dataGathering": {
+            "dimension": "Datainnsamling",
+            "column": "Separate kall: Get-MgUser for kontoer, Get-MgSubscribedSku for lisensantall, revisjonslogger for innlogginger, bruksrapporter per arbeidsflate. Du kobler resultatene selv.",
+            "licensemeter": "Én nattlig synkronisering kobler katalogdata, lisenstildelinger, innloggingsaktivitet og bruksrapporter per arbeidsflate til ett bilde per bruker."
+          },
+          "signInActivity": {
+            "dimension": "Innloggingsaktivitet",
+            "column": "signInActivity krever Entra ID P1. Uten det må skriptet ditt falle tilbake på arbeidsflate-rapporter, og du må bygge den løsningen selv.",
+            "licensemeter": "Samme Graph-begrensning, håndtert for deg: uten P1 faller inaktivitetsdeteksjon automatisk tilbake på bruksrapporter per arbeidsflate."
+          },
+          "euroFigures": {
+            "dimension": "Eurobeløp",
+            "column": "SKU-GUID-er og delnumre. Å tilordne dem til hva en lisens faktisk koster er et manuelt oppslag du gjentar hver gang.",
+            "licensemeter": "Hvert funn får et månedlig eurobeløp fra en redigerbar prisliste per tenant, forhåndsutfylt med listepris-estimater."
+          },
+          "cadence": {
+            "dimension": "Frekvens",
+            "column": "Kjører når noen husker å kjøre det. Mellom kjøringer koster nye personer som slutter og nye inaktive lisenser upåaktet.",
+            "licensemeter": "Nattlig synkronisering pluss manuell synkronisering, med full synkroniseringshistorikk. Sløsing overvåkes måned etter måned, ikke stikkprøves én gang."
+          },
+          "findingsWorkflow": {
+            "dimension": "Håndtering av funn",
+            "column": "Konsollutskrift eller en CSV du sorterer i et regneark. Å kjøre skriptet på nytt glemmer det du allerede har bestemt.",
+            "licensemeter": "Funn består med en godkjenn- og gjenåpne-arbeidsflyt, slik at lisensene du allerede har håndtert forblir håndtert på tvers av synkroniseringer."
+          },
+          "financeHandoff": {
+            "dimension": "Overlevering til økonomi",
+            "column": "Du formaterer eksporten selv og forklarer kolonnene i e-posten.",
+            "licensemeter": "Eksporter alle funn til CSV med ett klikk, med månedlig kostnad, skrevet for økonomisiden av fornyelsessamtalen."
+          },
+          "remediation": {
+            "dimension": "Utbedring",
+            "column": "Du skriver opprydningsskriptet, og du eier hver linje av det.",
+            "licensemeter": "Genererer PowerShell-skriptet for deg. IT-avdelingen din gjennomgår og kjører det; LicenseMeter skriver aldri selv til tenanten."
+          },
+          "beyondM365": {
+            "dimension": "Utover Microsoft 365",
+            "column": "Graph-kommandoer stopper ved tenant-grensen. Adobe-, Zoom- eller Salesforce-lisenser krever egne skript mot separate admin-API-er.",
+            "licensemeter": "Koblinger krysssjekker Adobe-, Zoom-, Atlassian-, Salesforce-, OpenAI-, Anthropic-, ChatGPT- og Claude-lisenser mot Entra ID i samme gjennomgang."
+          }
+        }
+      },
+      "whenEnough": {
+        "heading": "Når et skript er nok",
+        "body": "Ærlig talt: ofte. En tenant liten nok til å overskue, ett enkelt spørsmål som «hvilke deaktiverte kontoer har fortsatt lisenser?», en engangsopprydning før en fornyelse, eller et team som allerede vedlikeholder Graph-skript og trives med det - i alle disse tilfellene er PowerShell gratis, gjennomsiktig og helt under din kontroll. LicenseMeter eksporterer sin utbedring som PowerShell nettopp fordi vi forventer at IT-avdelingen din fortsetter å jobbe slik: det utfyller skallet, det erstatter det ikke."
+      },
+      "whatAdds": {
+        "heading": "Det et skript ikke lett kan gi deg",
+        "items": {
+          "joinMaintained": {
+            "title": "Koblingen, vedlikeholdt",
+            "body": "Den vanskelige delen er ikke en enkelt kommando, det er å koble kontoer, lisenstildelinger, innloggingsaktivitet og bruk av Exchange, OneDrive, SharePoint og Teams per bruker, og holde den koblingen fungerende når tenanten mangler Entra ID P1 eller skjuler rapportnavn, Microsofts standard siden 2021. LicenseMeter oppdager begge tilfellene og degraderer regel for regel i stedet for å feile kjøringen."
+          },
+          "memoryBetweenRuns": {
+            "title": "Minne mellom kjøringer",
+            "body": "Et skript produserer et øyeblikksbilde. Overvåking krever tilstand: hvilke funn som er nye siden forrige måned, hvilke du har godkjent, hvilke som kom tilbake. LicenseMeter beholder funn på tvers av nattlige synkroniseringer med godkjenn- og gjenåpne-handlinger, slik at revisjonen blir en prosess i stedet for et årlig arkeologiprosjekt."
+          },
+          "numbersFinanceAccepts": {
+            "title": "Tall økonomi godtar",
+            "body": "En liste over utdaterte SKU-tildelinger starter en diskusjon; et månedlig eurobeløp starter en beslutning. Prislisten per tenant priser hvert funn, forhåndsutfylt med listepris-estimater og redigerbar til dine forhandlede priser, og CSV-eksporten gir økonomi listen i sitt eget format."
+          },
+          "saferPermissions": {
+            "title": "En tryggere rettighetsmodell",
+            "bodyBefore": "Ad hoc-skript kjører med hvilke rettigheter admin-kontoen din enn har. LicenseMeter bruker nøyaktig",
+            "bodyMiddle": "skrivebeskyttede applikasjonsrettigheter (",
+            "bodyMiddle2": "), tildelt én gang via administratorsamtykke og listet fullstendig på",
+            "linkText": "sikkerhetsoversikten",
+            "bodyAfter": ". Ingen skriverettighet finnes."
+          }
+        }
+      },
+      "finalCta": {
+        "heading": "Behold skriptene dine. Slipp koblingsarbeidet.",
+        "body": "Koble til skrivebeskyttet, få de koblede, prissatte funnene på minutter, og ta med deg et generert PowerShell-skript teamet ditt gjennomgår og kjører.",
+        "primaryLabel": "Kjør min gratis skanning",
+        "note": "Gratis skanninger og løpende overvåking. Ingen kredittkort, kun skrivebeskyttet tilgang."
+      }
+    }
+  }
+}

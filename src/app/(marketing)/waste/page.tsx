@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { SignInButtons } from "~/components/SignInButtons";
 import { DEMO_FIGURES, demoEuros } from "~/lib/demoFigures";
 
-import { WASTE_EXPLAINERS } from "./content";
+import { buildWasteExplainers } from "./content";
 
 export const metadata: Metadata = {
   title: "Microsoft 365 license waste patterns",
@@ -31,29 +32,27 @@ const INDEX_LD = {
   ],
 };
 
-export default function WasteIndexPage() {
+export default async function WasteIndexPage() {
   const demoEnabled = isDemoMode();
   const signInOk = signInEnabled();
   const signInHref = signInPath();
+  const t = await getTranslations("waste");
+  const explainers = buildWasteExplainers(t);
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
-        Waste patterns
+        {t("index.eyebrow")}
       </p>
       <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
-        The six ways Microsoft 365 tenants pay for nothing
+        {t("index.h1")}
       </h1>
       <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
-        License waste is not one problem, it is a handful of distinct patterns
-        with distinct causes and distinct detection signals. Each explainer
-        below covers one pattern: why it happens, how to detect it yourself with
-        Graph PowerShell, and how LicenseMeter&rsquo;s detection rules find and
-        price it automatically.
+        {t("index.intro")}
       </p>
 
       <div className="border-line bg-line mt-10 grid gap-px border sm:grid-cols-2">
-        {WASTE_EXPLAINERS.map((entry) => (
+        {explainers.map((entry) => (
           <Link
             key={entry.slug}
             href={`/waste/${entry.slug}`}
@@ -66,7 +65,7 @@ export default function WasteIndexPage() {
               {entry.summary}
             </p>
             <p className="text-ink mt-4 text-sm font-medium underline underline-offset-4">
-              Read the explainer
+              {t("index.readExplainer")}
             </p>
           </Link>
         ))}
@@ -74,42 +73,43 @@ export default function WasteIndexPage() {
 
       <section className="border-line bg-card mt-14 border px-6 py-6">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          What the patterns add up to
+          {t("index.summaryHeading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-3xl text-sm leading-relaxed">
-          The sample tenant of {DEMO_FIGURES.users} people shows{" "}
-          <span className="tnum text-waste-text font-mono">
-            € {demoEuros(DEMO_FIGURES.monthlyWasteCents)}
-          </span>{" "}
-          a month in waste across {DEMO_FIGURES.findingsCount} findings, every
-          one priced from an editable per-tenant price book prefilled with
-          list-price estimates. The{" "}
-          <Link
-            href="/roi"
-            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-          >
-            waste calculator
-          </Link>{" "}
-          turns your own seat count and cost per seat into an estimate, and the{" "}
-          <Link
-            href="/compare/powershell-audit"
-            className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
-          >
-            PowerShell comparison
-          </Link>{" "}
-          covers when a script is enough and when it is not.
+          {t.rich("index.summaryText", {
+            users: DEMO_FIGURES.users,
+            amount: demoEuros(DEMO_FIGURES.monthlyWasteCents),
+            findings: DEMO_FIGURES.findingsCount,
+            waste: (chunks) => (
+              <span className="tnum text-waste-text font-mono">{chunks}</span>
+            ),
+            roi: (chunks) => (
+              <Link
+                href="/roi"
+                className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+              >
+                {chunks}
+              </Link>
+            ),
+            psc: (chunks) => (
+              <Link
+                href="/compare/powershell-audit"
+                className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </section>
 
       {/* Final CTA band, same pattern as /roi and /compare/powershell-audit. */}
       <section className="border-line mt-14 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
-          Find all six patterns in your tenant.
+          {t("index.ctaHeading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
-          Connect read-only and the free scan checks every pattern on this page
-          against your directory, license assignments, sign-in activity and
-          usage reports.
+          {t("index.ctaText")}
         </p>
         <div className="mt-8">
           <SignInButtons
@@ -117,12 +117,9 @@ export default function WasteIndexPage() {
             signInHref={signInHref}
             demoEnabled={demoEnabled}
             showNote={false}
-            primaryLabel="Run my free scan"
+            primaryLabel={t("index.primaryLabel")}
           />
-          <p className="text-ink-faint mt-3 text-xs">
-            Free scans and continuous monitoring. No credit card, read-only
-            access.
-          </p>
+          <p className="text-ink-faint mt-3 text-xs">{t("index.ctaNote")}</p>
         </div>
       </section>
 

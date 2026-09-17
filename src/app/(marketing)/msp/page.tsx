@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { isDemoMode, signInEnabled, signInPath, siteUrl } from "~/env";
 import { buttonClass } from "~/components/ui";
@@ -12,50 +13,7 @@ export const metadata: Metadata = {
     "LicenseMeter for Microsoft-centric MSPs: a portfolio of client tenants sorted by waste, admin consent without shared credentials, per-client price books and a PDF waste report for every QBR.",
 };
 
-const STEPS = [
-  {
-    n: "01",
-    title: "You start the flow",
-    body: "Sign in with your own account and start the connect flow for the client tenant. No client credentials change hands at any point.",
-  },
-  {
-    n: "02",
-    title:
-      "Their Global Administrator (or Privileged Role Administrator) consents",
-    body: "The client's admin completes Microsoft's standard admin-consent dialog: read-only application permissions, recorded in their audit log.",
-  },
-  {
-    n: "03",
-    title: "You own the workspace",
-    body: "The workspace binds to you the moment consent lands, and the first sync starts. The client can revoke the enterprise app in Entra ID at any time.",
-  },
-] as const;
-
-const FEATURES = [
-  {
-    title: "Portfolio, sorted by waste",
-    body: "Seats, spend, monthly waste, open findings and sync health for every client workspace in one table, sorted by waste so you open the right tenant first.",
-  },
-  {
-    title: "A price book per client",
-    body: "Each workspace carries its own prices and currency: list-price estimates prefilled, the client's negotiated rates editable per SKU. Findings are priced in their numbers, not ours.",
-  },
-  {
-    title: "The QBR deliverable",
-    body: "A branded PDF waste report per tenant: spend, waste and every finding with its monthly cost. Plus CSV exports for finance and generated PowerShell scripts the client's IT reviews and runs.",
-  },
-  {
-    title: "A digest that does the chasing",
-    body: "Each workspace emails its owners and admins a weekly digest with the waste number and the largest open findings. Clients see progress between QBRs without logging in.",
-  },
-] as const;
-
-const TRUST_ITEMS = [
-  "Read-only application permissions (no write scope exists)",
-  "Remediation ships as PowerShell scripts, run by the client's IT",
-  "EU data residency (Postgres, Frankfurt)",
-  "Disconnecting a workspace deletes everything",
-] as const;
+const STEP_NUMBERS = ["01", "02", "03"] as const;
 
 const BASE = siteUrl();
 
@@ -82,10 +40,12 @@ const Ctas = ({
   demoEnabled,
   signInOk,
   startHref,
+  t,
 }: {
   demoEnabled: boolean;
   signInOk: boolean;
   startHref: string;
+  t: Awaited<ReturnType<typeof getTranslations>>;
 }) => (
   <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
     {signInOk ? (
@@ -93,20 +53,20 @@ const Ctas = ({
         href={startHref}
         className={buttonClass("primary", "w-full sm:w-auto")}
       >
-        Start free
+        {t("cta.startFree")}
       </a>
     ) : (
       <a
         href={SUPPORT_MAILTO}
         className={buttonClass("primary", "w-full sm:w-auto")}
       >
-        Talk to us
+        {t("cta.talkToUs")}
       </a>
     )}
     {demoEnabled && (
       <form action="/api/auth/demo" method="post">
         <button className={buttonClass("secondary", "w-full sm:w-auto")}>
-          Open the live demo
+          {t("cta.openDemo")}
         </button>
       </form>
     )}
@@ -115,55 +75,57 @@ const Ctas = ({
         href={SUPPORT_MAILTO}
         className="text-brand-text inline-flex min-h-11 items-center justify-center text-sm font-medium underline underline-offset-4 hover:opacity-80 sm:justify-start"
       >
-        Talk to us
+        {t("cta.talkToUs")}
       </a>
     )}
   </div>
 );
 
-export default function MspPage() {
+export default async function MspPage() {
+  const t = await getTranslations("msp");
   const demoEnabled = isDemoMode();
   const signInOk = signInEnabled();
   /* Land on the MSP portfolio: create the account, then attach the first
    * client. Same returnTo pattern the homepage use. */
   const startHref = `${signInPath()}?returnTo=${encodeURIComponent("/app/portfolio")}`;
 
+  const steps = t.raw("steps.items") as { title: string; body: string }[];
+  const features = t.raw("features") as { title: string; body: string }[];
+  const trustItems = t.raw("trust.items") as string[];
+
   return (
     <main className="mx-auto max-w-5xl px-6 pt-6 pb-24">
       <p className="text-brand-text text-xs font-medium tracking-[0.2em] uppercase">
-        For managed service providers
+        {t("eyebrow")}
       </p>
       <h1 className="font-display mt-4 text-4xl tracking-tight text-balance">
-        Every client tenant. One waste ledger.
+        {t("heading")}
       </h1>
       <p className="text-ink-soft mt-4 max-w-2xl text-lg leading-relaxed">
-        You run Microsoft 365 for five, twenty, fifty clients. LicenseMeter
-        gives every client tenant its own read-only workspace, and gives you one
-        portfolio, sorted by what each client wastes per month.
+        {t("intro")}
       </p>
       <div className="mt-8">
         <Ctas
           demoEnabled={demoEnabled}
           signInOk={signInOk}
           startHref={startHref}
+          t={t}
         />
         {signInOk && (
-          <p className="text-ink-faint mt-3 text-xs">
-            Sign in, connect your first client read-only, and see their waste
-            number free. Add client tenants as you go, with no charge and no
-            credit card.
-          </p>
+          <p className="text-ink-faint mt-3 text-xs">{t("cta.note")}</p>
         )}
       </div>
 
       <section className="mt-14">
         <h2 className="font-display text-2xl tracking-tight">
-          Connecting a client takes one consent.
+          {t("steps.heading")}
         </h2>
         <div className="mt-8 grid gap-10 md:grid-cols-3">
-          {STEPS.map((step) => (
-            <div key={step.n}>
-              <div className="text-brand-text font-mono text-xs">{step.n}</div>
+          {steps.map((step, index) => (
+            <div key={step.title}>
+              <div className="text-brand-text font-mono text-xs">
+                {STEP_NUMBERS[index]}
+              </div>
               <h3 className="font-display mt-3 text-xl tracking-tight">
                 {step.title}
               </h3>
@@ -177,25 +139,24 @@ export default function MspPage() {
 
       <section className="border-line bg-card mt-14 border px-6 py-6">
         <h2 className="text-ink-faint text-xs font-medium tracking-[0.18em] uppercase">
-          The finding your clients pay you to catch
+          {t("finding.heading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-3xl text-sm leading-relaxed">
-          Offboarding is where client money leaks. LicenseMeter cross-checks
-          every Adobe, Zoom, Atlassian, Salesforce, OpenAI, Anthropic, ChatGPT
-          and Claude seat against the client&rsquo;s directory, so the account
-          you disabled months ago surfaces with the paid seats it still holds.
-          The live demo tenant shows the pattern: {DEMO_FIGURES.leaverCount}{" "}
-          ex-employees still licensed, {DEMO_FIGURES.crossVendorLeaverCount} of
-          them in connected apps. That&rsquo;s{" "}
+          {t("finding.intro")}{" "}
+          {t("finding.stats", {
+            leaverCount: DEMO_FIGURES.leaverCount,
+            crossVendorCount: DEMO_FIGURES.crossVendorLeaverCount,
+          })}{" "}
+          {t("finding.thats")}{" "}
           <span className="tnum text-waste-text font-mono">
             € {demoEuros(DEMO_FIGURES.byCategory.leavers)}
           </span>{" "}
-          a month for people who already left.
+          {t("finding.suffix")}
         </p>
       </section>
 
       <section className="border-line bg-line mt-14 grid gap-px border sm:grid-cols-2">
-        {FEATURES.map((f) => (
+        {features.map((f) => (
           <div key={f.title} className="bg-card px-6 py-6">
             <h2 className="font-display text-xl tracking-tight">{f.title}</h2>
             <p className="text-ink-soft mt-3 text-sm leading-relaxed">
@@ -207,10 +168,10 @@ export default function MspPage() {
 
       <section className="mt-14">
         <h2 className="font-display text-2xl tracking-tight">
-          Built to pass your client&rsquo;s security review.
+          {t("trust.heading")}
         </h2>
         <ul className="text-ink-soft mt-4 flex flex-col gap-2 text-sm">
-          {TRUST_ITEMS.map((item) => (
+          {trustItems.map((item) => (
             <li key={item} className="flex gap-3">
               <span aria-hidden="true" className="text-moss mt-0.5">
                 ·
@@ -220,50 +181,47 @@ export default function MspPage() {
           ))}
         </ul>
         <p className="text-ink-soft mt-4 text-sm">
-          The{" "}
+          {t("trust.securityPrefix") ? `${t("trust.securityPrefix")} ` : ""}
           <Link
             href="/security"
             className="text-ink hover:text-brand-text font-medium underline underline-offset-4"
           >
-            security overview
+            {t("trust.securityLinkLabel")}
           </Link>{" "}
-          lists every granted scope and what is stored. It is written to be
-          forwarded to the client&rsquo;s security team as is.
+          {t("trust.securitySuffix")}
         </p>
       </section>
 
       <section className="mt-14">
         <h2 className="font-display text-2xl tracking-tight">
-          Every client tenant, free.
+          {t("free.heading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-2xl text-sm leading-relaxed">
-          Connect your client tenants, switch between their workspaces and
-          review your portfolio in one place. Monitoring, reports and exports
-          are included for every connected workspace.
+          {t("free.body")}
         </p>
         <div className="mt-8">
           <Ctas
             demoEnabled={demoEnabled}
             signInOk={signInOk}
             startHref={startHref}
+            t={t}
           />
         </div>
       </section>
 
       <section className="border-line mt-14 border-t pt-10">
         <h2 className="font-display text-3xl tracking-tight text-balance">
-          Bring your worst tenant.
+          {t("final.heading")}
         </h2>
         <p className="text-ink-soft mt-3 max-w-xl leading-relaxed">
-          Walk through the demo workspace first, then connect the client you
-          suspect most. The first scan is free, read-only, and takes one
-          consent.
+          {t("final.body")}
         </p>
         <div className="mt-8">
           <Ctas
             demoEnabled={demoEnabled}
             signInOk={signInOk}
             startHref={startHref}
+            t={t}
           />
         </div>
       </section>
