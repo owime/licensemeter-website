@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { ButtonLink } from "~/components/ui";
 
@@ -14,6 +15,7 @@ import { ButtonLink } from "~/components/ui";
 export const HeaderAuthCta = () => {
   const [signedIn, setSignedIn] = useState(false);
   const german = usePathname().startsWith("/de/");
+  const t = useTranslations("headerAuthCta");
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -36,17 +38,19 @@ export const HeaderAuthCta = () => {
      brand + CTA + burger on one line through the 320px reflow target. */
   return signedIn ? (
     <ButtonLink href="/app" variant="ink">
-      <span className="min-[341px]:hidden">App</span>
-      <span className="hidden min-[341px]:inline sm:hidden">Dashboard</span>
+      <span className="min-[341px]:hidden">{t("appShort")}</span>
+      <span className="hidden min-[341px]:inline sm:hidden">
+        {t("dashboardShort")}
+      </span>
       <span className="hidden sm:inline">
-        {german ? "Dashboard öffnen" : "Open dashboard"}
+        {german ? "Dashboard öffnen" : t("openDashboard")}
       </span>
     </ButtonLink>
   ) : (
     <ButtonLink href="/#get-started" variant="ink">
-      <span className="min-[341px]:hidden">Start</span>
+      <span className="min-[341px]:hidden">{t("startShort")}</span>
       <span className="hidden min-[341px]:inline">
-        {german ? "Kostenlos starten" : "Start free"}
+        {german ? "Kostenlos starten" : t("startFree")}
       </span>
     </ButtonLink>
   );

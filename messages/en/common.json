@@ -49,5 +49,26 @@
     },
     "copyright": "operated by UgurLabs",
     "legal": "Independent tool, not affiliated with the vendors named on this site. All product names are trademarks of their respective owners."
+  },
+  "emailCapture": {
+    "placeholder": "you@yourcompany.com",
+    "emailLabel": "Email address",
+    "submit": "Send the security pack",
+    "sending": "Sending…",
+    "success": "Sent. The security pack and first-scan checklist are on their way to your inbox.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "headerAuthCta": {
+    "appShort": "App",
+    "dashboardShort": "Dashboard",
+    "openDashboard": "Open dashboard",
+    "startShort": "Start",
+    "startFree": "Start free"
+  },
+  "signInButtons": {
+    "signIn": "Sign in",
+    "requestScanAccess": "Request scan access",
+    "openSampleTenant": "Open the sample tenant",
+    "note": "Free to use, with no time limit. No credit card, read-only access. The sample tenant needs no account."
   }
 }

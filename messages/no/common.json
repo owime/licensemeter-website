@@ -49,5 +49,26 @@
     },
     "copyright": "driftet av UgurLabs",
     "legal": "Uavhengig verktøy, ikke tilknyttet leverandørene som nevnes på dette nettstedet. Alle produktnavn er varemerker tilhørende sine respektive eiere."
+  },
+  "emailCapture": {
+    "placeholder": "du@dinbedrift.no",
+    "emailLabel": "E-postadresse",
+    "submit": "Send sikkerhetspakken",
+    "sending": "Sender…",
+    "success": "Sendt. Sikkerhetspakken og sjekklisten for første skann er på vei til innboksen din.",
+    "genericError": "Noe gikk galt. Prøv igjen."
+  },
+  "headerAuthCta": {
+    "appShort": "App",
+    "dashboardShort": "Dashbord",
+    "openDashboard": "Åpne dashbord",
+    "startShort": "Start",
+    "startFree": "Start gratis"
+  },
+  "signInButtons": {
+    "signIn": "Logg inn",
+    "requestScanAccess": "Be om skanntilgang",
+    "openSampleTenant": "Åpne demoleietaker",
+    "note": "Gratis å bruke, uten tidsbegrensning. Ikke kredittkort, kun skrivebeskyttet tilgang. Demoleietakeren krever ingen konto."
   }
 }

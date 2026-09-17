@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { buttonClass, type ButtonVariant } from "~/components/ui";
 
@@ -15,7 +16,7 @@ export const SignInButtons = ({
   signInHref,
   demoEnabled,
   showNote = true,
-  primaryLabel = "Sign in",
+  primaryLabel,
   centered = false,
   primaryVariant = "primary",
 }: {
@@ -29,47 +30,47 @@ export const SignInButtons = ({
   primaryLabel?: string;
   centered?: boolean;
   primaryVariant?: ButtonVariant;
-}) => (
-  <div>
-    <div
-      className={`flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center ${centered ? "sm:justify-center" : ""}`}
-    >
-      {signInEnabled ? (
-        <a
-          href={signInHref}
-          className={buttonClass(primaryVariant, "w-full sm:w-auto")}
-        >
-          {primaryLabel}
-        </a>
-      ) : (
-        <Link
-          href="/#get-started"
-          className={buttonClass(primaryVariant, "w-full sm:w-auto")}
-        >
-          Request scan access
-        </Link>
-      )}
-      {demoEnabled && (
-        <form action="/api/auth/demo" method="post">
-          <button className={buttonClass("secondary", "w-full sm:w-auto")}>
-            Open the sample tenant
-          </button>
-        </form>
-      )}
-      {!demoEnabled && (
-        <Link
-          href="/#sample-tenant"
-          className={buttonClass("secondary", "w-full sm:w-auto")}
-        >
-          Open the sample tenant
-        </Link>
+}) => {
+  const t = useTranslations("signInButtons");
+  return (
+    <div>
+      <div
+        className={`flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center ${centered ? "sm:justify-center" : ""}`}
+      >
+        {signInEnabled ? (
+          <a
+            href={signInHref}
+            className={buttonClass(primaryVariant, "w-full sm:w-auto")}
+          >
+            {primaryLabel ?? t("signIn")}
+          </a>
+        ) : (
+          <Link
+            href="/#get-started"
+            className={buttonClass(primaryVariant, "w-full sm:w-auto")}
+          >
+            {primaryLabel ?? t("requestScanAccess")}
+          </Link>
+        )}
+        {demoEnabled && (
+          <form action="/api/auth/demo" method="post">
+            <button className={buttonClass("secondary", "w-full sm:w-auto")}>
+              {t("openSampleTenant")}
+            </button>
+          </form>
+        )}
+        {!demoEnabled && (
+          <Link
+            href="/#sample-tenant"
+            className={buttonClass("secondary", "w-full sm:w-auto")}
+          >
+            {t("openSampleTenant")}
+          </Link>
+        )}
+      </div>
+      {showNote && (
+        <p className="text-ink-faint mt-3 text-xs">{t("note")}</p>
       )}
     </div>
-    {showNote && (
-      <p className="text-ink-faint mt-3 text-xs">
-        Free to use, with no time limit. No credit card, read-only access. The
-        sample tenant needs no account.
-      </p>
-    )}
-  </div>
-);
+  );
+};
