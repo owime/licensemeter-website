@@ -65,6 +65,11 @@
     "startShort": "Start",
     "startFree": "Start gratis"
   },
+  "mobileNav": {
+    "closeMenu": "Lukk meny",
+    "openMenu": "Åpne meny",
+    "skipToContent": "Hopp til innhold"
+  },
   "signInButtons": {
     "signIn": "Logg inn",
     "requestScanAccess": "Be om skanntilgang",
